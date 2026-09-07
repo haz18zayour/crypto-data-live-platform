@@ -1,0 +1,21 @@
+# The verifier of record when `.uf/config.json` sets verification.requireCi = true.
+# An agent can be argued with. A CI conclusion cannot.
+name: uf-verify
+
+on:
+  push:
+    branches: ['**']
+  workflow_dispatch:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm ci || npm install
+      - run: npm run typecheck --if-present
+      - run: npm run lint --if-present
+      - run: npm test --if-present

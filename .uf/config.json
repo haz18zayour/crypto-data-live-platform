@@ -1,0 +1,42 @@
+{
+  "schemaVersion": 1,
+  "product": "crypto-data-live-platform",
+  "stack": "Python 3.12 (uv, httpx, pydantic, TA-Lib) ingestion + Supabase Postgres + Vite/React/TS/Tailwind on Cloudflare Pages behind Cloudflare Access; GitHub Actions + cron-job.org triggers; Healthchecks.io dead-mans-switch",
+  "frameworkVersion": "0.1.0",
+  "budget": {
+    "dailyUsd": 40,
+    "totalUsd": 150
+  },
+  "agents": {
+    "implement": "codex",
+    "verify": "claude",
+    "research": "claude",
+    "spec": "claude"
+  },
+  "verification": {
+    "gates": [
+      {
+        "name": "typecheck",
+        "run": "npm run typecheck --if-present"
+      },
+      {
+        "name": "test",
+        "run": "npm test --if-present"
+      }
+    ],
+    "requireCi": false
+  },
+  "research": {
+    "required": true,
+    "minCitations": 3
+  },
+  "blastRadius": [
+    "**/registry*",
+    "**/migrations/**",
+    "**/fetchers/**",
+    ".github/workflows/**",
+    "**/status*",
+    "**/freshness*"
+  ],
+  "maxAttempts": 3
+}

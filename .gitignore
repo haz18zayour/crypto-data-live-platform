@@ -1,0 +1,14 @@
+node_modules/
+dist/
+.env
+.env.local
+
+# Derived and regenerable — the journal (.uf/events.ndjson) is NOT ignored, because it
+# is the durable record that state.json is folded from.
+.uf/state.json
+.uf/runs/
+
+# Scratch directories agents create while installing dependencies. They are not product
+# source and must never end up in a story's diff.
+.npm-cache/
+.npm-logs/
