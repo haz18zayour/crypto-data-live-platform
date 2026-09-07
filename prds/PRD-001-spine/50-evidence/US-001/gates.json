@@ -1,15 +1,15 @@
 [
   {
     "name": "typecheck",
-    "run": "npm run typecheck --if-present",
-    "exitCode": 4294963238,
-    "output": "\nnpm error code ENOENT\nnpm error syscall open\nnpm error path C:\\Users\\zayou\\OneDrive\\Desktop\\Projects\\crypto-data-live-platform\\package.json\nnpm error errno -4058\nnpm error enoent Could not read package.json: Error: ENOENT: no such file or directory, open 'C:\\Users\\zayou\\OneDrive\\Desktop\\Projects\\crypto-data-live-platform\\package.json'\nnpm error enoent This is related to npm not being able to find a file.\nnpm error enoent\nnpm error A complete log of this run can be found in: C:\\Users\\zayou\\AppData\\Local\\npm-cache\\_logs\\2026-09-07T17_02_49_879Z-debug-0.log\n"
+    "run": "node -e \"const f=require('fs'),c=require('child_process');let r=0;const run=(cmd)=>{try{c.execSync(cmd,{stdio:'inherit'})}catch(e){r=1}};if(f.existsSync('package.json'))run('npm run typecheck --if-present');if(f.existsSync('pyproject.toml'))run('uv run mypy ingest --strict');process.exit(r)\"",
+    "exitCode": 0,
+    "output": ""
   },
   {
     "name": "test",
-    "run": "npm test --if-present",
-    "exitCode": 4294963238,
-    "output": "\nnpm error code ENOENT\nnpm error syscall open\nnpm error path C:\\Users\\zayou\\OneDrive\\Desktop\\Projects\\crypto-data-live-platform\\package.json\nnpm error errno -4058\nnpm error enoent Could not read package.json: Error: ENOENT: no such file or directory, open 'C:\\Users\\zayou\\OneDrive\\Desktop\\Projects\\crypto-data-live-platform\\package.json'\nnpm error enoent This is related to npm not being able to find a file.\nnpm error enoent\nnpm error A complete log of this run can be found in: C:\\Users\\zayou\\AppData\\Local\\npm-cache\\_logs\\2026-09-07T17_03_01_842Z-debug-0.log\n"
+    "run": "node -e \"const f=require('fs'),c=require('child_process');let r=0;const run=(cmd)=>{try{c.execSync(cmd,{stdio:'inherit'})}catch(e){r=1}};if(f.existsSync('package.json'))run('npm test --if-present');if(f.existsSync('tests'))run('uv run pytest -q');process.exit(r)\"",
+    "exitCode": 1,
+    "output": "\r\n=================================== ERRORS ====================================\r\n_________________ ERROR collecting tests/test_probe_venues.py _________________\r\nImportError while importing test module 'C:\\Users\\zayou\\OneDrive\\Desktop\\Projects\\crypto-data-live-platform\\tests\\test_probe_venues.py'.\r\nHint: make sure your test modules/packages have valid Python names.\r\nTraceback:\r\n..\\..\\..\\..\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\importlib\\__init__.py:90: in import_module\r\n    return _bootstrap._gcd_import(name[level:], package, level)\r\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\r\ntests\\test_probe_venues.py:5: in <module>\r\n    from scripts import probe_venues\r\nE   ImportError: cannot import name 'probe_venues' from 'scripts' (unknown location)\r\n=========================== short test summary info ===========================\r\nERROR tests/test_probe_venues.py\r\n!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!!!!!!!\r\n1 error in 0.98s\r\n\nwarning: Ignoring dangling temporary directory: `C:\\Users\\zayou\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\~umpy-2.2.6.dist-info`\n"
   },
   {
     "name": "US-001-C1",
@@ -19,8 +19,14 @@
   },
   {
     "name": "US-001-C5",
-    "run": "python -c \"import json,sys; d=json.load(open('prds/PRD-001-spine/50-evidence/US-001/reachability.json')); ks={r['venue'",
+    "run": "python -c \"import json,sys; d=json.load(open('prds/PRD-001-spine/50-evidence/US-001/reachability.json')); ks=set(r.get('venue') for r in d.get('results')); need={'okx','coinbase','kraken','binance_spot','binance_futures','bybit','coinmetrics','alternative_me'}; sys.exit(0 if need<=ks else 1)\"",
+    "exitCode": 0,
+    "output": ""
+  },
+  {
+    "name": "US-001-C6",
+    "run": "python -c \"import json,sys; d=json.load(open('prds/PRD-001-spine/50-evidence/US-001/reachability.json')); n=sum(1 for r in d.get('results') if isinstance(r.get('http_status'), int)); print('venues with a real HTTP status:', n); sys.exit(0 if n>=6 else 1)\"",
     "exitCode": 1,
-    "output": "\n  File \"<string>\", line 1\r\n    import json,sys; d=json.load(open('prds/PRD-001-spine/50-evidence/US-001/reachability.json')); ks={r['venue'\r\n                                                                                                        ^\r\nSyntaxError: '[' was never closed\r\n"
+    "output": "venues with a real HTTP status: 0\r\n\n"
   }
 ]

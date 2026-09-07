@@ -31,9 +31,14 @@
       "criterionId": "US-001-C5",
       "met": false,
       "note": "not judged — a cheaper layer already failed"
+    },
+    {
+      "criterionId": "US-001-C6",
+      "met": false,
+      "note": "not judged — a cheaper layer already failed"
     }
   ],
   "tripwires": [],
-  "note": "gates failed: typecheck, test, US-001-C5",
-  "at": "2026-09-07T17:03:04.694Z"
+  "note": "gates failed: test, US-001-C6",
+  "at": "2026-09-07T17:07:11.732Z"
 }
