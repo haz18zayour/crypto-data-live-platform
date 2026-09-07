@@ -4,8 +4,8 @@
   "title": "Spine — reachability, registry, provenance schema, one live indicator",
   "product": "crypto-data-live-platform",
   "branch": "feat/prd-001-spine",
-  "inputDigest": "cd8407f845626eec",
-  "compiledAt": "2026-09-07T16:55:25.998Z",
+  "inputDigest": "800756632fc84a2d",
+  "compiledAt": "2026-09-07T17:06:04.818Z",
   "stories": [
     {
       "id": "US-001",
@@ -47,10 +47,18 @@
         },
         {
           "id": "US-001-C5",
-          "text": "for r in d['results']}; need={'okx','coinbase','kraken','binance_spot','binance_futures','bybit','coinmetrics','alternative_me'}; sys.exit(0 if need<=ks else 1)\"] The evidence file covers all eight required venues",
+          "text": "The evidence file covers all eight required venues",
           "method": {
             "kind": "cmd",
-            "run": "python -c \"import json,sys; d=json.load(open('prds/PRD-001-spine/50-evidence/US-001/reachability.json')); ks={r['venue'"
+            "run": "python -c \"import json,sys; d=json.load(open('prds/PRD-001-spine/50-evidence/US-001/reachability.json')); ks=set(r.get('venue') for r in d.get('results')); need={'okx','coinbase','kraken','binance_spot','binance_futures','bybit','coinmetrics','alternative_me'}; sys.exit(0 if need<=ks else 1)\""
+          }
+        },
+        {
+          "id": "US-001-C6",
+          "text": "At least six venues returned an actual HTTP status code — a run in which every venue errored is a broken probe, not a reachability finding",
+          "method": {
+            "kind": "cmd",
+            "run": "python -c \"import json,sys; d=json.load(open('prds/PRD-001-spine/50-evidence/US-001/reachability.json')); n=sum(1 for r in d.get('results') if isinstance(r.get('http_status'), int)); print('venues with a real HTTP status:', n); sys.exit(0 if n>=6 else 1)\""
           }
         }
       ],
