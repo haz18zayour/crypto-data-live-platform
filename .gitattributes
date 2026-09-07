@@ -1,0 +1,5 @@
+# uf compile parses story front-matter line by line; a trailing CR breaks the
+# last context: entry and reports it as a missing file. Keep authored text LF.
+* text=auto eol=lf
+*.png binary
+*.jpg binary
