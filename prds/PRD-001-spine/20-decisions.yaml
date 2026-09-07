@@ -1,0 +1,120 @@
+# GATE G1 — scope lock for PRD-001.
+#
+# Product-level G1 was approved by the owner on 2026-09-07 (scope, roadmap, out-of-scope,
+# BNB as the pinned fourth coin, $0 budget). This file locks scope for THIS PRD only.
+#
+# Every question carries a hypothesis drawn from 10-research.md and
+# project-documents/10_Technical_Architecture.md, so the owner corrects a draft rather than
+# filling a blank form. Blank `answer:` means the hypothesis stands.
+
+decisions:
+  - q: Which compute runs ingestion?
+    hypothesis: >
+      GitHub-hosted runner (ubuntu-latest). UNDECIDED until the reachability spike proves it.
+      If any required venue returns 451/403, fall back to a STATELESS Fly.io machine in `fra`,
+      started per run via the Machines API and stopped on exit — never a resident process.
+      This is the single decision PRD-001 exists to settle, and it is settled by measurement.
+    answer:
+
+  - q: Which venue is the primary spot source?
+    hypothesis: >
+      OKX, filtered to `confirm = "1"`. It is the only venue measured that flags a closed
+      candle; Coinbase and Kraken return the forming bucket unmarked. Choosing OKX over
+      Binance also removes the HTTP-451 dependency that forced the prior system onto the
+      self-hosted runner that died silently.
+    answer:
+
+  - q: Which single indicator does the spine carry?
+    hypothesis: >
+      BTC daily close from OKX. Unambiguous source_timestamp (candle close), a real freshness
+      budget (26h warn / 48h stale), measured_on == asset so the CHECK constraint is exercised
+      in the happy path, and it is the foundation PRD-003 builds on.
+    answer:
+
+  - q: How does the browser read data?
+    hypothesis: >
+      Supabase anon key against a read-only view, with RLS permitting SELECT only. The
+      service-role key is used ONLY by the ingestion job and never reaches the client bundle
+      or any VITE_-prefixed variable.
+    answer:
+
+  - q: How is the dashboard protected?
+    hypothesis: >
+      Cloudflare Access (Zero Trust), policy restricted to zayourhassan.1@gmail.com. Auth
+      stays at the edge; no email infrastructure and no session code in the app.
+    answer:
+
+  - q: What cadence does the spine job run at?
+    hypothesis: >
+      Every 6 hours (4 runs/day). The indicator is daily-close, so this is deliberately more
+      often than the data changes — it exercises the freshness and staleness paths without
+      waiting a day to see them work. ~240 GH Actions minutes/month against a 2,000 limit.
+    answer:
+
+  - q: Ingestion language?
+    hypothesis: Python 3.12 with uv, httpx, pydantic, structlog. Matches the owner's fluency and the TA ecosystem PRD-003 needs.
+    answer:
+
+  - q: How is pipeline silence detected?
+    hypothesis: >
+      Healthchecks.io free tier. The job pings on success; the ABSENCE of a ping raises the
+      alarm. A system that reports its own failures cannot report that it stopped running.
+    answer:
+
+# The one field with no default.
+out_of_scope:
+  - A second indicator of any kind. One value, all the way through, is the entire deliverable.
+  - Technical indicators and TA-Lib — no RSI, EMA, MACD, ATR. That is PRD-003.
+  - Historical backfill or charts. One current value proves the path; depth is PRD-008.
+  - Frozen-value detection and the nightly assertion suite. PRD-001 adds only the columns that
+    make them possible later; the checks themselves are PRD-009.
+  - Golden-file and cassette test harnesses. That is PRD-002, deliberately before breadth.
+  - Any layout or visual design beyond rendering one value honestly with its provenance.
+  - Any composite, score, signal, ranking or judgement about the number. Permanently.
+  - Alerts of market content. The Healthchecks switch alerts on INFRASTRUCTURE silence only.
+
+assumptions:
+  - claim: GitHub-hosted runners can reach OKX, Coinbase and Coin Metrics without geo-blocking.
+    tripwire: >
+      The reachability spike returns 451 or 403 for any required venue. Reopens G1 immediately
+      and switches compute to a stateless Fly.io `fra` machine — do NOT work around it by
+      reintroducing a resident self-hosted runner, which is the exact component that failed.
+    acceptedBy: default
+
+  - claim: Supabase free tier (500 MB, 5 GB egress) is sufficient, and daily writes prevent the 7-day inactivity pause.
+    tripwire: Database exceeds 400 MB, any egress warning, or the project pauses even once.
+    acceptedBy: default
+
+  - claim: Cloudflare Access free tier covers a single user.
+    tripwire: >
+      Access requires a paid plan at signup. R6 reported a 50-user free cap but its official
+      page did not render to the fetcher — this is UNVERIFIED and must be confirmed in a
+      browser during setup, not assumed by a story.
+    acceptedBy: default
+
+  - claim: OKX `confirm = "1"` reliably marks a final candle.
+    tripwire: >
+      Any candle with confirm="1" is later observed to change value. Measured on 2026-09-07:
+      newest daily candle returned "0", the two before it "1".
+    acceptedBy: default
+
+chosen_approach:
+  option: Thin vertical slice — one indicator, full depth
+  because: >
+    The prior system failed with 25 indicators and no way to tell a right number from a wrong
+    one. Breadth was never the missing thing. Proving the whole spine once, in production,
+    kills the riskiest assumptions before anything is built on them.
+  rejected:
+    - option: Build the schema and registry first, add fetchers later
+      because: >
+        A schema with no value flowing through it is unfalsifiable. The prior system's schema
+        made F1 structurally unpreventable and nobody noticed for months, precisely because it
+        was never tested end to end against a real fetch.
+    - option: Start with all four assets and several indicators
+      because: >
+        Multiplies the surface before any of it is proven, and delays the reachability answer
+        that every later PRD depends on.
+    - option: Keep Binance as primary and solve reachability with a Fly.io runner
+      because: >
+        That is exactly the chain that produced the 24-hour silent outage. Fixing the data
+        source removes the infrastructure problem instead of monitoring it harder.
