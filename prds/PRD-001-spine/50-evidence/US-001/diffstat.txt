@@ -1,0 +1,8 @@
+.github/workflows/reachability-spike.yml           |  33 ++++
+ .uf/events.ndjson                                  |   2 +
+ .../50-evidence/US-001/reachability.json           |  90 ++++++++++
+ scripts/__pycache__/probe_venues.cpython-312.pyc   | Bin 0 -> 8725 bytes
+ scripts/probe_venues.py                            | 194 +++++++++++++++++++++
+ .../__pycache__/test_probe_venues.cpython-312.pyc  | Bin 0 -> 5469 bytes
+ tests/test_probe_venues.py                         |  80 +++++++++
+ 7 files changed, 399 insertions(+)
