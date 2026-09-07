@@ -1,0 +1,90 @@
+{
+  "body_prefix_bytes": 200,
+  "egress": {
+    "city": null,
+    "country": null,
+    "error": "URLError: <urlopen error [WinError 10013] An attempt was made to access a socket in a way forbidden by its access permissions>",
+    "ip": null,
+    "org": null,
+    "region": null,
+    "status": null,
+    "url": "https://ipinfo.io/json"
+  },
+  "generated_at": "2026-09-07T17:01:09.981909Z",
+  "results": [
+    {
+      "body_prefix": "",
+      "error": "URLError: <urlopen error [WinError 10013] An attempt was made to access a socket in a way forbidden by its access permissions>",
+      "latency_ms": 31,
+      "status": null,
+      "url": "https://www.okx.com/api/v5/market/candles?instId=BTC-USDT&bar=1D&limit=1",
+      "venue": "okx"
+    },
+    {
+      "body_prefix": "",
+      "error": "URLError: <urlopen error [WinError 10013] An attempt was made to access a socket in a way forbidden by its access permissions>",
+      "latency_ms": 47,
+      "status": null,
+      "url": "https://api.exchange.coinbase.com/products/BTC-USD/candles?granularity=86400",
+      "venue": "coinbase"
+    },
+    {
+      "body_prefix": "",
+      "error": "URLError: <urlopen error [WinError 10013] An attempt was made to access a socket in a way forbidden by its access permissions>",
+      "latency_ms": 31,
+      "status": null,
+      "url": "https://api.kraken.com/0/public/OHLC?pair=XBTUSD&interval=1440",
+      "venue": "kraken"
+    },
+    {
+      "body_prefix": "",
+      "error": "URLError: <urlopen error [WinError 10013] An attempt was made to access a socket in a way forbidden by its access permissions>",
+      "latency_ms": 32,
+      "status": null,
+      "url": "https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval=1d&limit=1",
+      "venue": "binance_spot"
+    },
+    {
+      "body_prefix": "",
+      "error": "URLError: <urlopen error [WinError 10013] An attempt was made to access a socket in a way forbidden by its access permissions>",
+      "latency_ms": 218,
+      "status": null,
+      "url": "https://fapi.binance.com/fapi/v1/fundingRate?symbol=BTCUSDT&limit=1",
+      "venue": "binance_futures"
+    },
+    {
+      "body_prefix": "",
+      "error": "URLError: <urlopen error [WinError 10013] An attempt was made to access a socket in a way forbidden by its access permissions>",
+      "latency_ms": 125,
+      "status": null,
+      "url": "https://api.bybit.com/v5/market/tickers?category=linear&symbol=BTCUSDT",
+      "venue": "bybit"
+    },
+    {
+      "body_prefix": "",
+      "error": "URLError: <urlopen error [WinError 10013] An attempt was made to access a socket in a way forbidden by its access permissions>",
+      "latency_ms": 172,
+      "status": null,
+      "url": "https://community-api.coinmetrics.io/v4/timeseries/asset-metrics?assets=btc&metrics=CapMVRVCur",
+      "venue": "coinmetrics"
+    },
+    {
+      "body_prefix": "",
+      "error": "URLError: <urlopen error [WinError 10013] An attempt was made to access a socket in a way forbidden by its access permissions>",
+      "latency_ms": 110,
+      "status": null,
+      "url": "https://api.alternative.me/fng/?limit=1",
+      "venue": "alternative_me"
+    }
+  ],
+  "runner": {
+    "github_actions": false,
+    "github_run_attempt": null,
+    "github_run_id": null,
+    "python": "3.12.0",
+    "runner_arch": null,
+    "runner_name": null,
+    "runner_os": null
+  },
+  "timeout_seconds": 10
+}
