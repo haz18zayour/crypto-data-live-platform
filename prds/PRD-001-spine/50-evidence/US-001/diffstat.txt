@@ -1,5 +1,8 @@
-.github/workflows/uf-verify.yml                    |  9 ++-
+.uf/events.ndjson                                  |  1 +
+ .../40-stories/US-001-reachability-spike.md        |  6 +-
+ prds/PRD-001-spine/50-evidence/US-001/diffstat.txt | 20 ++----
  prds/PRD-001-spine/50-evidence/US-001/gates.json   | 18 ++++--
  .../50-evidence/US-001/reachability-local.json     | 26 ++++----
  prds/PRD-001-spine/50-evidence/US-001/verdict.json | 73 +++++++---------------
- 4 files changed, 55 insertions(+), 71 deletions(-)
+ prds/PRD-001-spine/spec.lock.json                  |  7 ++-
+ 7 files changed, 62 insertions(+), 89 deletions(-)
