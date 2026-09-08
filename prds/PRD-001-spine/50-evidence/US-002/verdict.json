@@ -16,7 +16,7 @@
         "testName": null,
         "exitCode": 0
       },
-      "note": "pyproject.toml declares project deps (httpx, pydantic-settings, structlog) plus dev group (mypy, pytest, ruff); uv.lock is committed; deterministic gate 'uv sync' exits 0."
+      "note": "pyproject.toml declares deps (httpx, pydantic-settings, structlog) plus dev group (mypy, pytest, ruff); uv.lock is committed. Deterministic gate 'uv sync' exits 0."
     },
     {
       "criterionId": "US-002-C2",
@@ -27,7 +27,7 @@
         "testName": null,
         "exitCode": 0
       },
-      "note": "Deterministic gate 'uv run ruff check .' exits 0 ('All checks passed!' in the supplied gate output). Note: prds/PRD-001-spine/50-evidence/US-002/gates.json checked into the diff itself already shows this exit 0 result, consistent."
+      "note": "Deterministic gate 'uv run ruff check .' exits 0."
     },
     {
       "criterionId": "US-002-C3",
@@ -38,7 +38,7 @@
         "testName": null,
         "exitCode": 0
       },
-      "note": "Deterministic gate 'uv run mypy ingest --strict' exits 0 ('Success: no issues found in 2 source files'). ingest/config.py is a small, fully-typed module (Settings(BaseSettings) with AnyHttpUrl/SecretStr annotations) consistent with a clean strict pass."
+      "note": "Deterministic gate 'uv run mypy ingest --strict' exits 0; ingest/config.py is a small fully-typed pydantic BaseSettings module consistent with a clean strict pass."
     },
     {
       "criterionId": "US-002-C4",
@@ -49,7 +49,7 @@
         "testName": "test_config_raises_at_import_when_a_required_variable_is_absent",
         "exitCode": 0
       },
-      "note": "Read ingest/config.py directly: supabase_url, supabase_service_role_key, healthchecks_ping_url (lines 16-18) are declared with no default values (Field(min_length=1) supplies only a constraint, not a default), so pydantic-settings raises ValidationError at `Settings()` construction (line 21), which runs at import time. The parametrized test in tests/test_config.py spawns a real subprocess per required var with that var stripped from the environment and asserts non-zero exit plus the field name in stderr — a genuine, assertive test, not a stub. The 'test' gate (uv run pytest -q) reports exit 0, 9 passed."
+      "note": "Read ingest/config.py:16-18 directly: supabase_url, supabase_service_role_key, healthchecks_ping_url have no default values (Field(min_length=1) is only a constraint), so pydantic-settings raises ValidationError at Settings() construction (line 21), which executes at import time — a missing setting crashes the process rather than substituting a default. tests/test_config.py:44-55 is a real, parametrized, assertive test that spawns a subprocess per required var with that var stripped from the environment and asserts non-zero exit code plus the field name in stderr. The 'test' gate (uv run pytest -q) exits 0, 9 passed."
     },
     {
       "criterionId": "US-002-C5",
@@ -60,10 +60,10 @@
         "testName": "test_config_never_logs_a_secret_value",
         "exitCode": 0
       },
-      "note": "supabase_service_role_key is typed pydantic.SecretStr (ingest/config.py:17), whose repr/str masks the value as '**********'. test_config_never_logs_a_secret_value spawns a subprocess that logs the settings object via logging with %r and also calls repr(settings) directly, then asserts the raw secret string is absent from combined stdout/stderr while '**********' is present — a real assertion-based test covering both repr and a log line, not a trivial or comment-only check."
+      "note": "supabase_service_role_key is typed pydantic.SecretStr (ingest/config.py:17), whose repr masks the value as '**********'. tests/test_config.py:58-74 is a real assertive test: it spawns a subprocess that logs the settings object via logging with %r and also calls repr(settings) directly, then asserts the raw secret string is absent from combined stdout/stderr while '**********' is present — covering both a log line and repr(), matching the criterion text exactly. Covered by the passing 'test' gate."
     }
   ],
   "tripwires": [],
-  "note": "All 5 criteria are backed by concrete evidence: I directly read ingest/config.py and tests/test_config.py (matching the diff) and confirmed the required-field-no-default design and the two non-trivial, assertive tests (test_config_raises_at_import_when_a_required_variable_is_absent, test_config_never_logs_a_secret_value), plus the three passing deterministic gates (uv sync, ruff check, mypy --strict). One caveat worth surfacing to the user: the repo carries stale, contradictory evidence artifacts from a rejected first attempt (prds/PRD-001-spine/50-evidence/US-002/{gates.json,verdict.json} referenced in earlier commits/events) that once showed ruff/mypy failures on the same call site — those were superseded but the history is confusing to anyone reading events.ndjson chronologically. No fabricated or assertion-free tests were found.</note>\n</invoke>\n",
-  "at": "2026-09-08T12:42:16.346Z"
+  "note": "I read pyproject.toml, ingest/config.py, and tests/test_config.py directly from the current repo state (not just the diff) and they match what the diff and verifier notes claim. All three cmd gates (C1-C3) report exit 0, and the two test criteria (C4/C5) are backed by genuine, assertive, subprocess-based tests exercising the real import-time-crash and SecretStr-masking behavior — no assertion-free stubs or comment-only satisfaction found. No unrelated churn or padding beyond a research note and routine .env.example/event-log updates, which don't affect the verdict.",
+  "at": "2026-09-08T12:45:23.510Z"
 }
