@@ -4,6 +4,7 @@ import argparse
 import json
 import os
 import platform
+import socket
 import time
 import urllib.error
 import urllib.request
@@ -52,7 +53,7 @@ VENUES = (
 )
 
 EGRESS_URL = "https://ipinfo.io/json"
-UrlOpener = Callable[[urllib.request.Request, int], Any]
+UrlOpener = Callable[..., Any]
 
 
 def now_utc() -> str:
@@ -82,6 +83,19 @@ def read_response_prefix(response: Any) -> str:
             close()
 
 
+def read_response_text(response: Any) -> str:
+    try:
+        return response.read().decode("utf-8", errors="replace")
+    finally:
+        close = getattr(response, "close", None)
+        if close is not None:
+            close()
+
+
+def transport_error_message(exc: BaseException) -> str:
+    return f"{exc.__class__.__name__}: {exc}"
+
+
 def probe_venue(
     venue: str,
     url: str,
@@ -91,21 +105,26 @@ def probe_venue(
     row: dict[str, Any] = {
         "venue": venue,
         "url": url,
-        "status": None,
+        "http_status": None,
         "latency_ms": None,
         "body_prefix": "",
         "error": None,
     }
 
     try:
-        response = opener(request_for(url), REQUEST_TIMEOUT_SECONDS)
-        row["status"] = getattr(response, "status", response.getcode())
+        response = opener(request_for(url), timeout=REQUEST_TIMEOUT_SECONDS)
+        row["http_status"] = getattr(response, "status", response.getcode())
         row["body_prefix"] = read_response_prefix(response)
     except urllib.error.HTTPError as exc:
-        row["status"] = exc.code
+        row["http_status"] = exc.code
         row["body_prefix"] = read_response_prefix(exc)
-    except Exception as exc:
-        row["error"] = f"{exc.__class__.__name__}: {exc}"
+    except (
+        urllib.error.URLError,
+        TimeoutError,
+        socket.timeout,
+        OSError,
+    ) as exc:
+        row["error"] = transport_error_message(exc)
     finally:
         row["latency_ms"] = round((time.monotonic() - started) * 1000)
 
@@ -134,7 +153,7 @@ def runner_metadata() -> dict[str, Any]:
 def probe_egress(opener: UrlOpener = urllib.request.urlopen) -> dict[str, Any]:
     result: dict[str, Any] = {
         "url": EGRESS_URL,
-        "status": None,
+        "http_status": None,
         "ip": None,
         "city": None,
         "region": None,
@@ -144,18 +163,24 @@ def probe_egress(opener: UrlOpener = urllib.request.urlopen) -> dict[str, Any]:
     }
 
     try:
-        response = opener(request_for(EGRESS_URL), REQUEST_TIMEOUT_SECONDS)
-        result["status"] = getattr(response, "status", response.getcode())
-        body = read_response_prefix(response)
+        response = opener(request_for(EGRESS_URL), timeout=REQUEST_TIMEOUT_SECONDS)
+        result["http_status"] = getattr(response, "status", response.getcode())
+        body = read_response_text(response)
         payload = json.loads(body)
         for field in ("ip", "city", "region", "country", "org"):
             result[field] = payload.get(field)
     except urllib.error.HTTPError as exc:
-        result["status"] = exc.code
+        result["http_status"] = exc.code
         result["error"] = f"HTTPError: {exc.reason}"
         read_response_prefix(exc)
-    except Exception as exc:
-        result["error"] = f"{exc.__class__.__name__}: {exc}"
+    except (
+        json.JSONDecodeError,
+        urllib.error.URLError,
+        TimeoutError,
+        socket.timeout,
+        OSError,
+    ) as exc:
+        result["error"] = transport_error_message(exc)
 
     return result
 

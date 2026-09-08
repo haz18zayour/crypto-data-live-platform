@@ -3,76 +3,76 @@
   "egress": {
     "city": null,
     "country": null,
-    "error": "TypeError: message_body should be a bytes-like object or an iterable, got <class 'int'>",
+    "error": "URLError: <urlopen error [WinError 10013] An attempt was made to access a socket in a way forbidden by its access permissions>",
+    "http_status": null,
     "ip": null,
     "org": null,
     "region": null,
-    "status": null,
     "url": "https://ipinfo.io/json"
   },
-  "generated_at": "2026-09-07T17:07:07.566601Z",
+  "generated_at": "2026-09-08T07:22:49.202905Z",
   "results": [
     {
       "body_prefix": "",
-      "error": "TypeError: message_body should be a bytes-like object or an iterable, got <class 'int'>",
-      "latency_ms": 78,
-      "status": null,
+      "error": "URLError: <urlopen error [WinError 10013] An attempt was made to access a socket in a way forbidden by its access permissions>",
+      "http_status": null,
+      "latency_ms": 0,
       "url": "https://www.okx.com/api/v5/market/candles?instId=BTC-USDT&bar=1D&limit=1",
       "venue": "okx"
     },
     {
       "body_prefix": "",
-      "error": "TypeError: message_body should be a bytes-like object or an iterable, got <class 'int'>",
-      "latency_ms": 188,
-      "status": null,
+      "error": "URLError: <urlopen error [WinError 10013] An attempt was made to access a socket in a way forbidden by its access permissions>",
+      "http_status": null,
+      "latency_ms": 47,
       "url": "https://api.exchange.coinbase.com/products/BTC-USD/candles?granularity=86400",
       "venue": "coinbase"
     },
     {
       "body_prefix": "",
-      "error": "TypeError: message_body should be a bytes-like object or an iterable, got <class 'int'>",
-      "latency_ms": 328,
-      "status": null,
+      "error": "URLError: <urlopen error [WinError 10013] An attempt was made to access a socket in a way forbidden by its access permissions>",
+      "http_status": null,
+      "latency_ms": 78,
       "url": "https://api.kraken.com/0/public/OHLC?pair=XBTUSD&interval=1440",
       "venue": "kraken"
     },
     {
       "body_prefix": "",
-      "error": "TypeError: message_body should be a bytes-like object or an iterable, got <class 'int'>",
-      "latency_ms": 406,
-      "status": null,
+      "error": "URLError: <urlopen error [WinError 10013] An attempt was made to access a socket in a way forbidden by its access permissions>",
+      "http_status": null,
+      "latency_ms": 188,
       "url": "https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval=1d&limit=1",
       "venue": "binance_spot"
     },
     {
       "body_prefix": "",
-      "error": "TypeError: message_body should be a bytes-like object or an iterable, got <class 'int'>",
-      "latency_ms": 437,
-      "status": null,
+      "error": "URLError: <urlopen error [WinError 10013] An attempt was made to access a socket in a way forbidden by its access permissions>",
+      "http_status": null,
+      "latency_ms": 203,
       "url": "https://fapi.binance.com/fapi/v1/fundingRate?symbol=BTCUSDT&limit=1",
       "venue": "binance_futures"
     },
     {
       "body_prefix": "",
-      "error": "TypeError: message_body should be a bytes-like object or an iterable, got <class 'int'>",
-      "latency_ms": 391,
-      "status": null,
+      "error": "URLError: <urlopen error [WinError 10013] An attempt was made to access a socket in a way forbidden by its access permissions>",
+      "http_status": null,
+      "latency_ms": 172,
       "url": "https://api.bybit.com/v5/market/tickers?category=linear&symbol=BTCUSDT",
       "venue": "bybit"
     },
     {
       "body_prefix": "",
-      "error": "TypeError: message_body should be a bytes-like object or an iterable, got <class 'int'>",
+      "error": "URLError: <urlopen error [WinError 10013] An attempt was made to access a socket in a way forbidden by its access permissions>",
+      "http_status": null,
       "latency_ms": 109,
-      "status": null,
       "url": "https://community-api.coinmetrics.io/v4/timeseries/asset-metrics?assets=btc&metrics=CapMVRVCur",
       "venue": "coinmetrics"
     },
     {
       "body_prefix": "",
-      "error": "TypeError: message_body should be a bytes-like object or an iterable, got <class 'int'>",
-      "latency_ms": 766,
-      "status": null,
+      "error": "URLError: <urlopen error [WinError 10013] An attempt was made to access a socket in a way forbidden by its access permissions>",
+      "http_status": null,
+      "latency_ms": 63,
       "url": "https://api.alternative.me/fng/?limit=1",
       "venue": "alternative_me"
     }
