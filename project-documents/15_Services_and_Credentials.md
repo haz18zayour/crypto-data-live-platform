@@ -3,7 +3,7 @@
 **Every row here is work only the owner can do** — an agent cannot create an account, accept
 terms, or pay. Doing all of it in one sitting beats discovering it at 2am when a story halts.
 
-Sourced from `research/R1`–`R7`. **v1 target cost: $0/mo.**
+Sourced from `research/R0`–`R8`, plus the US-011 reachability measurement. **v1 target cost: $0/mo.**
 
 ## Status key
 
@@ -34,12 +34,11 @@ Add one later if wanted — it is not a v1 dependency.
 
 | Source | Provides | Key? | Notes | Status |
 |---|---|---|---|---|
-| Coinbase Exchange / Kraken public REST | **primary** spot OHLCV, BTC/ETH/SOL | none | Chosen over Binance to avoid the 451 chain (R7 §C1) | N/A — no key |
-| OKX public REST | OHLCV cross-check | none | Only venue found that explicitly flags a **closed candle** (`confirm`) (R3) | N/A — no key |
-| Binance `fapi` | funding (settled), OI, long/short ratio | none | **Reachability from target compute unproven** — PRD-001 spike decides. Use `/fapi/v1/fundingRate`, **never** `premiumIndex.lastFundingRate` (R0/F11) | N/A — no key |
+| Coinbase Exchange / Kraken public REST | spot OHLCV cross-check | none | Both reachable from US runners (200). Neither flags a closed candle | N/A — no key |
+| OKX public REST | **primary** spot OHLCV, BTC/ETH/SOL/BNB | none | The only venue that explicitly flags a **closed candle** (`confirm`) (R3), and reachable from US runners (200). Both reasons point the same way | N/A — no key |
+| ~~Binance `fapi`~~ → **OKX** | funding (settled), OI, long/short ratio | none | **Measured 2026-09-08: Binance returns 451 and Bybit 403 from a GitHub-hosted US runner; OKX returns 200.** Derivatives therefore come from OKX, or PRD-004 runs on non-US compute. Whichever venue: use the **settled** funding series, **never** a `premiumIndex`-style moving pre-settlement field (R0/F11) | N/A — no key |
 | Coin Metrics community API | MVRV, exchange flows, active addresses, supply | none | **Measured 2026-09-07**, per asset: MVRV/addresses/supply/tx/mktcap/price free for **BTC, ETH, BNB**; exchange flows free for **BTC, ETH only** (no such metric for BNB); **SOL returns nothing, not even price** (R2 §0) | N/A — no key |
 | alternative.me | Fear & Greed | none | Display as a *composite of other inputs*, never as an independent signal (R4) | N/A — no key |
-| DefiLlama | stablecoin supply / net issuance | none | (R4) | N/A — no key |
 | Solana public RPC | SOL network activity: epoch, cumulative tx count, supply, staking | none | **Verified live 2026-09-07**: `api.mainnet-beta.solana.com` returns `getEpochInfo` and `getSupply` free. Covers the SOL gap Coin Metrics leaves, for activity metrics only — not valuation (R8) | N/A — no key |
 | DefiLlama | stablecoin supply, chain TVL incl. Solana | none | Verified live; free, no key | N/A — no key |
 | FRED | DXY-proxy, VIX, yield curve, SOFR, M2, CPI | **`FRED_API_KEY`** | Free, 120 req/min. **Release lag must be displayed**: SOFR/VIX same-day, M2 3–4 wks, CPI 5–6 wks. No true DXY exists on FRED — `DTWEXBGS` is a *broader* index and must be labelled as such (R0/F12) | **TODO** — free registration |
