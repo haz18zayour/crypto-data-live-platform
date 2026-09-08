@@ -4,14 +4,13 @@ import argparse
 import json
 import os
 import platform
-import socket
 import time
 import urllib.error
 import urllib.request
-from datetime import datetime, timezone
+from collections.abc import Callable, Iterable
+from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any, Callable, Iterable
-
+from typing import Any
 
 BODY_PREFIX_BYTES = 200
 REQUEST_TIMEOUT_SECONDS = 10
@@ -57,7 +56,7 @@ UrlOpener = Callable[..., Any]
 
 
 def now_utc() -> str:
-    return datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
+    return datetime.now(UTC).isoformat().replace("+00:00", "Z")
 
 
 def request_for(url: str) -> urllib.request.Request:
@@ -118,12 +117,7 @@ def probe_venue(
     except urllib.error.HTTPError as exc:
         row["http_status"] = exc.code
         row["body_prefix"] = read_response_prefix(exc)
-    except (
-        urllib.error.URLError,
-        TimeoutError,
-        socket.timeout,
-        OSError,
-    ) as exc:
+    except (urllib.error.URLError, TimeoutError, OSError) as exc:
         row["error"] = transport_error_message(exc)
     finally:
         row["latency_ms"] = round((time.monotonic() - started) * 1000)
@@ -173,13 +167,7 @@ def probe_egress(opener: UrlOpener = urllib.request.urlopen) -> dict[str, Any]:
         result["http_status"] = exc.code
         result["error"] = f"HTTPError: {exc.reason}"
         read_response_prefix(exc)
-    except (
-        json.JSONDecodeError,
-        urllib.error.URLError,
-        TimeoutError,
-        socket.timeout,
-        OSError,
-    ) as exc:
+    except (json.JSONDecodeError, urllib.error.URLError, TimeoutError, OSError) as exc:
         result["error"] = transport_error_message(exc)
 
     return result

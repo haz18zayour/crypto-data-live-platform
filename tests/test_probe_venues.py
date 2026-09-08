@@ -1,8 +1,8 @@
-import io
 import importlib.util
-from pathlib import Path
+import io
 import unittest
 import urllib.error
+from pathlib import Path
 
 PROBE_PATH = Path(__file__).resolve().parents[1] / "scripts" / "probe_venues.py"
 SPEC = importlib.util.spec_from_file_location("probe_venues", PROBE_PATH)
