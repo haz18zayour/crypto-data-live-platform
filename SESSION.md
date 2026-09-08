@@ -9,23 +9,31 @@ Do not hand-edit it — it is regenerated. The hand-written sections below it su
 
 ## ▶ Resume here
 
-**The product phase is unfinished — 1 document(s) still empty**
+**1 story left mid-run by an interrupted session**
 
-These settle what is being built and what accounts must exist. A PRD written before them is a guess.
+Recovery is automatic: the partial work is committed under that story and it is retried. An interruption does not cost a retry attempt.
 
-Owner: **An agent.** Give it this repo and the instruction below.
+Owner: **`uf`.** Run the command; it drives the agents itself.
 
 ```
-  · project-documents/05_Product_Roadmap.md — no PRDs are named yet, so there is no order to work in
+uf run
 ```
+
+**Left in flight by the previous session:**
+
+- PRD-001-spine/US-005 left running
+
+⚠ 5 account(s) in 15_Services_and_Credentials.md are still TODO — Cloudflare, Supabase, Healthchecks.io, cron-job.org, SoSoValue. A story that needs one of these keys will halt and open a gate.
+
+**No handoff note was left**, and there is unfinished work above. Whatever the previous session was thinking is gone — treat the files as the only source of truth, and leave a note yourself under `## Handoff` before you stop.
 
 ## Where this stands
 
 | PRD | Stories | Passed | State |
 |---|---|---|---|
-| PRD-001-spine | 9 | 3 | 3/9 |
+| PRD-001-spine | 9 | 2 | 2/9 |
 
-Spend to date: **$4.96** Claude · **5625k** Codex tokens.
+Spend to date: **$4.96** Claude · **7602k** Codex tokens.
 
 ## What happened
 
@@ -81,6 +89,9 @@ Spend to date: **$4.96** Claude · **5625k** Codex tokens.
 - 12:54  US-004 started, attempt 1 (codex)
 - 13:01  US-004 — codex finished `3a31e43b` · 1249k tok
 - 13:02  US-004 **PASSED** — 5/5 criteria, judged by claude · $0.19
+- 13:05  US-005 started, attempt 1 (codex)
+- 13:08  US-004 — codex finished `72efd0a9` · 1977k tok
+- 13:08  US-004 **rejected** — 0/5 criteria, judged by claude
 
 <!-- uf:generated:end -->
 ## Handoff

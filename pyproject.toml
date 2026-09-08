@@ -17,6 +17,10 @@ dev = [
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+# The repo root must be on sys.path so tests can `import ingest`. Without this the
+# project is neither installed (no [build-system]) nor implicitly importable, and any
+# test that imports ingest at module level fails collection with ModuleNotFoundError.
+pythonpath = ["."]
 
 [tool.ruff]
 target-version = "py312"
