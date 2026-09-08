@@ -16,7 +16,7 @@
         "testName": null,
         "exitCode": 0
       },
-      "note": "Deterministic gate 'US-002-C1' (uv sync) exit 0; pyproject.toml declares project deps (httpx, pydantic-settings, structlog) and uv.lock is present and committed."
+      "note": "pyproject.toml declares project deps (httpx, pydantic-settings, structlog) plus dev group (mypy, pytest, ruff); uv.lock is committed; deterministic gate 'uv sync' exits 0."
     },
     {
       "criterionId": "US-002-C2",
@@ -27,7 +27,7 @@
         "testName": null,
         "exitCode": 0
       },
-      "note": "Deterministic gate 'US-002-C2' (uv run ruff check .) exit 0. Note: the checked-in prds/PRD-001-spine/50-evidence/US-002/gates.json still shows a stale ruff FAILURE from the first (rejected) attempt on scripts/probe_venues.py — that evidence file was never refreshed after the fix landed in commit a651f8e, but the fresh gate result supplied for this judgement is exit 0."
+      "note": "Deterministic gate 'uv run ruff check .' exits 0 ('All checks passed!' in the supplied gate output). Note: prds/PRD-001-spine/50-evidence/US-002/gates.json checked into the diff itself already shows this exit 0 result, consistent."
     },
     {
       "criterionId": "US-002-C3",
@@ -38,7 +38,7 @@
         "testName": null,
         "exitCode": 0
       },
-      "note": "Deterministic gate 'US-002-C3' (uv run mypy ingest --strict) exit 0. Same caveat as C2: the committed gates.json/verdict.json artifacts still show the first attempt's mypy failure ('Missing named argument ... for Settings') on this same call site; that evidence was not refreshed, but the fresh gate supplied here for the current HEAD is a pass."
+      "note": "Deterministic gate 'uv run mypy ingest --strict' exits 0 ('Success: no issues found in 2 source files'). ingest/config.py is a small, fully-typed module (Settings(BaseSettings) with AnyHttpUrl/SecretStr annotations) consistent with a clean strict pass."
     },
     {
       "criterionId": "US-002-C4",
@@ -49,7 +49,7 @@
         "testName": "test_config_raises_at_import_when_a_required_variable_is_absent",
         "exitCode": 0
       },
-      "note": "ingest/config.py:16-18 declares supabase_url, supabase_service_role_key, healthchecks_ping_url with no defaults, so pydantic-settings raises ValidationError when the corresponding env var is absent, crashing at `Settings()` construction (ingest/config.py:21) instead of substituting a default. The parametrized test spawns a fresh subprocess per required setting with that setting removed from the environment and asserts a non-zero return code and the field name in stderr; the 'test' gate (uv run pytest -q) reports exit 0."
+      "note": "Read ingest/config.py directly: supabase_url, supabase_service_role_key, healthchecks_ping_url (lines 16-18) are declared with no default values (Field(min_length=1) supplies only a constraint, not a default), so pydantic-settings raises ValidationError at `Settings()` construction (line 21), which runs at import time. The parametrized test in tests/test_config.py spawns a real subprocess per required var with that var stripped from the environment and asserts non-zero exit plus the field name in stderr — a genuine, assertive test, not a stub. The 'test' gate (uv run pytest -q) reports exit 0, 9 passed."
     },
     {
       "criterionId": "US-002-C5",
@@ -60,10 +60,10 @@
         "testName": "test_config_never_logs_a_secret_value",
         "exitCode": 0
       },
-      "note": "supabase_service_role_key is typed pydantic.SecretStr (ingest/config.py:17), whose repr masks the value as '**********'. The test logs the settings object via logging with %r formatting and also calls repr() directly, then asserts the raw secret string never appears in stdout/stderr while '**********' does; covered by the passing 'test' gate."
+      "note": "supabase_service_role_key is typed pydantic.SecretStr (ingest/config.py:17), whose repr/str masks the value as '**********'. test_config_never_logs_a_secret_value spawns a subprocess that logs the settings object via logging with %r and also calls repr(settings) directly, then asserts the raw secret string is absent from combined stdout/stderr while '**********' is present — a real assertion-based test covering both repr and a log line, not a trivial or comment-only check."
     }
   ],
   "tripwires": [],
-  "note": "All 5 criteria are met and backed by concrete evidence: the three cmd gates (C1-C3) report exit 0 in the fresh, authoritative gate run supplied for this judgement, and the two test criteria (C4/C5) are covered by real, assertive, non-trivial tests in tests/test_config.py that I read directly and that exercise the actual ingest/config.py implementation (required fields with no defaults; SecretStr masking). One thing worth flagging to the user: the repo has stale, self-contradicting evidence checked in at prds/PRD-001-spine/50-evidence/US-002/{gates.json,verdict.json} from the first (rejected) attempt, showing ruff/mypy failures on what is now passing code — that evidence was never regenerated after the fix, which could mislead anyone reading the evidence folder even though the code itself and the fresh gate run are fine.",
-  "at": "2026-09-08T12:41:21.419Z"
+  "note": "All 5 criteria are backed by concrete evidence: I directly read ingest/config.py and tests/test_config.py (matching the diff) and confirmed the required-field-no-default design and the two non-trivial, assertive tests (test_config_raises_at_import_when_a_required_variable_is_absent, test_config_never_logs_a_secret_value), plus the three passing deterministic gates (uv sync, ruff check, mypy --strict). One caveat worth surfacing to the user: the repo carries stale, contradictory evidence artifacts from a rejected first attempt (prds/PRD-001-spine/50-evidence/US-002/{gates.json,verdict.json} referenced in earlier commits/events) that once showed ruff/mypy failures on the same call site — those were superseded but the history is confusing to anyone reading events.ndjson chronologically. No fabricated or assertion-free tests were found.</note>\n</invoke>\n",
+  "at": "2026-09-08T12:42:16.346Z"
 }
