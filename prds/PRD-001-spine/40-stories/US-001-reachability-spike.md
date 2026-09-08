@@ -4,7 +4,11 @@ title: Reachability spike — measure venue access from the actual runner
 priority: 1
 touches:
   - scripts/probe_venues.py
-  - .github/workflows/reachability-spike.yml
+  - tests/test_probe_venues.py
+  # Broader than just reachability-spike.yml: this story cannot prove itself without CI
+  # actually running, and uf-verify.yml had to be repaired (it ran `npm ci` in a repo with
+  # no package.json) before any workflow on this branch could go green.
+  - .github/workflows/**
   - prds/PRD-001-spine/50-evidence/US-001/**
 context:
   - AGENTS.md

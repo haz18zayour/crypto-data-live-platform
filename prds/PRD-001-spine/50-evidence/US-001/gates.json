@@ -9,23 +9,29 @@
     "name": "test",
     "run": "node -e \"const f=require('fs'),c=require('child_process');let r=0;const run=(cmd)=>{try{c.execSync(cmd,{stdio:'inherit'})}catch(e){r=1}};if(f.existsSync('package.json'))run('npm test --if-present');if(f.existsSync('tests'))run('uv run pytest -q');process.exit(r)\"",
     "exitCode": 0,
-    "output": ".....                                                                    [100%]\r\n5 passed in 0.21s\r\n"
+    "output": ".....                                                                    [100%]\r\n5 passed in 0.09s\r\n"
   },
   {
     "name": "US-001-C1",
-    "run": "python scripts/probe_venues.py --out prds/PRD-001-spine/50-evidence/US-001/reachability.json",
+    "run": "python scripts/probe_venues.py --out prds/PRD-001-spine/50-evidence/US-001/reachability-local.json",
     "exitCode": 0,
     "output": ""
   },
   {
-    "name": "US-001-C5",
-    "run": "python -c \"import json,sys; d=json.load(open('prds/PRD-001-spine/50-evidence/US-001/reachability.json')); ks=set(r.get('venue') for r in d.get('results')); need={'okx','coinbase','kraken','binance_spot','binance_futures','bybit','coinmetrics','alternative_me'}; sys.exit(0 if need<=ks else 1)\"",
+    "name": "US-001-C4",
+    "run": "python -c \"import json,sys; d=json.load(open('prds/PRD-001-spine/50-evidence/US-001/reachability-ci.json')); r=d.get('runner'); print('github_actions:', r.get('github_actions'), 'run_id:', r.get('github_run_id')); sys.exit(0 if r.get('github_actions') is True and r.get('github_run_id') else 1)\"",
     "exitCode": 0,
-    "output": ""
+    "output": "github_actions: True run_id: 34199227365\r\n"
   },
   {
     "name": "US-001-C6",
-    "run": "python -c \"import json,sys; d=json.load(open('prds/PRD-001-spine/50-evidence/US-001/reachability.json')); n=sum(1 for r in d.get('results') if isinstance(r.get('http_status'), int)); print('venues with a real HTTP status:', n); sys.exit(0 if n>=6 else 1)\"",
+    "run": "python -c \"import json,sys; d=json.load(open('prds/PRD-001-spine/50-evidence/US-001/reachability-ci.json')); ks=set(r.get('venue') for r in d.get('results')); need={'okx','coinbase','kraken','binance_spot','binance_futures','bybit','coinmetrics','alternative_me'}; sys.exit(0 if need<=ks else 1)\"",
+    "exitCode": 0,
+    "output": ""
+  },
+  {
+    "name": "US-001-C7",
+    "run": "python -c \"import json,sys; d=json.load(open('prds/PRD-001-spine/50-evidence/US-001/reachability-ci.json')); n=sum(1 for r in d.get('results') if isinstance(r.get('http_status'), int)); print('venues with a real HTTP status:', n); sys.exit(0 if n>=6 else 1)\"",
     "exitCode": 0,
     "output": "venues with a real HTTP status: 8\r\n"
   }

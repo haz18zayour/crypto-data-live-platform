@@ -1,15 +1,5 @@
-.github/workflows/reachability-spike.yml           |  33 ++++
- .gitignore                                         |   4 +
- .uf/config.json                                    |   4 +-
- .uf/events.ndjson                                  |   9 +
- .../40-stories/US-001-reachability-spike.md        |  10 +-
- prds/PRD-001-spine/50-evidence/US-001/diffstat.txt |  14 ++
- prds/PRD-001-spine/50-evidence/US-001/gates.json   |  32 +++
- .../50-evidence/US-001/reachability.json           |  90 +++++++++
- prds/PRD-001-spine/50-evidence/US-001/verdict.json |  80 ++++++++
- prds/PRD-001-spine/spec.lock.json                  |  16 +-
- scripts/probe_venues.py                            | 219 +++++++++++++++++++++
- .../test_probe_venues.cpython-312-pytest-9.0.3.pyc | Bin 0 -> 8885 bytes
- .../__pycache__/test_probe_venues.cpython-312.pyc  | Bin 0 -> 7651 bytes
- tests/test_probe_venues.py                         | 112 +++++++++++
- 14 files changed, 616 insertions(+), 7 deletions(-)
+.github/workflows/uf-verify.yml                    |  9 ++-
+ prds/PRD-001-spine/50-evidence/US-001/gates.json   | 18 ++++--
+ .../50-evidence/US-001/reachability-local.json     | 26 ++++----
+ prds/PRD-001-spine/50-evidence/US-001/verdict.json | 73 +++++++---------------
+ 4 files changed, 55 insertions(+), 71 deletions(-)

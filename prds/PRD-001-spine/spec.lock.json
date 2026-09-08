@@ -4,8 +4,8 @@
   "title": "Spine — reachability, registry, provenance schema, one live indicator",
   "product": "crypto-data-live-platform",
   "branch": "feat/prd-001-spine",
-  "inputDigest": "5861bb00858f44f5",
-  "compiledAt": "2026-09-08T07:27:48.538Z",
+  "inputDigest": "dba1c79f4c9f0d82",
+  "compiledAt": "2026-09-08T07:30:57.992Z",
   "stories": [
     {
       "id": "US-001",
@@ -73,7 +73,8 @@
       "priority": 1,
       "touches": [
         "scripts/probe_venues.py",
-        ".github/workflows/reachability-spike.yml",
+        "tests/test_probe_venues.py",
+        ".github/workflows/**",
         "prds/PRD-001-spine/50-evidence/US-001/**"
       ],
       "context": [
