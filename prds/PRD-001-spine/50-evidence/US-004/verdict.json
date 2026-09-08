@@ -1,69 +1,39 @@
 {
   "storyId": "US-004",
-  "passes": true,
+  "passes": false,
   "verifier": {
     "agent": "claude",
-    "sandbox": "restricted:read-only"
+    "sandbox": "not-run"
   },
   "implementer": "codex",
   "results": [
     {
       "criterionId": "US-004-C1",
-      "met": true,
-      "evidence": {
-        "file": "ingest/registry.py",
-        "line": 26,
-        "testName": "test_every_registry_entry_requires_all_declared_fields",
-        "exitCode": 0
-      },
-      "note": "IndicatorDefinition (registry.py:26-38) declares vendor, endpoint, source_field, definable_for, and the three freshness-budget fields with no defaults and extra='forbid', so pydantic raises ValidationError at IndicatorRegistry.model_validate (load-time) if any is missing. tests/test_registry.py:28-50 is a real parametrized test dropping each field in turn and asserting pytest.raises(ValidationError). Test gate exits 0."
+      "met": false,
+      "note": "not judged — a cheaper layer already failed"
     },
     {
       "criterionId": "US-004-C2",
-      "met": true,
-      "evidence": {
-        "file": "tests/test_registry.py",
-        "line": 53,
-        "testName": "test_entry_without_source_field_is_rejected",
-        "exitCode": 0
-      },
-      "note": "source_field is a distinct required NonEmptyString from endpoint (registry.py:33-34), so an entry with a valid endpoint but no source_field fails validation — directly modeling the F11 defence (wrong field of the right endpoint). test_entry_without_source_field_is_rejected asserts ValidationError matching 'source_field'. Test gate exits 0."
+      "met": false,
+      "note": "not judged — a cheaper layer already failed"
     },
     {
       "criterionId": "US-004-C3",
-      "met": true,
-      "evidence": {
-        "file": "ingest/registry.py",
-        "line": 55,
-        "testName": "test_registry_rejects_duplicate_indicator_keys",
-        "exitCode": 0
-      },
-      "note": "IndicatorRegistry.reject_duplicate_keys (registry.py:55-62) tracks seen keys and raises ValueError on a repeat. tests/test_registry.py:63-70 loads two identical entries and asserts ValidationError matching 'Duplicate indicator key: btc_daily_close'. Test gate exits 0."
+      "met": false,
+      "note": "not judged — a cheaper layer already failed"
     },
     {
       "criterionId": "US-004-C4",
-      "met": true,
-      "evidence": {
-        "file": "ingest/registry.py",
-        "line": 40,
-        "testName": "test_definable_for_rejects_wildcards",
-        "exitCode": 0
-      },
-      "note": "reject_wildcards (registry.py:40-47) rejects any asset containing '*' or case-insensitively equal to 'all', and definable_for requires min_length=1 (line 35) so it can't be empty either. tests/test_registry.py:73-80 parametrizes over '*', 'all', 'ALL' and asserts ValidationError matching 'wildcard'. Test gate exits 0."
+      "met": false,
+      "note": "not judged — a cheaper layer already failed"
     },
     {
       "criterionId": "US-004-C5",
-      "met": true,
-      "evidence": {
-        "file": "ingest/registry.py",
-        "line": 140,
-        "testName": null,
-        "exitCode": 0
-      },
-      "note": "Deterministic gate 'uv run python -m ingest.registry --validate' exits 0, exercising main() (registry.py:140-145) which loads and validates the shipped ingest/registry.yaml. Also independently covered by test_shipped_registry_declares_only_btc_daily_close, which loads the real shipped file and passes."
+      "met": false,
+      "note": "not judged — a cheaper layer already failed"
     }
   ],
   "tripwires": [],
-  "note": "All five criteria are backed by genuine, assertive pytest tests I read directly against the current repo state (not just the diff), matching pydantic-enforced constraints in ingest/registry.py (required fields, distinct source_field, duplicate-key rejection, wildcard rejection). The hand-rolled YAML subset parser is unconventional (no pyyaml dependency exists in pyproject.toml, which may explain the choice) but is exercised correctly by the passing tests and the shipped registry.yaml. No assertion-free tests, comment-only satisfaction, or unrelated churn beyond routine SESSION.md/.uf/events.ndjson bookkeeping consistent with prior verified stories.",
-  "at": "2026-09-08T13:02:38.538Z"
+  "note": "gates failed: test",
+  "at": "2026-09-08T13:08:49.412Z"
 }

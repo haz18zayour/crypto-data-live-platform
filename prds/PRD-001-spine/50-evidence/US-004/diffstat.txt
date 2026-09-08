@@ -1,6 +1,11 @@
-.uf/events.ndjson      |   5 ++
- SESSION.md             |   7 ++-
- ingest/registry.py     | 151 +++++++++++++++++++++++++++++++++++++++++++++++++
- ingest/registry.yaml   |   8 +++
- tests/test_registry.py |  87 ++++++++++++++++++++++++++++
- 5 files changed, 256 insertions(+), 2 deletions(-)
+.uf/events.ndjson                                  |   8 ++
+ SESSION.md                                         |  12 +-
+ ingest/registry.py                                 | 145 +++++++++++++++++++++
+ ingest/registry.yaml                               |   8 ++
+ prds/PRD-001-spine/50-evidence/US-004/diffstat.txt |   6 +
+ prds/PRD-001-spine/50-evidence/US-004/gates.json   |  20 +++
+ prds/PRD-001-spine/50-evidence/US-004/verdict.json |  39 ++++++
+ project-documents/11_Data_Model.md                 |  28 ++++
+ project-documents/15_Services_and_Credentials.md   |   2 +-
+ tests/test_registry.py                             |  98 ++++++++++++++
+ 10 files changed, 363 insertions(+), 3 deletions(-)
