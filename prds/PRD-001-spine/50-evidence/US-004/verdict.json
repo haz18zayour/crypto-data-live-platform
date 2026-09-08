@@ -1,39 +1,69 @@
 {
   "storyId": "US-004",
-  "passes": false,
+  "passes": true,
   "verifier": {
     "agent": "claude",
-    "sandbox": "not-run"
+    "sandbox": "restricted:read-only"
   },
   "implementer": "codex",
   "results": [
     {
       "criterionId": "US-004-C1",
-      "met": false,
-      "note": "not judged — a cheaper layer already failed"
+      "met": true,
+      "evidence": {
+        "file": "ingest/registry.py",
+        "line": 25,
+        "testName": "test_every_registry_entry_requires_all_declared_fields",
+        "exitCode": 0
+      },
+      "note": "IndicatorDefinition has no defaults for vendor/endpoint/source_field/definable_for/expected_update_interval_seconds/freshness_warn_seconds/freshness_stale_seconds and extra='forbid'; pydantic raises ValidationError at IndicatorRegistry.model_validate (load time). tests/test_registry.py:32-52 parametrizes over all 7 fields, dropping each and asserting pytest.raises(ValidationError). 'test' gate exits 0."
     },
     {
       "criterionId": "US-004-C2",
-      "met": false,
-      "note": "not judged — a cheaper layer already failed"
+      "met": true,
+      "evidence": {
+        "file": "tests/test_registry.py",
+        "line": 55,
+        "testName": "test_entry_without_source_field_is_rejected",
+        "exitCode": 0
+      },
+      "note": "source_field is a required field distinct from endpoint (registry.py:32-33), so an entry with a valid endpoint but no source_field fails validation — directly models the F11 defence (funding read from wrong field of right endpoint). Test asserts ValidationError matching 'source_field'; 'test' gate exits 0."
     },
     {
       "criterionId": "US-004-C3",
-      "met": false,
-      "note": "not judged — a cheaper layer already failed"
+      "met": true,
+      "evidence": {
+        "file": "ingest/registry.py",
+        "line": 54,
+        "testName": "test_registry_rejects_duplicate_indicator_keys",
+        "exitCode": 0
+      },
+      "note": "IndicatorRegistry.reject_duplicate_keys (model_validator, registry.py:54-61) raises ValueError on a repeated key. Test loads two identical entries and asserts ValidationError matching 'Duplicate indicator key: btc_daily_close'; 'test' gate exits 0."
     },
     {
       "criterionId": "US-004-C4",
-      "met": false,
-      "note": "not judged — a cheaper layer already failed"
+      "met": true,
+      "evidence": {
+        "file": "ingest/registry.py",
+        "line": 39,
+        "testName": "test_definable_for_rejects_wildcards",
+        "exitCode": 0
+      },
+      "note": "reject_wildcards field_validator (registry.py:39-46) rejects any asset containing '*' or case-insensitively equal to 'all'; definable_for also requires min_length=1 (line 34) so it can't be empty. Tests parametrize over '*','all','ALL' and separately over 'BTC'(non-list)/'[]' asserting ValidationError; 'test' gate exits 0."
     },
     {
       "criterionId": "US-004-C5",
-      "met": false,
-      "note": "not judged — a cheaper layer already failed"
+      "met": true,
+      "evidence": {
+        "file": "ingest/registry.py",
+        "line": 137,
+        "testName": null,
+        "exitCode": 0
+      },
+      "note": "Deterministic gate 'uv run python -m ingest.registry --validate' exits 0, exercising main() (registry.py:137-141) which loads and validates the shipped ingest/registry.yaml. Also independently covered by test_shipped_registry_declares_only_btc_daily_close, which loads the real shipped file and asserts its single entry/definable_for."
     }
   ],
   "tripwires": [],
-  "note": "gates failed: test",
-  "at": "2026-09-08T13:08:49.412Z"
+  "note": "Verified against current repo state, not just the diff: read ingest/registry.py, ingest/registry.yaml, tests/test_registry.py, and pyproject.toml directly. The diff includes a prior failed attempt (commit 72efd0a, ModuleNotFoundError from missing pytest pythonpath config) but the final committed state (ad6b409) fixes this via `pythonpath = [\".\"]` in pyproject.toml, and all three deterministic gates (typecheck, test, US-004-C5 validate) report exit 0 against that final state. All five tests are genuine, assertive, parametrized pytest tests exercising real pydantic validation behavior (required fields, distinct source_field, duplicate-key rejection, wildcard rejection) — no assertion-free stubs or comment-only satisfaction. The hand-rolled YAML subset parser (no pyyaml dependency) is unconventional but correctly exercised by the tests and the shipped registry.yaml. Unrelated churn present in the diff (ingest/migrate.py, supabase migration, tests/test_migration.py, Data_Model.md FRED lag section) belongs to other stories' work mixed into the same commit history and does not affect this story's criteria.",
+  "at": "2026-09-08T13:14:35.125Z"
 }

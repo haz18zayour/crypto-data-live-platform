@@ -15,6 +15,21 @@ on:
 jobs:
   verify:
     runs-on: ubuntu-latest
+    env:
+      TEST_DATABASE_URL: postgresql://postgres:postgres@localhost:5432/app
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: app
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d app"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
     steps:
       - uses: actions/checkout@v4
 
@@ -49,6 +64,12 @@ jobs:
       - name: Install uv
         if: steps.detect.outputs.python == 'true'
         uses: astral-sh/setup-uv@v5
+      - name: Install PostgreSQL client
+        if: steps.detect.outputs.tests == 'true'
+        run: sudo apt-get update && sudo apt-get install --yes postgresql-client
+      - name: Check migration ledger
+        if: steps.detect.outputs.python == 'true'
+        run: uv run python -m ingest.migrate --check
       - name: Python typecheck
         if: steps.detect.outputs.python == 'true'
         run: uv run mypy ingest --strict

@@ -3,13 +3,13 @@
     "name": "typecheck",
     "run": "node -e \"const f=require('fs'),c=require('child_process');let r=0;const run=(cmd)=>{try{c.execSync(cmd,{stdio:'inherit'})}catch(e){r=1}};if(f.existsSync('package.json'))run('npm run typecheck --if-present');if(f.existsSync('pyproject.toml'))run('uv run mypy ingest --strict');process.exit(r)\"",
     "exitCode": 0,
-    "output": "Success: no issues found in 4 source files\r\n"
+    "output": "Success: no issues found in 5 source files\r\n"
   },
   {
     "name": "test",
     "run": "node -e \"const f=require('fs'),c=require('child_process');let r=0;const run=(cmd)=>{try{c.execSync(cmd,{stdio:'inherit'})}catch(e){r=1}};if(f.existsSync('package.json'))run('npm test --if-present');if(f.existsSync('tests'))run('uv run pytest -q');process.exit(r)\"",
-    "exitCode": 1,
-    "output": "\r\n=================================== ERRORS ====================================\r\n___________________ ERROR collecting tests/test_registry.py ___________________\r\nImportError while importing test module 'C:\\Users\\zayou\\OneDrive\\Desktop\\Projects\\crypto-data-live-platform\\tests\\test_registry.py'.\r\nHint: make sure your test modules/packages have valid Python names.\r\nTraceback:\r\n..\\..\\..\\..\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\importlib\\__init__.py:90: in import_module\r\n    return _bootstrap._gcd_import(name[level:], package, level)\r\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\r\ntests\\test_registry.py:6: in <module>\r\n    from ingest.registry import load_registry\r\nE   ModuleNotFoundError: No module named 'ingest'\r\n=========================== short test summary info ===========================\r\nERROR tests/test_registry.py\r\n!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!!!!!!!\r\n1 error in 0.28s\r\n\n"
+    "exitCode": 0,
+    "output": "....ssss...........................                                      [100%]\r\n31 passed, 4 skipped in 1.87s\r\n"
   },
   {
     "name": "US-004-C5",
