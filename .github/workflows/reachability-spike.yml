@@ -1,7 +1,13 @@
 name: reachability-spike
 
 on:
+  # The spike answers a one-off question: which venues are reachable from a
+  # GitHub-hosted (US) runner. It only needs to run when the probe or this
+  # workflow changes - not on every push to every branch, forever.
   push:
+    paths:
+      - 'scripts/probe_venues.py'
+      - '.github/workflows/reachability-spike.yml'
   workflow_dispatch:
 
 permissions:

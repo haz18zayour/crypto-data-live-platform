@@ -44,8 +44,8 @@
     }
   ],
   "tripwires": [
-    "changed 1 file(s) but none match the story's declared `touches`"
+    "the story changed no files at all"
   ],
-  "note": "tripwires: changed 1 file(s) but none match the story's declared `touches`",
-  "at": "2026-09-08T07:31:58.604Z"
+  "note": "tripwires: the story changed no files at all",
+  "at": "2026-09-08T07:33:31.912Z"
 }

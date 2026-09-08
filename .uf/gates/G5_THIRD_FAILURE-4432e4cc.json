@@ -1,0 +1,16 @@
+{
+  "gate": "G5_THIRD_FAILURE",
+  "question": "US-001 has failed 3 times — is the story wrong?",
+  "feature": "PRD-001-spine",
+  "story": "US-001",
+  "options": [
+    "split",
+    "rewrite-criteria",
+    "skip",
+    "retry-anyway"
+  ],
+  "context": "Criteria judged not met:\n  - US-001-C4: No CI run status is provided in the deterministic gate results, and the committed evidence file itself records github_actions: false / github_run_id: null, meaning the last generation was local, not on a GitHub-hosted runner — no proof the workflow actually ran green.",
+  "defaultOnTimeout": "block",
+  "id": "G5_THIRD_FAILURE-4432e4cc",
+  "openedAt": "2026-09-08T07:37:52.931Z"
+}
