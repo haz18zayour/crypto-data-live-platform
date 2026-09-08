@@ -7,7 +7,6 @@ import hashlib
 import re
 from pathlib import Path
 
-
 MIGRATIONS_DIR = Path(__file__).resolve().parents[1] / "supabase" / "migrations"
 CHECKSUMS_PATH = MIGRATIONS_DIR / "checksums.sha256"
 MIGRATION_NAME = re.compile(r"^\d{14}_[a-z][a-z0-9_]*\.sql$")
