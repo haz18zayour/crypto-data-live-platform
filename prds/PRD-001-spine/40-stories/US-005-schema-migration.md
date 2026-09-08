@@ -28,6 +28,7 @@ caught it, because its schema had no column that could express the difference.
 - [test: value_iff_ok rejects an OK row with a null value and a null-status row carrying a value] Status and value cannot drift apart
 - [test: reason_required rejects an UNAVAILABLE row with no reason] Absence must always say why
 - [cmd: uv run python -m ingest.migrate --check] Migration files are ordered, named consistently, and none has been edited after being applied
+- [cmd: uv run pytest tests/test_migration.py -q --no-header -o addopts= --tb=no -rN] The live-Postgres tests RUN — this command fails if any of them skip, because a skipped constraint test and a passing one are indistinguishable at the gate
 
 ## Notes for the implementer
 
@@ -44,4 +45,12 @@ including all three CHECK constraints and both enum types.
   service-role key is used exclusively by ingestion.
 - For the integration test, run a `postgres:16` service container in the workflow rather than
   mocking. A constraint that has only been tested against a mock has not been tested.
+- **The Postgres tests must FAIL, not SKIP, when no database is reachable.** The previous
+  attempt made the fixture `pytest.skip` unless `TEST_DATABASE_URL` was set; the suite then
+  printed `31 passed, 4 skipped` and the gate exited 0, so a constraint suite that never ran
+  was indistinguishable from one that passed. That is this product's own failure mode
+  applied to its tests. Make the fixture raise with a message naming the missing variable.
+- Read `TEST_DATABASE_URL` from the environment, falling back to `DATABASE_URL` in
+  `.env.local` if present. Never point these tests at a database holding real data — they
+  create and drop schema.
 - Do not write any fetcher or application code here.
