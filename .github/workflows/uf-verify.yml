@@ -55,4 +55,11 @@ jobs:
       - name: Python test
         if: steps.detect.outputs.tests == 'true'
         run: |
-          if [ -f pyproject.toml ]; then uv run pytest -q; else python -m pytest -q; fi
+          if [ -f pyproject.toml ]; then
+            uv run pytest -q
+          else
+            # Before US-002 there is no pyproject.toml and therefore no declared
+            # dev-dependency on pytest; install it just for this step.
+            python -m pip install --quiet pytest
+            python -m pytest -q
+          fi
