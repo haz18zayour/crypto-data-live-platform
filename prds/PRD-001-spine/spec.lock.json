@@ -4,8 +4,8 @@
   "title": "Spine — reachability, registry, provenance schema, one live indicator",
   "product": "crypto-data-live-platform",
   "branch": "feat/prd-001-spine",
-  "inputDigest": "f7a8db3cc1227aec",
-  "compiledAt": "2026-09-08T13:33:24.917Z",
+  "inputDigest": "41c0298b2560620e",
+  "compiledAt": "2026-09-08T13:47:37.590Z",
   "stories": [
     {
       "id": "US-002",
@@ -282,6 +282,14 @@
           "method": {
             "kind": "integration",
             "name": "a live OKX request returns a closed BTC daily candle with a past source timestamp"
+          }
+        },
+        {
+          "id": "US-006-C7",
+          "text": "The candle boundary is 00:00 UTC — OKX's default `bar=1D` is aligned to UTC+8 and would silently put every indicator on a Hong Kong day",
+          "method": {
+            "kind": "test",
+            "name": "daily close lands on a utc midnight boundary"
           }
         }
       ],

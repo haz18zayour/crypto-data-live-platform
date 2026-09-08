@@ -110,3 +110,25 @@ def test_live_okx_request_returns_closed_btc_daily_candle() -> None:
         tz=UTC,
     )
     assert result.source_timestamp == expected_close
+
+
+def test_daily_close_lands_on_a_utc_midnight_boundary() -> None:
+    """The registry must use bar=1Dutc, not OKX's default bar=1D.
+
+    OKX's default `1D` candle is aligned to UTC+8 (Hong Kong midnight), so its
+    `source_timestamp` falls at 16:00 UTC. Measured 2026-09-08, the two bar types
+    disagreed on the same "daily close": 78834.1 (1D) vs 79111.8 (1Dutc) — 0.35% apart.
+    A UTC+8 day boundary would silently misalign every indicator against Coin Metrics
+    (UTC day close) and FRED (US dates).
+    """
+    from ingest.fetchers.okx import fetch_btc_daily_close
+    from ingest.status import Ok
+
+    result = fetch_btc_daily_close()
+    if not isinstance(result, Ok):  # network flake — the fail-loud path is tested elsewhere
+        return
+    ts = result.source_timestamp
+    assert (ts.hour, ts.minute, ts.second) == (0, 0, 0), (
+        f"daily close must sit on a UTC midnight boundary, got {ts.isoformat()} — "
+        "the registry is probably using bar=1D (UTC+8) instead of bar=1Dutc"
+    )

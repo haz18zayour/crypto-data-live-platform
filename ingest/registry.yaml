@@ -1,7 +1,7 @@
 - key: btc_daily_close
   vendor: okx
-  endpoint: https://www.okx.com/api/v5/market/candles?instId=BTC-USDT&bar=1D
-  source_field: 'candle[4] (close), where candle[8] == "1"'
+  endpoint: https://www.okx.com/api/v5/market/candles?instId=BTC-USDT&bar=1Dutc
+  source_field: 'candle[4] (close), where candle[8] == "1"; bar=1Dutc so the day boundary is 00:00 UTC, not OKX default 1D which is UTC+8'
   definable_for: [BTC]
   expected_update_interval_seconds: 86400
   freshness_warn_seconds: 108000

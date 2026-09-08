@@ -21,6 +21,7 @@ testpaths = ["tests"]
 # project is neither installed (no [build-system]) nor implicitly importable, and any
 # test that imports ingest at module level fails collection with ModuleNotFoundError.
 pythonpath = ["."]
+markers = ["integration: touches a live third-party endpoint"]
 
 [tool.ruff]
 target-version = "py312"
