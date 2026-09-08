@@ -25,6 +25,7 @@ a right one.**
 - [test: a STALE datapoint renders the value with its age and a visible stale treatment] A stale number is shown, but never shown as if it were current
 - [test: adding a status to the union without handling it is a compile error] The exhaustive switch has a `never` fallthrough, so an unhandled case fails the build rather than falling through to a default render
 - [test: the value displays its source vendor, endpoint and source timestamp] Provenance is on the face of the value, not behind a click
+- [test: a value whose reference period differs from its publication date shows both] Measured on the live FRED API: M2 is 69 days behind, so rendering it as a current figure is false twice over — wrong period, and silent about the delay
 - [browser: prds/PRD-001-spine/50-evidence/US-009/page.png] The rendered page shows the value with its provenance and freshness
 
 ## Notes for the implementer
@@ -40,3 +41,5 @@ a right one.**
   rendered honestly is the deliverable; PRD-007 designs the actual page.
 - Do not add a "last known good" fallback that silently shows an older value as current. If it
   is stale, it says so.
+- Freshness is measured against **publication**, not the reference period. Otherwise every
+  monthly series (M2, CPI) is permanently `STALE` by construction. See `11_Data_Model.md` §4b.

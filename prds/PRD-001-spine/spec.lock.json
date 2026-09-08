@@ -4,8 +4,8 @@
   "title": "Spine — reachability, registry, provenance schema, one live indicator",
   "product": "crypto-data-live-platform",
   "branch": "feat/prd-001-spine",
-  "inputDigest": "41c0298b2560620e",
-  "compiledAt": "2026-09-08T13:47:37.590Z",
+  "inputDigest": "e1932938634d20fa",
+  "compiledAt": "2026-09-08T18:01:56.001Z",
   "stories": [
     {
       "id": "US-002",
@@ -458,6 +458,22 @@
             "kind": "test",
             "name": "fetched_at is set by the writer and source_timestamp by the fetcher"
           }
+        },
+        {
+          "id": "US-007-C6",
+          "text": "A value dated after now is an error, not a datapoint — this is the F11 defence at the write boundary",
+          "method": {
+            "kind": "test",
+            "name": "a result whose source_timestamp is in the future is rejected before it is written"
+          }
+        },
+        {
+          "id": "US-007-C7",
+          "text": "Recording the endpoint without the field is how the funding-rate bug stayed invisible for months",
+          "method": {
+            "kind": "test",
+            "name": "source_field is persisted and is non-empty"
+          }
         }
       ],
       "priority": 7,
@@ -488,8 +504,8 @@
           "body": "# Databases\n\n> A database is the persistent store behind any website or app: it holds users, content, orders, sessions, and (increasingly) the embeddings that power AI features. Choosing one matters more in the AI era because modern apps usually need **two storage shapes at once**: a transactional/relational store for app state (users, billing, content) and a **vector store** for semantic search and Retrieval-Augmented Generation (RAG). The cheapest, lowest-friction path for most teams in 2025-2026 is a managed **Postgres** that also speaks vectors (via `pgvector`), so a single database covers both relational and AI workloads until scale forces specialization. Pricing models vary wildly (flat tier vs. usage-based vs. per-row-read), and the real bill is usually driven by hidden levers, egress, row reads, idle/always-on compute, and backup retention, not the headline sticker price. This guide is technology-agnostic and optimizes for cost at each scale tier.\n\n---\n\n## Recommended picks (cost-optimized)\n\n| Scale | Pick | Why | Est. monthly cost |\n|---|---|---|---|\n| **Small / SMB** (hobby, MVP, < ~50K MAU) | **Supabase** (Free → Pro) or **Neon** (Free → Launch) | Postgres + Auth + Storage + `pgvector` in one. Generous free tiers; Neon's scale-to-zero is near-free for bursty/idle workloads. Single DB handles relational + AI. | $0 (free tier) → **$25–50** |\n| **Medium** (funded startup, real traffic, compliance starting) | **Neon Scale** or **Supabase Pro + compute add-ons**; pair with **Upstash Redis** (cache) and keep vectors in `pgvector` or **Qdrant Cloud** | Predictable Postgres with branching/PITR, managed pooling, room to grow. Add a dedicated vector DB only past ~1M vectors. | **$100–600** |\n| **Large / Enterprise** (HA, compliance, high QPS, big data) | **AWS Aurora** (or **Cloud SQL**) for OLTP + **Pinecone**/**Qdrant** for vectors + **ClickHouse Cloud**/**BigQuery**/**Snowflake** for analytics | Battle-tested HA, SLAs, SOC2/HIPAA, multi-AZ. Separate OLTP, vector, and OLAP for performance isolation. | **$1,500 – $20,000+** |\n\n> Rule of thumb: **Start on one managed Postgres with `pgvector`. Add Redis for caching, a dedicated vector DB past ~1M vectors, and a separate OLAP warehouse only when analytics queries start hurting your transactional DB.**\n\n---\n\n## Comparison table\n\nCosts are realistic USD/month estimates for typical workloads at each tier (not theoretical maxes). \"SMB\" = small production app; \"Medium\" = funded startup with real traffic; \"Enterprise\" = HA/compliance/high-volume. Usage-based services vary widely; treat these as planning ranges. Verified ~June 2026.\n\n| Service | Type | Free tier | SMB $/mo | Medium $/mo | Enterprise $/mo | Pros | Cons | Best for |\n|---|---|---|---|---|---|---|---|---|\n| **Supabase** | Postgres BaaS | 500MB DB, 5GB egress, 2 active projects, pauses after 1wk idle | $25 (Pro) | $25 + ~$50–300 compute | $599+ (Team) → custom | All-in-one (DB+Auth+Storage+Realtime+pgvector); open source | Pro never scales to zero; egress/compute add-ons add up | Full-stack apps wanting batteries included |\n| **Neon** | Serverless Postgres | 0.5GB, 100 CU-hr/project, scale-to-zero | ~$15–50 (Launch) | ~$100–700 (Scale) | custom | True scale-to-zero, instant branching, cheap for bursty/AI-agent DBs | Cold start ~300-500ms; storage pricier ($0.35/GB) | Variable workloads, ephemeral/agent DBs, CI branches |\n| **Vercel Postgres** | Serverless Postgres (now Neon-powered) | via Neon free | ~$20–50 | ~$100–500 | custom | Zero-config in Vercel projects | Now just Neon under the hood; lock-in to Vercel billing | Vercel-native frontends |\n| **AWS RDS / Aurora** | Managed Postgres/MySQL | 750 hrs/mo db.t-micro for 12 mo (new accts) | ~$30–120 | ~$300–1,500 | $3,000–20,000+ | Rock-solid HA, read replicas, every engine, deep AWS integration | Complex pricing, always-on cost, IOPS/egress traps | Enterprises already on AWS |\n| **Google Cloud SQL** | Managed Postgres/MySQL/SQLServer | $300 credit (90 days) | ~$30–100 | ~$\n\n[…excerpt — full text at kb:04-databases/README.md]"
         },
         {
-          "ref": "kb:20-testing-and-qa/README.md (auto-routed: is about testing)",
-          "body": "# Testing & QA\n\n> Testing & QA is the safety net that proves software actually works before users (or auditors) find out it doesn't. It spans a pyramid: many fast **unit tests** (single functions/components), fewer **integration tests** (modules + real dependencies), and a thin top of **end-to-end (E2E)** tests (full browser/user flows), wrapped by **component/visual regression**, **load/performance**, **API/contract**, and **accessibility** testing. In the age of AI, this layer is *more* important, not less: AI build agents and copilots generate plausible-looking code fast, but plausible is not correct. Tests are the executable specification that catches hallucinated APIs, off-by-one logic, broken edge cases, and regressions an LLM happily introduces while \"fixing\" something else. The modern playbook for an AI agent: write tests alongside the code, run them in CI on every \n\n[…excerpt — full text at kb:20-testing-and-qa/README.md]"
+          "ref": "kb:31-mobile-and-pwa/README.md (auto-routed: targets phones)",
+          "body": "# Mobile & PWA\n\n> Mobile & PWA is the layer that extends a web product onto phones and tablets, either by making your existing site installable and offline-capable (a Progressive Web App) or by shipping a real app to the Apple App Store and Google Play built from a shared codebase (React Native, Expo, Flutter, Capacitor, etc.). The strategic question is rarely \"web or native\" but *how much* native you need: a responsive site covers most reach for free, a PWA adds installability/offline/limited push, and a cross-platform framework buys you store presence, deep device APIs, and richer push, at the cost of store fees, review cycles, and a build/release pipeline. The cheapest path that meets your requirements wins.\n\nThis document is technology-agnostic. Choose based on required device capabilities, distribution channel (store vs. URL), team skillset (web vs. native), and budget\n\n[…excerpt — full text at kb:31-mobile-and-pwa/README.md]"
         }
       ]
     },
@@ -637,6 +653,14 @@
         },
         {
           "id": "US-009-C7",
+          "text": "Measured on the live FRED API: M2 is 69 days behind, so rendering it as a current figure is false twice over — wrong period, and silent about the delay",
+          "method": {
+            "kind": "test",
+            "name": "a value whose reference period differs from its publication date shows both"
+          }
+        },
+        {
+          "id": "US-009-C8",
           "text": "The rendered page shows the value with its provenance and freshness",
           "method": {
             "kind": "browser",
