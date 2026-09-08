@@ -1,0 +1,4 @@
+.uf/events.ndjson         |   2 +
+ ingest/fetchers/okx.py    |  61 +++++++++++++++++++++++++
+ tests/test_okx_fetcher.py | 112 ++++++++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 175 insertions(+)
