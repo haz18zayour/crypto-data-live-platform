@@ -16,15 +16,44 @@ Derived from `research/R0`–`R7`. Where this document conflicts with a single r
 | Charts | **Lightweight Charts** (Apache-2.0, attribution logo required) primary; **uPlot** for dense sparkline panels | Purpose-built for financial series; uPlot handles the many-small-panels case at lower bundle cost (R6 §4) | Recharts/visx — fine for dashboards, weak on candlesticks and dense series |
 | Hosting (frontend) | **Cloudflare Pages** | Free tier generous; owner already deploys here | — |
 | Auth | **Cloudflare Access (Zero Trust)** free tier | Single user. Auth stays entirely at the edge; no service-role key can reach the browser because the browser never holds one; no email infrastructure (R6 §5) | Supabase magic link — what the prior system used; more moving parts and an email dependency for one user |
-| Scheduling / compute | **UNDECIDED — blocked on the reachability spike.** See "The open decision" below | — | — |
+| Scheduling / compute | **DECIDED 2026-09-08 by measurement: GitHub Actions `schedule:` on GitHub-hosted runners**, plus cron-job.org `repository_dispatch` as an independent second trigger | The spike proved OKX, Coinbase, Kraken and Coin Metrics all return `200` from a GitHub-hosted US runner. No self-hosted runner is needed, so the component that caused the prior 24h outage never exists | A stateless Fly.io `fra` machine — kept as the fallback shape if a required venue is ever geo-blocked; a **resident** self-hosted runner is rejected permanently |
 | Dead-man's-switch | **Healthchecks.io** free tier (20 checks) | ~30 min of work; the single highest value-per-effort defence available (R5 §1). Directly addresses the 24h silent outage | Relying on the job to report its own failure — which is precisely what failed |
 
 ---
 
-## The open decision — compute location
+## The compute decision — CLOSED by measurement, 2026-09-08
 
-**This is the one architectural question the research could not close, and it must not be
-guessed.** Full reasoning in `R7 §C1`.
+> **Measured, not assumed.** GitHub Actions run `34199227365`, `ubuntu-latest`, egress
+> Moses Lake US (Azure AS8075). Evidence committed at
+> `prds/PRD-001-spine/50-evidence/US-011/reachability-ci.json`.
+>
+> | Venue | From US runner | From Beirut |
+> |---|---|---|
+> | OKX | **200** | 200 |
+> | Coinbase | **200** | 200 |
+> | Kraken | **200** | 200 |
+> | Coin Metrics | **200** | 200 |
+> | alternative.me | **200** | 200 |
+> | Binance spot | **451** | 200 |
+> | Binance futures | **451** | 200 |
+> | Bybit | **403** | 200 |
+>
+> **Decision: GitHub-hosted runners.** OKX — chosen by R3 on data-quality grounds as the only
+> venue that flags a closed candle — is reachable, so the primary spot source and the free
+> runner are compatible. **No self-hosted runner, therefore no resident process to supervise,
+> therefore the prior system's failure mode cannot recur.**
+>
+> **Consequence for PRD-004 (derivatives):** Binance *and* Bybit are both blocked from US
+> compute. Derivatives must come from **OKX**, or that PRD alone must run on non-US compute.
+> R7 §C1 flagged this as unresolved; it is now resolved, and it is a genuine constraint
+> discovered weeks before it would otherwise have surfaced.
+>
+> The tripwire in `20-decisions.yaml` fired exactly as written — a 451 appeared — but on
+> venues the design had already moved away from, which is the outcome the design was chosen
+> for rather than a lucky escape.
+
+The reasoning that produced this question, retained because it explains the shape of the
+architecture. Full version in `R7 §C1`.
 
 The prior system's worst outage traces back through a chain that starts with a data-source
 choice:
@@ -53,7 +82,7 @@ opposed to restricting US *accounts*, a different thing routinely conflated — 
 establishable. All verification for this project ran from Lebanon, where Binance `fapi`
 responds normally; **reachability from a US IP cannot be tested from a non-US IP.**
 
-**PRD-001 therefore begins with a reachability spike** that runs on the real target compute
+**PRD-001 began with a reachability spike** (US-011, formerly US-001) that runs on the real target compute
 and records, per venue and endpoint, the observed HTTP status. Until that table exists the
 compute row above stays `UNDECIDED`, and the two candidate shapes are:
 
