@@ -19,13 +19,15 @@ Owner: **An agent.** Give it this repo and the instruction below.
   · project-documents/05_Product_Roadmap.md — no PRDs are named yet, so there is no order to work in
 ```
 
+**Last handoff note:** 2026-09-08: US-005 implementation and PostgreSQL 16 CI coverage are present; local deterministic gates pass. The local live-Postgres run could not start because this sandbox cannot open the Windows Docker service, so CI/verifier must execute the four database cases.
+
 ## Where this stands
 
 | PRD | Stories | Passed | State |
 |---|---|---|---|
 | PRD-001-spine | 9 | 3 | 3/9 |
 
-Spend to date: **$5.26** Claude · **7921k** Codex tokens.
+Spend to date: **$5.58** Claude · **10261k** Codex tokens.
 
 ## What happened
 
@@ -88,6 +90,9 @@ Spend to date: **$5.26** Claude · **7921k** Codex tokens.
 - 13:10  US-004 started, attempt 3 (codex)
 - 13:13  US-004 — codex finished `ad6b4095` · 319k tok
 - 13:14  US-004 **PASSED** — 5/5 criteria, judged by claude · $0.29
+- 13:14  US-005 started, attempt 1 (codex)
+- 13:21  US-005 — codex finished `e0d490ad` · 2341k tok
+- 13:23  US-005 **rejected** — 1/5 criteria, judged by claude · $0.32
 
 <!-- uf:generated:end -->
 ## Handoff
