@@ -1,7 +1,7 @@
 ---
 id: US-005
 title: Database schema — constraints that make wrong data a database error
-priority: 5
+priority: 6
 touches:
   - supabase/migrations/**
   - tests/test_migration.py
@@ -51,6 +51,11 @@ including all three CHECK constraints and both enum types.
   was indistinguishable from one that passed. That is this product's own failure mode
   applied to its tests. Make the fixture raise with a message naming the missing variable.
 - Read `TEST_DATABASE_URL` from the environment, falling back to `DATABASE_URL` in
-  `.env.local` if present. Never point these tests at a database holding real data — they
-  create and drop schema.
+  `.env.local` if present.
+- **The tests must create a uniquely-named throwaway schema, run entirely inside it, and
+  drop only that schema.** They will be pointed at the project's real Supabase database,
+  so touching `public` is unacceptable: set `search_path` to the temporary schema, create
+  the types and table there, and `DROP SCHEMA ... CASCADE` in teardown. A test that drops
+  `public.datapoints` would destroy the thing this product exists to protect.
+- Roll the schema name from a uuid4 so parallel or interrupted runs cannot collide.
 - Do not write any fetcher or application code here.

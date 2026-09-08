@@ -1,7 +1,7 @@
 ---
 id: US-006
 title: OKX fetcher — BTC daily close, closed candles only
-priority: 6
+priority: 5
 touches:
   - ingest/fetchers/okx.py
   - tests/test_okx_fetcher.py
