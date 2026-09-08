@@ -10,13 +10,13 @@
     "region": "Beirut",
     "url": "https://ipinfo.io/json"
   },
-  "generated_at": "2026-09-08T07:23:21.464387Z",
+  "generated_at": "2026-09-08T07:27:29.255942Z",
   "results": [
     {
-      "body_prefix": "{\"code\":\"0\",\"data\":[[\"1788796800000\",\"78833.9\",\"79485.9\",\"78261.7\",\"78428.8\",\"2171.84563502\",\"171265604.679896055\",\"171265604.679896055\",\"0\"]],\"msg\":\"\"}",
+      "body_prefix": "{\"code\":\"0\",\"data\":[[\"1788796800000\",\"78833.9\",\"79485.9\",\"78261.7\",\"78486.9\",\"2196.20944182\",\"173177454.114753813\",\"173177454.114753813\",\"0\"]],\"msg\":\"\"}",
       "error": null,
       "http_status": 200,
-      "latency_ms": 593,
+      "latency_ms": 281,
       "url": "https://www.okx.com/api/v5/market/candles?instId=BTC-USDT&bar=1D&limit=1",
       "venue": "okx"
     },
@@ -24,7 +24,7 @@
       "body_prefix": "[[1788825600,78234.34,79477.07,79091.97,78413.12,1068.93910899],[1788739200,78666,80462.23,80339.13,79091.97,3292.97954149],[1788652800,79250,80564.24,79833.86,80339.13,2000.39186862],[1788566400,7945",
       "error": null,
       "http_status": 200,
-      "latency_ms": 203,
+      "latency_ms": 47,
       "url": "https://api.exchange.coinbase.com/products/BTC-USD/candles?granularity=86400",
       "venue": "coinbase"
     },
@@ -32,15 +32,15 @@
       "body_prefix": "{\"error\":[],\"result\":{\"XXBTZUSD\":[[1726617600,\"60317.1\",\"61777.7\",\"59164.6\",\"61777.7\",\"60292.5\",\"2374.42823592\",34518],[1726704000,\"61777.7\",\"63840.0\",\"61599.2\",\"62922.1\",\"62800.1\",\"2674.76794810\",320",
       "error": null,
       "http_status": 200,
-      "latency_ms": 407,
+      "latency_ms": 109,
       "url": "https://api.kraken.com/0/public/OHLC?pair=XBTUSD&interval=1440",
       "venue": "kraken"
     },
     {
-      "body_prefix": "[[1788825600000,\"79112.00000000\",\"79485.00000000\",\"78261.61000000\",\"78433.77000000\",\"6732.90962000\",1788911999999,\"530093405.34541280\",1995946,\"3053.18769000\",\"240427592.23274080\",\"0\"]]",
+      "body_prefix": "[[1788825600000,\"79112.00000000\",\"79485.00000000\",\"78261.61000000\",\"78497.60000000\",\"6973.54017000\",1788911999999,\"548976754.16912610\",2064175,\"3169.25274000\",\"249535516.45747410\",\"0\"]]",
       "error": null,
       "http_status": 200,
-      "latency_ms": 906,
+      "latency_ms": 391,
       "url": "https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval=1d&limit=1",
       "venue": "binance_spot"
     },
@@ -48,15 +48,15 @@
       "body_prefix": "[{\"symbol\":\"BTCUSDT\",\"fundingTime\":1788825600004,\"fundingRate\":\"0.00004542\",\"markPrice\":\"79075.90000000\",\"rateType\":\"Regular\"}]",
       "error": null,
       "http_status": 200,
-      "latency_ms": 937,
+      "latency_ms": 438,
       "url": "https://fapi.binance.com/fapi/v1/fundingRate?symbol=BTCUSDT&limit=1",
       "venue": "binance_futures"
     },
     {
-      "body_prefix": "{\"retCode\":0,\"retMsg\":\"OK\",\"result\":{\"category\":\"linear\",\"list\":[{\"symbol\":\"BTCUSDT\",\"lastPrice\":\"78400.60\",\"indexPrice\":\"78433.59\",\"markPrice\":\"78400.60\",\"prevPrice24h\":\"79505.80\",\"price24hPcnt\":\"-0.",
+      "body_prefix": "{\"retCode\":0,\"retMsg\":\"OK\",\"result\":{\"category\":\"linear\",\"list\":[{\"symbol\":\"BTCUSDT\",\"lastPrice\":\"78457.90\",\"indexPrice\":\"78494.01\",\"markPrice\":\"78458.42\",\"prevPrice24h\":\"79467.70\",\"price24hPcnt\":\"-0.",
       "error": null,
       "http_status": 200,
-      "latency_ms": 547,
+      "latency_ms": 312,
       "url": "https://api.bybit.com/v5/market/tickers?category=linear&symbol=BTCUSDT",
       "venue": "bybit"
     },
@@ -64,15 +64,15 @@
       "body_prefix": "{\"data\":[{\"asset\":\"btc\",\"time\":\"2026-05-31T00:00:00.000000000Z\",\"CapMVRVCur\":\"1.362399461307008605\"},{\"asset\":\"btc\",\"time\":\"2026-06-01T00:00:00.000000000Z\",\"CapMVRVCur\":\"1.321374781897173082\"},{\"asset",
       "error": null,
       "http_status": 200,
-      "latency_ms": 453,
+      "latency_ms": 469,
       "url": "https://community-api.coinmetrics.io/v4/timeseries/asset-metrics?assets=btc&metrics=CapMVRVCur",
       "venue": "coinmetrics"
     },
     {
-      "body_prefix": "{\n\t\"name\": \"Fear and Greed Index\",\n\t\"data\": [\n\t\t{\n\t\t\t\"value\": \"69\",\n\t\t\t\"value_classification\": \"Greed\",\n\t\t\t\"timestamp\": \"1788825600\",\n\t\t\t\"time_until_update\": \"59793\"\n\t\t}\n\t],\n\t\"metadata\": {\n\t\t\"error\": ",
+      "body_prefix": "{\n\t\"name\": \"Fear and Greed Index\",\n\t\"data\": [\n\t\t{\n\t\t\t\"value\": \"69\",\n\t\t\t\"value_classification\": \"Greed\",\n\t\t\t\"timestamp\": \"1788825600\",\n\t\t\t\"time_until_update\": \"59547\"\n\t\t}\n\t],\n\t\"metadata\": {\n\t\t\"error\": ",
       "error": null,
       "http_status": 200,
-      "latency_ms": 547,
+      "latency_ms": 437,
       "url": "https://api.alternative.me/fng/?limit=1",
       "venue": "alternative_me"
     }

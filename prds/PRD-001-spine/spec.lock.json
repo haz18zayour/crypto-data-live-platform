@@ -4,8 +4,8 @@
   "title": "Spine — reachability, registry, provenance schema, one live indicator",
   "product": "crypto-data-live-platform",
   "branch": "feat/prd-001-spine",
-  "inputDigest": "800756632fc84a2d",
-  "compiledAt": "2026-09-07T17:06:04.818Z",
+  "inputDigest": "5861bb00858f44f5",
+  "compiledAt": "2026-09-08T07:27:48.538Z",
   "stories": [
     {
       "id": "US-001",
@@ -15,10 +15,10 @@
       "criteria": [
         {
           "id": "US-001-C1",
-          "text": "The probe runs and writes its result file",
+          "text": "The probe runs and writes a result file from wherever it is invoked",
           "method": {
             "kind": "cmd",
-            "run": "python scripts/probe_venues.py --out prds/PRD-001-spine/50-evidence/US-001/reachability.json"
+            "run": "python scripts/probe_venues.py --out prds/PRD-001-spine/50-evidence/US-001/reachability-local.json"
           }
         },
         {
@@ -39,6 +39,14 @@
         },
         {
           "id": "US-001-C4",
+          "text": "The committed CI evidence was genuinely produced on a GitHub-hosted runner, not locally — the file records its own provenance and a local regeneration cannot satisfy this",
+          "method": {
+            "kind": "cmd",
+            "run": "python -c \"import json,sys; d=json.load(open('prds/PRD-001-spine/50-evidence/US-001/reachability-ci.json')); r=d.get('runner'); print('github_actions:', r.get('github_actions'), 'run_id:', r.get('github_run_id')); sys.exit(0 if r.get('github_actions') is True and r.get('github_run_id') else 1)\""
+          }
+        },
+        {
+          "id": "US-001-C5",
           "text": "The probe workflow is green on the pushed commit, proving it executed on a GitHub-hosted runner rather than on the owner's machine",
           "method": {
             "kind": "ci",
@@ -46,19 +54,19 @@
           }
         },
         {
-          "id": "US-001-C5",
+          "id": "US-001-C6",
           "text": "The evidence file covers all eight required venues",
           "method": {
             "kind": "cmd",
-            "run": "python -c \"import json,sys; d=json.load(open('prds/PRD-001-spine/50-evidence/US-001/reachability.json')); ks=set(r.get('venue') for r in d.get('results')); need={'okx','coinbase','kraken','binance_spot','binance_futures','bybit','coinmetrics','alternative_me'}; sys.exit(0 if need<=ks else 1)\""
+            "run": "python -c \"import json,sys; d=json.load(open('prds/PRD-001-spine/50-evidence/US-001/reachability-ci.json')); ks=set(r.get('venue') for r in d.get('results')); need={'okx','coinbase','kraken','binance_spot','binance_futures','bybit','coinmetrics','alternative_me'}; sys.exit(0 if need<=ks else 1)\""
           }
         },
         {
-          "id": "US-001-C6",
+          "id": "US-001-C7",
           "text": "At least six venues returned an actual HTTP status code — a run in which every venue errored is a broken probe, not a reachability finding",
           "method": {
             "kind": "cmd",
-            "run": "python -c \"import json,sys; d=json.load(open('prds/PRD-001-spine/50-evidence/US-001/reachability.json')); n=sum(1 for r in d.get('results') if isinstance(r.get('http_status'), int)); print('venues with a real HTTP status:', n); sys.exit(0 if n>=6 else 1)\""
+            "run": "python -c \"import json,sys; d=json.load(open('prds/PRD-001-spine/50-evidence/US-001/reachability-ci.json')); n=sum(1 for r in d.get('results') if isinstance(r.get('http_status'), int)); print('venues with a real HTTP status:', n); sys.exit(0 if n>=6 else 1)\""
           }
         }
       ],
