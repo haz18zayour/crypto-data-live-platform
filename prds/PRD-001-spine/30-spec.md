@@ -84,11 +84,32 @@ backfill or charts; no frozen-value detection or nightly assertions; no golden-f
 harness (PRD-002); no layout work beyond rendering one value honestly; **no composite, score,
 signal or ranking, permanently**; no alerts of market content.
 
+## The reachability spike — done, and deliberately not a tracked story
+
+The spike ran and answered its question. Evidence: GitHub Actions run `34199227365`,
+`ubuntu-latest`, egress Moses Lake US, committed at
+`prds/PRD-001-spine/50-evidence/US-011/reachability-ci.json` alongside the Beirut-run
+`reachability-local.json`. Result: OKX, Coinbase, Kraken, Coin Metrics and alternative.me all
+`200`; **Binance spot and futures `451`, Bybit `403`.** The compute decision is recorded in
+`project-documents/10_Technical_Architecture.md`.
+
+It is not in the story table below, and that is deliberate rather than tidied away. It ran as
+US-001, which burned its three attempts on things that were not the story: two on Codex
+returning 404 for an unavailable model (implementer never executed, $0, 0 tokens) and one on a
+criterion of mine that regenerated the evidence locally and destroyed the artifact it existed
+to prove. Re-identifying it as US-011 gave the corrected criteria a fresh counter but not a
+fresh diff — **the implementation was already committed, so the story changed no files and the
+tripwire fired, correctly.** A story whose work predates its identity cannot pass this
+framework, and forcing a green tick would have meant reverting working code purely for
+ceremony.
+
+The deliverable exists, is CI-verified, and is written into the architecture. The tick does
+not add to it.
+
 ## Stories
 
 | Story | Title | Depends on |
 |---|---|---|
-| US-011 | Reachability spike — measure venue access from the runner (replaces US-001) | — |
 | US-002 | Ingestion package scaffold and typed configuration | — |
 | US-003 | Status types — make a missing value unrepresentable as a number | US-002 |
 | US-004 | Indicator registry — one declarative source of truth | US-003 |
