@@ -88,7 +88,7 @@ signal or ranking, permanently**; no alerts of market content.
 
 | Story | Title | Depends on |
 |---|---|---|
-| US-001 | Reachability spike — measure venue access from the runner | — |
+| US-011 | Reachability spike — measure venue access from the runner (replaces US-001) | — |
 | US-002 | Ingestion package scaffold and typed configuration | — |
 | US-003 | Status types — make a missing value unrepresentable as a number | US-002 |
 | US-004 | Indicator registry — one declarative source of truth | US-003 |

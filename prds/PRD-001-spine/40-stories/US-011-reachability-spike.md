@@ -1,15 +1,16 @@
 ---
-id: US-001
+id: US-011
 title: Reachability spike — measure venue access from the actual runner
 priority: 1
 touches:
   - scripts/probe_venues.py
   - tests/test_probe_venues.py
+  # Replaces US-001, whose criteria were wrong (G5, answered rewrite-criteria).
   # Broader than just reachability-spike.yml: this story cannot prove itself without CI
   # actually running, and uf-verify.yml had to be repaired (it ran `npm ci` in a repo with
   # no package.json) before any workflow on this branch could go green.
   - .github/workflows/**
-  - prds/PRD-001-spine/50-evidence/US-001/**
+  - prds/PRD-001-spine/50-evidence/US-011/**
 context:
   - AGENTS.md
   - prds/PRD-001-spine/10-research.md
@@ -30,13 +31,13 @@ proceeding without knowing.
 
 ## Acceptance criteria
 
-- [cmd: python scripts/probe_venues.py --out prds/PRD-001-spine/50-evidence/US-001/reachability-local.json] The probe runs and writes a result file from wherever it is invoked
+- [cmd: python scripts/probe_venues.py --out prds/PRD-001-spine/50-evidence/US-011/reachability-local.json] The probe runs and writes a result file from wherever it is invoked
 - [test: probe records an http status for every configured venue] Every venue in the list appears in the output, including ones that errored — a venue must never be silently omitted
 - [test: probe records a transport failure as a result rather than raising] A DNS or timeout failure produces a row with a null status and an error string, so an unreachable venue is distinguishable from an unattempted one
-- [cmd: python -c "import json,sys; d=json.load(open('prds/PRD-001-spine/50-evidence/US-001/reachability-ci.json')); r=d.get('runner'); print('github_actions:', r.get('github_actions'), 'run_id:', r.get('github_run_id')); sys.exit(0 if r.get('github_actions') is True and r.get('github_run_id') else 1)"] The committed CI evidence was genuinely produced on a GitHub-hosted runner, not locally — the file records its own provenance and a local regeneration cannot satisfy this
+- [cmd: python -c "import json,sys; d=json.load(open('prds/PRD-001-spine/50-evidence/US-011/reachability-ci.json')); r=d.get('runner'); print('github_actions:', r.get('github_actions'), 'run_id:', r.get('github_run_id')); sys.exit(0 if r.get('github_actions') is True and r.get('github_run_id') else 1)"] The committed CI evidence was genuinely produced on a GitHub-hosted runner, not locally — the file records its own provenance and a local regeneration cannot satisfy this
 - [ci: reachability-spike] The probe workflow is green on the pushed commit, proving it executed on a GitHub-hosted runner rather than on the owner's machine
-- [cmd: python -c "import json,sys; d=json.load(open('prds/PRD-001-spine/50-evidence/US-001/reachability-ci.json')); ks=set(r.get('venue') for r in d.get('results')); need={'okx','coinbase','kraken','binance_spot','binance_futures','bybit','coinmetrics','alternative_me'}; sys.exit(0 if need<=ks else 1)"] The evidence file covers all eight required venues
-- [cmd: python -c "import json,sys; d=json.load(open('prds/PRD-001-spine/50-evidence/US-001/reachability-ci.json')); n=sum(1 for r in d.get('results') if isinstance(r.get('http_status'), int)); print('venues with a real HTTP status:', n); sys.exit(0 if n>=6 else 1)"] At least six venues returned an actual HTTP status code — a run in which every venue errored is a broken probe, not a reachability finding
+- [cmd: python -c "import json,sys; d=json.load(open('prds/PRD-001-spine/50-evidence/US-011/reachability-ci.json')); ks=set(r.get('venue') for r in d.get('results')); need={'okx','coinbase','kraken','binance_spot','binance_futures','bybit','coinmetrics','alternative_me'}; sys.exit(0 if need<=ks else 1)"] The evidence file covers all eight required venues
+- [cmd: python -c "import json,sys; d=json.load(open('prds/PRD-001-spine/50-evidence/US-011/reachability-ci.json')); n=sum(1 for r in d.get('results') if isinstance(r.get('http_status'), int)); print('venues with a real HTTP status:', n); sys.exit(0 if n>=6 else 1)"] At least six venues returned an actual HTTP status code — a run in which every venue errored is a broken probe, not a reachability finding
 
 ## Notes for the implementer
 
