@@ -1,0 +1,8 @@
+- key: btc_daily_close
+  vendor: okx
+  endpoint: https://www.okx.com/api/v5/market/candles?instId=BTC-USDT&bar=1D
+  source_field: 'candle[4] (close), where candle[8] == "1"'
+  definable_for: [BTC]
+  expected_update_interval_seconds: 86400
+  freshness_warn_seconds: 108000
+  freshness_stale_seconds: 172800
