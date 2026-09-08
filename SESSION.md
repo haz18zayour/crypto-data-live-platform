@@ -23,9 +23,9 @@ Owner: **An agent.** Give it this repo and the instruction below.
 
 | PRD | Stories | Passed | State |
 |---|---|---|---|
-| PRD-001-spine | 9 | 2 | 2/9 |
+| PRD-001-spine | 9 | 3 | 3/9 |
 
-Spend to date: **$4.78** Claude · **4375k** Codex tokens.
+Spend to date: **$4.96** Claude · **5625k** Codex tokens.
 
 ## What happened
 
@@ -76,6 +76,11 @@ Spend to date: **$4.78** Claude · **4375k** Codex tokens.
 - 12:45  US-003 started, attempt 1 (codex)
 - 12:52  US-003 — codex finished `b4a35340` · 910k tok
 - 12:53  US-003 **PASSED** — 5/5 criteria, judged by claude · $0.20
+- 12:53  US-004 started, attempt 1 (codex)
+- 12:54  US-004 failed — interrupted while running — the process stopped before a verdict
+- 12:54  US-004 started, attempt 1 (codex)
+- 13:01  US-004 — codex finished `3a31e43b` · 1249k tok
+- 13:02  US-004 **PASSED** — 5/5 criteria, judged by claude · $0.19
 
 <!-- uf:generated:end -->
 ## Handoff

@@ -41,7 +41,7 @@ Add one later if wanted — it is not a v1 dependency.
 | alternative.me | Fear & Greed | none | Display as a *composite of other inputs*, never as an independent signal (R4) | N/A — no key |
 | Solana public RPC | SOL network activity: epoch, cumulative tx count, supply, staking | none | **Verified live 2026-09-07**: `api.mainnet-beta.solana.com` returns `getEpochInfo` and `getSupply` free. Covers the SOL gap Coin Metrics leaves, for activity metrics only — not valuation (R8) | N/A — no key |
 | DefiLlama | stablecoin supply, chain TVL incl. Solana | none | Verified live; free, no key | N/A — no key |
-| FRED | DXY-proxy, VIX, yield curve, SOFR, M2, CPI | **`FRED_API_KEY`** | Free, 120 req/min. **Release lag must be displayed**: SOFR/VIX same-day, M2 3–4 wks, CPI 5–6 wks. No true DXY exists on FRED — `DTWEXBGS` is a *broader* index and must be labelled as such (R0/F12) | **TODO** — free registration |
+| FRED | DXY-proxy, VIX, yield curve, SOFR, M2, CPI | **`FRED_API_KEY`** | Free, 120 req/min. **Release lag MEASURED 2026-09-08** against the live API: `DFF` 5 days behind, `DTWEXBGS` **11 days**, `M2SL` **69 days**. R4 estimated M2 at 3–4 weeks; the real figure is more than double, so the lag must be read from the data, never assumed. No true DXY exists on FRED — `DTWEXBGS` is a *broader* index and must be labelled as such (R0/F12) | **READY** — key reused from `crypto-investing-signals`, verified live |
 | SoSoValue | BTC/ETH spot ETF net flows | likely key on Demo tier | Best programmatic option; Farside is HTML-only and 403s automated fetch. All T+1 (R4) | **TODO** — verify Demo tier terms |
 
 ## Deliberately NOT used — and why

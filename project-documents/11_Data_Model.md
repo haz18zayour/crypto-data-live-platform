@@ -139,6 +139,34 @@ indicator: interval 24h, warn 30h, stale 48h.
 returning an identical payload forever. Detecting that means comparing against the last N
 stored values, and it is PRD-009. PRD-001 only provides the columns that make it possible.
 
+## 4b. Reference period vs published date
+
+**The timestamp a value describes is not the timestamp at which it became knowable.** Measured
+against the live FRED API on 2026-09-08:
+
+| Series | Latest observation | Days behind that day |
+|---|---|---|
+| `DFF` (Fed funds) | 2026-09-03 | 5 |
+| `DTWEXBGS` (broad USD) | 2026-08-28 | 11 |
+| `M2SL` (M2) | 2026-07-01 | **69** |
+
+`M2SL` is a *monthly* series: the July figure is the newest that exists, and it was published
+weeks after July ended. Displaying `23218` as today's M2 is false in two separate ways — wrong
+period, and silent about the delay.
+
+So a lagged indicator carries **two** timestamps, not one:
+
+- `reference_period` — the period the value describes (July 2026)
+- `source_timestamp` / `published_at` — when it became knowable
+
+The UI shows both, and the freshness budget is computed against **publication**, not the
+reference period — otherwise every monthly series is permanently `STALE` by construction.
+
+This generalises past macro: funding rate (settled vs predicted), ETF flows (T+1), an unclosed
+daily candle, and CPI are all the same shape. `ai-hedge-fund` reached it independently and
+enforces it by filtering on `filing_date` rather than `report_period`, because the latter
+"leaks 3-6 weeks of future" (R9 §2).
+
 ## 5. Fallbacks are different indicators
 
 If a value cannot be obtained from its declared source, the answer is `UNAVAILABLE` — **not a

@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import argparse
 import ast
-import json
 from pathlib import Path
 from typing import Annotated, Any
 
@@ -131,12 +130,7 @@ def _parse_yaml(contents: str) -> list[dict[str, Any]]:
 def load_registry(path: Path = REGISTRY_PATH) -> IndicatorRegistry:
     """Load and validate every indicator, rejecting ambiguous keys."""
 
-    contents = path.read_text(encoding="utf-8")
-    raw_entries = (
-        json.loads(contents)
-        if contents.lstrip().startswith("[")
-        else _parse_yaml(contents)
-    )
+    raw_entries = _parse_yaml(path.read_text(encoding="utf-8"))
     return IndicatorRegistry.model_validate(raw_entries)
 
 
