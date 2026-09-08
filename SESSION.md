@@ -9,31 +9,23 @@ Do not hand-edit it — it is regenerated. The hand-written sections below it su
 
 ## ▶ Resume here
 
-**1 story left mid-run by an interrupted session**
+**The product phase is unfinished — 1 document(s) still empty**
 
-Recovery is automatic: the partial work is committed under that story and it is retried. An interruption does not cost a retry attempt.
+These settle what is being built and what accounts must exist. A PRD written before them is a guess.
 
-Owner: **`uf`.** Run the command; it drives the agents itself.
+Owner: **An agent.** Give it this repo and the instruction below.
 
 ```
-uf run
+  · project-documents/05_Product_Roadmap.md — no PRDs are named yet, so there is no order to work in
 ```
-
-**Left in flight by the previous session:**
-
-- PRD-001-spine/US-005 left running
-
-⚠ 5 account(s) in 15_Services_and_Credentials.md are still TODO — Cloudflare, Supabase, Healthchecks.io, cron-job.org, SoSoValue. A story that needs one of these keys will halt and open a gate.
-
-**No handoff note was left**, and there is unfinished work above. Whatever the previous session was thinking is gone — treat the files as the only source of truth, and leave a note yourself under `## Handoff` before you stop.
 
 ## Where this stands
 
 | PRD | Stories | Passed | State |
 |---|---|---|---|
-| PRD-001-spine | 9 | 2 | 2/9 |
+| PRD-001-spine | 9 | 3 | 3/9 |
 
-Spend to date: **$4.96** Claude · **7602k** Codex tokens.
+Spend to date: **$5.26** Claude · **7921k** Codex tokens.
 
 ## What happened
 
@@ -92,9 +84,15 @@ Spend to date: **$4.96** Claude · **7602k** Codex tokens.
 - 13:05  US-005 started, attempt 1 (codex)
 - 13:08  US-004 — codex finished `72efd0a9` · 1977k tok
 - 13:08  US-004 **rejected** — 0/5 criteria, judged by claude
+- 13:10  US-005 failed — interrupted while running — the process stopped before a verdict
+- 13:10  US-004 started, attempt 3 (codex)
+- 13:13  US-004 — codex finished `ad6b4095` · 319k tok
+- 13:14  US-004 **PASSED** — 5/5 criteria, judged by claude · $0.29
 
 <!-- uf:generated:end -->
 ## Handoff
+
+- 2026-09-08: US-005 implementation and PostgreSQL 16 CI coverage are present; local deterministic gates pass. The local live-Postgres run could not start because this sandbox cannot open the Windows Docker service, so CI/verifier must execute the four database cases.
 
 _One bullet before you stop, newest at the top: what you were thinking that no file
 records — the approach already tried and rejected, why something is half-written, the

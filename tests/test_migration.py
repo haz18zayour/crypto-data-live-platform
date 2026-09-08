@@ -6,7 +6,6 @@ from pathlib import Path
 
 import pytest
 
-
 MIGRATIONS = Path(__file__).resolve().parents[1] / "supabase" / "migrations"
 
 
@@ -46,8 +45,11 @@ def _psql(sql: str) -> subprocess.CompletedProcess[str]:
 
 @pytest.fixture(scope="session", autouse=True)
 def migrated_postgres() -> None:
-    if "TEST_DATABASE_URL" not in os.environ:
-        pytest.skip("TEST_DATABASE_URL is required for PostgreSQL integration tests")
+    if not ({"TEST_DATABASE_URL", "TEST_POSTGRES_CONTAINER"} & os.environ.keys()):
+        pytest.skip(
+            "TEST_DATABASE_URL or TEST_POSTGRES_CONTAINER is required for PostgreSQL "
+            "integration tests"
+        )
 
     roles = _psql(
         """
@@ -116,10 +118,34 @@ def test_asset_match_rejects_ok_row_measured_on_another_asset() -> None:
 
 
 @pytest.mark.parametrize(
-    ("indicator_key", "value", "status", "reason"),
     (
-        ("value_iff_ok_missing", "NULL", "OK", "NULL"),
-        ("value_iff_ok_present", "42000.0", "UNAVAILABLE", "'FETCH_FAILED'"),
+        "indicator_key",
+        "value",
+        "status",
+        "reason",
+        "accepted_value",
+        "accepted_status",
+        "accepted_reason",
+    ),
+    (
+        (
+            "value_iff_ok_missing",
+            "NULL",
+            "OK",
+            "NULL",
+            "42000.0",
+            "OK",
+            "NULL",
+        ),
+        (
+            "value_iff_ok_present",
+            "42000.0",
+            "UNAVAILABLE",
+            "'FETCH_FAILED'",
+            "NULL",
+            "UNAVAILABLE",
+            "'FETCH_FAILED'",
+        ),
     ),
 )
 def test_value_iff_ok_rejects_status_and_value_drift(
@@ -127,6 +153,9 @@ def test_value_iff_ok_rejects_status_and_value_drift(
     value: str,
     status: str,
     reason: str,
+    accepted_value: str,
+    accepted_status: str,
+    accepted_reason: str,
 ) -> None:
     rejected = _insert(
         indicator_key=indicator_key,
@@ -137,7 +166,12 @@ def test_value_iff_ok_rejects_status_and_value_drift(
     assert rejected.returncode != 0
     assert "value_iff_ok" in rejected.stderr
 
-    accepted = _insert(indicator_key=f"{indicator_key}_good")
+    accepted = _insert(
+        indicator_key=f"{indicator_key}_good",
+        value=accepted_value,
+        status=accepted_status,
+        reason=accepted_reason,
+    )
     assert accepted.returncode == 0, accepted.stderr
 
 
