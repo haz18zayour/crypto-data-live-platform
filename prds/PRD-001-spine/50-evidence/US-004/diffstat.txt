@@ -1,0 +1,6 @@
+.uf/events.ndjson      |   5 ++
+ SESSION.md             |   7 ++-
+ ingest/registry.py     | 151 +++++++++++++++++++++++++++++++++++++++++++++++++
+ ingest/registry.yaml   |   8 +++
+ tests/test_registry.py |  87 ++++++++++++++++++++++++++++
+ 5 files changed, 256 insertions(+), 2 deletions(-)
