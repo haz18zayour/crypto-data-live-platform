@@ -9,7 +9,7 @@
     "name": "test",
     "run": "node -e \"const f=require('fs'),c=require('child_process');let r=0;const run=(cmd)=>{try{c.execSync(cmd,{stdio:'inherit'})}catch(e){r=1}};if(f.existsSync('package.json'))run('npm test --if-present');if(f.existsSync('tests'))run('uv run pytest -q');process.exit(r)\"",
     "exitCode": 0,
-    "output": "....ssss...........................                                      [100%]\r\n31 passed, 4 skipped in 3.09s\r\n"
+    "output": "....ssss...........................                                      [100%]\r\n31 passed, 4 skipped in 1.90s\r\n"
   },
   {
     "name": "US-005-C5",

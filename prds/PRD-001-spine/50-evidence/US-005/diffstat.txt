@@ -1,12 +1,15 @@
 .github/workflows/uf-verify.yml                    |  21 +++
- .uf/events.ndjson                                  |   9 +
- SESSION.md                                         |  11 +-
+ .uf/events.ndjson                                  |  11 ++
+ SESSION.md                                         |  16 +-
  ingest/migrate.py                                  |  50 ++++++
  prds/PRD-001-spine/50-evidence/US-004/diffstat.txt |  22 ++-
  prds/PRD-001-spine/50-evidence/US-004/gates.json   |   4 +-
  prds/PRD-001-spine/50-evidence/US-004/verdict.json |  24 +--
+ prds/PRD-001-spine/50-evidence/US-005/diffstat.txt |  12 ++
+ prds/PRD-001-spine/50-evidence/US-005/gates.json   |  20 +++
+ prds/PRD-001-spine/50-evidence/US-005/verdict.json |  69 ++++++++
  pyproject.toml                                     |   4 +
  .../20260908140000_create_datapoints.sql           |  69 ++++++++
  supabase/migrations/checksums.sha256               |   1 +
  tests/test_migration.py                            | 193 +++++++++++++++++++++
- 11 files changed, 387 insertions(+), 21 deletions(-)
+ 14 files changed, 495 insertions(+), 21 deletions(-)
