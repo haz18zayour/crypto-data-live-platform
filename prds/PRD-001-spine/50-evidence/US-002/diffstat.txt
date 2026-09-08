@@ -1,0 +1,7 @@
+.env.example         |  4 +++
+ .uf/events.ndjson    |  2 ++
+ ingest/__init__.py   |  2 ++
+ ingest/config.py     | 21 +++++++++++++++
+ pyproject.toml       | 25 ++++++++++++++++++
+ tests/test_config.py | 74 ++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 6 files changed, 128 insertions(+)

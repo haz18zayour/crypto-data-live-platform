@@ -1,0 +1,40 @@
+{
+  "storyId": "US-002",
+  "passes": false,
+  "verifier": {
+    "agent": "claude",
+    "sandbox": "not-run"
+  },
+  "implementer": "codex",
+  "ciConclusion": "missing",
+  "results": [
+    {
+      "criterionId": "US-002-C1",
+      "met": false,
+      "note": "not judged — a cheaper layer already failed"
+    },
+    {
+      "criterionId": "US-002-C2",
+      "met": false,
+      "note": "not judged — a cheaper layer already failed"
+    },
+    {
+      "criterionId": "US-002-C3",
+      "met": false,
+      "note": "not judged — a cheaper layer already failed"
+    },
+    {
+      "criterionId": "US-002-C4",
+      "met": false,
+      "note": "not judged — a cheaper layer already failed"
+    },
+    {
+      "criterionId": "US-002-C5",
+      "met": false,
+      "note": "not judged — a cheaper layer already failed"
+    }
+  ],
+  "tripwires": [],
+  "note": "gates failed: typecheck, US-002-C2, US-002-C3 | ci: missing (no CI run found for a6b88c65 — was it pushed?)",
+  "at": "2026-09-08T08:35:58.030Z"
+}
