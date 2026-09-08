@@ -1,40 +1,69 @@
 {
   "storyId": "US-002",
-  "passes": false,
+  "passes": true,
   "verifier": {
     "agent": "claude",
-    "sandbox": "not-run"
+    "sandbox": "restricted:read-only"
   },
   "implementer": "codex",
-  "ciConclusion": "missing",
   "results": [
     {
       "criterionId": "US-002-C1",
-      "met": false,
-      "note": "not judged — a cheaper layer already failed"
+      "met": true,
+      "evidence": {
+        "file": "pyproject.toml",
+        "line": 1,
+        "testName": null,
+        "exitCode": 0
+      },
+      "note": "Deterministic gate 'US-002-C1' (uv sync) exit 0; pyproject.toml declares project deps (httpx, pydantic-settings, structlog) and uv.lock is present and committed."
     },
     {
       "criterionId": "US-002-C2",
-      "met": false,
-      "note": "not judged — a cheaper layer already failed"
+      "met": true,
+      "evidence": {
+        "file": null,
+        "line": null,
+        "testName": null,
+        "exitCode": 0
+      },
+      "note": "Deterministic gate 'US-002-C2' (uv run ruff check .) exit 0. Note: the checked-in prds/PRD-001-spine/50-evidence/US-002/gates.json still shows a stale ruff FAILURE from the first (rejected) attempt on scripts/probe_venues.py — that evidence file was never refreshed after the fix landed in commit a651f8e, but the fresh gate result supplied for this judgement is exit 0."
     },
     {
       "criterionId": "US-002-C3",
-      "met": false,
-      "note": "not judged — a cheaper layer already failed"
+      "met": true,
+      "evidence": {
+        "file": "ingest/config.py",
+        "line": 21,
+        "testName": null,
+        "exitCode": 0
+      },
+      "note": "Deterministic gate 'US-002-C3' (uv run mypy ingest --strict) exit 0. Same caveat as C2: the committed gates.json/verdict.json artifacts still show the first attempt's mypy failure ('Missing named argument ... for Settings') on this same call site; that evidence was not refreshed, but the fresh gate supplied here for the current HEAD is a pass."
     },
     {
       "criterionId": "US-002-C4",
-      "met": false,
-      "note": "not judged — a cheaper layer already failed"
+      "met": true,
+      "evidence": {
+        "file": "tests/test_config.py",
+        "line": 45,
+        "testName": "test_config_raises_at_import_when_a_required_variable_is_absent",
+        "exitCode": 0
+      },
+      "note": "ingest/config.py:16-18 declares supabase_url, supabase_service_role_key, healthchecks_ping_url with no defaults, so pydantic-settings raises ValidationError when the corresponding env var is absent, crashing at `Settings()` construction (ingest/config.py:21) instead of substituting a default. The parametrized test spawns a fresh subprocess per required setting with that setting removed from the environment and asserts a non-zero return code and the field name in stderr; the 'test' gate (uv run pytest -q) reports exit 0."
     },
     {
       "criterionId": "US-002-C5",
-      "met": false,
-      "note": "not judged — a cheaper layer already failed"
+      "met": true,
+      "evidence": {
+        "file": "tests/test_config.py",
+        "line": 58,
+        "testName": "test_config_never_logs_a_secret_value",
+        "exitCode": 0
+      },
+      "note": "supabase_service_role_key is typed pydantic.SecretStr (ingest/config.py:17), whose repr masks the value as '**********'. The test logs the settings object via logging with %r formatting and also calls repr() directly, then asserts the raw secret string never appears in stdout/stderr while '**********' does; covered by the passing 'test' gate."
     }
   ],
   "tripwires": [],
-  "note": "gates failed: typecheck, US-002-C2, US-002-C3 | ci: missing (no CI run found for a6b88c65 — was it pushed?)",
-  "at": "2026-09-08T08:35:58.030Z"
+  "note": "All 5 criteria are met and backed by concrete evidence: the three cmd gates (C1-C3) report exit 0 in the fresh, authoritative gate run supplied for this judgement, and the two test criteria (C4/C5) are covered by real, assertive, non-trivial tests in tests/test_config.py that I read directly and that exercise the actual ingest/config.py implementation (required fields with no defaults; SecretStr masking). One thing worth flagging to the user: the repo has stale, self-contradicting evidence checked in at prds/PRD-001-spine/50-evidence/US-002/{gates.json,verdict.json} from the first (rejected) attempt, showing ruff/mypy failures on what is now passing code — that evidence was never regenerated after the fix, which could mislead anyone reading the evidence folder even though the code itself and the fresh gate run are fine.",
+  "at": "2026-09-08T12:41:21.419Z"
 }

@@ -2,14 +2,14 @@
   {
     "name": "typecheck",
     "run": "node -e \"const f=require('fs'),c=require('child_process');let r=0;const run=(cmd)=>{try{c.execSync(cmd,{stdio:'inherit'})}catch(e){r=1}};if(f.existsSync('package.json'))run('npm run typecheck --if-present');if(f.existsSync('pyproject.toml'))run('uv run mypy ingest --strict');process.exit(r)\"",
-    "exitCode": 1,
-    "output": "ingest\\config.py:21: error: Missing named argument \"supabase_url\" for \"Settings\"  [call-arg]\r\ningest\\config.py:21: error: Missing named argument \"supabase_service_role_key\" for \"Settings\"  [call-arg]\r\ningest\\config.py:21: error: Missing named argument \"healthchecks_ping_url\" for \"Settings\"  [call-arg]\r\nFound 3 errors in 1 file (checked 2 source files)\r\n\nDownloading pygments (1.2MiB)\nDownloading mypy (10.4MiB)\nDownloading ruff (10.1MiB)\nDownloading pydantic-core (1.9MiB)\n Downloaded pygments\n Downloaded pydantic-core\n Downloaded ruff\n Downloaded mypy\nInstalled 25 packages in 2.66s\n"
+    "exitCode": 0,
+    "output": "Success: no issues found in 2 source files\r\n"
   },
   {
     "name": "test",
     "run": "node -e \"const f=require('fs'),c=require('child_process');let r=0;const run=(cmd)=>{try{c.execSync(cmd,{stdio:'inherit'})}catch(e){r=1}};if(f.existsSync('package.json'))run('npm test --if-present');if(f.existsSync('tests'))run('uv run pytest -q');process.exit(r)\"",
     "exitCode": 0,
-    "output": ".........                                                                [100%]\r\n9 passed in 2.47s\r\n"
+    "output": ".........                                                                [100%]\r\n9 passed in 1.40s\r\n"
   },
   {
     "name": "US-002-C1",
@@ -20,13 +20,13 @@
   {
     "name": "US-002-C2",
     "run": "uv run ruff check .",
-    "exitCode": 1,
-    "output": "I001 [*] Import block is un-sorted or un-formatted\n  --> scripts\\probe_venues.py:1:1\n   |\n 1 | / from __future__ import annotations\n 2 | |\n 3 | | import argparse\n 4 | | import json\n 5 | | import os\n 6 | | import platform\n 7 | | import socket\n 8 | | import time\n 9 | | import urllib.error\n10 | | import urllib.request\n11 | | from datetime import datetime, timezone\n12 | | from pathlib import Path\n13 | | from typing import Any, Callable, Iterable\n   | |__________________________________________^\nhelp: Organize imports\n   |\n14 |\n   -\n15 | BODY_PREFIX_BYTES = 200\n   |\n\nUP035 [*] Import from `collections.abc` instead: `Callable`, `Iterable`\n  --> scripts\\probe_venues.py:13:1\n   |\n11 | from datetime import datetime, timezone\n12 | from pathlib import Path\n13 | from typing import Any, Callable, Iterable\n   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nhelp: Import from `collections.abc`\n   |\n12 | from pathlib import Path\n   - from typing import Any, Callable, Iterable\n13 + from typing import Any\n14 + from collections.abc import Callable, Iterable\n15 |\n   |\n\nUP017 [*] Use `datetime.UTC` alias\n  --> scripts\\probe_venues.py:60:25\n   |\n59 | def now_utc() -> str:\n60 |     return datetime.now(timezone.utc).isoformat().replace(\"+00:00\", \"Z\")\n   |                         ^^^^^^^^^^^^\nhelp: Convert to `datetime.UTC` alias\n   |\n10 | import urllib.request\n   - from datetime import datetime, timezone\n11 + from datetime import datetime, timezone, UTC\n12 | from pathlib import Path\n--------------------------------------------------------------------------------\n59 | def now_utc() -> str:\n   -     return datetime.now(timezone.utc).isoformat().replace(\"+00:00\", \"Z\")\n60 +     return datetime.now(UTC).isoformat().replace(\"+00:00\", \"Z\")\n61 |\n   |\n\nUP041 [*] Replace aliased errors with `TimeoutError`\n   --> scripts\\probe_venues.py:121:12\n    |\n119 |           row[\"http_status\"] = exc.code\n120 |           row[\"body_prefix\"] = read_response_prefix(exc)\n121 |       except (\n    |  ____________^\n122 | |         urllib.error.URLError,\n123 | |         TimeoutError,\n124 | |         socket.timeout,\n125 | |         OSError,\n126 | |     ) as exc:\n    | |_____^\n127 |           row[\"error\"] = transport_error_message(exc)\n128 |       finally:\n    |\nhelp: Replace with builtin `TimeoutError`\n    |\n120 |         row[\"body_prefix\"] = read_response_prefix(exc)\n    -     except (\n    -         urllib.error.URLError,\n    -         TimeoutError,\n    -         socket.timeout,\n    -         OSError,\n    -     ) as exc:\n121 +     except (urllib.error.URLError, TimeoutError, OSError) as exc:\n122 |         row[\"error\"] = transport_error_message(exc)\n    |\n\nUP041 [*] Replace aliased errors with `TimeoutError`\n   --> scripts\\probe_venues.py:176:12\n    |\n174 |           result[\"error\"] = f\"HTTPError: {exc.reason}\"\n175 |           read_response_prefix(exc)\n176 |       except (\n    |  ____________^\n177 | |         json.JSONDecodeError,\n178 | |         urllib.error.URLError,\n179 | |         TimeoutError,\n180 | |         socket.timeout,\n181 | |         OSError,\n182 | |     ) as exc:\n    | |_____^\n183 |           result[\"error\"] = transport_error_message(exc)\n    |\nhelp: Replace with builtin `TimeoutError`\n    |\n175 |         read_response_prefix(exc)\n    -     except (\n    -         json.JSONDecodeError,\n    -         urllib.error.URLError,\n    -         TimeoutError,\n    -         socket.timeout,\n    -         OSError,\n    -     ) as exc:\n176 +     except (json.JSONDecodeError, urllib.error.URLError, TimeoutError, OSError) as exc:\n177 |         result[\"error\"] = transport_error_message(exc)\n    |\n\nI001 [*] Import block is un-sorted or un-formatted\n --> tests\\test_probe_venues.py:1:1\n  |\n1 | / import io\n2 | | import importlib.util\n3 | | from pathlib import Path\n4 | | import unittest\n5 | | import urllib.error\n  | |___________________^\n6 |\n7 |   PROBE_PATH = Path(__file__).resolve().parents[1] / \"scripts\" / \"probe_venues.py\"\n  |\nhelp: Organize imports\n  |\n1 + import importlib.util\n2 | import io\n  - import importlib.util\n  - from pathlib import Path\n3 | import unittest\n4 | import urllib.error\n5 + from pathlib import Path\n6 |\n  |\n\nFound 6 errors.\n[*] 6 fixable with the `--fix` option.\n\n"
+    "exitCode": 0,
+    "output": "All checks passed!\n"
   },
   {
     "name": "US-002-C3",
     "run": "uv run mypy ingest --strict",
-    "exitCode": 1,
-    "output": "ingest\\config.py:21: error: Missing named argument \"supabase_url\" for \"Settings\"  [call-arg]\r\ningest\\config.py:21: error: Missing named argument \"supabase_service_role_key\" for \"Settings\"  [call-arg]\r\ningest\\config.py:21: error: Missing named argument \"healthchecks_ping_url\" for \"Settings\"  [call-arg]\r\nFound 3 errors in 1 file (checked 2 source files)\r\n\n"
+    "exitCode": 0,
+    "output": "Success: no issues found in 2 source files\r\n"
   }
 ]
