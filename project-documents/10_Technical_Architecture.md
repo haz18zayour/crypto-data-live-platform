@@ -76,15 +76,16 @@ unreachable from GitHub-hosted runners;` with `primary_region = 'fra'`.
 candle. That recommendation, taken up, dissolves the chain above: no Binance, no 451, no
 self-hosted runner, no silent-death failure mode.
 
-**What remains unproven** is derivatives. Binance dominates funding/OI/liquidations, and
-whether OKX and Bybit geo-block *unauthenticated public market-data endpoints by IP* — as
-opposed to restricting US *accounts*, a different thing routinely conflated — was not
-establishable. All verification for this project ran from Lebanon, where Binance `fapi`
-responds normally; **reachability from a US IP cannot be tested from a non-US IP.**
+**Derivatives were the open remainder, and the spike settled them too.** Binance dominates
+funding/OI/liquidations, and whether OKX and Bybit geo-block *unauthenticated public
+market-data endpoints by IP* — as opposed to restricting US *accounts*, a different thing
+routinely conflated — could not be established from Lebanon, where everything responds.
+Measured from the runner: **Bybit returns 403 and Binance 451, while OKX returns 200.**
+Derivatives therefore come from OKX, or PRD-004 runs on non-US compute.
 
 **PRD-001 began with a reachability spike** (US-011, formerly US-001) that runs on the real target compute
-and records, per venue and endpoint, the observed HTTP status. Until that table exists the
-compute row above stays `UNDECIDED`, and the two candidate shapes are:
+and records, per venue and endpoint, the observed HTTP status. That table now exists and the
+compute row above is decided. The two shapes it chose between were:
 
 | | If venues are reachable from GitHub-hosted runners | If they are not |
 |---|---|---|
