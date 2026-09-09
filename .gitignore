@@ -16,3 +16,7 @@ dist/
 __pycache__/
 *.pyc
 .venv/
+
+# Vite dependency pre-bundle cache
+.vite/
+web/.vite/
