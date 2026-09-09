@@ -17,10 +17,10 @@ Sourced from `research/R0`–`R8`, plus the US-011 reachability measurement. **v
 | Service | Why | Env var(s) | Free tier? | Status |
 |---|---|---|---|---|
 | GitHub | repo, Actions scheduling, `gh` for the verifier's CI check | `gh auth login` (already done) | 2,000 Actions min/mo (private repo) | **READY** — repo exists, `gh` authenticated |
-| Cloudflare | Pages hosting **+ Access (Zero Trust)** for single-user auth | `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID` | yes — Access free up to 50 users | **TODO** |
-| Supabase | Postgres for `datapoints` | `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` (ingest only), `VITE_SUPABASE_ANON_KEY` (browser) | 500 MB DB, 5 GB egress | **TODO** |
-| Healthchecks.io | **dead-man's-switch** — alerts on job *silence*. The single highest value-per-effort defence (R5 §1) | `HEALTHCHECKS_PING_URL` | 20 checks | **TODO** |
-| cron-job.org | independent second trigger via `repository_dispatch`, offset from the GH Actions cron | `GH_DISPATCH_PAT` (fine-grained, this repo, Actions: R/W) | yes | **TODO** — owner has used this before |
+| Cloudflare | Pages hosting **+ Access (Zero Trust)** for single-user auth | `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID` | yes — Access free up to 50 users | **N/A until PRD-011** — deployment deferred; the page runs on localhost and the data path is already in production |
+| Supabase | Postgres for `datapoints` | `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` (ingest only), `VITE_SUPABASE_ANON_KEY` (browser), `DATABASE_URL` | 500 MB DB, 5 GB egress | **READY** — project `jsfyvxzuvxdnqhrqloux`, PostgreSQL 17.6, session pooler (direct is IPv6-only without the paid add-on). Migration applied, all three CHECK constraints proven live |
+| Healthchecks.io | **dead-man's-switch** — alerts on job *silence*. The single highest value-per-effort defence (R5 §1) | `HEALTHCHECKS_PING_URL` | 20 checks | **READY** — check `crypto-data-ingest` receiving pings from the GitHub runner; DOWN-on-silence email verified by the owner 2026-09-09 |
+| cron-job.org | independent second trigger via `repository_dispatch`, offset from the GH Actions cron | `GH_DISPATCH_PAT` (fine-grained, this repo, Actions: R/W) | yes | **N/A until PRD-012** — the split-cadence PRD decides whether a second trigger is still wanted alongside the 6h canary |
 
 > `SUPABASE_SERVICE_ROLE_KEY` bypasses RLS. It must never reach the client bundle or any
 > `VITE_`-prefixed variable. Any story touching it is blast-radius and needs gate G4.
@@ -42,7 +42,7 @@ Add one later if wanted — it is not a v1 dependency.
 | Solana public RPC | SOL network activity: epoch, cumulative tx count, supply, staking | none | **Verified live 2026-09-07**: `api.mainnet-beta.solana.com` returns `getEpochInfo` and `getSupply` free. Covers the SOL gap Coin Metrics leaves, for activity metrics only — not valuation (R8) | N/A — no key |
 | DefiLlama | stablecoin supply, chain TVL incl. Solana | none | Verified live; free, no key | N/A — no key |
 | FRED | DXY-proxy, VIX, yield curve, SOFR, M2, CPI | **`FRED_API_KEY`** | Free, 120 req/min. **Release lag MEASURED 2026-09-08** against the live API: `DFF` 5 days behind, `DTWEXBGS` **11 days**, `M2SL` **69 days**. R4 estimated M2 at 3–4 weeks; the real figure is more than double, so the lag must be read from the data, never assumed. No true DXY exists on FRED — `DTWEXBGS` is a *broader* index and must be labelled as such (R0/F12) | **READY** — key reused from `crypto-investing-signals`, verified live |
-| SoSoValue | BTC/ETH spot ETF net flows | likely key on Demo tier | Best programmatic option; Farside is HTML-only and 403s automated fetch. All T+1 (R4) | **TODO** — verify Demo tier terms |
+| SoSoValue | BTC/ETH spot ETF net flows | likely key on Demo tier | Best programmatic option; Farside is HTML-only and 403s automated fetch. All T+1 (R4) | **N/A until PRD-008** (macro and flows) — not needed before then |
 
 ## Deliberately NOT used — and why
 

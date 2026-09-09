@@ -9,22 +9,19 @@ Do not hand-edit it — it is regenerated. The hand-written sections below it su
 
 ## ▶ Resume here
 
-**1 story left mid-run by an interrupted session**
+**1 uncommitted file(s) — the runner will not start**
 
-Recovery is automatic: the partial work is committed under that story and it is retried. An interruption does not cost a retry attempt.
+A previous session edited source and did not commit. uf refuses to run on a dirty tree rather than auto-committing someone else's half-finished work.
 
-Owner: **`uf`.** Run the command; it drives the agents itself.
+Owner: **You.** This one cannot be delegated.
 
 ```
-uf run
+review the diff, then: git add -A && git commit
 ```
 
 **Left in flight by the previous session:**
 
-- 1 uncommitted file(s): project-documents/05_Product_Roadmap.md
-- PRD-001-spine/US-009 left verifying
-
-⚠ 5 account(s) in 15_Services_and_Credentials.md are still TODO — Cloudflare, Supabase, Healthchecks.io, cron-job.org, SoSoValue. A story that needs one of these keys will halt and open a gate.
+- 1 uncommitted file(s): project-documents/15_Services_and_Credentials.md
 
 **Last handoff note:** 2026-09-09: US-009 is ready for independent verification. The five named web tests, exact typecheck/build gates, and service-role bundle scan pass; `50-evidence/US-009/page.png` shows a current BTC value with age and full provenance using a deterministic read-only fixture because this sandbox blocks outbound sockets. The final rebuilt bundle uses `.env.local`'s Supabase URL/anon key, not the fixture URL.
 
@@ -32,9 +29,9 @@ uf run
 
 | PRD | Stories | Passed | State |
 |---|---|---|---|
-| PRD-001-spine | 8 | 7 | 7/8 |
+| PRD-001-spine | 8 | 8 | **all green** |
 
-Spend to date: **$8.15** Claude · **37681k** Codex tokens.
+Spend to date: **$9.26** Claude · **37681k** Codex tokens.
 
 ## What happened
 
@@ -159,6 +156,7 @@ Spend to date: **$8.15** Claude · **37681k** Codex tokens.
 - 20:43  US-009 failed — interrupted while verifying — the process stopped before a verdict
 - 20:43  US-009 started, attempt 1 (codex)
 - 20:46  US-009 — codex finished `65914c96` · 549k tok
+- 20:48  US-009 **PASSED** — 9/9 criteria, judged by claude · $1.11
 
 <!-- uf:generated:end -->
 ## Handoff
