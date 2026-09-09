@@ -4,6 +4,7 @@ title: Database schema — constraints that make wrong data a database error
 priority: 6
 touches:
   - supabase/migrations/**
+  - pyproject.toml
   - tests/test_migration.py
   - .github/workflows/**
 context:
@@ -45,6 +46,14 @@ including all three CHECK constraints and both enum types.
   service-role key is used exclusively by ingestion.
 - For the integration test, run a `postgres:16` service container in the workflow rather than
   mocking. A constraint that has only been tested against a mock has not been tested.
+- **Apply migrations with `psycopg`, never by shelling out to `psql`.** The previous attempt
+  invoked `psql` via subprocess and died on Windows with
+  `FileNotFoundError: [WinError 2]` — the client is not installed there, and the owner
+  develops on Windows. `psycopg[binary]` is a wheel that works on every platform, is
+  needed by US-007 anyway, and removes a system dependency from the test path. Add it to
+  `[project] dependencies` in `pyproject.toml`.
+- Read and execute each `.sql` file's contents through a single connection inside one
+  transaction, so a migration that fails part-way leaves nothing behind.
 - **The Postgres tests must FAIL, not SKIP, when no database is reachable.** The previous
   attempt made the fixture `pytest.skip` unless `TEST_DATABASE_URL` was set; the suite then
   printed `31 passed, 4 skipped` and the gate exited 0, so a constraint suite that never ran

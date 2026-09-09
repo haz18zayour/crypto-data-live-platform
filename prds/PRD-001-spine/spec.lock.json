@@ -4,8 +4,8 @@
   "title": "Spine — reachability, registry, provenance schema, one live indicator",
   "product": "crypto-data-live-platform",
   "branch": "feat/prd-001-spine",
-  "inputDigest": "e1932938634d20fa",
-  "compiledAt": "2026-09-08T18:01:56.001Z",
+  "inputDigest": "1d581a189d54fe63",
+  "compiledAt": "2026-09-09T09:25:53.653Z",
   "stories": [
     {
       "id": "US-002",
@@ -383,6 +383,7 @@
       "priority": 6,
       "touches": [
         "supabase/migrations/**",
+        "pyproject.toml",
         "tests/test_migration.py",
         ".github/workflows/**"
       ],
