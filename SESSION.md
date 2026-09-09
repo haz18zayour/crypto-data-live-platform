@@ -9,15 +9,19 @@ Do not hand-edit it — it is regenerated. The hand-written sections below it su
 
 ## ▶ Resume here
 
-**PRD-002-harness — 3/7 stories passed**
+**1 story left mid-run by an interrupted session**
 
-Codex implements, a different vendor verifies read-only. It stops only for a blast-radius merge, a third failure, or a human criterion.
+Recovery is automatic: the partial work is committed under that story and it is retried. An interruption does not cost a retry attempt.
 
 Owner: **`uf`.** Run the command; it drives the agents itself.
 
 ```
-uf run PRD-002-harness
+uf run
 ```
+
+**Left in flight by the previous session:**
+
+- PRD-002-harness/US-205 left running
 
 **Last handoff note:** 2026-09-10: PRD-001 is merged to `main` and PRD-002 (determinism + contract harness) is
 
@@ -26,9 +30,9 @@ uf run PRD-002-harness
 | PRD | Stories | Passed | State |
 |---|---|---|---|
 | PRD-001-spine | 8 | 8 | **all green** |
-| PRD-002-harness | 7 | 3 | 3/7 |
+| PRD-002-harness | 7 | 4 | 4/7 |
 
-Spend to date: **$13.31** Claude · **41716k** Codex tokens.
+Spend to date: **$13.50** Claude · **42991k** Codex tokens.
 
 ## What happened
 
@@ -165,11 +169,21 @@ Spend to date: **$13.31** Claude · **41716k** Codex tokens.
 - 21:26  US-203 started, attempt 1 (codex)
 - 21:32  US-203 — codex finished `be4ba804` · 1007k tok
 - 21:33  US-203 **PASSED** — 5/5 criteria, judged by claude · $0.16
+- 21:33  US-204 started, attempt 1 (codex)
+- 21:41  US-204 — codex finished `bc488b58` · 1275k tok
+- 21:42  US-204 **PASSED** — 5/5 criteria, judged by claude · $0.19
+- 21:43  US-205 started, attempt 1 (codex)
 
 <!-- uf:generated:end -->
 
 ## Handoff
 
+- 2026-09-10: PRD-002 is 4/7 with every story passing first attempt — US-201 bar-slice
+  contract, US-202 goldens, US-203 response models, US-204 recorded shapes. Verified by hand,
+  not just by green ticks: a 2-bar or 500-bar slice is **rejected** where the contract says 1,
+  and the OKX model refuses an added field, a renamed field, a number-for-string and a null,
+  each naming the field. Remaining: US-205 truncation, US-206 live drift canary, US-207
+  registry-generated coverage.
 - 2026-09-10: PRD-001 is merged to `main` and PRD-002 (determinism + contract harness) is
   running on `feat/prd-002-harness`, currently US-201. **Operating protocol agreed with the
   owner: run autonomously inside a PRD, stop hard between PRDs** and prove the PRD works
