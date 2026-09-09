@@ -1,9 +1,10 @@
 ---
-id: US-005
-title: Database schema — constraints that make wrong data a database error
-priority: 5
+id: US-012
+title: Database schema via psycopg — constraints that make wrong data a database error
+priority: 6
 touches:
   - supabase/migrations/**
+  - pyproject.toml
   - tests/test_migration.py
   - .github/workflows/**
 context:
@@ -28,6 +29,7 @@ caught it, because its schema had no column that could express the difference.
 - [test: value_iff_ok rejects an OK row with a null value and a null-status row carrying a value] Status and value cannot drift apart
 - [test: reason_required rejects an UNAVAILABLE row with no reason] Absence must always say why
 - [cmd: uv run python -m ingest.migrate --check] Migration files are ordered, named consistently, and none has been edited after being applied
+- [cmd: uv run pytest tests/test_migration.py -q --no-header -o addopts= --tb=no -rN] The live-Postgres tests RUN — this command fails if any of them skip, because a skipped constraint test and a passing one are indistinguishable at the gate
 
 ## Notes for the implementer
 
@@ -44,4 +46,25 @@ including all three CHECK constraints and both enum types.
   service-role key is used exclusively by ingestion.
 - For the integration test, run a `postgres:16` service container in the workflow rather than
   mocking. A constraint that has only been tested against a mock has not been tested.
+- **Apply migrations with `psycopg`, never by shelling out to `psql`.** The previous attempt
+  invoked `psql` via subprocess and died on Windows with
+  `FileNotFoundError: [WinError 2]` — the client is not installed there, and the owner
+  develops on Windows. `psycopg[binary]` is a wheel that works on every platform, is
+  needed by US-007 anyway, and removes a system dependency from the test path. Add it to
+  `[project] dependencies` in `pyproject.toml`.
+- Read and execute each `.sql` file's contents through a single connection inside one
+  transaction, so a migration that fails part-way leaves nothing behind.
+- **The Postgres tests must FAIL, not SKIP, when no database is reachable.** The previous
+  attempt made the fixture `pytest.skip` unless `TEST_DATABASE_URL` was set; the suite then
+  printed `31 passed, 4 skipped` and the gate exited 0, so a constraint suite that never ran
+  was indistinguishable from one that passed. That is this product's own failure mode
+  applied to its tests. Make the fixture raise with a message naming the missing variable.
+- Read `TEST_DATABASE_URL` from the environment, falling back to `DATABASE_URL` in
+  `.env.local` if present.
+- **The tests must create a uniquely-named throwaway schema, run entirely inside it, and
+  drop only that schema.** They will be pointed at the project's real Supabase database,
+  so touching `public` is unacceptable: set `search_path` to the temporary schema, create
+  the types and table there, and `DROP SCHEMA ... CASCADE` in teardown. A test that drops
+  `public.datapoints` would destroy the thing this product exists to protect.
+- Roll the schema name from a uuid4 so parallel or interrupted runs cannot collide.
 - Do not write any fetcher or application code here.

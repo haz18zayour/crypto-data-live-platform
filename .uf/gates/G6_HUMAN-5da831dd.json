@@ -1,0 +1,20 @@
+{
+  "gate": "G6_HUMAN",
+  "question": "US-008: With the schedule paused deliberately, Healthchecks.io raises an alert within its grace period",
+  "feature": "PRD-001-spine",
+  "story": "US-008",
+  "options": [
+    "met",
+    "not-met"
+  ],
+  "context": "Everything a machine can check has passed (5/6).\nOnly your judgement is left:\n  · With the schedule paused deliberately, Healthchecks.io raises an alert within its grace period\n\nRun it yourself: npm run dev\nEvidence: prds/PRD-001-spine/50-evidence/US-008/",
+  "defaultOnTimeout": "block",
+  "id": "G6_HUMAN-5da831dd",
+  "openedAt": "2026-09-09T10:49:07.782Z",
+  "answer": {
+    "choice": "met",
+    "reason": "Owner verified the full alert path on 2026-09-09, using a separate TEST check so the live monitor was not disturbed. Healthchecks generated a DOWN alert on silence ('success signal did not arrive on time, grace time passed') and the email was actually delivered to zayourhassan.1@gmail.com. The live crypto-data-ingest check separately shows ping #1 received at 13:39 local (10:39 UTC) via HTTPS GET from 168.62.197.25 - an Azure IP, i.e. the GitHub-hosted runner - with user-agent python-httpx/0.28.1, and status new -> up. Both halves proven: the heartbeat reaches Healthchecks from CI, and silence reaches the owner by email. This is the direct defence against the prior system's 24h silent outage, where a self-hosted runner exited 0 and nothing reported it.",
+    "at": "2026-09-09T16:01:34.151Z",
+    "by": "human"
+  }
+}

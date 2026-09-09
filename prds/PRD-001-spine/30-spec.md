@@ -84,17 +84,51 @@ backfill or charts; no frozen-value detection or nightly assertions; no golden-f
 harness (PRD-002); no layout work beyond rendering one value honestly; **no composite, score,
 signal or ranking, permanently**; no alerts of market content.
 
+## The reachability spike — done, and deliberately not a tracked story
+
+The spike ran and answered its question. Evidence: GitHub Actions run `34199227365`,
+`ubuntu-latest`, egress Moses Lake US, committed at
+`prds/PRD-001-spine/50-evidence/US-011/reachability-ci.json` alongside the Beirut-run
+`reachability-local.json`. Result: OKX, Coinbase, Kraken, Coin Metrics and alternative.me all
+`200`; **Binance spot and futures `451`, Bybit `403`.** The compute decision is recorded in
+`project-documents/10_Technical_Architecture.md`.
+
+It is not in the story table below, and that is deliberate rather than tidied away. It ran as
+US-001, which burned its three attempts on things that were not the story: two on Codex
+returning 404 for an unavailable model (implementer never executed, $0, 0 tokens) and one on a
+criterion of mine that regenerated the evidence locally and destroyed the artifact it existed
+to prove. Re-identifying it as US-011 gave the corrected criteria a fresh counter but not a
+fresh diff — **the implementation was already committed, so the story changed no files and the
+tripwire fired, correctly.** A story whose work predates its identity cannot pass this
+framework, and forcing a green tick would have meant reverting working code purely for
+ceremony.
+
+The deliverable exists, is CI-verified, and is written into the architecture. The tick does
+not add to it.
+
+## Deployment is deliberately NOT in this PRD
+
+The "in production" part of the spine is the **data path**, and it is proven: GitHub Actions
+runs the ingestion on a schedule and writes provenance-carrying rows to Supabase with nobody
+involved. The page is a read-only viewer for a single person; `localhost` exercises exactly the
+same rendering logic.
+
+Deploying it behind Cloudflare Access buys no additional confidence today and costs an account
+plus a policy. It moves to its own PRD, to be done when the page is worth looking at daily.
+
+The one thing carried forward rather than deferred is US-010's bundle scan for the service-role
+key — it runs on a local `npm run build`, and it guards the single mistake in this project that
+cannot be quietly undone.
+
 ## Stories
 
 | Story | Title | Depends on |
 |---|---|---|
-| US-001 | Reachability spike — measure venue access from the runner | — |
 | US-002 | Ingestion package scaffold and typed configuration | — |
 | US-003 | Status types — make a missing value unrepresentable as a number | US-002 |
 | US-004 | Indicator registry — one declarative source of truth | US-003 |
-| US-005 | Database schema and migration with the integrity constraints | — |
+| US-012 | Database schema and migration with the integrity constraints, applied via psycopg (replaces US-005) | — |
 | US-006 | OKX fetcher for BTC daily close, closed candles only | US-003, US-004 |
 | US-007 | Persist a datapoint with full provenance | US-005, US-006 |
 | US-008 | Scheduled run with a dead-man's-switch on silence | US-007 |
 | US-009 | The page — render one value, or its honest absence | US-007 |
-| US-010 | Deploy behind Cloudflare Access | US-009 |

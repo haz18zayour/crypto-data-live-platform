@@ -1,0 +1,13 @@
+.github/workflows/uf-verify.yml                    |   5 +-
+ .uf/events.ndjson                                  |   7 +
+ SESSION.md                                         |   1 +
+ prds/PRD-001-spine/50-evidence/US-005/diffstat.txt |  27 --
+ prds/PRD-001-spine/50-evidence/US-005/gates.json   |   8 +-
+ prds/PRD-001-spine/50-evidence/US-005/verdict.json |  18 +-
+ prds/PRD-001-spine/50-evidence/US-012/diffstat.txt |   0
+ prds/PRD-001-spine/50-evidence/US-012/gates.json   |  26 ++
+ prds/PRD-001-spine/50-evidence/US-012/verdict.json |  80 ++++++
+ pyproject.toml                                     |   1 +
+ tests/test_migration.py                            | 306 ++++++++++-----------
+ uv.lock                                            |  69 +++++
+ 12 files changed, 351 insertions(+), 197 deletions(-)

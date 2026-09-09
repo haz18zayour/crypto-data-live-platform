@@ -1,0 +1,39 @@
+name: reachability-spike
+
+on:
+  # The spike answers a one-off question: which venues are reachable from a
+  # GitHub-hosted (US) runner. It only needs to run when the probe or this
+  # workflow changes - not on every push to every branch, forever.
+  push:
+    paths:
+      - 'scripts/probe_venues.py'
+      - '.github/workflows/reachability-spike.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  reachability-spike:
+    name: reachability-spike
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Run probe tests
+        run: python -m unittest discover -s tests
+
+      - name: Probe venue reachability from GitHub-hosted runner
+        run: python scripts/probe_venues.py --out prds/PRD-001-spine/50-evidence/US-011/reachability-ci.json
+
+      - name: Upload reachability evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: reachability-json
+          path: prds/PRD-001-spine/50-evidence/US-011/reachability-ci.json

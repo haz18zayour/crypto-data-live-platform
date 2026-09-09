@@ -1,0 +1,32 @@
+[
+  {
+    "name": "typecheck",
+    "run": "node -e \"const f=require('fs'),c=require('child_process');let r=0;const run=(cmd)=>{try{c.execSync(cmd,{stdio:'inherit'})}catch(e){r=1}};if(f.existsSync('package.json'))run('npm run typecheck --if-present');if(f.existsSync('pyproject.toml'))run('uv run mypy ingest --strict');process.exit(r)\"",
+    "exitCode": 0,
+    "output": "Success: no issues found in 9 source files\r\n"
+  },
+  {
+    "name": "test",
+    "run": "node -e \"const f=require('fs'),c=require('child_process');let r=0;const run=(cmd)=>{try{c.execSync(cmd,{stdio:'inherit'})}catch(e){r=1}};if(f.existsSync('package.json'))run('npm test --if-present');if(f.existsSync('tests'))run('uv run pytest -q');process.exit(r)\"",
+    "exitCode": 0,
+    "output": "......................................................                   [100%]\r\n54 passed in 29.13s\r\n"
+  },
+  {
+    "name": "US-009-C1",
+    "run": "npm --prefix web run typecheck",
+    "exitCode": 0,
+    "output": "\n> crypto-data-live-web@0.0.0 typecheck\n> tsc -b --pretty false\n\n"
+  },
+  {
+    "name": "US-009-C2",
+    "run": "npm --prefix web run build",
+    "exitCode": 0,
+    "output": "\n> crypto-data-live-web@0.0.0 build\n> tsc -b && vite build --configLoader runner\n\n\u001b[36mvite v7.3.6 \u001b[32mbuilding client environment for production...\u001b[36m\u001b[39m\ntransforming...\n\u001b[32m✓\u001b[39m 151 modules transformed.\nrendering chunks...\ncomputing gzip size...\n\u001b[2mdist/\u001b[22m\u001b[32mindex.html                 \u001b[39m\u001b[1m\u001b[2m  0.45 kB\u001b[22m\u001b[1m\u001b[22m\u001b[2m │ gzip:   0.29 kB\u001b[22m\n\u001b[2mdist/\u001b[22m\u001b[35massets/index-BTbGKaI0.css  \u001b[39m\u001b[1m\u001b[2m  6.16 kB\u001b[22m\u001b[1m\u001b[22m\u001b[2m │ gzip:   2.14 kB\u001b[22m\n\u001b[2mdist/\u001b[22m\u001b[36massets/index-CZ2gmAdn.js   \u001b[39m\u001b[1m\u001b[2m329.57 kB\u001b[22m\u001b[1m\u001b[22m\u001b[2m │ gzip: 103.06 kB\u001b[22m\n\u001b[32m✓ built in 1.26s\u001b[39m\n"
+  },
+  {
+    "name": "US-009-C8",
+    "run": "python -c \"import pathlib,sys,os; keys=set(v for k,v in (l.split(chr(61),1) for l in pathlib.Path('.env.local').read_text().splitlines() if chr(61) in l and not l.startswith(chr(35))) if k.strip()=='SUPABASE_SERVICE_ROLE_KEY' and v.strip()); blob=chr(10).join(f.read_text(errors='ignore') for f in pathlib.Path('web/dist').rglob('*') if f.is_file()); bad=any(k.strip() in blob for k in keys if k.strip()); print('service-role key present in bundle:', bad); sys.exit(1 if bad else 0)\"",
+    "exitCode": 0,
+    "output": "service-role key present in bundle: False\r\n"
+  }
+]

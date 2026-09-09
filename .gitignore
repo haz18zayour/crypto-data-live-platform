@@ -12,3 +12,7 @@ dist/
 # source and must never end up in a story's diff.
 .npm-cache/
 .npm-logs/
+
+__pycache__/
+*.pyc
+.venv/

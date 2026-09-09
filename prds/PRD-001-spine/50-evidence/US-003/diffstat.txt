@@ -1,0 +1,5 @@
+.uf/events.ndjson    |  3 ++
+ SESSION.md           |  4 ++-
+ ingest/status.py     | 75 ++++++++++++++++++++++++++++++++++++++++++++++++
+ tests/test_status.py | 81 ++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 4 files changed, 162 insertions(+), 1 deletion(-)

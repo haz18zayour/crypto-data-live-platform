@@ -1,0 +1,5 @@
+.uf/events.ndjson     |   2 +
+ ingest/persist.py     | 109 ++++++++++++++++++
+ ingest/pipeline.py    |  29 +++++
+ tests/test_persist.py | 302 ++++++++++++++++++++++++++++++++++++++++++++++++++
+ 4 files changed, 442 insertions(+)

@@ -1,0 +1,22 @@
+{
+  "gate": "G5_THIRD_FAILURE",
+  "question": "US-001 has failed 3 times — is the story wrong?",
+  "feature": "PRD-001-spine",
+  "story": "US-001",
+  "options": [
+    "split",
+    "rewrite-criteria",
+    "skip",
+    "retry-anyway"
+  ],
+  "context": "Criteria judged not met:\n  - US-001-C4: No CI run status is provided in the deterministic gate results, and the committed evidence file itself records github_actions: false / github_run_id: null, meaning the last generation was local, not on a GitHub-hosted runner — no proof the workflow actually ran green.",
+  "defaultOnTimeout": "block",
+  "id": "G5_THIRD_FAILURE-4432e4cc",
+  "openedAt": "2026-09-08T07:37:52.931Z",
+  "answer": {
+    "choice": "skip",
+    "reason": "US-001 no longer exists. Per the earlier G5 answer (rewrite-criteria) it was replaced by US-011, which carries the corrected criteria: local and CI evidence are separate committed files, and a new criterion asserts the CI artifact carries its own github_run_id so a local regeneration cannot satisfy it. requireCi is now true so the verifier receives a real CI conclusion instead of being asked to trust the artifact's self-reported field. Skipping refers only to the retired US-001 identity; the work itself is intact and US-011 is pending with 0 attempts.",
+    "at": "2026-09-08T07:46:14.502Z",
+    "by": "human"
+  }
+}

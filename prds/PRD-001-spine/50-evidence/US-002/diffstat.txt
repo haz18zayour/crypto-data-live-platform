@@ -1,0 +1,16 @@
+.env.example                                       |   4 +
+ .uf/config.json                                    |   2 +-
+ .uf/events.ndjson                                  |  13 +
+ SESSION.md                                         |  17 +-
+ ingest/__init__.py                                 |   2 +
+ ingest/config.py                                   |  21 +
+ prds/PRD-001-spine/50-evidence/US-002/diffstat.txt |  16 +
+ prds/PRD-001-spine/50-evidence/US-002/gates.json   |  32 ++
+ prds/PRD-001-spine/50-evidence/US-002/verdict.json |  69 +++
+ .../research/R9-lessons-from-ai-hedge-fund.md      | 135 ++++++
+ pyproject.toml                                     |  26 ++
+ scripts/probe_venues.py                            |  24 +-
+ tests/test_config.py                               |  74 +++
+ tests/test_probe_venues.py                         |   4 +-
+ uv.lock                                            | 506 +++++++++++++++++++++
+ 15 files changed, 922 insertions(+), 23 deletions(-)

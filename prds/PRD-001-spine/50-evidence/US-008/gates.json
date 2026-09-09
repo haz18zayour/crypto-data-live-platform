@@ -1,0 +1,26 @@
+[
+  {
+    "name": "typecheck",
+    "run": "node -e \"const f=require('fs'),c=require('child_process');let r=0;const run=(cmd)=>{try{c.execSync(cmd,{stdio:'inherit'})}catch(e){r=1}};if(f.existsSync('package.json'))run('npm run typecheck --if-present');if(f.existsSync('pyproject.toml'))run('uv run mypy ingest --strict');process.exit(r)\"",
+    "exitCode": 0,
+    "output": "Success: no issues found in 9 source files\r\n"
+  },
+  {
+    "name": "test",
+    "run": "node -e \"const f=require('fs'),c=require('child_process');let r=0;const run=(cmd)=>{try{c.execSync(cmd,{stdio:'inherit'})}catch(e){r=1}};if(f.existsSync('package.json'))run('npm test --if-present');if(f.existsSync('tests'))run('uv run pytest -q');process.exit(r)\"",
+    "exitCode": 0,
+    "output": "......................................................                   [100%]\r\n54 passed in 26.75s\r\n"
+  },
+  {
+    "name": "US-008-C4",
+    "run": "gh run list --branch feat/prd-001-spine --workflow ingest --limit 1 --json conclusion --template \"{{range .}}{{.conclusion}}{{end}}\" | grep -qx success",
+    "exitCode": 0,
+    "output": ""
+  },
+  {
+    "name": "US-008-C5",
+    "run": "python -c \"import sys; t=open('.github/workflows/ingest.yml').read(); seg=t.split('cron:').pop(1); cron=seg.split(chr(39)).pop(1); minute=cron.split().pop(0); print('cron:', cron, '-> minute', minute); sys.exit(0 if minute != '0' else 1)\"",
+    "exitCode": 0,
+    "output": "cron: 17 */6 * * * -> minute 17\r\n"
+  }
+]

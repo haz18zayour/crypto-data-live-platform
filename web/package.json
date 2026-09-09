@@ -1,0 +1,32 @@
+{
+  "name": "crypto-data-live-web",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build --configLoader runner",
+    "typecheck": "tsc -b --pretty false",
+    "test": "vitest run --configLoader runner"
+  },
+  "dependencies": {
+    "@tanstack/react-query": "https://registry.npmjs.org/@tanstack/react-query/-/react-query-5.63.0.tgz",
+    "react": "19.2.7",
+    "react-dom": "19.2.7",
+    "yaml": "2.9.0"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "https://registry.npmjs.org/@tailwindcss/vite/-/vite-4.3.1.tgz",
+    "@testing-library/jest-dom": "6.9.1",
+    "@testing-library/react": "16.3.2",
+    "@types/node": "26.4.1",
+    "@types/react": "19.2.17",
+    "@types/react-dom": "19.2.3",
+    "@vitejs/plugin-react": "5.2.0",
+    "jsdom": "27.4.0",
+    "tailwindcss": "4.3.1",
+    "typescript": "5.9.3",
+    "vite": "7.3.6",
+    "vitest": "4.1.9"
+  }
+}

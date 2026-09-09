@@ -1,0 +1,90 @@
+{
+  "body_prefix_bytes": 200,
+  "egress": {
+    "city": "Moses Lake",
+    "country": "US",
+    "error": null,
+    "http_status": 200,
+    "ip": "4.154.246.49",
+    "org": "AS8075 Microsoft Corporation",
+    "region": "Washington",
+    "url": "https://ipinfo.io/json"
+  },
+  "generated_at": "2026-09-08T07:25:15.281524Z",
+  "results": [
+    {
+      "body_prefix": "{\"code\":\"0\",\"data\":[[\"1788796800000\",\"78833.9\",\"79485.9\",\"78261.7\",\"78459\",\"2182.34068741\",\"172089102.098291122\",\"172089102.098291122\",\"0\"]],\"msg\":\"\"}",
+      "error": null,
+      "http_status": 200,
+      "latency_ms": 242,
+      "url": "https://www.okx.com/api/v5/market/candles?instId=BTC-USDT&bar=1D&limit=1",
+      "venue": "okx"
+    },
+    {
+      "body_prefix": "[[1788825600,78234.34,79477.07,79091.97,78445.03,1066.75245753],[1788739200,78666,80462.23,80339.13,79091.97,3292.97954149],[1788652800,79250,80564.24,79833.86,80339.13,2000.39186862],[1788566400,7945",
+      "error": null,
+      "http_status": 200,
+      "latency_ms": 125,
+      "url": "https://api.exchange.coinbase.com/products/BTC-USD/candles?granularity=86400",
+      "venue": "coinbase"
+    },
+    {
+      "body_prefix": "{\"error\":[],\"result\":{\"XXBTZUSD\":[[1726617600,\"60317.1\",\"61777.7\",\"59164.6\",\"61777.7\",\"60292.5\",\"2374.42823592\",34518],[1726704000,\"61777.7\",\"63840.0\",\"61599.2\",\"62922.1\",\"62800.1\",\"2674.76794810\",320",
+      "error": null,
+      "http_status": 200,
+      "latency_ms": 272,
+      "url": "https://api.kraken.com/0/public/OHLC?pair=XBTUSD&interval=1440",
+      "venue": "kraken"
+    },
+    {
+      "body_prefix": "{\n  \"code\": 0,\n  \"msg\": \"Service unavailable from a restricted location according to 'b. Eligibility' in https://www.binance.com/en/terms. Please contact customer service if you believe you received t",
+      "error": null,
+      "http_status": 451,
+      "latency_ms": 218,
+      "url": "https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval=1d&limit=1",
+      "venue": "binance_spot"
+    },
+    {
+      "body_prefix": "{\n  \"code\": 0,\n  \"msg\": \"Service unavailable from a restricted location according to 'b. Eligibility' in https://www.binance.com/en/terms. Please contact customer service if you believe you received t",
+      "error": null,
+      "http_status": 451,
+      "latency_ms": 157,
+      "url": "https://fapi.binance.com/fapi/v1/fundingRate?symbol=BTCUSDT&limit=1",
+      "venue": "binance_futures"
+    },
+    {
+      "body_prefix": "{\n    error:The Amazon CloudFront distribution is configured to block access from your country\n}",
+      "error": null,
+      "http_status": 403,
+      "latency_ms": 160,
+      "url": "https://api.bybit.com/v5/market/tickers?category=linear&symbol=BTCUSDT",
+      "venue": "bybit"
+    },
+    {
+      "body_prefix": "{\"data\":[{\"asset\":\"btc\",\"time\":\"2026-05-31T00:00:00.000000000Z\",\"CapMVRVCur\":\"1.362399461307008605\"},{\"asset\":\"btc\",\"time\":\"2026-06-01T00:00:00.000000000Z\",\"CapMVRVCur\":\"1.321374781897173082\"},{\"asset",
+      "error": null,
+      "http_status": 200,
+      "latency_ms": 276,
+      "url": "https://community-api.coinmetrics.io/v4/timeseries/asset-metrics?assets=btc&metrics=CapMVRVCur",
+      "venue": "coinmetrics"
+    },
+    {
+      "body_prefix": "{\n\t\"name\": \"Fear and Greed Index\",\n\t\"data\": [\n\t\t{\n\t\t\t\"value\": \"69\",\n\t\t\t\"value_classification\": \"Greed\",\n\t\t\t\"timestamp\": \"1788825600\",\n\t\t\t\"time_until_update\": \"59683\"\n\t\t}\n\t],\n\t\"metadata\": {\n\t\t\"error\": ",
+      "error": null,
+      "http_status": 200,
+      "latency_ms": 223,
+      "url": "https://api.alternative.me/fng/?limit=1",
+      "venue": "alternative_me"
+    }
+  ],
+  "runner": {
+    "github_actions": true,
+    "github_run_attempt": "1",
+    "github_run_id": "34199227365",
+    "python": "3.12.14",
+    "runner_arch": "X64",
+    "runner_name": "GitHub Actions 1000001730",
+    "runner_os": "Linux"
+  },
+  "timeout_seconds": 10
+}

@@ -1,0 +1,14 @@
+[
+  {
+    "name": "typecheck",
+    "run": "node -e \"const f=require('fs'),c=require('child_process');let r=0;const run=(cmd)=>{try{c.execSync(cmd,{stdio:'inherit'})}catch(e){r=1}};if(f.existsSync('package.json'))run('npm run typecheck --if-present');if(f.existsSync('pyproject.toml'))run('uv run mypy ingest --strict');process.exit(r)\"",
+    "exitCode": 0,
+    "output": "Success: no issues found in 6 source files\r\n"
+  },
+  {
+    "name": "test",
+    "run": "node -e \"const f=require('fs'),c=require('child_process');let r=0;const run=(cmd)=>{try{c.execSync(cmd,{stdio:'inherit'})}catch(e){r=1}};if(f.existsSync('package.json'))run('npm test --if-present');if(f.existsSync('tests'))run('uv run pytest -q');process.exit(r)\"",
+    "exitCode": 0,
+    "output": "....ssss.................................                                [100%]\r\n============================== warnings summary ===============================\r\ntests\\test_okx_fetcher.py:95\r\n  C:\\Users\\zayou\\OneDrive\\Desktop\\Projects\\crypto-data-live-platform\\tests\\test_okx_fetcher.py:95: PytestUnknownMarkWarning: Unknown pytest.mark.integration - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html\r\n    @pytest.mark.integration\r\n\r\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\r\n37 passed, 4 skipped, 1 warning in 4.97s\r\n"
+  }
+]

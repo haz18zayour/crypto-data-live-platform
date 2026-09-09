@@ -1,0 +1,178 @@
+# crypto-data-live-platform — session log
+
+**Just arrived? Run `uf next`, then read the Handoff section at the bottom.** Those two are the whole picture.
+
+Everything between the markers is generated from `.uf/events.ndjson` by `uf log`.
+Do not hand-edit it — it is regenerated. The hand-written sections below it survive.
+
+<!-- uf:generated:start -->
+
+## ▶ Resume here
+
+**1 uncommitted file(s) — the runner will not start**
+
+A previous session edited source and did not commit. uf refuses to run on a dirty tree rather than auto-committing someone else's half-finished work.
+
+Owner: **You.** This one cannot be delegated.
+
+```
+review the diff, then: git add -A && git commit
+```
+
+**Left in flight by the previous session:**
+
+- 1 uncommitted file(s): project-documents/15_Services_and_Credentials.md
+
+**Last handoff note:** 2026-09-09: US-009 is ready for independent verification. The five named web tests, exact typecheck/build gates, and service-role bundle scan pass; `50-evidence/US-009/page.png` shows a current BTC value with age and full provenance using a deterministic read-only fixture because this sandbox blocks outbound sockets. The final rebuilt bundle uses `.env.local`'s Supabase URL/anon key, not the fixture URL.
+
+## Where this stands
+
+| PRD | Stories | Passed | State |
+|---|---|---|---|
+| PRD-001-spine | 8 | 8 | **all green** |
+
+Spend to date: **$9.26** Claude · **37681k** Codex tokens.
+
+## What happened
+
+
+### 2026-09-07
+
+- 11:42  researched PRD-001-spine — 0 sources (REJECTED) · $2.05
+- 16:55  **PRD-001-spine** compiled — 10 stories
+- 16:55  **PRD-001-spine** compiled — 10 stories
+- 16:57  US-001 started, attempt 1 (codex)
+- 17:02  US-001 — codex finished `8e18cc86`
+- 17:03  US-001 **rejected** — 0/5 criteria, judged by claude
+- 17:06  **PRD-001-spine** compiled — 10 stories
+- 17:06  US-001 started, attempt 2 (codex)
+- 17:07  US-001 — codex finished `1561e20d`
+- 17:07  US-001 **rejected** — 0/6 criteria, judged by claude
+
+### 2026-09-08
+
+- 07:19  US-001 started, attempt 3 (codex)
+- 07:23  US-001 — codex finished `0b57517e`
+- 07:24  US-001 **rejected** — 5/6 criteria, judged by claude · $0.17
+- 07:27  **PRD-001-spine** compiled — 10 stories
+- 07:30  **PRD-001-spine** compiled — 10 stories
+- 07:35  ⏸ **gate opened** — US-001 has failed 3 times — is the story wrong?
+- 07:37  ▶ gate answered **rewrite-criteria** — Criteria were genuinely wrong and have been rewritten. C1 regenerated reachability.json locally during verification, overwriting the artifact produced on the GitHub runner - the criterion meant to prove the probe runs destroyed the evidence the story exists to produce, which is why C4 saw github_actions:false. Local and CI evidence are now separate committed files, plus a new criterion asserting the CI file carries its own github_run_id so a local regeneration cannot satisfy it. Attempts 1-2 were consumed by codex 404ing on gpt-5.5 (implementer never ran, $0, 0 tokens), not by the spec. All criteria verified passing by hand: CI success on HEAD cf7fc94, 8/8 venues with real HTTP status, 5 tests passing.
+- 07:37  ⏸ **gate opened** — US-001 has failed 3 times — is the story wrong?
+- 07:43  **PRD-001-spine** compiled — 10 stories
+- 07:46  ▶ gate answered **skip** — US-001 no longer exists. Per the earlier G5 answer (rewrite-criteria) it was replaced by US-011, which carries the corrected criteria: local and CI evidence are separate committed files, and a new criterion asserts the CI artifact carries its own github_run_id so a local regeneration cannot satisfy it. requireCi is now true so the verifier receives a real CI conclusion instead of being asked to trust the artifact's self-reported field. Skipping refers only to the retired US-001 identity; the work itself is intact and US-011 is pending with 0 attempts.
+- 07:46  US-011 started, attempt 1 (codex)
+- 07:49  US-011 — codex finished `646c0341`
+- 07:49  US-011 **rejected** — 0/7 criteria, judged by claude
+- 08:20  **PRD-001-spine** compiled — 9 stories
+- 08:21  US-002 started, attempt 1 (codex)
+- 08:35  US-002 — codex finished `a6b88c65` · 2156k tok
+- 08:35  US-002 **rejected** — 0/5 criteria, judged by claude
+- 12:35  US-002 started, attempt 2 (codex)
+- 12:39  US-002 failed — interrupted while running — the process stopped before a verdict
+- 12:39  US-002 started, attempt 2 (codex)
+- 12:39  US-002 — codex finished `9d4549ee` · 740k tok
+- 12:41  US-002 **PASSED** — 5/5 criteria, judged by claude · $1.05
+- 12:41  US-002 — codex finished `76a3a7fc` · 287k tok
+- 12:42  US-002 failed — interrupted while verifying — the process stopped before a verdict
+- 12:42  US-002 started, attempt 3 (codex)
+- 12:42  US-002 **PASSED** — 5/5 criteria, judged by claude · $0.65
+- 12:44  US-002 — codex finished `0523b7d3` · 283k tok
+- 12:45  US-002 **PASSED** — 5/5 criteria, judged by claude · $0.66
+- 12:45  US-003 started, attempt 1 (codex)
+- 12:52  US-003 — codex finished `b4a35340` · 910k tok
+- 12:53  US-003 **PASSED** — 5/5 criteria, judged by claude · $0.20
+- 12:53  US-004 started, attempt 1 (codex)
+- 12:54  US-004 failed — interrupted while running — the process stopped before a verdict
+- 12:54  US-004 started, attempt 1 (codex)
+- 13:01  US-004 — codex finished `3a31e43b` · 1249k tok
+- 13:02  US-004 **PASSED** — 5/5 criteria, judged by claude · $0.19
+- 13:05  US-005 started, attempt 1 (codex)
+- 13:08  US-004 — codex finished `72efd0a9` · 1977k tok
+- 13:08  US-004 **rejected** — 0/5 criteria, judged by claude
+- 13:10  US-005 failed — interrupted while running — the process stopped before a verdict
+- 13:10  US-004 started, attempt 3 (codex)
+- 13:13  US-004 — codex finished `ad6b4095` · 319k tok
+- 13:14  US-004 **PASSED** — 5/5 criteria, judged by claude · $0.29
+- 13:14  US-005 started, attempt 1 (codex)
+- 13:21  US-005 — codex finished `e0d490ad` · 2341k tok
+- 13:23  US-005 **rejected** — 1/5 criteria, judged by claude · $0.32
+- 13:29  US-005 — codex finished `c110cf02` · 1850k tok
+- 13:30  US-005 **rejected** — 1/5 criteria, judged by claude · $0.34
+- 13:32  **PRD-001-spine** compiled — 9 stories
+- 13:33  **PRD-001-spine** compiled — 9 stories
+- 13:33  US-006 started, attempt 1 (codex)
+- 13:42  US-006 — codex finished `d26603d0` · 1615k tok
+- 13:45  US-006 **PASSED** — 6/6 criteria, judged by claude · $0.35
+- 13:47  **PRD-001-spine** compiled — 9 stories
+- 18:01  **PRD-001-spine** compiled — 9 stories
+
+### 2026-09-09
+
+- 09:14  US-005 started, attempt 3 (codex)
+- 09:17  US-005 failed — interrupted while running — the process stopped before a verdict
+- 09:17  US-005 started, attempt 3 (codex)
+- 09:24  US-005 — codex finished `7df21196` · 1073k tok
+- 09:25  US-005 **rejected** — 0/6 criteria, judged by claude
+- 09:25  **PRD-001-spine** compiled — 9 stories
+- 09:26  ⏸ **gate opened** — US-005 has failed 3 times — is the story wrong?
+- 09:27  ▶ gate answered **rewrite-criteria** — The approach was wrong, and it has been rewritten. The tests shelled out to psql, which is absent on Windows (FileNotFoundError WinError 2) and only passed in CI because that workflow apt-installs postgresql-client - so the defect was invisible where it was written. Migrations now run through psycopg[binary], a wheel on every platform, already required by US-007, in a single transaction. Re-identifying as US-012 because answering this gate does not restore attempts: run.ts opens it whenever attempts >= maxAttempts without consulting a prior answer.
+- 09:27  **PRD-001-spine** compiled — 9 stories
+- 09:27  US-012 started, attempt 1 (codex)
+- 09:46  US-012 — codex finished `5555fa9e` · 3193k tok
+- 09:46  US-005 — codex finished `77d5fdca` · 8172k tok
+- 09:48  US-005 failed — interrupted while verifying — the process stopped before a verdict
+- 09:48  US-012 failed — interrupted while verifying — the process stopped before a verdict
+- 09:48  US-012 started, attempt 1 (codex)
+- 09:54  US-012 — codex finished `4eecdfc6` · 1060k tok
+- 09:55  US-012 **PASSED** — 6/6 criteria, judged by claude · $0.37
+- 09:59  US-007 started, attempt 1 (codex)
+- 10:11  US-007 — codex finished `ccd48a1b` · 1562k tok
+- 10:13  US-007 **PASSED** — 7/7 criteria, judged by claude · $0.32
+- 10:15  US-008 started, attempt 1 (codex)
+- 10:26  US-008 — codex finished · 1689k tok
+- 10:27  US-008 **rejected** — 0/6 criteria, judged by claude
+- 10:28  **PRD-001-spine** compiled — 9 stories
+- 10:28  **PRD-001-spine** compiled — 9 stories
+- 10:29  US-008 started, attempt 2 (codex)
+- 10:36  US-008 — codex finished `cb4babf6` · 1171k tok
+- 10:38  US-008 **rejected** — 4/6 criteria, judged by claude · $0.66
+- 10:42  **PRD-001-spine** compiled — 9 stories
+- 10:42  US-008 started, attempt 3 (codex)
+- 10:47  US-008 — codex finished `b978451e` · 726k tok
+- 10:49  US-008 **awaiting your judgement** — 5/6 criteria, judged by claude · $0.53
+- 10:49  ⏸ **gate opened** — US-008: With the schedule paused deliberately, Healthchecks.io raises an alert within its grace period
+- 10:53  **PRD-001-spine** compiled — 8 stories
+- 16:01  ▶ gate answered **met** — Owner verified the full alert path on 2026-09-09, using a separate TEST check so the live monitor was not disturbed. Healthchecks generated a DOWN alert on silence ('success signal did not arrive on time, grace time passed') and the email was actually delivered to zayourhassan.1@gmail.com. The live crypto-data-ingest check separately shows ping #1 received at 13:39 local (10:39 UTC) via HTTPS GET from 168.62.197.25 - an Azure IP, i.e. the GitHub-hosted runner - with user-agent python-httpx/0.28.1, and status new -> up. Both halves proven: the heartbeat reaches Healthchecks from CI, and silence reaches the owner by email. This is the direct defence against the prior system's 24h silent outage, where a self-hosted runner exited 0 and nothing reported it.
+- 16:01  👤 you judged US-008 **met** — Owner verified the full alert path on 2026-09-09, using a separate TEST check so the live monitor was not disturbed. Healthchecks generated a DOWN alert on silence ('success signal did not arrive on time, grace time passed') and the email was actually delivered to zayourhassan.1@gmail.com. The live crypto-data-ingest check separately shows ping #1 received at 13:39 local (10:39 UTC) via HTTPS GET from 168.62.197.25 - an Azure IP, i.e. the GitHub-hosted runner - with user-agent python-httpx/0.28.1, and status new -> up. Both halves proven: the heartbeat reaches Healthchecks from CI, and silence reaches the owner by email. This is the direct defence against the prior system's 24h silent outage, where a self-hosted runner exited 0 and nothing reported it.
+- 16:01  US-009 started, attempt 1 (codex)
+- 16:17  US-009 failed — interrupted while running — the process stopped before a verdict
+- 16:17  US-009 started, attempt 1 (codex)
+- 16:44  US-009 failed — interrupted while running — the process stopped before a verdict
+- 16:44  US-009 started, attempt 1 (codex)
+- 16:57  US-009 failed — interrupted while running — the process stopped before a verdict
+- 16:57  US-009 started, attempt 1 (codex)
+- 17:17  US-009 — codex finished `842003aa` · 4759k tok
+- 20:43  US-009 failed — interrupted while verifying — the process stopped before a verdict
+- 20:43  US-009 started, attempt 1 (codex)
+- 20:46  US-009 — codex finished `65914c96` · 549k tok
+- 20:48  US-009 **PASSED** — 9/9 criteria, judged by claude · $1.11
+
+<!-- uf:generated:end -->
+## Handoff
+
+- 2026-09-09: US-009 is ready for independent verification. The five named web tests, exact typecheck/build gates, and service-role bundle scan pass; `50-evidence/US-009/page.png` shows a current BTC value with age and full provenance using a deterministic read-only fixture because this sandbox blocks outbound sockets. The final rebuilt bundle uses `.env.local`'s Supabase URL/anon key, not the fixture URL.
+- 2026-09-09: US-008 needs no further product-code change: its 3 heartbeat tests, strict mypy, Ruff, and exact offset-cron gate pass, and committed evidence records green ingest run 34341379190. This sandbox cannot reach GitHub or the database and its `gh` credential is invalid; C6 remains the deliberate G6 owner action to pause the schedule and confirm the real Healthchecks.io alert within grace, which the story expressly forbids simulating.
+- 2026-09-09: US-008 attempt 2 keeps the existing heartbeat implementation and adds `pyproject.toml` and `uv.lock` to the ingest workflow's push filter so dependency changes receive the named CI run. The exact cron gate, 3 heartbeat tests, 40 offline regressions, mypy, and Ruff pass; this sandbox cannot write `.git` or reach GitHub/Postgres/OKX, so the framework must commit/push and CI plus the human silence alert remain external checks.
+- 2026-09-09: The schema story is now US-012 after G5 re-identification. Its working diff replaces `psql` subprocesses with `psycopg`, locks the binary dependency, and removes the CI client install; static checks and 37 non-network tests pass. This Codex sandbox blocks the database socket, so the exact four-case migration gate must run against the workflow's PostgreSQL 16 service during verification.
+- 2026-09-08: US-005 implementation and PostgreSQL 16 CI coverage are present; local deterministic gates pass. The local live-Postgres run could not start because this sandbox cannot open the Windows Docker service, so CI/verifier must execute the four database cases.
+
+_One bullet before you stop, newest at the top: what you were thinking that no file
+records — the approach already tried and rejected, why something is half-written, the
+question you were about to ask. `uf next` reads the top bullet and shows it._
+
+## Notes
+
+_Durable observations about this product: what surprised you, what the criteria did not
+capture. Newest at the top. If the lesson is reusable rather than specific to this
+product, `uf learn` it instead so every future product inherits it._

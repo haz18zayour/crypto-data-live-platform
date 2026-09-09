@@ -1,0 +1,91 @@
+{
+  "storyId": "US-007",
+  "passes": true,
+  "verifier": {
+    "agent": "claude",
+    "sandbox": "restricted:read-only"
+  },
+  "implementer": "codex",
+  "results": [
+    {
+      "criterionId": "US-007-C1",
+      "met": true,
+      "evidence": {
+        "file": "tests/test_persist.py",
+        "line": 274,
+        "testName": "test_full_pipeline_fetches_live_okx_and_writes_complete_provenance",
+        "exitCode": 0
+      },
+      "note": "Calls run_pipeline(postgres) with the default (real) fetcher against a real Postgres schema built from the actual migration file; ingest/pipeline.py:14-29 wires load_registry() + fetch_btc_daily_close (live OKX call, no client injected) + persist_datapoint together, and the test asserts every provenance column (source_vendor, endpoint, source_field, fetched_at, source_timestamp) is populated. No pytest addopts filter excludes @pytest.mark.integration, so the given 'test: exit 0' gate actually ran it."
+    },
+    {
+      "criterionId": "US-007-C2",
+      "met": true,
+      "evidence": {
+        "file": "tests/test_persist.py",
+        "line": 63,
+        "testName": "test_unavailable_result_is_persisted_with_reason_and_null_value",
+        "exitCode": 0
+      },
+      "note": "Persists Unavailable(reason=FETCH_FAILED) and asserts the resulting row is (status='UNAVAILABLE', reason='FETCH_FAILED', value=None) — a distinct row rather than a skipped write."
+    },
+    {
+      "criterionId": "US-007-C3",
+      "met": true,
+      "evidence": {
+        "file": "tests/test_persist.py",
+        "line": 78,
+        "testName": "test_provenance_fields_are_copied_from_registry_entry",
+        "exitCode": 0
+      },
+      "note": "ingest/persist.py:47-49 writes definition.vendor/endpoint/source_field verbatim (never hardcoded), and the test asserts the persisted row equals the registry IndicatorDefinition's own values."
+    },
+    {
+      "criterionId": "US-007-C4",
+      "met": true,
+      "evidence": {
+        "file": "tests/test_persist.py",
+        "line": 98,
+        "testName": "test_mismatched_measured_on_raises_before_reaching_database",
+        "exitCode": 0
+      },
+      "note": "Passes a NoDatabaseConnection stub whose .transaction() raises AssertionError if reached; persist_datapoint (ingest/persist.py:24-25) raises ValueError('measured_on must equal asset') before touching the connection, proving the app-code check runs ahead of the DB's asset_match constraint."
+    },
+    {
+      "criterionId": "US-007-C5",
+      "met": true,
+      "evidence": {
+        "file": "tests/test_persist.py",
+        "line": 112,
+        "testName": "test_writer_sets_fetched_at_and_uses_fetcher_source_timestamp",
+        "exitCode": 0
+      },
+      "note": "Monkeypatches ingest.persist._utc_now to a fixed FETCHED_AT and passes a fetcher-supplied source_timestamp; asserts the row's fetched_at equals the mocked writer clock and source_timestamp equals the fetcher's value, and that the two differ."
+    },
+    {
+      "criterionId": "US-007-C6",
+      "met": true,
+      "evidence": {
+        "file": "tests/test_persist.py",
+        "line": 134,
+        "testName": "test_future_source_timestamp_is_rejected_before_reaching_database",
+        "exitCode": 0
+      },
+      "note": "With _utc_now mocked, an Ok result whose source_timestamp is one microsecond after 'now' is passed to a NoDatabaseConnection stub; persist_datapoint (ingest/persist.py:26-27) raises ValueError('source_timestamp cannot be in the future') before any DB call, matching the write-boundary defence described."
+    },
+    {
+      "criterionId": "US-007-C7",
+      "met": true,
+      "evidence": {
+        "file": "tests/test_persist.py",
+        "line": 231,
+        "testName": "test_source_field_is_persisted_and_non_empty",
+        "exitCode": 0
+      },
+      "note": "Asserts the persisted source_field column equals definition.source_field and is non-empty (source_field.strip() truthy), directly covering the funding-rate-bug scenario of recording an endpoint without the specific field."
+    }
+  ],
+  "tripwires": [],
+  "note": "Verified against the actual repo state, not just the diff: ingest/status.py, ingest/registry.py, ingest/fetchers/okx.py, and the datapoints migration all confirm the column names, types, and Result variants that persist.py and the tests rely on. All seven criteria are backed by named tests with concrete, non-trivial assertions; the integration test (C1) genuinely drives the wired entry point run_pipeline against a live OKX fetch and a real Postgres schema built from the actual migration SQL, and no pytest marker filter would exclude it from the given green test gate. No faked or assertion-free tests found.",
+  "at": "2026-09-09T10:13:27.611Z"
+}

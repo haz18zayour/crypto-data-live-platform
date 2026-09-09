@@ -1,0 +1,80 @@
+{
+  "storyId": "US-008",
+  "passes": false,
+  "verifier": {
+    "agent": "claude",
+    "sandbox": "restricted:read-only"
+  },
+  "implementer": "codex",
+  "results": [
+    {
+      "criterionId": "US-008-C1",
+      "met": true,
+      "evidence": {
+        "file": "tests/test_heartbeat.py",
+        "line": 32,
+        "testName": "test_heartbeat_is_pinged_only_after_a_successful_persist",
+        "exitCode": 0
+      },
+      "note": "Asserts that when persist succeeds the plain success ping fires (events==['persisted', f'ping:{HEARTBEAT_URL}']), and when the fetcher returns Unavailable (fetched nothing) the plain success ping never fires — only the distinct /fail ping does (events==['persisted', f'ping:{HEARTBEAT_URL}/fail']). ingest/heartbeat.py:54-58 implements the check (fetch_result.status not in ('OK','STALE') raises before the success ping)."
+    },
+    {
+      "criterionId": "US-008-C2",
+      "met": true,
+      "evidence": {
+        "file": "tests/test_heartbeat.py",
+        "line": 77,
+        "testName": "test_failed_run_pings_the_failure_endpoint_rather_than_staying_silent",
+        "exitCode": 0
+      },
+      "note": "With persist raising RuntimeError, asserts requested_urls == [f'{HEARTBEAT_URL}/fail'] — explicit failure produces a distinct signal (the /fail endpoint) from the plain success ping. True silence (process death before any code runs) is architecturally different again: no ping fires at all, matching ingest/heartbeat.py:56-58's except-block routing."
+    },
+    {
+      "criterionId": "US-008-C3",
+      "met": true,
+      "evidence": {
+        "file": "tests/test_heartbeat.py",
+        "line": 109,
+        "testName": "test_heartbeat_failure_does_not_fail_the_run",
+        "exitCode": 0
+      },
+      "note": "Client transport raises httpx.ConnectError on every ping; test asserts run_ingestion still returns row_id 42 without raising. ingest/heartbeat.py:30-32 catches httpx.HTTPError inside _ping and swallows it, so a broken monitor cannot fail or block the ingestion run."
+    },
+    {
+      "criterionId": "US-008-C4",
+      "met": true,
+      "evidence": {
+        "file": null,
+        "line": null,
+        "testName": null,
+        "exitCode": 0
+      },
+      "note": "Deterministic gate 'US-008-C4' (gh run list --branch feat/prd-001-spine --workflow ingest --limit 1 --json conclusion ... | grep -qx success) already ran with exit 0, directly checking the GitHub API rather than inferring from local state."
+    },
+    {
+      "criterionId": "US-008-C5",
+      "met": true,
+      "evidence": {
+        "file": ".github/workflows/ingest.yml",
+        "line": 5,
+        "testName": null,
+        "exitCode": 0
+      },
+      "note": "cron: '17 */6 * * *' — minute is 17, not 0, offset from the top of the hour. Confirmed both by direct file read and by the deterministic gate US-008-C5, which parses the raw YAML text (avoiding the yaml.safe_load on:-key trap) and exited 0."
+    },
+    {
+      "criterionId": "US-008-C6",
+      "met": false,
+      "evidence": {
+        "file": null,
+        "line": null,
+        "testName": null,
+        "exitCode": null
+      },
+      "note": "method: human — requires the owner to deliberately pause the schedule and confirm a real Healthchecks.io alert arrives within its grace period. Cannot be certified by this verifier and the story explicitly forbids self-certifying or simulating it."
+    }
+  ],
+  "tripwires": [],
+  "note": "C1-C3 are backed by named, assertion-rich tests in tests/test_heartbeat.py whose logic matches ingest/heartbeat.py's implementation (success ping only after fetch+persist succeed, distinct /fail ping on explicit failure, HTTPError swallowed so monitoring can't break the run). C4 and C5 are proven by the already-executed deterministic cmd gates (both exit 0), C5 also independently confirmed by reading the workflow file (cron minute 17). C6 is a human-only criterion and is correctly unmet by this verifier. No faked or assertion-free tests found; no unrelated churn beyond expected evidence/session bookkeeping files.",
+  "at": "2026-09-09T10:49:07.540Z"
+}

@@ -1,0 +1,80 @@
+{
+  "storyId": "US-012",
+  "passes": true,
+  "verifier": {
+    "agent": "claude",
+    "sandbox": "restricted:read-only"
+  },
+  "implementer": "codex",
+  "results": [
+    {
+      "criterionId": "US-012-C1",
+      "met": true,
+      "evidence": {
+        "file": "tests/test_migration.py",
+        "line": 34,
+        "testName": "migrated_postgres fixture + test_asset_match_rejects_ok_row_measured_on_another_asset / test_value_iff_ok_rejects_status_and_value_drift / test_reason_required_rejects_unavailable_without_reason",
+        "exitCode": 0
+      },
+      "note": "The session fixture connects via psycopg to a live Postgres (TEST_DATABASE_URL, wired to the CI postgres:16 service), applies the real migration files from supabase/migrations verbatim, and each of the three tests exercises one constraint with a rejecting row (pytest.raises(CheckViolation)) and an accepting row against that same live connection. Gate US-012-C6 confirms it actually ran (exit 0, '4 passed')."
+    },
+    {
+      "criterionId": "US-012-C2",
+      "met": true,
+      "evidence": {
+        "file": "tests/test_migration.py",
+        "line": 117,
+        "testName": "test_asset_match_rejects_ok_row_measured_on_another_asset",
+        "exitCode": 0
+      },
+      "note": "Inserts asset='SOL', measured_on='BTC' (i.e. BTC data labelled SOL) with default status='OK' and expects psycopg.errors.CheckViolation matching 'asset_match', matching the asset_match constraint at supabase/migrations/20260908140000_create_datapoints.sql:28-29 (check (status <> 'OK' or measured_on = asset))."
+    },
+    {
+      "criterionId": "US-012-C3",
+      "met": true,
+      "evidence": {
+        "file": "tests/test_migration.py",
+        "line": 177,
+        "testName": "test_value_iff_ok_rejects_status_and_value_drift",
+        "exitCode": 0
+      },
+      "note": "Parametrized test drives both drift directions (OK with null value; UNAVAILABLE with a non-null value) against the value_iff_ok constraint (supabase/migrations/20260908140000_create_datapoints.sql:30-31), asserting CheckViolation on the bad row and success on the fixed row."
+    },
+    {
+      "criterionId": "US-012-C4",
+      "met": true,
+      "evidence": {
+        "file": "tests/test_migration.py",
+        "line": 212,
+        "testName": "test_reason_required_rejects_unavailable_without_reason",
+        "exitCode": 0
+      },
+      "note": "Inserts UNAVAILABLE with reason=None and asserts CheckViolation matching 'reason_required', matching the reason_required constraint at supabase/migrations/20260908140000_create_datapoints.sql:32-33; accepts the same row once reason='FETCH_FAILED' is supplied."
+    },
+    {
+      "criterionId": "US-012-C5",
+      "met": true,
+      "evidence": {
+        "file": "ingest/migrate.py",
+        "line": 15,
+        "testName": null,
+        "exitCode": 0
+      },
+      "note": "US-012-C5 gate ran `uv run python -m ingest.migrate --check` with exit 0; check_migrations() enforces YYYYMMDDHHMMSS_name ordering/naming and verifies each file's sha256 against supabase/migrations/checksums.sha256 (which records exactly one hash matching the single migration file), proving nothing was edited post-recording."
+    },
+    {
+      "criterionId": "US-012-C6",
+      "met": true,
+      "evidence": {
+        "file": ".github/workflows/uf-verify.yml",
+        "line": 70,
+        "testName": null,
+        "exitCode": 0
+      },
+      "note": "Gate US-012-C6 (`pytest tests/test_migration.py -q --tb=no -rN`) reports exit 0 with '4 passed' (no 's' skip markers), and the CI workflow provisions a real postgres:16 service with TEST_DATABASE_URL so the step is not silently skippable; the fixture raises RuntimeError (not a skip) if it cannot connect."
+    }
+  ],
+  "tripwires": [],
+  "note": "All six criteria are backed by concrete, live-Postgres evidence: the CI workflow now spins up a real postgres:16 service, tests/test_migration.py connects via psycopg, applies the actual migration SQL, and drives each of the three CHECK constraints (asset_match, value_iff_ok, reason_required) with both a rejecting and an accepting row inside real transactions — a genuine improvement over the prior US-005 psql-subprocess approach that only worked in CI and broke on Windows. Deterministic gates US-012-C5 and US-012-C6 both report exit 0 with concrete pass counts, not skips. The stale prior verdict.json/gates.json in the diff reflect an earlier interrupted verifier run and are superseded by the DETERMINISTIC GATE RESULTS supplied for this judgement.",
+  "at": "2026-09-09T09:55:39.371Z"
+}

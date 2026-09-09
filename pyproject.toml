@@ -1,0 +1,32 @@
+[project]
+name = "crypto-data-live-platform"
+version = "0.1.0"
+requires-python = ">=3.12"
+dependencies = [
+    "httpx>=0.27,<1",
+    "pydantic-settings>=2,<3",
+    "psycopg[binary]>=3.2,<4",
+    "structlog>=24,<26",
+]
+
+[dependency-groups]
+dev = [
+    "mypy>=1.11,<2",
+    "pytest>=8,<9",
+    "ruff>=0.8,<1",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+# The repo root must be on sys.path so tests can `import ingest`. Without this the
+# project is neither installed (no [build-system]) nor implicitly importable, and any
+# test that imports ingest at module level fails collection with ModuleNotFoundError.
+pythonpath = ["."]
+markers = ["integration: touches a live third-party endpoint"]
+
+[tool.ruff]
+target-version = "py312"
+
+[tool.mypy]
+python_version = "3.12"
+plugins = ["pydantic.mypy"]

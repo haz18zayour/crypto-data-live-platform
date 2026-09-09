@@ -1,7 +1,7 @@
 ---
 id: US-006
 title: OKX fetcher — BTC daily close, closed candles only
-priority: 6
+priority: 5
 touches:
   - ingest/fetchers/okx.py
   - tests/test_okx_fetcher.py
@@ -27,10 +27,17 @@ possible way: it silently corrects itself by the next day.
 - [test: source_timestamp is the candle close time and is strictly in the past] A value whose source timestamp lies in the future is rejected — the direct F11 defence
 - [test: measured_on equals BTC] The fetcher declares what it actually measured, never what it is being displayed as
 - [integration: a live OKX request returns a closed BTC daily candle with a past source timestamp] Hits the real endpoint and asserts confirm handling against real data
+- [test: daily close lands on a utc midnight boundary] The candle boundary is 00:00 UTC — OKX's default `bar=1D` is aligned to UTC+8 and would silently put every indicator on a Hong Kong day
 
 ## Notes for the implementer
 
-Endpoint: `https://www.okx.com/api/v5/market/candles?instId=BTC-USDT&bar=1D`.
+Endpoint: `https://www.okx.com/api/v5/market/candles?instId=BTC-USDT&bar=1Dutc`.
+
+**Use `bar=1Dutc`, never `bar=1D`.** OKX's default daily bar is aligned to **UTC+8**
+(Hong Kong midnight), so its candles open at 16:00 UTC. Measured 2026-09-08, the two
+disagreed on the same "yesterday's close": **78,834.1** (`1D`) vs **79,111.8** (`1Dutc`) —
+0.35% apart. A UTC+8 day boundary would silently misalign every indicator against Coin
+Metrics (UTC day close) and FRED (US dates), and nothing downstream would reveal it.
 
 Response rows are arrays, newest first. Index 0 is the open time in **milliseconds**, index 4
 is the close price, and the **last element is `confirm`** — `"0"` forming, `"1"` final. Verified
