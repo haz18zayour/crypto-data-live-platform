@@ -1,0 +1,113 @@
+{
+  "storyId": "US-009",
+  "passes": true,
+  "verifier": {
+    "agent": "claude",
+    "sandbox": "restricted:read-only"
+  },
+  "implementer": "codex",
+  "results": [
+    {
+      "criterionId": "US-009-C1",
+      "met": true,
+      "evidence": {
+        "file": "web/package.json",
+        "line": 9,
+        "testName": null,
+        "exitCode": 0
+      },
+      "note": "Deterministic gate 'npm --prefix web run typecheck' (tsc -b --pretty false) ran with exit 0."
+    },
+    {
+      "criterionId": "US-009-C2",
+      "met": true,
+      "evidence": {
+        "file": "web/package.json",
+        "line": 8,
+        "testName": null,
+        "exitCode": 0
+      },
+      "note": "Deterministic gate 'npm --prefix web run build' (tsc -b && vite build) ran with exit 0."
+    },
+    {
+      "criterionId": "US-009-C3",
+      "met": true,
+      "evidence": {
+        "file": "web/src/DatapointValue.test.tsx",
+        "line": 20,
+        "testName": "an UNAVAILABLE datapoint renders an em dash and its reason, never a zero",
+        "exitCode": 0
+      },
+      "note": "Test iterates NOT_DEFINABLE/'Not definable for this chain', PAYWALLED/'Requires a paid tier', FETCH_FAILED/'Fetch failed' and asserts each distinct message renders plus the value is '—' and never '0'; messages sourced from DatapointValue.tsx:3-8 reasonMessages map. Overall `npm test` gate passed."
+    },
+    {
+      "criterionId": "US-009-C4",
+      "met": true,
+      "evidence": {
+        "file": "web/src/DatapointValue.test.tsx",
+        "line": 43,
+        "testName": "a STALE datapoint renders the value with its age and a visible stale treatment",
+        "exitCode": 0
+      },
+      "note": "Test asserts the stale card carries class 'datapoint--stale', a visible 'STALE' label, age text, and the value — distinct DOM/markup from the OK/'CURRENT' branch in DatapointValue.tsx:94-127, so a stale value can never render as current."
+    },
+    {
+      "criterionId": "US-009-C5",
+      "met": true,
+      "evidence": {
+        "file": "web/src/DatapointValue.test.tsx",
+        "line": 60,
+        "testName": "adding a status to the union without handling it is a compile error",
+        "exitCode": 0
+      },
+      "note": "Test asserts assertNever's parameter type is `never` (expectTypeOf), and DatapointValue.tsx:157 calls assertNever(datapoint) after the exhaustive switch with no default case — an unhandled Datapoint variant fails typecheck (tsc -b, gate C1) rather than falling through."
+    },
+    {
+      "criterionId": "US-009-C6",
+      "met": true,
+      "evidence": {
+        "file": "web/src/DatapointValue.test.tsx",
+        "line": 64,
+        "testName": "the value displays its source vendor, endpoint and source timestamp",
+        "exitCode": 0
+      },
+      "note": "Test asserts vendor ('OKX'), endpoint URL, and formatted source timestamp are all visible on the rendered card; Provenance component (DatapointValue.tsx:52-89) renders inline in the same <article>, not behind any click/expand affordance."
+    },
+    {
+      "criterionId": "US-009-C7",
+      "met": true,
+      "evidence": {
+        "file": "web/src/DatapointValue.test.tsx",
+        "line": 77,
+        "testName": "a value whose reference period differs from its publication date shows both",
+        "exitCode": 0
+      },
+      "note": "Test's referencePeriod (2026-07-01) vs publishedAt (2026-09-08) span is exactly 69 days, matching the story's cited FRED-measured M2 lag; it asserts both dates render distinctly and the age is computed from publication (1 day), not the stale reference period."
+    },
+    {
+      "criterionId": "US-009-C8",
+      "met": true,
+      "evidence": {
+        "file": null,
+        "line": null,
+        "testName": null,
+        "exitCode": 0
+      },
+      "note": "Deterministic gate scanning web/dist for the SUPABASE_SERVICE_ROLE_KEY value ran with exit 0 (not present); data.ts:124-125 only reads VITE_SUPABASE_URL/VITE_SUPABASE_ANON_KEY, no service-role key referenced anywhere in web/src."
+    },
+    {
+      "criterionId": "US-009-C9",
+      "met": true,
+      "evidence": {
+        "file": "prds/PRD-001-spine/50-evidence/US-009/page.png",
+        "line": null,
+        "testName": null,
+        "exitCode": null
+      },
+      "note": "Viewed the screenshot directly: it shows 'BTC daily close', $79,111.80, 'CURRENT' status, '17 hours old' freshness, and a provenance block (vendor, endpoint, source field, source timestamp) all visible without interaction, matching the DatapointValue.tsx OK-branch markup."
+    }
+  ],
+  "tripwires": [],
+  "note": "All 9 criteria are met with concrete evidence: named vitest tests exist in web/src/DatapointValue.test.tsx and exercise the exhaustive Datapoint union (OK/STALE/UNAVAILABLE/ERROR) with real assertions (toHaveTextContent, toHaveClass, expectTypeOf), not assertion-free stubs; the exhaustive switch in DatapointValue.tsx genuinely falls through to assertNever with no default; the deterministic typecheck/build/service-role-scan gates all report exit 0; and the evidence screenshot, inspected directly, shows the value with freshness and provenance rendered together on the page. No faked or padded evidence found — the diff's large lockfile churn is legitimate npm install output for a newly scaffolded web app, not disguised filler.",
+  "at": "2026-09-09T17:19:57.172Z"
+}
