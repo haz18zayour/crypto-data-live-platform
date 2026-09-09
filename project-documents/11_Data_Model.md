@@ -167,6 +167,38 @@ daily candle, and CPI are all the same shape. `ai-hedge-fund` reached it indepen
 enforces it by filtering on `filing_date` rather than `report_period`, because the latter
 "leaks 3-6 weeks of future" (R9 §2).
 
+## 4c. Corroboration — disagreement is a finding, not a problem to resolve
+
+Every other rule in this document defends against a failure someone predicted. Corroboration is
+the only one that catches a wrong number **nobody thought to check for**, and it is therefore
+the most valuable single mechanism here. Designed in PRD-003.
+
+The shape: fetch the same quantity from two or more independent venues, compare, and record the
+comparison.
+
+**The trap to avoid:** silently picking a winner. Averaging two disagreeing sources, or
+preferring the "primary" one, throws away the only signal that something is wrong and produces
+a confident number — which is exactly the failure mode this product exists to eliminate. If two
+venues disagree beyond tolerance, **that is the finding**, and it must reach the face of the
+value.
+
+Concretely:
+
+- The measured OKX case is the worked example. `bar=1D` (Hong Kong day) gave **78,834.1**;
+  `bar=1Dutc` gave **79,111.8** — 0.35% apart. Comparing OKX against Coinbase would have
+  flagged it automatically on day one. Instead it was caught because a person read the
+  timestamp. That is not a repeatable defence.
+- Tolerance is per-indicator and belongs in the registry, not hardcoded. Spot close across major
+  venues sits far tighter than, say, aggregated open interest. R5 flagged a specific numeric
+  tolerance as **UNVERIFIED** — it must be measured from observed spreads, not guessed.
+- Divergence needs its own visible state. Whether that is a new `reason` value, a separate
+  `corroboration` column, or a companion row is a PRD-003 decision; what is settled here is that
+  it may not be silently swallowed, and that a corroborated value and an uncorroborated one must
+  not look identical.
+- Corroboration is not available for everything. A metric published by exactly one vendor
+  (Coin Metrics MVRV) has no second opinion, and that fact should itself be visible rather than
+  implied.
+
 ## 5. Fallbacks are different indicators
 
 If a value cannot be obtained from its declared source, the answer is `UNAVAILABLE` — **not a

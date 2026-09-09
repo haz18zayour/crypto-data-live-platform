@@ -1,0 +1,39 @@
+name: ingest
+
+on:
+  schedule:
+    - cron: '17 */6 * * *'
+  repository_dispatch:
+    types: [ingest]
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/ingest.yml'
+      - 'ingest/**'
+      - 'tests/test_heartbeat.py'
+
+permissions:
+  contents: read
+
+jobs:
+  ingest:
+    name: ingest
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      HEALTHCHECKS_PING_URL: ${{ secrets.HEALTHCHECKS_PING_URL }}
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+
+      - name: Run ingestion
+        run: uv run python -m ingest.heartbeat

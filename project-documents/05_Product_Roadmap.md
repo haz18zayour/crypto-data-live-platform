@@ -10,13 +10,14 @@ breadth is added. Every later PRD adds one panel to a page that already works.
 |---|---|---|---|---|
 | **PRD-001** | **Spine: reachability spike + registry + provenance schema + one live indicator, deployed** | Settles the one open architectural question (which venues are reachable from the target compute) **before** anything is built on the answer. Then proves the entire path end to end with a single indicator: fetch → status → provenance → Postgres → page → freshness visible → Healthchecks alerts on silence. The riskiest assumptions die first | — | planned |
 | **PRD-002** | Determinism and contract harness | Golden-file tests pinning indicator output to fixed bars; VCR/cassette tests per vendor; warm-up-boundary tests; a `source_timestamp`-in-the-future assertion. Directly defends F5 (uptime-dependent values) and F11 (wrong field). Comes *before* breadth so every later indicator inherits the harness | 001 | planned |
-| **PRD-003** | Spot OHLCV + technical indicators (BTC/ETH/SOL/BNB) | RSI, EMA stack, MACD, StochRSI, Bollinger, ATR, OBV via TA-Lib. Wilder smoothing explicit; population vs sample stdev settled; unclosed-candle exclusion enforced via OKX `confirm` | 002 | planned |
-| **PRD-004** | Derivatives panel | Funding (**settled** series, never `premiumIndex`), open interest, long/short ratio, taker ratio. Per-venue funding interval recorded so cross-venue comparison and annualisation are correct | 002 | planned |
-| **PRD-005** | On-chain panel — and honest absence | Coin Metrics MVRV, exchange flows, active addresses for **BTC + ETH**; MVRV/addresses/supply also free for **BNB**. For **SOL**: network activity and staking are BUILT from the free public RPC (verified live: epoch, cumulative tx count, circulating supply) while valuation and exchange flows render `NOT_DEFINABLE` — no vendor sells SOL realized-cap at any price, and a self-curated exchange-label set would recreate the wrong-data failure. See `research/R8`. This PRD is as much about displaying absence correctly as about displaying data | 002 | planned |
-| **PRD-006** | Macro and flows panel | FRED series with **release lag surfaced on the face of each value**; stablecoin supply (DefiLlama); ETF net flows (SoSoValue, T+1); Fear & Greed labelled as a composite. `DTWEXBGS` labelled as a broad-dollar index, not "DXY" | 002 | planned |
-| **PRD-007** | The single page | Layout of all panels on one screen: 4 assets × all indicators, staleness legible at a glance, three kinds of unavailability visually distinct. The product's actual thesis lives or dies here | 003–006 | planned |
-| **PRD-008** | History and charts | Backfill; per-indicator sparklines and distribution context (so a value can be read against its own history rather than an arbitrary band) | 007 | planned |
-| **PRD-009** | Integrity dashboard | Frozen-value detection, per-source freshness SLA rollup, coverage generated from the registry so an uncovered indicator is a build error. The self-audit that actually audits | 007 | planned |
+| **PRD-003** | **Cross-source corroboration** | The only defence in this roadmap against mistakes we have not thought of. Every other check enforces something someone predicted; this one catches a wrong number because a second, independent venue disagrees. Fetch the same quantity from 2+ venues, compare within tolerance, and treat divergence as a finding rather than picking a winner. Placed here so every indicator built afterwards inherits the pattern | 002 | planned |
+| **PRD-004** | Spot OHLCV + technical indicators (BTC/ETH/SOL/BNB) | RSI, EMA stack, MACD, StochRSI, Bollinger, ATR, OBV via TA-Lib. Wilder smoothing explicit; population vs sample stdev settled; unclosed-candle exclusion enforced via OKX `confirm` | 002 | planned |
+| **PRD-005** | Derivatives panel | Funding (**settled** series, never `premiumIndex`), open interest, long/short ratio, taker ratio. Per-venue funding interval recorded so cross-venue comparison and annualisation are correct | 002 | planned |
+| **PRD-006** | On-chain panel — and honest absence | Coin Metrics MVRV, exchange flows, active addresses for **BTC + ETH**; MVRV/addresses/supply also free for **BNB**. For **SOL**: network activity and staking are BUILT from the free public RPC (verified live: epoch, cumulative tx count, circulating supply) while valuation and exchange flows render `NOT_DEFINABLE` — no vendor sells SOL realized-cap at any price, and a self-curated exchange-label set would recreate the wrong-data failure. See `research/R8`. This PRD is as much about displaying absence correctly as about displaying data | 002 | planned |
+| **PRD-007** | Macro and flows panel | FRED series with **release lag surfaced on the face of each value**; stablecoin supply (DefiLlama); ETF net flows (SoSoValue, T+1); Fear & Greed labelled as a composite. `DTWEXBGS` labelled as a broad-dollar index, not "DXY" | 002 | planned |
+| **PRD-008** | The single page | Layout of all panels on one screen: 4 assets × all indicators, staleness legible at a glance, three kinds of unavailability visually distinct. The product's actual thesis lives or dies here | 004–007 | planned |
+| **PRD-009** | History and charts | Backfill; per-indicator sparklines and distribution context (so a value can be read against its own history rather than an arbitrary band) | 007 | planned |
+| **PRD-010** | Integrity dashboard | Frozen-value detection, per-source freshness SLA rollup, coverage generated from the registry so an uncovered indicator is a build error. The self-audit that actually audits | 007 | planned |
 
 Status: `planned` → `researching` → `specced` → `running` → `shipped`
 
@@ -32,7 +33,11 @@ Status: `planned` → `researching` → `specced` → `running` → `shipped`
    a dashboard exists to expose.
 4. **The test harness precedes breadth.** PRD-002 before 003–006 so twenty indicators inherit
    determinism and contract tests instead of retrofitting them onto twenty call sites.
-5. **First shippable slice as early as possible** — PRD-001 ends with a real page, in
+5. **Corroboration precedes breadth.** PRD-003 comes before the panels because it is the
+   only check that does not require predicting the failure. The OKX `bar=1D` bug — a Hong
+   Kong day close stored as a UTC one, 0.35% off, caught only because a human looked at the
+   number — would have been caught automatically by comparing OKX against Coinbase.
+6. **First shippable slice as early as possible** — PRD-001 ends with a real page, in
    production, showing one real number with its provenance.
 
 ## Out of scope for v1
