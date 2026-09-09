@@ -1,0 +1,80 @@
+{
+  "storyId": "US-207",
+  "passes": true,
+  "verifier": {
+    "agent": "claude",
+    "sandbox": "restricted:read-only"
+  },
+  "implementer": "codex",
+  "results": [
+    {
+      "criterionId": "US-207-C1",
+      "met": true,
+      "evidence": {
+        "file": "ingest/registry.py",
+        "line": 157,
+        "testName": "test_every_registry_entry_has_a_golden_file",
+        "exitCode": 0
+      },
+      "note": "assert_registry_coverage appends f\"{entry.key} is missing a golden file\" when entry.key not in golden_keys. Test constructs a registry with key 'new_indicator', passes an empty golden_keys set, and asserts AssertionError matching r'new_indicator.*golden file' — the key is named in the failure."
+    },
+    {
+      "criterionId": "US-207-C2",
+      "met": true,
+      "evidence": {
+        "file": "tests/test_coverage.py",
+        "line": 17,
+        "testName": "test_adding_an_indicator_fails_coverage_until_it_is_covered",
+        "exitCode": 0
+      },
+      "note": "golden_keys() globs the real tests/goldens/*.json files (no hardcoded key list) and response_models is RESPONSE_MODELS imported straight from ingest/canary.py — the same dict canary.py already uses in production (canary.py:18-20) to validate live endpoint shapes. No second hand-kept coverage list exists in the test file; grep confirms the old hardcoded _assess_data_quality/_INDICATOR_HISTORY_COLUMNS mechanism from the prior system is gone from ingest/ entirely (only mentioned in historical docs)."
+    },
+    {
+      "criterionId": "US-207-C3",
+      "met": true,
+      "evidence": {
+        "file": "ingest/registry.py",
+        "line": 161,
+        "testName": "test_every_registered_vendor_has_a_response_model",
+        "exitCode": 0
+      },
+      "note": "assert_registry_coverage appends f\"{entry.vendor} has no response model for {entry.key}\" when entry.key not in response_models. Test uses vendor='new-vendor', passes empty response_models, and asserts AssertionError matching r'new-vendor.*response model'."
+    },
+    {
+      "criterionId": "US-207-C4",
+      "met": true,
+      "evidence": {
+        "file": "tests/test_coverage.py",
+        "line": 79,
+        "testName": "test_adding_an_indicator_fails_coverage_until_it_is_covered",
+        "exitCode": 0
+      },
+      "note": "The test loads the real registry via load_registry(), appends one new IndicatorDefinition ('new_indicator') to it via IndicatorRegistry.model_validate, and asserts assert_registry_coverage raises AssertionError naming 'new_indicator' — demonstrating the failure by actually adding an uncovered indicator rather than asserting the mechanism exists in the abstract."
+    },
+    {
+      "criterionId": "US-207-C5",
+      "met": true,
+      "evidence": {
+        "file": "tests/test_coverage.py",
+        "line": 92,
+        "testName": "test_assembled_coverage_check_passes_over_the_real_registry",
+        "exitCode": 0
+      },
+      "note": "Marked @pytest.mark.integration, this test calls load_registry() with no path argument (reading the real ingest/registry.yaml), golden_keys() (globbing the real tests/goldens/ directory), and RESPONSE_MODELS imported from ingest/canary.py (the real production dict) — no fixture registry or fixture golden/model data is used anywhere in this test."
+    },
+    {
+      "criterionId": "US-207-C6",
+      "met": true,
+      "evidence": {
+        "file": "tests/test_coverage.py",
+        "line": 1,
+        "testName": null,
+        "exitCode": 0
+      },
+      "note": "Declared gate 'uv run pytest tests/test_coverage.py -q --no-header -o addopts= --tb=short' exits 0, and -o addopts= clears any default marker exclusion so the @pytest.mark.integration test runs too, proving the whole coverage suite passes standalone."
+    }
+  ],
+  "tripwires": [],
+  "note": "All six criteria are backed by concrete, non-trivial evidence: assert_registry_coverage (ingest/registry.py:146-164) is driven by real artifacts — registry.yaml via load_registry(), the actual tests/goldens/ directory, and the real RESPONSE_MODELS dict already used by ingest/canary.py in production — with no second hand-kept coverage list and no old hardcoded _assess_data_quality mechanism remaining. The failure-naming tests (C1/C3) assert precise regex matches on the key/vendor, and C4/C5 both drive the real loaded registry rather than a fixture. No assertion-free tests, comment-only satisfaction, or unrelated diff padding found (SESSION.md/.uf churn is routine bookkeeping).",
+  "at": "2026-09-09T22:21:00.231Z"
+}

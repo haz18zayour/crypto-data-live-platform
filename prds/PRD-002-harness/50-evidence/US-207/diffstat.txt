@@ -1,0 +1,5 @@
+.uf/events.ndjson      |  3 ++
+ SESSION.md             |  9 +++--
+ ingest/registry.py     | 22 ++++++++++++
+ tests/test_coverage.py | 98 ++++++++++++++++++++++++++++++++++++++++++++++++++
+ 4 files changed, 129 insertions(+), 3 deletions(-)
