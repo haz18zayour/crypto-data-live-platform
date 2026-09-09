@@ -64,13 +64,10 @@ jobs:
       - name: Install uv
         if: steps.detect.outputs.python == 'true'
         uses: astral-sh/setup-uv@v5
-      - name: Install PostgreSQL client
-        if: steps.detect.outputs.tests == 'true'
-        run: sudo apt-get update && sudo apt-get install --yes postgresql-client
       - name: Check migration ledger
         if: steps.detect.outputs.python == 'true'
         run: uv run python -m ingest.migrate --check
-      - name: US-005 live PostgreSQL migration constraints
+      - name: US-012 live PostgreSQL migration constraints
         if: steps.detect.outputs.python == 'true' && steps.detect.outputs.tests == 'true'
         run: uv run pytest tests/test_migration.py -q --no-header -o addopts= --tb=no -rN
       - name: Python typecheck

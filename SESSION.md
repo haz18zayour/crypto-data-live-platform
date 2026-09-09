@@ -114,6 +114,7 @@ Spend to date: **$6.27** Claude · **14799k** Codex tokens.
 <!-- uf:generated:end -->
 ## Handoff
 
+- 2026-09-09: The schema story is now US-012 after G5 re-identification. Its working diff replaces `psql` subprocesses with `psycopg`, locks the binary dependency, and removes the CI client install; static checks and 37 non-network tests pass. This Codex sandbox blocks the database socket, so the exact four-case migration gate must run against the workflow's PostgreSQL 16 service during verification.
 - 2026-09-08: US-005 implementation and PostgreSQL 16 CI coverage are present; local deterministic gates pass. The local live-Postgres run could not start because this sandbox cannot open the Windows Docker service, so CI/verifier must execute the four database cases.
 
 _One bullet before you stop, newest at the top: what you were thinking that no file
