@@ -1,0 +1,44 @@
+name: contract-canary
+
+on:
+  schedule:
+    - cron: '23 */6 * * *'
+  repository_dispatch:
+    types: [canary]
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/canary.yml'
+      - 'ingest/canary.py'
+      - 'ingest/heartbeat.py'
+      - 'ingest/registry.py'
+      - 'ingest/registry.yaml'
+      - 'ingest/schemas.py'
+      - 'tests/test_canary.py'
+      - 'pyproject.toml'
+      - 'uv.lock'
+
+permissions:
+  contents: read
+
+jobs:
+  canary:
+    name: contract-canary
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      HEALTHCHECK_URL_CONTRACT_CANARY: ${{ secrets.HEALTHCHECK_URL_CONTRACT_CANARY }}
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+
+      - name: Validate live vendor contracts
+        run: uv run python -m ingest.canary

@@ -9,30 +9,26 @@ Do not hand-edit it — it is regenerated. The hand-written sections below it su
 
 ## ▶ Resume here
 
-**1 story left mid-run by an interrupted session**
+**PRD-002-harness — 5/7 stories passed**
 
-Recovery is automatic: the partial work is committed under that story and it is retried. An interruption does not cost a retry attempt.
+Codex implements, a different vendor verifies read-only. It stops only for a blast-radius merge, a third failure, or a human criterion.
 
 Owner: **`uf`.** Run the command; it drives the agents itself.
 
 ```
-uf run
+uf run PRD-002-harness
 ```
 
-**Left in flight by the previous session:**
-
-- PRD-002-harness/US-205 left running
-
-**Last handoff note:** 2026-09-10: PRD-001 is merged to `main` and PRD-002 (determinism + contract harness) is
+**Last handoff note:** 2026-09-10: PRD-002 is 4/7 with every story passing first attempt — US-201 bar-slice
 
 ## Where this stands
 
 | PRD | Stories | Passed | State |
 |---|---|---|---|
 | PRD-001-spine | 8 | 8 | **all green** |
-| PRD-002-harness | 7 | 4 | 4/7 |
+| PRD-002-harness | 7 | 5 | 5/7 |
 
-Spend to date: **$13.50** Claude · **42991k** Codex tokens.
+Spend to date: **$13.78** Claude · **44500k** Codex tokens.
 
 ## What happened
 
@@ -173,6 +169,8 @@ Spend to date: **$13.50** Claude · **42991k** Codex tokens.
 - 21:41  US-204 — codex finished `bc488b58` · 1275k tok
 - 21:42  US-204 **PASSED** — 5/5 criteria, judged by claude · $0.19
 - 21:43  US-205 started, attempt 1 (codex)
+- 21:52  US-205 — codex finished `9eb90b10` · 1509k tok
+- 21:54  US-205 **PASSED** — 5/5 criteria, judged by claude · $0.28
 
 <!-- uf:generated:end -->
 
