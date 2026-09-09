@@ -132,6 +132,7 @@ Spend to date: **$6.96** Claude · **30477k** Codex tokens.
 <!-- uf:generated:end -->
 ## Handoff
 
+- 2026-09-09: US-008 attempt 2 keeps the existing heartbeat implementation and adds `pyproject.toml` and `uv.lock` to the ingest workflow's push filter so dependency changes receive the named CI run. The exact cron gate, 3 heartbeat tests, 40 offline regressions, mypy, and Ruff pass; this sandbox cannot write `.git` or reach GitHub/Postgres/OKX, so the framework must commit/push and CI plus the human silence alert remain external checks.
 - 2026-09-09: The schema story is now US-012 after G5 re-identification. Its working diff replaces `psql` subprocesses with `psycopg`, locks the binary dependency, and removes the CI client install; static checks and 37 non-network tests pass. This Codex sandbox blocks the database socket, so the exact four-case migration gate must run against the workflow's PostgreSQL 16 service during verification.
 - 2026-09-08: US-005 implementation and PostgreSQL 16 CI coverage are present; local deterministic gates pass. The local live-Postgres run could not start because this sandbox cannot open the Windows Docker service, so CI/verifier must execute the four database cases.
 

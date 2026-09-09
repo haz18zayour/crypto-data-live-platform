@@ -10,7 +10,9 @@ on:
     paths:
       - '.github/workflows/ingest.yml'
       - 'ingest/**'
+      - 'pyproject.toml'
       - 'tests/test_heartbeat.py'
+      - 'uv.lock'
 
 permissions:
   contents: read
