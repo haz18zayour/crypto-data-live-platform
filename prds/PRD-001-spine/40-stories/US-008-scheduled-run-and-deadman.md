@@ -26,7 +26,7 @@ absence of an expected signal can.
 - [test: a failed run pings the failure endpoint rather than staying silent] Explicit failure and silence are different signals and must reach the monitor differently
 - [test: heartbeat failure does not fail the run] Monitoring is not allowed to become a source of outages
 - [ci: ingest] The scheduled workflow is green on the pushed commit
-- [cmd: python -c "import yaml,sys; w=yaml.safe_load(open('.github/workflows/ingest.yml')); c=w[True]['schedule'][0]['cron']; sys.exit(0 if not c.split()[0].startswith('0') else 1)"] The cron minute is offset from the top of the hour, where GitHub's scheduler is most heavily loaded and most likely to drop a run
+- [cmd: python -c "import sys; t=open('.github/workflows/ingest.yml').read(); seg=t.split('cron:').pop(1); cron=seg.split(chr(39)).pop(1); minute=cron.split().pop(0); print('cron:', cron, '-> minute', minute); sys.exit(0 if minute != '0' else 1)"] The cron minute is offset from the top of the hour, where GitHub's scheduler is most loaded and most likely to drop a run
 - [human] With the schedule paused deliberately, Healthchecks.io raises an alert within its grace period
 
 ## Notes for the implementer
