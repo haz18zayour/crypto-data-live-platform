@@ -34,7 +34,15 @@ def _database_url() -> str:
 @pytest.fixture(scope="session", autouse=True)
 def migrated_postgres() -> Iterator[tuple[psycopg.Connection, str]]:
     schema = f"test_migration_{uuid4().hex}"
-    with psycopg.connect(_database_url(), autocommit=True) as connection:
+    try:
+        connection = psycopg.connect(_database_url(), autocommit=True)
+    except psycopg.OperationalError:
+        raise RuntimeError(
+            "PostgreSQL migration tests could not connect; check TEST_DATABASE_URL, "
+            "DATABASE_URL, or DATABASE_URL in .env.local"
+        ) from None
+
+    with connection:
         with connection.transaction():
             connection.execute(
                 """
