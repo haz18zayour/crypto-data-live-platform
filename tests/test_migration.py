@@ -2,11 +2,31 @@ from __future__ import annotations
 
 import os
 import subprocess
+from collections.abc import Iterator
 from pathlib import Path
+from uuid import uuid4
 
 import pytest
 
 MIGRATIONS = Path(__file__).resolve().parents[1] / "supabase" / "migrations"
+ENV_FILE = MIGRATIONS.parents[1] / ".env.local"
+
+
+def _database_url() -> str:
+    database_url = os.environ.get("TEST_DATABASE_URL") or os.environ.get("DATABASE_URL")
+    if database_url:
+        return database_url
+
+    if ENV_FILE.exists():
+        for line in ENV_FILE.read_text(encoding="utf-8").splitlines():
+            key, separator, value = line.partition("=")
+            if separator and key.strip() == "DATABASE_URL" and value.strip():
+                return value.strip().strip("'\"")
+
+    raise RuntimeError(
+        "PostgreSQL migration tests require TEST_DATABASE_URL, DATABASE_URL, "
+        "or DATABASE_URL in .env.local"
+    )
 
 
 def _psql(sql: str) -> subprocess.CompletedProcess[str]:
@@ -29,7 +49,7 @@ def _psql(sql: str) -> subprocess.CompletedProcess[str]:
     else:
         command = [
             "psql",
-            os.environ["TEST_DATABASE_URL"],
+            _database_url(),
             "-X",
             "--set",
             "ON_ERROR_STOP=1",
@@ -44,13 +64,11 @@ def _psql(sql: str) -> subprocess.CompletedProcess[str]:
 
 
 @pytest.fixture(scope="session", autouse=True)
-def migrated_postgres() -> None:
-    if not ({"TEST_DATABASE_URL", "TEST_POSTGRES_CONTAINER"} & os.environ.keys()):
-        pytest.skip(
-            "TEST_DATABASE_URL or TEST_POSTGRES_CONTAINER is required for PostgreSQL "
-            "integration tests"
-        )
+def migrated_postgres() -> Iterator[str]:
+    if "TEST_POSTGRES_CONTAINER" not in os.environ:
+        _database_url()
 
+    schema = f"test_migration_{uuid4().hex}"
     roles = _psql(
         """
         DO $$
@@ -67,15 +85,28 @@ def migrated_postgres() -> None:
     )
     assert roles.returncode == 0, roles.stderr
 
-    migration_files = sorted(MIGRATIONS.glob("*.sql"))
-    assert migration_files, "at least one SQL migration must exist"
-    for migration in migration_files:
-        applied = _psql(migration.read_text(encoding="utf-8"))
-        assert applied.returncode == 0, applied.stderr
+    created = _psql(f'create schema "{schema}";')
+    assert created.returncode == 0, created.stderr
+
+    try:
+        migration_files = sorted(MIGRATIONS.glob("*.sql"))
+        assert migration_files, "at least one SQL migration must exist"
+        for migration in migration_files:
+            sql = migration.read_text(encoding="utf-8").replace(
+                "public.", f'"{schema}".'
+            )
+            applied = _psql(f'set search_path to "{schema}";\n{sql}')
+            assert applied.returncode == 0, applied.stderr
+
+        yield schema
+    finally:
+        dropped = _psql(f'drop schema if exists "{schema}" cascade;')
+        assert dropped.returncode == 0, dropped.stderr
 
 
 def _insert(
     *,
+    schema: str,
     indicator_key: str,
     asset: str = "BTC",
     measured_on: str = "BTC",
@@ -85,6 +116,7 @@ def _insert(
 ) -> subprocess.CompletedProcess[str]:
     return _psql(
         f"""
+        SET search_path TO "{schema}";
         INSERT INTO datapoints (
           indicator_key, asset, measured_on, value, status, reason,
           source_vendor, endpoint, source_field, fetched_at, source_timestamp
@@ -97,8 +129,11 @@ def _insert(
     )
 
 
-def test_asset_match_rejects_ok_row_measured_on_another_asset() -> None:
+def test_asset_match_rejects_ok_row_measured_on_another_asset(
+    migrated_postgres: str,
+) -> None:
     rejected = _insert(
+        schema=migrated_postgres,
         indicator_key="asset_match_bad",
         asset="SOL",
         measured_on="BTC",
@@ -107,6 +142,7 @@ def test_asset_match_rejects_ok_row_measured_on_another_asset() -> None:
     assert "asset_match" in rejected.stderr
 
     accepted = _insert(
+        schema=migrated_postgres,
         indicator_key="asset_match_good",
         asset="SOL",
         measured_on="BTC",
@@ -149,6 +185,7 @@ def test_asset_match_rejects_ok_row_measured_on_another_asset() -> None:
     ),
 )
 def test_value_iff_ok_rejects_status_and_value_drift(
+    migrated_postgres: str,
     indicator_key: str,
     value: str,
     status: str,
@@ -158,6 +195,7 @@ def test_value_iff_ok_rejects_status_and_value_drift(
     accepted_reason: str,
 ) -> None:
     rejected = _insert(
+        schema=migrated_postgres,
         indicator_key=indicator_key,
         value=value,
         status=status,
@@ -167,6 +205,7 @@ def test_value_iff_ok_rejects_status_and_value_drift(
     assert "value_iff_ok" in rejected.stderr
 
     accepted = _insert(
+        schema=migrated_postgres,
         indicator_key=f"{indicator_key}_good",
         value=accepted_value,
         status=accepted_status,
@@ -175,8 +214,11 @@ def test_value_iff_ok_rejects_status_and_value_drift(
     assert accepted.returncode == 0, accepted.stderr
 
 
-def test_reason_required_rejects_unavailable_without_reason() -> None:
+def test_reason_required_rejects_unavailable_without_reason(
+    migrated_postgres: str,
+) -> None:
     rejected = _insert(
+        schema=migrated_postgres,
         indicator_key="reason_required_bad",
         value="NULL",
         status="UNAVAILABLE",
@@ -185,6 +227,7 @@ def test_reason_required_rejects_unavailable_without_reason() -> None:
     assert "reason_required" in rejected.stderr
 
     accepted = _insert(
+        schema=migrated_postgres,
         indicator_key="reason_required_good",
         value="NULL",
         status="UNAVAILABLE",
