@@ -5,6 +5,7 @@ from datetime import UTC, datetime, timedelta
 import httpx
 
 from ingest.registry import load_registry
+from ingest.schemas import OkxCandleResponse
 from ingest.status import Error, Ok, Reason, Result, Unavailable
 
 INDICATOR_KEY = "btc_daily_close"
@@ -38,7 +39,7 @@ def fetch_btc_daily_close(
         return Error(reason=Reason.FETCH_FAILED, detail=f"OKX request failed: {error}")
 
     try:
-        rows = response.json()["data"]
+        rows = OkxCandleResponse.model_validate(response.json()).data
         closed = [row for row in rows if row[-1] == "1"]
         if not closed:
             return Unavailable(reason=Reason.FETCH_FAILED)

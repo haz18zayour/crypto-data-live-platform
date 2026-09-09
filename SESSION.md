@@ -9,7 +9,7 @@ Do not hand-edit it — it is regenerated. The hand-written sections below it su
 
 ## ▶ Resume here
 
-**PRD-002-harness — 1/7 stories passed**
+**PRD-002-harness — 2/7 stories passed**
 
 Codex implements, a different vendor verifies read-only. It stops only for a blast-radius merge, a third failure, or a human criterion.
 
@@ -26,9 +26,9 @@ uf run PRD-002-harness
 | PRD | Stories | Passed | State |
 |---|---|---|---|
 | PRD-001-spine | 8 | 8 | **all green** |
-| PRD-002-harness | 7 | 1 | 1/7 |
+| PRD-002-harness | 7 | 2 | 2/7 |
 
-Spend to date: **$12.98** Claude · **39523k** Codex tokens.
+Spend to date: **$13.15** Claude · **40709k** Codex tokens.
 
 ## What happened
 
@@ -159,6 +159,9 @@ Spend to date: **$12.98** Claude · **39523k** Codex tokens.
 - 21:05  US-201 started, attempt 1 (codex)
 - 21:16  US-201 — codex finished `2afd1c31` · 1841k tok
 - 21:17  US-201 **PASSED** — 6/6 criteria, judged by claude · $0.18
+- 21:18  US-202 started, attempt 1 (codex)
+- 21:25  US-202 — codex finished `76f3ae8f` · 1186k tok
+- 21:26  US-202 **PASSED** — 5/5 criteria, judged by claude · $0.18
 
 <!-- uf:generated:end -->
 
