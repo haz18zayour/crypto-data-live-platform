@@ -9,21 +9,22 @@ Do not hand-edit it — it is regenerated. The hand-written sections below it su
 
 ## ▶ Resume here
 
-**2 uncommitted file(s) — the runner will not start**
+**1 story left mid-run by an interrupted session**
 
-A previous session edited source and did not commit. uf refuses to run on a dirty tree rather than auto-committing someone else's half-finished work.
+Recovery is automatic: the partial work is committed under that story and it is retried. An interruption does not cost a retry attempt.
 
-Owner: **You.** This one cannot be delegated.
+Owner: **`uf`.** Run the command; it drives the agents itself.
 
 ```
-review the diff, then: git add -A && git commit
+uf run
 ```
 
 **Left in flight by the previous session:**
 
-- 2 uncommitted file(s): prds/PRD-002-harness/, web/.vite/
+- 4 uncommitted file(s): ingest/registry.py, ingest/registry.yaml, ingest/compute.py, tests/test_bar_slice.py
+- PRD-002-harness/US-201 left running
 
-**Last handoff note:** 2026-09-09: US-009 is ready for independent verification. The five named web tests, exact typecheck/build gates, and service-role bundle scan pass; `50-evidence/US-009/page.png` shows a current BTC value with age and full provenance using a deterministic read-only fixture because this sandbox blocks outbound sockets. The final rebuilt bundle uses `.env.local`'s Supabase URL/anon key, not the fixture URL.
+**Last handoff note:** 2026-09-10: PRD-001 is merged to `main` and PRD-002 (determinism + contract harness) is
 
 ## Where this stands
 
@@ -160,15 +161,27 @@ Spend to date: **$12.80** Claude · **37681k** Codex tokens.
 - 20:48  US-009 **PASSED** — 9/9 criteria, judged by claude · $1.11
 - 21:02  researched PRD-002-harness — 16 sources · $3.54
 - 21:05  **PRD-002-harness** compiled — 7 stories
+- 21:05  US-201 started, attempt 1 (codex)
 
 <!-- uf:generated:end -->
+
 ## Handoff
 
-- 2026-09-09: US-009 is ready for independent verification. The five named web tests, exact typecheck/build gates, and service-role bundle scan pass; `50-evidence/US-009/page.png` shows a current BTC value with age and full provenance using a deterministic read-only fixture because this sandbox blocks outbound sockets. The final rebuilt bundle uses `.env.local`'s Supabase URL/anon key, not the fixture URL.
-- 2026-09-09: US-008 needs no further product-code change: its 3 heartbeat tests, strict mypy, Ruff, and exact offset-cron gate pass, and committed evidence records green ingest run 34341379190. This sandbox cannot reach GitHub or the database and its `gh` credential is invalid; C6 remains the deliberate G6 owner action to pause the schedule and confirm the real Healthchecks.io alert within grace, which the story expressly forbids simulating.
-- 2026-09-09: US-008 attempt 2 keeps the existing heartbeat implementation and adds `pyproject.toml` and `uv.lock` to the ingest workflow's push filter so dependency changes receive the named CI run. The exact cron gate, 3 heartbeat tests, 40 offline regressions, mypy, and Ruff pass; this sandbox cannot write `.git` or reach GitHub/Postgres/OKX, so the framework must commit/push and CI plus the human silence alert remain external checks.
-- 2026-09-09: The schema story is now US-012 after G5 re-identification. Its working diff replaces `psql` subprocesses with `psycopg`, locks the binary dependency, and removes the CI client install; static checks and 37 non-network tests pass. This Codex sandbox blocks the database socket, so the exact four-case migration gate must run against the workflow's PostgreSQL 16 service during verification.
-- 2026-09-08: US-005 implementation and PostgreSQL 16 CI coverage are present; local deterministic gates pass. The local live-Postgres run could not start because this sandbox cannot open the Windows Docker service, so CI/verifier must execute the four database cases.
+- 2026-09-10: PRD-001 is merged to `main` and PRD-002 (determinism + contract harness) is
+  running on `feat/prd-002-harness`, currently US-201. **Operating protocol agreed with the
+  owner: run autonomously inside a PRD, stop hard between PRDs** and prove the PRD works
+  against real services before starting the next — see `project-documents/25_PRD_Acceptance_Protocol.md`.
+  The proof must include an adversarial case attacking that PRD's specific guarantee; for
+  PRD-002 that is passing a longer bar slice and showing it **rejected**, not silently
+  different.
+- 2026-09-10: PRD-002's research **corrected the architecture doc**. TA-Lib settles the
+  *formula*, not history-independence: EMA/RSI/ATR/ADX and ~18 others carry an "unstable
+  period", so the same bar over 500 vs 5000 bars of history differs **at the final bar**.
+  Pinning `(bars, window)` is therefore not determinism — the contract is **exactly N bars**.
+  Do not re-introduce the weaker claim.
+- 2026-09-09: The four Codex bullets below are the implementer's sandbox notes, not session
+  state. Codex runs without network or `.git` access, so its "cannot reach GitHub/Postgres"
+  lines are normal, not a fault.
 
 _One bullet before you stop, newest at the top: what you were thinking that no file
 records — the approach already tried and rejected, why something is half-written, the
@@ -176,6 +189,36 @@ question you were about to ask. `uf next` reads the top bullet and shows it._
 
 ## Notes
 
-_Durable observations about this product: what surprised you, what the criteria did not
-capture. Newest at the top. If the lesson is reusable rather than specific to this
-product, `uf learn` it instead so every future product inherits it._
+_Durable observations about this product. Newest at the top. Reusable lessons go to
+`uf learn` instead, and several already have._
+
+- **Green criteria are not proof, and this repo has the counter-example.** US-006 passed 6/6,
+  verified by a different vendor, while storing a Hong Kong day close as a UTC one — 78,834.1
+  instead of 79,111.8. OKX's default `bar=1D` is aligned to **UTC+8**; UTC days need
+  `bar=1Dutc`. Caught only because a human read a timestamp. Four of six PRD-001 defects came
+  from criteria nobody had written.
+- **Credentials are live and verified** (`.env.local`, gitignored): Supabase project
+  `jsfyvxzuvxdnqhrqloux`, PostgreSQL 17.6 via the **session pooler** — the direct connection is
+  IPv6-only without the paid add-on, so it fails from GitHub runners. FRED key reused from
+  `crypto-investing-signals`. Healthchecks `crypto-data-ingest` proven end to end, including a
+  real DOWN email. Cloudflare / cron-job.org / SoSoValue are deliberately `N/A` until the PRDs
+  that need them.
+- **Reachability is measured, not assumed** (`50-evidence/US-011/reachability-ci.json`, run
+  34341379190): from a GitHub US runner, OKX/Coinbase/Kraken/CoinMetrics/alternative.me all
+  return 200; **Binance 451 and Bybit 403**. That is why OKX is primary and why no self-hosted
+  runner exists — the prior system's 24h outage traced to exactly that chain.
+- **The machine runs out of memory and kills `uf run` mid-verification.** Repeated
+  "interrupted" statuses are usually this, not flakiness. Check free RAM and committed memory
+  before assuming a story is broken; ~5 GB free is comfortable. Recovery is automatic and does
+  not cost an attempt.
+- **SOL's on-chain column is genuinely thin and that is correct.** Coin Metrics' free tier has
+  nothing for SOL — not even price — while BTC/ETH/BNB get MVRV, addresses, supply and flows.
+  SOPR/MVRV are **not definable** on an account-based chain, at any price. Render
+  `NOT_DEFINABLE`, never a proxy.
+- **Macro release lag is measured, not estimated.** FRED, 2026-09-08: `DFF` 5 days behind,
+  `DTWEXBGS` 11, **`M2SL` 69**. R4 had guessed 3–4 weeks for M2. A lagged series carries
+  `reference_period` *and* `published_at`, and freshness is judged against publication.
+- **The dashboard was moved earlier at the owner's request** — the designed page is now PRD-005,
+  right after the indicators, so ~32 real cells exist to design against. Later panels add rows
+  to a grid that is already designed. Its stories must set `agent: claude`; every design skill
+  (`open-design:apple-hig` and friends) is Claude-only and Codex cannot invoke them.

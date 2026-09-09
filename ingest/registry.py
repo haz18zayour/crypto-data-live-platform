@@ -14,9 +14,11 @@ from pydantic import (
     PositiveInt,
     RootModel,
     StringConstraints,
+    ValidationError,
     field_validator,
     model_validator,
 )
+from pydantic_core import InitErrorDetails
 
 REGISTRY_PATH = Path(__file__).with_name("registry.yaml")
 NonEmptyString = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1)]
@@ -32,6 +34,7 @@ class IndicatorDefinition(BaseModel):
     endpoint: NonEmptyString
     source_field: NonEmptyString
     definable_for: tuple[NonEmptyString, ...] = Field(min_length=1)
+    required_bars: PositiveInt = 1
     expected_update_interval_seconds: PositiveInt
     freshness_warn_seconds: PositiveInt
     freshness_stale_seconds: PositiveInt
@@ -131,7 +134,21 @@ def load_registry(path: Path = REGISTRY_PATH) -> IndicatorRegistry:
     """Load and validate every indicator, rejecting ambiguous keys."""
 
     raw_entries = _parse_yaml(path.read_text(encoding="utf-8"))
-    return IndicatorRegistry.model_validate(raw_entries)
+    registry = IndicatorRegistry.model_validate(raw_entries)
+    missing_bar_counts: list[InitErrorDetails] = [
+        InitErrorDetails(
+            type="missing",
+            loc=(index, "required_bars"),
+            input=entry,
+        )
+        for index, entry in enumerate(raw_entries)
+        if "required_bars" not in entry
+    ]
+    if missing_bar_counts:
+        raise ValidationError.from_exception_data(
+            IndicatorRegistry.__name__, missing_bar_counts
+        )
+    return registry
 
 
 def main() -> None:
