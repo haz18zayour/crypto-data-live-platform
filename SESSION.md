@@ -9,14 +9,14 @@ Do not hand-edit it — it is regenerated. The hand-written sections below it su
 
 ## ▶ Resume here
 
-**PRD-002-harness — 6/7 stories passed**
+**Every PRD is green**
 
-Codex implements, a different vendor verifies read-only. It stops only for a blast-radius merge, a third failure, or a human criterion.
+Nothing is outstanding. Merge and ship, or add the next PRD from the roadmap.
 
-Owner: **`uf`.** Run the command; it drives the agents itself.
+Owner: **You.** This one cannot be delegated.
 
 ```
-uf run PRD-002-harness
+review the branch, then merge — or start the next PRD
 ```
 
 **Last handoff note:** 2026-09-10: PRD-002 is 4/7 with every story passing first attempt — US-201 bar-slice
@@ -26,9 +26,9 @@ uf run PRD-002-harness
 | PRD | Stories | Passed | State |
 |---|---|---|---|
 | PRD-001-spine | 8 | 8 | **all green** |
-| PRD-002-harness | 7 | 6 | 6/7 |
+| PRD-002-harness | 7 | 7 | **all green** |
 
-Spend to date: **$14.09** Claude · **47707k** Codex tokens.
+Spend to date: **$14.34** Claude · **48433k** Codex tokens.
 
 ## What happened
 
@@ -174,11 +174,20 @@ Spend to date: **$14.09** Claude · **47707k** Codex tokens.
 - 21:54  US-206 started, attempt 1 (codex)
 - 22:12  US-206 — codex finished `568db0e7` · 3207k tok
 - 22:14  US-206 **PASSED** — 7/7 criteria, judged by claude · $0.31
+- 22:14  US-207 started, attempt 1 (codex)
+- 22:19  US-207 — codex finished `15667825` · 726k tok
+- 22:21  US-207 **PASSED** — 6/6 criteria, judged by claude · $0.25
 
 <!-- uf:generated:end -->
 
 ## Handoff
 
+- 2026-09-10: **PRD-002 complete, 7/7, every story first attempt**, merged to `main`. The
+  harness now guards PRD-004 onward: exactly-N-bar slices, goldens with an external oracle,
+  `extra='forbid'` + strict vendor models, recorded shapes, truncation/gap/duplicate detection,
+  a live drift canary at `23 */6 * * *`, and coverage generated from the registry so a new
+  indicator cannot ship without a golden and a model. Next is **PRD-003 cross-source
+  corroboration**, then PRD-004 indicators, then PRD-005 the dashboard.
 - 2026-09-10: PRD-002 is 4/7 with every story passing first attempt — US-201 bar-slice
   contract, US-202 goldens, US-203 response models, US-204 recorded shapes. Verified by hand,
   not just by green ticks: a 2-bar or 500-bar slice is **rejected** where the contract says 1,
