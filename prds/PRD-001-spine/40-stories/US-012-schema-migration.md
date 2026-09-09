@@ -1,6 +1,6 @@
 ---
-id: US-005
-title: Database schema — constraints that make wrong data a database error
+id: US-012
+title: Database schema via psycopg — constraints that make wrong data a database error
 priority: 6
 touches:
   - supabase/migrations/**

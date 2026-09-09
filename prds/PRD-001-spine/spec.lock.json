@@ -4,8 +4,8 @@
   "title": "Spine — reachability, registry, provenance schema, one live indicator",
   "product": "crypto-data-live-platform",
   "branch": "feat/prd-001-spine",
-  "inputDigest": "1d581a189d54fe63",
-  "compiledAt": "2026-09-09T09:25:53.653Z",
+  "inputDigest": "279c7e85c580cdc4",
+  "compiledAt": "2026-09-09T09:27:49.077Z",
   "stories": [
     {
       "id": "US-002",
@@ -326,13 +326,13 @@
       ]
     },
     {
-      "id": "US-005",
-      "title": "Database schema — constraints that make wrong data a database error",
-      "source": "prds/PRD-001-spine/40-stories/US-005-schema-migration.md",
+      "id": "US-012",
+      "title": "Database schema via psycopg — constraints that make wrong data a database error",
+      "source": "prds/PRD-001-spine/40-stories/US-012-schema-migration.md",
       "description": "As the owner, I want the `datapoints` table to reject dishonest rows at the database level,\nso that presenting one asset's data as another's is impossible rather than merely discouraged.\n\nThe prior system applied BTC's on-chain data to eight other coins and its own documentation\ncalled the result *\"not degraded data, wrong data\"*. No amount of application-layer care\ncaught it, because its schema had no column that could express the difference.\n\n**This story is blast-radius (`**/migrations/**`) and needs gate G4 before merge.**",
       "criteria": [
         {
-          "id": "US-005-C1",
+          "id": "US-012-C1",
           "text": "Applied against a live Postgres service, then each of the three constraints is exercised with a row it must refuse and a row it must accept",
           "method": {
             "kind": "integration",
@@ -340,7 +340,7 @@
           }
         },
         {
-          "id": "US-005-C2",
+          "id": "US-012-C2",
           "text": "Inserting BTC's value labelled as SOL with status OK raises an integrity error",
           "method": {
             "kind": "test",
@@ -348,7 +348,7 @@
           }
         },
         {
-          "id": "US-005-C3",
+          "id": "US-012-C3",
           "text": "Status and value cannot drift apart",
           "method": {
             "kind": "test",
@@ -356,7 +356,7 @@
           }
         },
         {
-          "id": "US-005-C4",
+          "id": "US-012-C4",
           "text": "Absence must always say why",
           "method": {
             "kind": "test",
@@ -364,7 +364,7 @@
           }
         },
         {
-          "id": "US-005-C5",
+          "id": "US-012-C5",
           "text": "Migration files are ordered, named consistently, and none has been edited after being applied",
           "method": {
             "kind": "cmd",
@@ -372,7 +372,7 @@
           }
         },
         {
-          "id": "US-005-C6",
+          "id": "US-012-C6",
           "text": "The live-Postgres tests RUN — this command fails if any of them skip, because a skipped constraint test and a passing one are indistinguishable at the gate",
           "method": {
             "kind": "cmd",

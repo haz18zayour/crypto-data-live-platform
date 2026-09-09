@@ -113,7 +113,7 @@ not add to it.
 | US-002 | Ingestion package scaffold and typed configuration | — |
 | US-003 | Status types — make a missing value unrepresentable as a number | US-002 |
 | US-004 | Indicator registry — one declarative source of truth | US-003 |
-| US-005 | Database schema and migration with the integrity constraints | — |
+| US-012 | Database schema and migration with the integrity constraints, applied via psycopg (replaces US-005) | — |
 | US-006 | OKX fetcher for BTC daily close, closed candles only | US-003, US-004 |
 | US-007 | Persist a datapoint with full provenance | US-005, US-006 |
 | US-008 | Scheduled run with a dead-man's-switch on silence | US-007 |
