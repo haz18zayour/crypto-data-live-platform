@@ -9,7 +9,7 @@ Do not hand-edit it — it is regenerated. The hand-written sections below it su
 
 ## ▶ Resume here
 
-**1 uncommitted file(s) — the runner will not start**
+**2 uncommitted file(s) — the runner will not start**
 
 A previous session edited source and did not commit. uf refuses to run on a dirty tree rather than auto-committing someone else's half-finished work.
 
@@ -21,7 +21,7 @@ review the diff, then: git add -A && git commit
 
 **Left in flight by the previous session:**
 
-- 1 uncommitted file(s): project-documents/15_Services_and_Credentials.md
+- 2 uncommitted file(s): prds/PRD-002-harness/, web/.vite/
 
 **Last handoff note:** 2026-09-09: US-009 is ready for independent verification. The five named web tests, exact typecheck/build gates, and service-role bundle scan pass; `50-evidence/US-009/page.png` shows a current BTC value with age and full provenance using a deterministic read-only fixture because this sandbox blocks outbound sockets. The final rebuilt bundle uses `.env.local`'s Supabase URL/anon key, not the fixture URL.
 
@@ -30,8 +30,9 @@ review the diff, then: git add -A && git commit
 | PRD | Stories | Passed | State |
 |---|---|---|---|
 | PRD-001-spine | 8 | 8 | **all green** |
+| PRD-002-harness | 7 | 0 | 0/7 |
 
-Spend to date: **$9.26** Claude · **37681k** Codex tokens.
+Spend to date: **$12.80** Claude · **37681k** Codex tokens.
 
 ## What happened
 
@@ -157,6 +158,8 @@ Spend to date: **$9.26** Claude · **37681k** Codex tokens.
 - 20:43  US-009 started, attempt 1 (codex)
 - 20:46  US-009 — codex finished `65914c96` · 549k tok
 - 20:48  US-009 **PASSED** — 9/9 criteria, judged by claude · $1.11
+- 21:02  researched PRD-002-harness — 16 sources · $3.54
+- 21:05  **PRD-002-harness** compiled — 7 stories
 
 <!-- uf:generated:end -->
 ## Handoff
