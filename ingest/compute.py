@@ -1,8 +1,14 @@
 """Indicator computation guarded by exact bar-slice contracts."""
 
-from collections.abc import Callable, Sequence
+from collections.abc import Callable, Mapping, Sequence
 
 from ingest.registry import IndicatorDefinition
+
+
+def daily_close(bars: Sequence[Mapping[str, float]]) -> float:
+    """Return the close carried by the newest input bar."""
+
+    return bars[-1]["close"]
 
 
 def compute_indicator[Bar](
