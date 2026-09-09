@@ -9,18 +9,18 @@
     "name": "test",
     "run": "node -e \"const f=require('fs'),c=require('child_process');let r=0;const run=(cmd)=>{try{c.execSync(cmd,{stdio:'inherit'})}catch(e){r=1}};if(f.existsSync('package.json'))run('npm test --if-present');if(f.existsSync('tests'))run('uv run pytest -q');process.exit(r)\"",
     "exitCode": 0,
-    "output": "..........................................                               [100%]\r\n42 passed in 15.75s\r\n"
+    "output": "..........................................                               [100%]\r\n42 passed in 11.87s\r\n"
   },
   {
-    "name": "US-005-C5",
+    "name": "US-012-C5",
     "run": "uv run python -m ingest.migrate --check",
     "exitCode": 0,
     "output": ""
   },
   {
-    "name": "US-005-C6",
+    "name": "US-012-C6",
     "run": "uv run pytest tests/test_migration.py -q --no-header -o addopts= --tb=no -rN",
     "exitCode": 0,
-    "output": "....                                                                     [100%]\r\n4 passed in 16.96s\r\n"
+    "output": "....                                                                     [100%]\r\n4 passed in 19.60s\r\n"
   }
 ]

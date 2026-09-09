@@ -1,5 +1,5 @@
 {
-  "storyId": "US-005",
+  "storyId": "US-012",
   "passes": false,
   "verifier": {
     "agent": "claude",
@@ -8,37 +8,37 @@
   "implementer": "codex",
   "results": [
     {
-      "criterionId": "US-005-C1",
+      "criterionId": "US-012-C1",
       "met": false,
       "note": "verifier produced no parseable verdict"
     },
     {
-      "criterionId": "US-005-C2",
+      "criterionId": "US-012-C2",
       "met": false,
       "note": "verifier produced no parseable verdict"
     },
     {
-      "criterionId": "US-005-C3",
+      "criterionId": "US-012-C3",
       "met": false,
       "note": "verifier produced no parseable verdict"
     },
     {
-      "criterionId": "US-005-C4",
+      "criterionId": "US-012-C4",
       "met": false,
       "note": "verifier produced no parseable verdict"
     },
     {
-      "criterionId": "US-005-C5",
+      "criterionId": "US-012-C5",
       "met": false,
       "note": "verifier produced no parseable verdict"
     },
     {
-      "criterionId": "US-005-C6",
+      "criterionId": "US-012-C6",
       "met": false,
       "note": "verifier produced no parseable verdict"
     }
   ],
   "tripwires": [],
-  "note": "verifier returned no usable JSON (exit 3221225794)",
-  "at": "2026-09-09T09:46:57.625Z"
+  "note": "verifier returned no usable JSON (exit 4294967295)",
+  "at": "2026-09-09T09:47:38.570Z"
 }
