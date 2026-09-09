@@ -19,15 +19,15 @@ Owner: **An agent.** Give it this repo and the instruction below.
   · project-documents/05_Product_Roadmap.md — no PRDs are named yet, so there is no order to work in
 ```
 
-**Last handoff note:** 2026-09-08: US-005 implementation and PostgreSQL 16 CI coverage are present; local deterministic gates pass. The local live-Postgres run could not start because this sandbox cannot open the Windows Docker service, so CI/verifier must execute the four database cases.
+**Last handoff note:** 2026-09-09: The schema story is now US-012 after G5 re-identification. Its working diff replaces `psql` subprocesses with `psycopg`, locks the binary dependency, and removes the CI client install; static checks and 37 non-network tests pass. This Codex sandbox blocks the database socket, so the exact four-case migration gate must run against the workflow's PostgreSQL 16 service during verification.
 
 ## Where this stands
 
 | PRD | Stories | Passed | State |
 |---|---|---|---|
-| PRD-001-spine | 9 | 4 | 4/9 |
+| PRD-001-spine | 9 | 5 | 5/9 |
 
-Spend to date: **$6.27** Claude · **14799k** Codex tokens.
+Spend to date: **$6.64** Claude · **27225k** Codex tokens.
 
 ## What happened
 
@@ -110,6 +110,18 @@ Spend to date: **$6.27** Claude · **14799k** Codex tokens.
 - 09:17  US-005 started, attempt 3 (codex)
 - 09:24  US-005 — codex finished `7df21196` · 1073k tok
 - 09:25  US-005 **rejected** — 0/6 criteria, judged by claude
+- 09:25  **PRD-001-spine** compiled — 9 stories
+- 09:26  ⏸ **gate opened** — US-005 has failed 3 times — is the story wrong?
+- 09:27  ▶ gate answered **rewrite-criteria** — The approach was wrong, and it has been rewritten. The tests shelled out to psql, which is absent on Windows (FileNotFoundError WinError 2) and only passed in CI because that workflow apt-installs postgresql-client - so the defect was invisible where it was written. Migrations now run through psycopg[binary], a wheel on every platform, already required by US-007, in a single transaction. Re-identifying as US-012 because answering this gate does not restore attempts: run.ts opens it whenever attempts >= maxAttempts without consulting a prior answer.
+- 09:27  **PRD-001-spine** compiled — 9 stories
+- 09:27  US-012 started, attempt 1 (codex)
+- 09:46  US-012 — codex finished `5555fa9e` · 3193k tok
+- 09:46  US-005 — codex finished `77d5fdca` · 8172k tok
+- 09:48  US-005 failed — interrupted while verifying — the process stopped before a verdict
+- 09:48  US-012 failed — interrupted while verifying — the process stopped before a verdict
+- 09:48  US-012 started, attempt 1 (codex)
+- 09:54  US-012 — codex finished `4eecdfc6` · 1060k tok
+- 09:55  US-012 **PASSED** — 6/6 criteria, judged by claude · $0.37
 
 <!-- uf:generated:end -->
 ## Handoff
