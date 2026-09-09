@@ -106,6 +106,20 @@ ceremony.
 The deliverable exists, is CI-verified, and is written into the architecture. The tick does
 not add to it.
 
+## Deployment is deliberately NOT in this PRD
+
+The "in production" part of the spine is the **data path**, and it is proven: GitHub Actions
+runs the ingestion on a schedule and writes provenance-carrying rows to Supabase with nobody
+involved. The page is a read-only viewer for a single person; `localhost` exercises exactly the
+same rendering logic.
+
+Deploying it behind Cloudflare Access buys no additional confidence today and costs an account
+plus a policy. It moves to its own PRD, to be done when the page is worth looking at daily.
+
+The one thing carried forward rather than deferred is US-010's bundle scan for the service-role
+key — it runs on a local `npm run build`, and it guards the single mistake in this project that
+cannot be quietly undone.
+
 ## Stories
 
 | Story | Title | Depends on |
@@ -118,4 +132,3 @@ not add to it.
 | US-007 | Persist a datapoint with full provenance | US-005, US-006 |
 | US-008 | Scheduled run with a dead-man's-switch on silence | US-007 |
 | US-009 | The page — render one value, or its honest absence | US-007 |
-| US-010 | Deploy behind Cloudflare Access | US-009 |

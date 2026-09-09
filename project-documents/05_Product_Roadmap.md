@@ -18,6 +18,7 @@ breadth is added. Every later PRD adds one panel to a page that already works.
 | **PRD-008** | The single page | Layout of all panels on one screen: 4 assets × all indicators, staleness legible at a glance, three kinds of unavailability visually distinct. The product's actual thesis lives or dies here | 004–007 | planned |
 | **PRD-009** | History and charts | Backfill; per-indicator sparklines and distribution context (so a value can be read against its own history rather than an arbitrary band) | 007 | planned |
 | **PRD-010** | Integrity dashboard | Frozen-value detection, per-source freshness SLA rollup, coverage generated from the registry so an uncovered indicator is a build error. The self-audit that actually audits | 007 | planned |
+| **PRD-011** | Deploy behind Cloudflare Access | Moved out of PRD-001. The data path is already in production via GitHub Actions; the page is a single-user read-only viewer that localhost exercises identically. Deploy when it is worth opening daily. The service-role bundle scan did NOT move with it — it runs locally in PRD-001 | 008 | planned |
 
 Status: `planned` → `researching` → `specced` → `running` → `shipped`
 

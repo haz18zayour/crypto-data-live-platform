@@ -1,0 +1,14 @@
+{
+  "gate": "G6_HUMAN",
+  "question": "US-008: With the schedule paused deliberately, Healthchecks.io raises an alert within its grace period",
+  "feature": "PRD-001-spine",
+  "story": "US-008",
+  "options": [
+    "met",
+    "not-met"
+  ],
+  "context": "Everything a machine can check has passed (5/6).\nOnly your judgement is left:\n  · With the schedule paused deliberately, Healthchecks.io raises an alert within its grace period\n\nRun it yourself: npm run dev\nEvidence: prds/PRD-001-spine/50-evidence/US-008/",
+  "defaultOnTimeout": "block",
+  "id": "G6_HUMAN-5da831dd",
+  "openedAt": "2026-09-09T10:49:07.782Z"
+}

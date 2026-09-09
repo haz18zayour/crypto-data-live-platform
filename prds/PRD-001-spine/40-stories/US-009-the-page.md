@@ -26,6 +26,7 @@ a right one.**
 - [test: adding a status to the union without handling it is a compile error] The exhaustive switch has a `never` fallthrough, so an unhandled case fails the build rather than falling through to a default render
 - [test: the value displays its source vendor, endpoint and source timestamp] Provenance is on the face of the value, not behind a click
 - [test: a value whose reference period differs from its publication date shows both] Measured on the live FRED API: M2 is 69 days behind, so rendering it as a current figure is false twice over — wrong period, and silent about the delay
+- [cmd: python -c "import pathlib,sys,os; keys=set(v for k,v in (l.split(chr(61),1) for l in pathlib.Path('.env.local').read_text().splitlines() if chr(61) in l and not l.startswith(chr(35))) if k.strip()=='SUPABASE_SERVICE_ROLE_KEY' and v.strip()); blob=chr(10).join(f.read_text(errors='ignore') for f in pathlib.Path('web/dist').rglob('*') if f.is_file()); bad=any(k.strip() in blob for k in keys if k.strip()); print('service-role key present in bundle:', bad); sys.exit(1 if bad else 0)"] The built bundle contains no service-role key — carried from the deferred deploy story, because this is the one mistake here that is hard to walk back
 - [browser: prds/PRD-001-spine/50-evidence/US-009/page.png] The rendered page shows the value with its provenance and freshness
 
 ## Notes for the implementer
