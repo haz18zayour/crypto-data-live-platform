@@ -31,7 +31,7 @@ function provenanceFromRow(row: DatapointRow): Provenance {
 export function unavailableDatapoint(
   definition: IndicatorDefinition,
   reason: UnavailableReason,
-): Datapoint {
+): Extract<Datapoint, { status: "UNAVAILABLE" }> {
   return {
     status: "UNAVAILABLE",
     reason,
@@ -71,7 +71,20 @@ function rowToDatapoint(row: DatapointRow): Datapoint {
           detail: `The database returned ${row.status} without a numeric value.`,
         };
       }
-      return { ...provenance, status: row.status, value: row.value };
+      if (!row.source_timestamp) {
+        return {
+          ...provenance,
+          status: "ERROR",
+          reason: "FETCH_FAILED",
+          detail: `The database returned ${row.status} without a source timestamp.`,
+        };
+      }
+      return {
+        ...provenance,
+        status: row.status,
+        value: row.value,
+        sourceTimestamp: row.source_timestamp,
+      };
     case "UNAVAILABLE":
       return {
         ...provenance,
@@ -98,16 +111,6 @@ export function applyFreshness(
   }
 
   const publishedAt = datapoint.publishedAt ?? datapoint.sourceTimestamp;
-  if (!publishedAt) {
-    const { value: _value, ...provenance } = datapoint;
-    return {
-      ...provenance,
-      status: "ERROR",
-      reason: "FETCH_FAILED",
-      detail: "A numeric value arrived without a source timestamp.",
-    };
-  }
-
   const ageSeconds = (now.getTime() - new Date(publishedAt).getTime()) / 1000;
   if (datapoint.status === "OK" && ageSeconds > staleAfterSeconds) {
     return { ...datapoint, status: "STALE" };

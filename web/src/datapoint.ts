@@ -17,9 +17,13 @@ export type Provenance = {
   publishedAt?: string;
 };
 
+type AvailableProvenance = Omit<Provenance, "sourceTimestamp"> & {
+  sourceTimestamp: string;
+};
+
 export type Datapoint =
-  | (Provenance & { status: "OK"; value: number })
-  | (Provenance & { status: "STALE"; value: number })
+  | (AvailableProvenance & { status: "OK"; value: number })
+  | (AvailableProvenance & { status: "STALE"; value: number })
   | (Provenance & { status: "UNAVAILABLE"; reason: UnavailableReason })
   | (Provenance & {
       status: "ERROR";

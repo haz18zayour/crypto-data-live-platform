@@ -1,13 +1,14 @@
 import tailwindcss from "@tailwindcss/vite";
 import react from "@vitejs/plugin-react";
-import { defineConfig, searchForWorkspaceRoot } from "vite";
+import { fileURLToPath } from "node:url";
+import { defineConfig } from "vitest/config";
 
 export default defineConfig({
   envDir: "..",
   plugins: [react(), tailwindcss()],
   server: {
     fs: {
-      allow: [searchForWorkspaceRoot(process.cwd())],
+      allow: [fileURLToPath(new URL("..", import.meta.url))],
     },
   },
   test: {

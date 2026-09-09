@@ -5,9 +5,9 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
+    "build": "tsc -b && vite build --configLoader runner",
     "typecheck": "tsc -b --pretty false",
-    "test": "vitest run"
+    "test": "vitest run --configLoader runner"
   },
   "dependencies": {
     "@tanstack/react-query": "https://registry.npmjs.org/@tanstack/react-query/-/react-query-5.63.0.tgz",

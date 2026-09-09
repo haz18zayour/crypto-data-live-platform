@@ -1,9 +1,8 @@
-import { readFileSync } from "node:fs";
 import { render, screen, within } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import { describe, expect, expectTypeOf, it } from "vitest";
 
 import { DatapointValue } from "./DatapointValue";
-import type { Datapoint } from "./datapoint";
+import { assertNever, type Datapoint } from "./datapoint";
 
 const provenance = {
   indicatorKey: "btc_daily_close",
@@ -59,13 +58,7 @@ describe("DatapointValue", () => {
   });
 
   it("adding a status to the union without handling it is a compile error", () => {
-    const source = readFileSync(
-      new URL("./DatapointValue.tsx", import.meta.url),
-      "utf8",
-    );
-
-    expect(source).toContain("assertNever(datapoint)");
-    expect(source).not.toMatch(/default:\s*return\s+null/);
+    expectTypeOf(assertNever).parameter(0).toEqualTypeOf<never>();
   });
 
   it("the value displays its source vendor, endpoint and source timestamp", () => {
