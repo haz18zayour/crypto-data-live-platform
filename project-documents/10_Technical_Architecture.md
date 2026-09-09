@@ -120,6 +120,42 @@ opposite assumption and should not be allowed to drive the design.*
 
 ---
 
+## Cadence — collection and liveness are separate concerns
+
+Decided 2026-09-09 after measuring what the sources actually publish.
+
+**Almost everything on this board changes once a day or slower.** BTC's daily close, Coin
+Metrics on-chain, and Fear & Greed produce one value per UTC day; ETF flows one per weekday at
+T+1; M2 one per month, and it arrives 69 days late (measured). Only funding moves faster, at
+three settlements a day.
+
+So a 6-hourly *data* run fetches an identical value three times out of four. That is waste.
+
+But cadence is not really about freshness — it is about **how long a failure stays invisible**.
+A once-daily pipeline that breaks is undetectable for 24h plus grace, which is precisely the
+blind spot that cost the prior system a full day of signals. Slowing collection to match the
+data would optimise the thing that does not matter and worsen the thing that does.
+
+**Therefore two jobs, not one:**
+
+| Job | Cadence | Does | Cost |
+|---|---|---|---|
+| **collect** | **once daily**, shortly after 00:00 UTC when daily closes settle | fetches every indicator, writes datapoints, pings the heartbeat | ~2 min |
+| **canary** | **every 6h** | pings each source's cheapest endpoint and the heartbeat. Writes **no** datapoints | ~20 s |
+
+The canary makes failure visible in ~6–8h while collection stays honest at daily. It also
+catches a source outage *before* the daily run needs it — you learn at 06:00 that OKX is
+unreachable, instead of finding a hole at midnight.
+
+Roughly 120 GitHub Actions minutes a month against a 2,000 limit.
+
+**The owner is only interrupted when something is wrong**: the heartbeat's failure endpoint on
+an errored run, and Healthchecks' DOWN alert on silence. A healthy day sends nothing.
+
+Freshness budgets follow from this, not the other way round: an indicator's `freshness_warn`
+and `freshness_stale` are derived from **its own** publication interval, so a daily series is
+not marked stale merely because the page was opened in the afternoon.
+
 ## Shape
 
 ```

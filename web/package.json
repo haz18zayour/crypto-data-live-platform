@@ -10,7 +10,7 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@tanstack/react-query": "5.63.0",
+    "@tanstack/react-query": "https://registry.npmjs.org/@tanstack/react-query/-/react-query-5.63.0.tgz",
     "react": "19.2.7",
     "react-dom": "19.2.7",
     "yaml": "2.9.0"
