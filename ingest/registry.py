@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import ast
+from collections.abc import Collection, Mapping
 from pathlib import Path
 from typing import Annotated, Any
 
@@ -140,6 +141,27 @@ def load_registry(path: Path = REGISTRY_PATH) -> IndicatorRegistry:
 
     raw_entries = _parse_yaml(path.read_text(encoding="utf-8"))
     return IndicatorRegistry.model_validate(raw_entries)
+
+
+def assert_registry_coverage(
+    registry: IndicatorRegistry,
+    *,
+    golden_keys: Collection[str],
+    response_models: Mapping[str, object],
+) -> None:
+    """Fail with every missing integrity artifact derived from the registry."""
+
+    failures: list[str] = []
+    for entry in registry.root:
+        if entry.key not in golden_keys:
+            failures.append(f"{entry.key} is missing a golden file")
+        if entry.required_bars is None:
+            failures.append(f"{entry.key} is missing required_bars")
+        if entry.key not in response_models:
+            failures.append(f"{entry.vendor} has no response model for {entry.key}")
+
+    if failures:
+        raise AssertionError("; ".join(failures))
 
 
 def main() -> None:
