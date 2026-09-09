@@ -1,0 +1,40 @@
+{
+  "recording": {
+    "kind": "deliberately_malformed",
+    "derived_from": "okx_candles_2024-02-22.json",
+    "mutation": "Added an unexpected top-level field to the captured response body."
+  },
+  "expected_status": "ERROR",
+  "response": {
+    "status_code": 200,
+    "body": {
+      "code": "0",
+      "msg": "",
+      "data": [
+        [
+          "1708560000000",
+          "51848.1",
+          "52036.4",
+          "50936",
+          "51677.9",
+          "6929.94476711",
+          "357230051.9096283",
+          "357230051.9096283",
+          "0"
+        ],
+        [
+          "1708473600000",
+          "52265.5",
+          "52371.4",
+          "50533.8",
+          "51848",
+          "12009.96359497",
+          "616016280.81464957",
+          "616016280.81464957",
+          "1"
+        ]
+      ],
+      "unexpected": "deliberate contract violation"
+    }
+  }
+}
