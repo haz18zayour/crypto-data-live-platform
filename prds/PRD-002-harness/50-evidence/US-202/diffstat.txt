@@ -1,0 +1,6 @@
+.uf/events.ndjson                  |  3 ++
+ SESSION.md                         | 17 ++++----
+ ingest/compute.py                  |  8 +++-
+ tests/goldens/btc_daily_close.json | 14 +++++++
+ tests/test_goldens.py              | 81 ++++++++++++++++++++++++++++++++++++++
+ 5 files changed, 112 insertions(+), 11 deletions(-)
