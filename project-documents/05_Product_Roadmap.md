@@ -19,6 +19,7 @@ breadth is added. Every later PRD adds one panel to a page that already works.
 | **PRD-009** | History and charts | Backfill; per-indicator sparklines and distribution context (so a value can be read against its own history rather than an arbitrary band) | 007 | planned |
 | **PRD-010** | Integrity dashboard | Frozen-value detection, per-source freshness SLA rollup, coverage generated from the registry so an uncovered indicator is a build error. The self-audit that actually audits | 007 | planned |
 | **PRD-011** | Deploy behind Cloudflare Access | Moved out of PRD-001. The data path is already in production via GitHub Actions; the page is a single-user read-only viewer that localhost exercises identically. Deploy when it is worth opening daily. The service-role bundle scan did NOT move with it — it runs locally in PRD-001 | 008 | planned |
+| **PRD-012** | Split cadence: daily collect + 6h canary | Owner decision 2026-09-09. Almost every source publishes once a day or slower, so 6-hourly collection refetches identical values; but daily-only collection hides a failure for 24h+grace — the prior system's exact blind spot. Splits into a daily `collect` job and a 20-second `canary` every 6h that pings sources and the heartbeat and writes no datapoints. Failure visible in ~6–8h, data honest at daily, owner contacted only on breakage. Small; fold into PRD-002 if convenient | 001 | planned |
 
 Status: `planned` → `researching` → `specced` → `running` → `shipped`
 
