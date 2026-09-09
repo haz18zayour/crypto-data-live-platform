@@ -9,25 +9,32 @@ Do not hand-edit it — it is regenerated. The hand-written sections below it su
 
 ## ▶ Resume here
 
-**The product phase is unfinished — 1 document(s) still empty**
+**1 story left mid-run by an interrupted session**
 
-These settle what is being built and what accounts must exist. A PRD written before them is a guess.
+Recovery is automatic: the partial work is committed under that story and it is retried. An interruption does not cost a retry attempt.
 
-Owner: **An agent.** Give it this repo and the instruction below.
+Owner: **`uf`.** Run the command; it drives the agents itself.
 
 ```
-  · project-documents/05_Product_Roadmap.md — no PRDs are named yet, so there is no order to work in
+uf run
 ```
 
-**Last handoff note:** 2026-09-09: US-008 attempt 2 keeps the existing heartbeat implementation and adds `pyproject.toml` and `uv.lock` to the ingest workflow's push filter so dependency changes receive the named CI run. The exact cron gate, 3 heartbeat tests, 40 offline regressions, mypy, and Ruff pass; this sandbox cannot write `.git` or reach GitHub/Postgres/OKX, so the framework must commit/push and CI plus the human silence alert remain external checks.
+**Left in flight by the previous session:**
+
+- 1 uncommitted file(s): project-documents/05_Product_Roadmap.md
+- PRD-001-spine/US-009 left verifying
+
+⚠ 5 account(s) in 15_Services_and_Credentials.md are still TODO — Cloudflare, Supabase, Healthchecks.io, cron-job.org, SoSoValue. A story that needs one of these keys will halt and open a gate.
+
+**Last handoff note:** 2026-09-09: US-009 is ready for independent verification. The five named web tests, exact typecheck/build gates, and service-role bundle scan pass; `50-evidence/US-009/page.png` shows a current BTC value with age and full provenance using a deterministic read-only fixture because this sandbox blocks outbound sockets. The final rebuilt bundle uses `.env.local`'s Supabase URL/anon key, not the fixture URL.
 
 ## Where this stands
 
 | PRD | Stories | Passed | State |
 |---|---|---|---|
-| PRD-001-spine | 9 | 6 | 6/9 |
+| PRD-001-spine | 8 | 7 | 7/8 |
 
-Spend to date: **$7.62** Claude · **31648k** Codex tokens.
+Spend to date: **$8.15** Claude · **37681k** Codex tokens.
 
 ## What happened
 
@@ -133,6 +140,25 @@ Spend to date: **$7.62** Claude · **31648k** Codex tokens.
 - 10:29  US-008 started, attempt 2 (codex)
 - 10:36  US-008 — codex finished `cb4babf6` · 1171k tok
 - 10:38  US-008 **rejected** — 4/6 criteria, judged by claude · $0.66
+- 10:42  **PRD-001-spine** compiled — 9 stories
+- 10:42  US-008 started, attempt 3 (codex)
+- 10:47  US-008 — codex finished `b978451e` · 726k tok
+- 10:49  US-008 **awaiting your judgement** — 5/6 criteria, judged by claude · $0.53
+- 10:49  ⏸ **gate opened** — US-008: With the schedule paused deliberately, Healthchecks.io raises an alert within its grace period
+- 10:53  **PRD-001-spine** compiled — 8 stories
+- 16:01  ▶ gate answered **met** — Owner verified the full alert path on 2026-09-09, using a separate TEST check so the live monitor was not disturbed. Healthchecks generated a DOWN alert on silence ('success signal did not arrive on time, grace time passed') and the email was actually delivered to zayourhassan.1@gmail.com. The live crypto-data-ingest check separately shows ping #1 received at 13:39 local (10:39 UTC) via HTTPS GET from 168.62.197.25 - an Azure IP, i.e. the GitHub-hosted runner - with user-agent python-httpx/0.28.1, and status new -> up. Both halves proven: the heartbeat reaches Healthchecks from CI, and silence reaches the owner by email. This is the direct defence against the prior system's 24h silent outage, where a self-hosted runner exited 0 and nothing reported it.
+- 16:01  👤 you judged US-008 **met** — Owner verified the full alert path on 2026-09-09, using a separate TEST check so the live monitor was not disturbed. Healthchecks generated a DOWN alert on silence ('success signal did not arrive on time, grace time passed') and the email was actually delivered to zayourhassan.1@gmail.com. The live crypto-data-ingest check separately shows ping #1 received at 13:39 local (10:39 UTC) via HTTPS GET from 168.62.197.25 - an Azure IP, i.e. the GitHub-hosted runner - with user-agent python-httpx/0.28.1, and status new -> up. Both halves proven: the heartbeat reaches Healthchecks from CI, and silence reaches the owner by email. This is the direct defence against the prior system's 24h silent outage, where a self-hosted runner exited 0 and nothing reported it.
+- 16:01  US-009 started, attempt 1 (codex)
+- 16:17  US-009 failed — interrupted while running — the process stopped before a verdict
+- 16:17  US-009 started, attempt 1 (codex)
+- 16:44  US-009 failed — interrupted while running — the process stopped before a verdict
+- 16:44  US-009 started, attempt 1 (codex)
+- 16:57  US-009 failed — interrupted while running — the process stopped before a verdict
+- 16:57  US-009 started, attempt 1 (codex)
+- 17:17  US-009 — codex finished `842003aa` · 4759k tok
+- 20:43  US-009 failed — interrupted while verifying — the process stopped before a verdict
+- 20:43  US-009 started, attempt 1 (codex)
+- 20:46  US-009 — codex finished `65914c96` · 549k tok
 
 <!-- uf:generated:end -->
 ## Handoff

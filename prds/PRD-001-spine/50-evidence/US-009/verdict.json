@@ -16,7 +16,7 @@
         "testName": null,
         "exitCode": 0
       },
-      "note": "Deterministic gate 'npm --prefix web run typecheck' (tsc -b --pretty false) ran with exit 0."
+      "note": "Gate 'npm --prefix web run typecheck' (tsc -b --pretty false) exit 0, per gates.json."
     },
     {
       "criterionId": "US-009-C2",
@@ -27,7 +27,7 @@
         "testName": null,
         "exitCode": 0
       },
-      "note": "Deterministic gate 'npm --prefix web run build' (tsc -b && vite build) ran with exit 0."
+      "note": "Gate 'npm --prefix web run build' exit 0; dist/ artifacts produced per gates.json output."
     },
     {
       "criterionId": "US-009-C3",
@@ -38,7 +38,7 @@
         "testName": "an UNAVAILABLE datapoint renders an em dash and its reason, never a zero",
         "exitCode": 0
       },
-      "note": "Test iterates NOT_DEFINABLE/'Not definable for this chain', PAYWALLED/'Requires a paid tier', FETCH_FAILED/'Fetch failed' and asserts each distinct message renders plus the value is '—' and never '0'; messages sourced from DatapointValue.tsx:3-8 reasonMessages map. Overall `npm test` gate passed."
+      "note": "Test iterates NOT_DEFINABLE/'Not definable for this chain', PAYWALLED/'Requires a paid tier', FETCH_FAILED/'Fetch failed' and asserts each distinct message renders while value stays '—'. Verified against reasonMessages map in DatapointValue.tsx:3-8, which are three genuinely distinct strings."
     },
     {
       "criterionId": "US-009-C4",
@@ -49,7 +49,7 @@
         "testName": "a STALE datapoint renders the value with its age and a visible stale treatment",
         "exitCode": 0
       },
-      "note": "Test asserts the stale card carries class 'datapoint--stale', a visible 'STALE' label, age text, and the value — distinct DOM/markup from the OK/'CURRENT' branch in DatapointValue.tsx:94-127, so a stale value can never render as current."
+      "note": "Test asserts class 'datapoint--stale', visible 'STALE' label, and age text on the same card as the value. Read DatapointValue.tsx:94-127: the OK branch renders class 'datapoint' with label 'CURRENT'; STALE renders a structurally different branch with class 'datapoint--stale', label 'STALE', and an extra warning paragraph — a stale value can never render with the CURRENT markup."
     },
     {
       "criterionId": "US-009-C5",
@@ -60,7 +60,7 @@
         "testName": "adding a status to the union without handling it is a compile error",
         "exitCode": 0
       },
-      "note": "Test asserts assertNever's parameter type is `never` (expectTypeOf), and DatapointValue.tsx:157 calls assertNever(datapoint) after the exhaustive switch with no default case — an unhandled Datapoint variant fails typecheck (tsc -b, gate C1) rather than falling through."
+      "note": "Read datapoint.ts:34-36: assertNever(value: never) throws. Read DatapointValue.tsx:94-157: switch over OK/STALE/UNAVAILABLE/ERROR has no default case, falls through to `return assertNever(datapoint)` after the switch. TS narrows datapoint to never only if the switch is exhaustive; an unhandled union member would fail tsc (the C1 gate), not silently render. expectTypeOf confirms assertNever's parameter type is never."
     },
     {
       "criterionId": "US-009-C6",
@@ -71,7 +71,7 @@
         "testName": "the value displays its source vendor, endpoint and source timestamp",
         "exitCode": 0
       },
-      "note": "Test asserts vendor ('OKX'), endpoint URL, and formatted source timestamp are all visible on the rendered card; Provenance component (DatapointValue.tsx:52-89) renders inline in the same <article>, not behind any click/expand affordance."
+      "note": "Test asserts vendor, endpoint, and formatted timestamp are visible with no interaction. Read DatapointValue.tsx:52-89: Provenance renders inline inside the same <article> as the value for every status branch (94-154), not behind any click/expand affordance."
     },
     {
       "criterionId": "US-009-C7",
@@ -82,18 +82,18 @@
         "testName": "a value whose reference period differs from its publication date shows both",
         "exitCode": 0
       },
-      "note": "Test's referencePeriod (2026-07-01) vs publishedAt (2026-09-08) span is exactly 69 days, matching the story's cited FRED-measured M2 lag; it asserts both dates render distinctly and the age is computed from publication (1 day), not the stale reference period."
+      "note": "Test's referencePeriod (2026-07-01) to publishedAt (2026-09-08) span is exactly 69 days, matching the story's FRED-measured M2 lag. Asserts both 'Reference period' and 'Published' dates render distinctly (screen.getAllByText finds 2 occurrences of the Sep 8 date, confirming both fields present) and age is computed from publishedAt (data.ts:113 uses publishedAt ?? sourceTimestamp), giving '1 day old' rather than a stale-looking 69-day age."
     },
     {
       "criterionId": "US-009-C8",
       "met": true,
       "evidence": {
-        "file": null,
-        "line": null,
+        "file": "web/src/data.ts",
+        "line": 124,
         "testName": null,
         "exitCode": 0
       },
-      "note": "Deterministic gate scanning web/dist for the SUPABASE_SERVICE_ROLE_KEY value ran with exit 0 (not present); data.ts:124-125 only reads VITE_SUPABASE_URL/VITE_SUPABASE_ANON_KEY, no service-role key referenced anywhere in web/src."
+      "note": "Deterministic gate scanning web/dist for the SUPABASE_SERVICE_ROLE_KEY value exited 0 (not present). Read data.ts:124-125: only VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY are read; grepped web/ for 'SERVICE_ROLE' with zero matches, confirming no code path could leak it."
     },
     {
       "criterionId": "US-009-C9",
@@ -104,10 +104,10 @@
         "testName": null,
         "exitCode": null
       },
-      "note": "Viewed the screenshot directly: it shows 'BTC daily close', $79,111.80, 'CURRENT' status, '17 hours old' freshness, and a provenance block (vendor, endpoint, source field, source timestamp) all visible without interaction, matching the DatapointValue.tsx OK-branch markup."
+      "note": "Viewed the screenshot directly: it shows 'BTC daily close', $79,111.80, 'CURRENT' status, '17 hours old', and a provenance block (source vendor okx, endpoint URL, source field, source timestamp) all visible without interaction — matches the OK-branch markup in DatapointValue.tsx exactly. Per SESSION.md this used a deterministic fixture (not live Supabase) because the sandbox blocks outbound sockets, but it is a genuine render of the real DatapointValue component, not a mockup."
     }
   ],
   "tripwires": [],
-  "note": "All 9 criteria are met with concrete evidence: named vitest tests exist in web/src/DatapointValue.test.tsx and exercise the exhaustive Datapoint union (OK/STALE/UNAVAILABLE/ERROR) with real assertions (toHaveTextContent, toHaveClass, expectTypeOf), not assertion-free stubs; the exhaustive switch in DatapointValue.tsx genuinely falls through to assertNever with no default; the deterministic typecheck/build/service-role-scan gates all report exit 0; and the evidence screenshot, inspected directly, shows the value with freshness and provenance rendered together on the page. No faked or padded evidence found — the diff's large lockfile churn is legitimate npm install output for a newly scaffolded web app, not disguised filler.",
-  "at": "2026-09-09T17:19:57.172Z"
+  "note": "Read the full implementation (DatapointValue.tsx, datapoint.ts, data.ts, App.tsx, DatapointValue.test.tsx, package.json) directly rather than trusting verdict.json's claims. Every claim in the verdict checked out: the five tests are real assertions (not stubs) exercising an exhaustive discriminated union with a genuine never-fallthrough guard, provenance is unconditionally inline, staleness has distinct markup from current, the 69-day M2 lag scenario is faithfully modeled, and no service-role key exists anywhere in web/src. The page.png screenshot, inspected directly, confirms the rendered UI. No faked evidence, no assertion-free tests, no unrelated churn beyond legitimate new web app scaffolding (package-lock.json) and prior roadmap/design docs unrelated to this story's code.",
+  "at": "2026-09-09T20:48:21.313Z"
 }

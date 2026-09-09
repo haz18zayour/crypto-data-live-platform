@@ -1,0 +1,26 @@
+.uf/events.ndjson                                  |   11 +
+ SESSION.md                                         |   41 +-
+ prds/PRD-001-spine/50-evidence/US-009/diffstat.txt |    0
+ prds/PRD-001-spine/50-evidence/US-009/gates.json   |   32 +
+ prds/PRD-001-spine/50-evidence/US-009/page.png     |  Bin 0 -> 43803 bytes
+ prds/PRD-001-spine/50-evidence/US-009/verdict.json |  113 +
+ project-documents/05_Product_Roadmap.md            |   25 +-
+ project-documents/10_Technical_Architecture.md     |   36 +
+ project-documents/20_Design_System.md              |   88 +-
+ web/index.html                                     |   13 +
+ web/package-lock.json                              | 3787 ++++++++++++++++++++
+ web/package.json                                   |   32 +
+ web/src/App.tsx                                    |   42 +
+ web/src/DatapointValue.test.tsx                    |  103 +
+ web/src/DatapointValue.tsx                         |  168 +
+ web/src/data.ts                                    |  151 +
+ web/src/datapoint.ts                               |   36 +
+ web/src/main.tsx                                   |   16 +
+ web/src/registry.ts                                |   22 +
+ web/src/styles.css                                 |  203 ++
+ web/src/test/setup.ts                              |    5 +
+ web/tsconfig.app.json                              |   22 +
+ web/tsconfig.json                                  |    7 +
+ web/tsconfig.node.json                             |   16 +
+ web/vite.config.ts                                 |   18 +
+ 25 files changed, 4966 insertions(+), 21 deletions(-)
