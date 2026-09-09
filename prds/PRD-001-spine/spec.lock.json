@@ -4,8 +4,8 @@
   "title": "Spine — reachability, registry, provenance schema, one live indicator",
   "product": "crypto-data-live-platform",
   "branch": "feat/prd-001-spine",
-  "inputDigest": "2c1963b3308f1c4d",
-  "compiledAt": "2026-09-09T10:28:51.810Z",
+  "inputDigest": "afe9ca1be547458c",
+  "compiledAt": "2026-09-09T10:42:22.735Z",
   "stories": [
     {
       "id": "US-002",
@@ -542,10 +542,10 @@
         },
         {
           "id": "US-008-C4",
-          "text": "The scheduled workflow is green on the pushed commit",
+          "text": "The ingest workflow has actually run green on this branch — checked against the GitHub API, not inferred",
           "method": {
-            "kind": "ci",
-            "check": "ingest"
+            "kind": "cmd",
+            "run": "gh run list --branch feat/prd-001-spine --workflow ingest --limit 1 --json conclusion --template \"{{range .}}{{.conclusion}}{{end}}\" | grep -qx success"
           }
         },
         {

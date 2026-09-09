@@ -19,7 +19,7 @@ Owner: **An agent.** Give it this repo and the instruction below.
   · project-documents/05_Product_Roadmap.md — no PRDs are named yet, so there is no order to work in
 ```
 
-**Last handoff note:** 2026-09-09: The schema story is now US-012 after G5 re-identification. Its working diff replaces `psql` subprocesses with `psycopg`, locks the binary dependency, and removes the CI client install; static checks and 37 non-network tests pass. This Codex sandbox blocks the database socket, so the exact four-case migration gate must run against the workflow's PostgreSQL 16 service during verification.
+**Last handoff note:** 2026-09-09: US-008 attempt 2 keeps the existing heartbeat implementation and adds `pyproject.toml` and `uv.lock` to the ingest workflow's push filter so dependency changes receive the named CI run. The exact cron gate, 3 heartbeat tests, 40 offline regressions, mypy, and Ruff pass; this sandbox cannot write `.git` or reach GitHub/Postgres/OKX, so the framework must commit/push and CI plus the human silence alert remain external checks.
 
 ## Where this stands
 
@@ -27,7 +27,7 @@ Owner: **An agent.** Give it this repo and the instruction below.
 |---|---|---|---|
 | PRD-001-spine | 9 | 6 | 6/9 |
 
-Spend to date: **$6.96** Claude · **30477k** Codex tokens.
+Spend to date: **$7.62** Claude · **31648k** Codex tokens.
 
 ## What happened
 
@@ -128,6 +128,11 @@ Spend to date: **$6.96** Claude · **30477k** Codex tokens.
 - 10:15  US-008 started, attempt 1 (codex)
 - 10:26  US-008 — codex finished · 1689k tok
 - 10:27  US-008 **rejected** — 0/6 criteria, judged by claude
+- 10:28  **PRD-001-spine** compiled — 9 stories
+- 10:28  **PRD-001-spine** compiled — 9 stories
+- 10:29  US-008 started, attempt 2 (codex)
+- 10:36  US-008 — codex finished `cb4babf6` · 1171k tok
+- 10:38  US-008 **rejected** — 4/6 criteria, judged by claude · $0.66
 
 <!-- uf:generated:end -->
 ## Handoff
