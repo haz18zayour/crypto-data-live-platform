@@ -1,7 +1,13 @@
-.uf/config.json                                    |  2 +-
- .uf/events.ndjson                                  |  2 ++
- SESSION.md                                         |  9 +++++++--
- prds/PRD-001-spine/50-evidence/US-008/diffstat.txt | 20 +++++++++++++-------
- prds/PRD-001-spine/50-evidence/US-008/gates.json   |  8 ++++----
- prds/PRD-001-spine/50-evidence/US-008/verdict.json | 10 +++++++---
- 6 files changed, 34 insertions(+), 17 deletions(-)
+.github/workflows/ingest.yml                       |  41 +++++++
+ .uf/events.ndjson                                  |  11 ++
+ SESSION.md                                         |  14 ++-
+ ingest/heartbeat.py                                |  74 ++++++++++++
+ .../40-stories/US-008-scheduled-run-and-deadman.md |   8 +-
+ prds/PRD-001-spine/50-evidence/US-008/diffstat.txt |   7 ++
+ prds/PRD-001-spine/50-evidence/US-008/gates.json   |  26 ++++
+ prds/PRD-001-spine/50-evidence/US-008/verdict.json |  80 +++++++++++++
+ prds/PRD-001-spine/spec.lock.json                  |  28 ++---
+ project-documents/05_Product_Roadmap.md            |  21 ++--
+ project-documents/11_Data_Model.md                 |  32 +++++
+ tests/test_heartbeat.py                            | 131 +++++++++++++++++++++
+ 12 files changed, 447 insertions(+), 26 deletions(-)
