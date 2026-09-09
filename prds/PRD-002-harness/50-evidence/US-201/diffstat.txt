@@ -1,0 +1,8 @@
+.uf/events.ndjson                               |   2 +
+ SESSION.md                                      |  71 ++++++++++++---
+ ingest/compute.py                               |  25 ++++++
+ ingest/registry.py                              |   8 ++
+ ingest/registry.yaml                            |   1 +
+ project-documents/25_PRD_Acceptance_Protocol.md |  69 ++++++++++++++
+ tests/test_bar_slice.py                         | 115 ++++++++++++++++++++++++
+ 7 files changed, 277 insertions(+), 14 deletions(-)

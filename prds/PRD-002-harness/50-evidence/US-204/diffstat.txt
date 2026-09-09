@@ -1,0 +1,6 @@
+.uf/events.ndjson                          |  3 ++
+ SESSION.md                                 |  9 ++--
+ tests/fixtures/okx_candles_2024-02-22.json | 72 +++++++++++++++++++++++++++
+ tests/fixtures/okx_candles_malformed.json  | 40 +++++++++++++++
+ tests/test_vendor_shapes.py                | 79 ++++++++++++++++++++++++++++++
+ 5 files changed, 200 insertions(+), 3 deletions(-)

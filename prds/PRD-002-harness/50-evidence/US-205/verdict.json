@@ -1,0 +1,69 @@
+{
+  "storyId": "US-205",
+  "passes": true,
+  "verifier": {
+    "agent": "claude",
+    "sandbox": "restricted:read-only"
+  },
+  "implementer": "codex",
+  "results": [
+    {
+      "criterionId": "US-205-C1",
+      "met": true,
+      "evidence": {
+        "file": "ingest/fetchers/okx.py",
+        "line": 49,
+        "testName": "test_a_response_with_fewer_bars_than_requested_returns_error_not_a_short_series",
+        "exitCode": 0
+      },
+      "note": "okx.py:47-56 checks `received_bars < REQUIRED_BARS` immediately after parsing rows, before any close-filtering or Ok construction. The test drives the real fetch_btc_daily_close via a mocked httpx transport with 2 rows against REQUIRED_BARS monkeypatched to 3, asserts isinstance(result, Error), the exact 'returned 2 bars, expected 3' detail, and that the poisoned close value 'not-a-number' never appears in the detail — proving the count check runs before any value parsing."
+    },
+    {
+      "criterionId": "US-205-C2",
+      "met": true,
+      "evidence": {
+        "file": "ingest/fetchers/okx.py",
+        "line": 69,
+        "testName": "test_a_gap_in_the_bar_sequence_returns_error",
+        "exitCode": 0
+      },
+      "note": "okx.py:69-81 computes pairwise differences of closed-candle timestamps and errors if any diff != EXPECTED_UPDATE_INTERVAL_SECONDS*1000 (sourced from registry.yaml's expected_update_interval_seconds:86400 for btc_daily_close). Test supplies Sep8/Sep7/Sep5 (a 2-day gap after a 1-day step) and asserts Error with 'not contiguous' in detail."
+    },
+    {
+      "criterionId": "US-205-C3",
+      "met": true,
+      "evidence": {
+        "file": "ingest/fetchers/okx.py",
+        "line": 58,
+        "testName": "test_bars_are_strictly_ordered_and_non_duplicated",
+        "exitCode": 0
+      },
+      "note": "okx.py:58-63 checks raw timestamps pairwise with `newer <= older`, rejecting both ties and increasing order. Parametrized test covers a duplicate timestamp and an out-of-order timestamp, both asserting Error with 'not strictly ordered' in detail."
+    },
+    {
+      "criterionId": "US-205-C4",
+      "met": true,
+      "evidence": {
+        "file": "tests/test_truncation.py",
+        "line": 102,
+        "testName": "test_no_code_path_synthesises_pads_or_interpolates_a_bar",
+        "exitCode": 0
+      },
+      "note": "Code inspection of ingest/fetchers/okx.py confirms no padding/fill/interpolation function exists anywhere in the module — a short or gapped series always returns Error via the C1/C2 checks, never a completed Ok. However the test's own extra assertions (`rows == original_rows`, `len(rows) == 3`) are weak/tautological: they check the test's local input list, which the production code never mutates in place regardless of behavior (rows flow through JSON serialize/deserialize into a new pydantic-parsed object), so those two lines would pass even if synthesis happened elsewhere. The real proof here is duplicative of C1/C2's isinstance(result, Error) assertions rather than a distinct, sharper test of 'never invents data'."
+    },
+    {
+      "criterionId": "US-205-C5",
+      "met": true,
+      "evidence": {
+        "file": "tests/test_truncation.py",
+        "line": 119,
+        "testName": "test_the_error_detail_names_how_many_bars_arrived_versus_how_many_were_expected",
+        "exitCode": 0
+      },
+      "note": "Test asserts the exact detail string 'OKX returned 2 bars, expected 3', proving the error message names both the arrived and expected counts for immediate diagnosis — matches okx.py:52-55's f-string."
+    }
+  ],
+  "tripwires": [],
+  "note": "All five criteria are backed by real, assertion-bearing tests in tests/test_truncation.py driving the actual ingest/fetchers/okx.py::fetch_btc_daily_close entry point via a mocked httpx transport, plus passing typecheck/test gates. Implementation order matches the story notes exactly (count check first, then raw-timestamp ordering, then closed-candle contiguity against registry's expected_update_interval_seconds). One weakness: C4's dedicated test has two extra assertions (list identity/length on the test's own local variable) that are tautological and don't add real coverage beyond what C1/C2 already prove — not fake, but padded/weaker than its name implies. No unrelated churn beyond routine SESSION.md/.uf bookkeeping.",
+  "at": "2026-09-09T21:54:44.349Z"
+}

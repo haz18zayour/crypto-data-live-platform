@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import ast
+from collections.abc import Collection, Mapping
 from pathlib import Path
 from typing import Annotated, Any
 
@@ -32,6 +33,7 @@ class IndicatorDefinition(BaseModel):
     endpoint: NonEmptyString
     source_field: NonEmptyString
     definable_for: tuple[NonEmptyString, ...] = Field(min_length=1)
+    required_bars: PositiveInt | None = None
     expected_update_interval_seconds: PositiveInt
     freshness_warn_seconds: PositiveInt
     freshness_stale_seconds: PositiveInt
@@ -58,6 +60,13 @@ class IndicatorRegistry(RootModel[tuple[IndicatorDefinition, ...]]):
             if entry.key in seen:
                 raise ValueError(f"Duplicate indicator key: {entry.key}")
             seen.add(entry.key)
+        return self
+
+    @model_validator(mode="after")
+    def require_bar_counts(self) -> IndicatorRegistry:
+        for entry in self.root:
+            if entry.required_bars is None:
+                raise ValueError(f"{entry.key} is missing required_bars")
         return self
 
 
@@ -132,6 +141,27 @@ def load_registry(path: Path = REGISTRY_PATH) -> IndicatorRegistry:
 
     raw_entries = _parse_yaml(path.read_text(encoding="utf-8"))
     return IndicatorRegistry.model_validate(raw_entries)
+
+
+def assert_registry_coverage(
+    registry: IndicatorRegistry,
+    *,
+    golden_keys: Collection[str],
+    response_models: Mapping[str, object],
+) -> None:
+    """Fail with every missing integrity artifact derived from the registry."""
+
+    failures: list[str] = []
+    for entry in registry.root:
+        if entry.key not in golden_keys:
+            failures.append(f"{entry.key} is missing a golden file")
+        if entry.required_bars is None:
+            failures.append(f"{entry.key} is missing required_bars")
+        if entry.key not in response_models:
+            failures.append(f"{entry.vendor} has no response model for {entry.key}")
+
+    if failures:
+        raise AssertionError("; ".join(failures))
 
 
 def main() -> None:

@@ -1,0 +1,91 @@
+{
+  "storyId": "US-206",
+  "passes": true,
+  "verifier": {
+    "agent": "claude",
+    "sandbox": "restricted:read-only"
+  },
+  "implementer": "codex",
+  "results": [
+    {
+      "criterionId": "US-206-C1",
+      "met": true,
+      "evidence": {
+        "file": "ingest/canary.py",
+        "line": 83,
+        "testName": "test_canary_validates_every_endpoint_loaded_from_the_registry",
+        "exitCode": 0
+      },
+      "note": "run_canary iterates `for definition in load_registry().root` (ingest/canary.py:83) rather than any hardcoded per-vendor list. The test installs a registry with two vendors including one named 'new-vendor' that the source code never mentions, and asserts both endpoints get requested and reported — proving a newly registered vendor is picked up automatically."
+    },
+    {
+      "criterionId": "US-206-C2",
+      "met": true,
+      "evidence": {
+        "file": "tests/test_canary.py",
+        "line": 163,
+        "testName": "test_canary_writes_no_datapoints",
+        "exitCode": 0
+      },
+      "note": "Test connects to a real Postgres database (via TEST_DATABASE_URL/DATABASE_URL/.env.local), creates an isolated schema+datapoints table, seeds one row, runs canary.run_canary, and asserts the row count is unchanged before/after. canary.py itself never imports psycopg or touches DATABASE_URL, consistent with it being a shape/liveness check only — and the test proves this against a live DB connection rather than by code inspection alone."
+    },
+    {
+      "criterionId": "US-206-C3",
+      "met": true,
+      "evidence": {
+        "file": "ingest/canary.py",
+        "line": 42,
+        "testName": "test_shape_mismatch_fails_and_names_the_vendor_and_field",
+        "exitCode": 0
+      },
+      "note": "_validation_detail (ingest/canary.py:42-45) builds 'f\"{vendor} field {field}: {first_error['msg']}\"' from the pydantic error's loc/msg. The test drives a malformed OKX payload through the real fetch path and asserts the raised CanaryFailure message matches regex r'okx.*data\\.0\\.8', proving the failure names the specific vendor and field rather than a generic 'canary failed' message."
+    },
+    {
+      "criterionId": "US-206-C4",
+      "met": true,
+      "evidence": {
+        "file": "ingest/canary.py",
+        "line": 13,
+        "testName": "test_canary_pings_success_and_failure_heartbeat_endpoints",
+        "exitCode": 0
+      },
+      "note": "canary.py imports and reuses `_ping` from ingest/heartbeat.py (the same dead-man's-switch used by the collect job in ingest/heartbeat.py:16-32), calling it with failed=True on exception and failed=False/True on the aggregate result (ingest/canary.py:86,90) — mirroring run_ingestion's own success/fail ping pattern (ingest/heartbeat.py:57,60). The test asserts both the plain heartbeat URL and its '/fail' variant get hit, matching the collect job's own tested discipline."
+    },
+    {
+      "criterionId": "US-206-C5",
+      "met": true,
+      "evidence": {
+        "file": "tests/test_canary.py",
+        "line": 247,
+        "testName": "test_one_vendor_failure_does_not_prevent_later_vendors_being_checked",
+        "exitCode": 0
+      },
+      "note": "run_canary uses a plain generator comprehension over all registry entries with no early return/break on a per-endpoint exception (each failure is caught inside _check_endpoint and turned into a CanaryResult, ingest/canary.py:57-73), so one bad vendor can't short-circuit the rest. The test proves this: with a broken vendor listed before a healthy one, both endpoints are still requested and both results are reported (['ERROR','OK']), preventing a run that silently checks only part of the registry."
+    },
+    {
+      "criterionId": "US-206-C6",
+      "met": true,
+      "evidence": {
+        "file": "tests/test_canary.py",
+        "line": 298,
+        "testName": "test_canary_runs_against_live_vendors_and_reports_per_vendor_status",
+        "exitCode": 0
+      },
+      "note": "Marked @pytest.mark.integration, this test calls canary.main() — the real CLI entry point — with only `_ping` monkeypatched; load_registry() and the httpx.Client used to fetch endpoints are the real, unmocked implementations, so the GET against the real OKX endpoint in registry.yaml actually happens. It asserts the printed report's (vendor, endpoint) set matches the real registry and that exit_code==0, proving the assembled system (registry -> canary -> real network -> report) is wired end-to-end, not just individually-correct modules exercised in isolation."
+    },
+    {
+      "criterionId": "US-206-C7",
+      "met": true,
+      "evidence": {
+        "file": ".github/workflows/canary.yml",
+        "line": 5,
+        "testName": null,
+        "exitCode": 0
+      },
+      "note": "cron is '23 */6 * * *' — minute 23, not 0 — and the declared US-206-C7 gate script (parses the cron minute and fails if it equals '0') exits 0, directly proving the offset."
+    }
+  ],
+  "tripwires": [],
+  "note": "All seven criteria are backed by concrete, non-trivial evidence: real code paths in ingest/canary.py cited by line, tests that exercise the actual public entry points (run_canary and canary.main()) against a real DB and a real live vendor endpoint rather than isolated mocks, and a passing cron-offset gate. No assertion-free tests, comment-only satisfaction, or unrelated diff padding found; SESSION.md/.uf churn is routine bookkeeping.",
+  "at": "2026-09-09T22:14:13.536Z"
+}

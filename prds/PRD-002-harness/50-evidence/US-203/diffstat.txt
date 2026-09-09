@@ -1,0 +1,6 @@
+.uf/events.ndjson      |  3 ++
+ SESSION.md             |  9 ++++--
+ ingest/fetchers/okx.py |  3 +-
+ ingest/schemas.py      | 25 ++++++++++++++++
+ tests/test_schemas.py  | 77 ++++++++++++++++++++++++++++++++++++++++++++++++++
+ 5 files changed, 113 insertions(+), 4 deletions(-)
