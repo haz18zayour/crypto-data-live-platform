@@ -14,11 +14,9 @@ from pydantic import (
     PositiveInt,
     RootModel,
     StringConstraints,
-    ValidationError,
     field_validator,
     model_validator,
 )
-from pydantic_core import InitErrorDetails
 
 REGISTRY_PATH = Path(__file__).with_name("registry.yaml")
 NonEmptyString = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1)]
@@ -34,7 +32,7 @@ class IndicatorDefinition(BaseModel):
     endpoint: NonEmptyString
     source_field: NonEmptyString
     definable_for: tuple[NonEmptyString, ...] = Field(min_length=1)
-    required_bars: PositiveInt = 1
+    required_bars: PositiveInt | None = None
     expected_update_interval_seconds: PositiveInt
     freshness_warn_seconds: PositiveInt
     freshness_stale_seconds: PositiveInt
@@ -61,6 +59,13 @@ class IndicatorRegistry(RootModel[tuple[IndicatorDefinition, ...]]):
             if entry.key in seen:
                 raise ValueError(f"Duplicate indicator key: {entry.key}")
             seen.add(entry.key)
+        return self
+
+    @model_validator(mode="after")
+    def require_bar_counts(self) -> IndicatorRegistry:
+        for entry in self.root:
+            if entry.required_bars is None:
+                raise ValueError(f"{entry.key} is missing required_bars")
         return self
 
 
@@ -134,21 +139,7 @@ def load_registry(path: Path = REGISTRY_PATH) -> IndicatorRegistry:
     """Load and validate every indicator, rejecting ambiguous keys."""
 
     raw_entries = _parse_yaml(path.read_text(encoding="utf-8"))
-    registry = IndicatorRegistry.model_validate(raw_entries)
-    missing_bar_counts: list[InitErrorDetails] = [
-        InitErrorDetails(
-            type="missing",
-            loc=(index, "required_bars"),
-            input=entry,
-        )
-        for index, entry in enumerate(raw_entries)
-        if "required_bars" not in entry
-    ]
-    if missing_bar_counts:
-        raise ValidationError.from_exception_data(
-            IndicatorRegistry.__name__, missing_bar_counts
-        )
-    return registry
+    return IndicatorRegistry.model_validate(raw_entries)
 
 
 def main() -> None:
