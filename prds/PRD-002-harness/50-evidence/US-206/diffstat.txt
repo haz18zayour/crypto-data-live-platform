@@ -1,0 +1,6 @@
+.github/workflows/canary.yml |  44 ++++++
+ .uf/events.ndjson            |   3 +
+ SESSION.md                   |  18 ++-
+ ingest/canary.py             | 146 ++++++++++++++++++++
+ tests/test_canary.py         | 322 +++++++++++++++++++++++++++++++++++++++++++
+ 5 files changed, 523 insertions(+), 10 deletions(-)
