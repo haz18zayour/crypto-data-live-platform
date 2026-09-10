@@ -1,0 +1,69 @@
+{
+  "storyId": "US-303",
+  "passes": true,
+  "verifier": {
+    "agent": "claude",
+    "sandbox": "restricted:read-only"
+  },
+  "implementer": "codex",
+  "results": [
+    {
+      "criterionId": "US-303-C1",
+      "met": true,
+      "evidence": {
+        "file": "tests/test_timestamp_gate.py",
+        "line": 11,
+        "testName": "test_unequal_source_timestamps_produce_no_divergence_at_all",
+        "exitCode": 0
+      },
+      "note": "Mock compare() would return 12.5 if invoked; test asserts comparisons==0 and the result is a TimestampMismatch with no divergence_bps attribute at all — proving no numeric divergence (large or zero) is ever produced for mismatched days. Backed by ingest/corroborate.py's gate_timestamp_comparison, which short-circuits to TimestampMismatch before calling compare() when source_a_timestamp != source_b_timestamp."
+    },
+    {
+      "criterionId": "US-303-C2",
+      "met": true,
+      "evidence": {
+        "file": "tests/test_timestamp_gate.py",
+        "line": 28,
+        "testName": "test_unequal_timestamps_name_both_timestamps_in_a_distinct_outcome",
+        "exitCode": 0
+      },
+      "note": "Asserts the returned value equals a TimestampMismatch dataclass carrying both source_a_timestamp/source_b_timestamp and a literal outcome=='TIMESTAMP_MISMATCH' field (ingest/corroborate.py:9-18) — a distinct, immediately-diagnosable type rather than an inferred/generic error."
+    },
+    {
+      "criterionId": "US-303-C3",
+      "met": true,
+      "evidence": {
+        "file": "tests/test_timestamp_gate.py",
+        "line": 44,
+        "testName": "test_equal_timestamps_proceed_to_comparison",
+        "exitCode": 0
+      },
+      "note": "Equal timestamps cause gate_timestamp_comparison (ingest/corroborate.py:52-73) to return compare()'s result directly (result is compared), proving the gate passes the happy path through rather than blocking it."
+    },
+    {
+      "criterionId": "US-303-C4",
+      "met": true,
+      "evidence": {
+        "file": "tests/test_timestamp_gate.py",
+        "line": 51,
+        "testName": "test_each_source_must_be_on_a_utc_midnight_boundary",
+        "exitCode": 0
+      },
+      "note": "Parametrized over misaligned_source in ['source_a','source_b'], each offsetting only that one source by 1 hour and asserting the ValueError names that specific source and mentions 'UTC midnight', with compare never invoked (pytest.fail inside the lambda). This exercises _validate_source_timestamp (ingest/corroborate.py:22-38) called independently per source at corroborate.py:60-70, proving each venue's timestamp is validated on its own, not just the pair as a whole."
+    },
+    {
+      "criterionId": "US-303-C5",
+      "met": true,
+      "evidence": {
+        "file": "tests/test_timestamp_gate.py",
+        "line": 82,
+        "testName": "test_comparison_is_refused_when_either_timestamp_is_in_the_future",
+        "exitCode": 0
+      },
+      "note": "Parametrized over future_source in ['source_a','source_b'], each set 12h ahead of `now`; asserts ValueError naming that source and 'future', comparison never called. This is the same future-timestamp rejection pattern as okx.py:87-91's F11 defence, now reimplemented at the comparison boundary in _validate_source_timestamp's `if timestamp > now` check (ingest/corroborate.py:35-38)."
+    }
+  ],
+  "tripwires": [],
+  "note": "All five criteria have direct, named-test evidence with real assertions (ValueError raises, type/attribute checks, call-count tracking via nonlocal counters) — no assertion-free tests or comment-only satisfaction found. Deterministic typecheck and test gates both exit 0. The diff is otherwise clean: only the two declared files plus routine SESSION.md/events.ndjson bookkeeping, no unrelated churn.",
+  "at": "2026-09-10T06:37:12.812Z"
+}

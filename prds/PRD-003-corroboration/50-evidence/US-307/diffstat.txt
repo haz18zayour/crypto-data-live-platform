@@ -1,0 +1,19 @@
+.uf/events.ndjson                                  |  12 ++
+ SESSION.md                                         |  15 +-
+ .../50-evidence/US-306/diffstat.txt                |   8 +-
+ .../50-evidence/US-306/gates.json                  |   2 +-
+ .../50-evidence/US-306/verdict.json                |  18 +-
+ .../50-evidence/US-307/diffstat.txt                |  18 ++
+ .../50-evidence/US-307/divergence.png              | Bin 0 -> 37199 bytes
+ .../50-evidence/US-307/gates.json                  |  14 ++
+ .../50-evidence/US-307/verdict.json                |  80 +++++++++
+ web/src/App.test.tsx                               |  61 +++++++
+ web/src/App.tsx                                    |  37 ++--
+ web/src/CorroborationPanel.test.tsx                | 123 ++++++++++++++
+ web/src/CorroborationPanel.tsx                     |  85 ++++++++++
+ web/src/corroboration.ts                           |  30 ++++
+ web/src/data.corroboration.test.ts                 | 127 ++++++++++++++
+ web/src/data.ts                                    | 149 +++++++++++++++-
+ web/src/registry.ts                                |   8 +
+ web/src/styles.css                                 | 187 ++++++++++++++++++++-
+ 18 files changed, 932 insertions(+), 42 deletions(-)

@@ -19,7 +19,7 @@ Owner: **You.** This one cannot be delegated.
 review the branch, then merge — or start the next PRD
 ```
 
-**Last handoff note:** 2026-09-10: PRD-002 is 4/7 with every story passing first attempt — US-201 bar-slice
+**Last handoff note:** 2026-09-10 — US-306 implementation evidence is ready for external verification: registry entries must explicitly choose a second-source corroboration block or an uncorroborated note; Coin Metrics-style upstream consolidation is preserved in the note; PRD-002 generated coverage rejects silence. US-306 tests: 4 passed; registry-focused tests: 24 passed; ruff/mypy and registry validation clean; deterministic regressions: 107 passed (6 integration deselected). Live PostgreSQL remains unreachable from this sandbox.
 
 ## Where this stands
 
@@ -27,8 +27,9 @@ review the branch, then merge — or start the next PRD
 |---|---|---|---|
 | PRD-001-spine | 8 | 8 | **all green** |
 | PRD-002-harness | 7 | 7 | **all green** |
+| PRD-003-corroboration | 7 | 7 | **all green** |
 
-Spend to date: **$14.34** Claude · **48433k** Codex tokens.
+Spend to date: **$21.63** Claude · **65106k** Codex tokens.
 
 ## What happened
 
@@ -178,10 +179,81 @@ Spend to date: **$14.34** Claude · **48433k** Codex tokens.
 - 22:19  US-207 — codex finished `15667825` · 726k tok
 - 22:21  US-207 **PASSED** — 6/6 criteria, judged by claude · $0.25
 
+### 2026-09-10
+
+- 05:47  researched PRD-003-corroboration — 9 sources · $2.85
+- 05:50  **PRD-003-corroboration** compiled — 7 stories
+- 05:51  US-301 started, attempt 1 (codex)
+- 06:06  US-301 — codex finished `7b949311` · 2473k tok
+- 06:09  US-301 **PASSED** — 6/6 criteria, judged by claude · $0.75
+- 06:09  US-302 started, attempt 1 (codex)
+- 06:26  US-302 — codex finished `6065ec4b` · 1983k tok
+- 06:27  US-302 **PASSED** — 6/6 criteria, judged by claude · $0.29
+- 06:27  US-303 started, attempt 1 (codex)
+- 06:35  US-303 — codex finished `3d82c879` · 1184k tok
+- 06:37  US-303 **PASSED** — 5/5 criteria, judged by claude · $0.13
+- 06:37  US-304 started, attempt 1 (codex)
+- 06:51  US-304 — codex finished `328e28ef` · 1672k tok
+- 06:54  US-304 **rejected** — 6/7 criteria, judged by claude · $0.49
+- 06:54  US-304 started, attempt 2 (codex)
+- 06:59  US-304 — codex finished `6ce69cec` · 410k tok
+- 07:02  US-304 **PASSED** — 7/7 criteria, judged by claude · $0.47
+- 07:06  US-305 started, attempt 1 (codex)
+- 07:16  US-305 failed — interrupted while running — the process stopped before a verdict
+- 07:16  US-305 started, attempt 1 (codex)
+- 07:24  US-305 — codex finished `2e16ba55` · 2169k tok
+- 07:27  US-305 — codex finished `93143f4b` · 1925k tok
+- 07:28  US-305 **PASSED** — 5/5 criteria, judged by claude · $0.47
+- 07:29  US-306 started, attempt 1 (codex)
+- 07:30  US-305 **PASSED** — 5/5 criteria, judged by claude · $0.36
+- 07:30  US-306 failed — interrupted while running — the process stopped before a verdict
+- 07:30  US-306 started, attempt 1 (codex)
+- 07:47  US-306 — codex finished `282ad541` · 2159k tok
+- 07:51  US-306 **PASSED** — 5/5 criteria, judged by claude · $0.33
+- 07:51  US-306 — codex finished `1c76e217` · 2697k tok
+- 07:51  US-306 failed — interrupted while verifying — the process stopped before a verdict
+- 07:51  US-306 started, attempt 2 (codex)
+- 07:53  US-306 **PASSED** — 5/5 criteria, judged by claude · $0.33
+- 07:54  US-307 started, attempt 1 (codex)
+- 07:55  US-306 — codex finished `488bceeb`
+- 07:56  US-306 **PASSED** — 5/5 criteria, judged by claude · $0.27
+- 07:57  US-307 failed — interrupted while running — the process stopped before a verdict
+- 07:57  US-307 started, attempt 1 (codex)
+- 08:14  US-307 — codex finished
+- 08:14  US-307 — codex finished `6705162b`
+- 08:15  US-307 **rejected** — 0/6 criteria, judged by claude
+- 08:15  US-307 **rejected** — 0/6 criteria, judged by claude
+- 08:18  US-307 started, attempt 3 (codex)
+- 08:19  US-307 — codex finished `9782787b`
+- 08:21  US-307 **PASSED** — 6/6 criteria, judged by claude · $0.56
+
 <!-- uf:generated:end -->
 
 ## Handoff
 
+- 2026-09-10 (session): **PRD-003 complete, 7/7**, merged. Corroboration is live: OKX and
+  Coinbase compared per UTC day, tolerance **25 bps measured** from 59 days (median 7.1,
+  p90 10.8, max 13.8; the bar=1D defect was 35.2). G4 migration **applied to production** —
+  two venues now coexist where the second write previously UPDATEd the first. Adversarial
+  proof at `prds/PRD-003-corroboration/50-evidence/US-307/divergence.png`.
+  **Known limits, do not overstate this:** only spot close has a second venue, so most of
+  the board stays uncorroborated; 59 days is a thin sample; and a shared bug in our own
+  comparison code is invisible to corroboration (same wrong offset twice = zero
+  divergence). Next: **PRD-004 technical indicators**, the first real scale test.
+- 2026-09-10 — US-306 implementation evidence is ready for external verification: registry entries must explicitly choose a second-source corroboration block or an uncorroborated note; Coin Metrics-style upstream consolidation is preserved in the note; PRD-002 generated coverage rejects silence. US-306 tests: 4 passed; registry-focused tests: 24 passed; ruff/mypy and registry validation clean; deterministic regressions: 107 passed (6 integration deselected). Live PostgreSQL remains unreachable from this sandbox.
+- 2026-09-10 — US-305 implementation and tests are ready for external verification. Missing Coinbase target-day bars, including the real older-latest-candle shape, persist the primary value and a reasoned NOT_CORROBORATED record with no divergence fields; HTTP errors remain Error outcomes and only those trigger corroboration failure policy. Targeted US-303-305 tests: 20 passed (1 live deselected); Ruff and scoped mypy clean; non-network/non-DB regressions: 92 passed (3 live deselected). Live PostgreSQL fixtures are unreachable from this sandbox; full-project mypy has 8 pre-existing test errors outside touched files.
+- 2026-09-10 — US-304 implementation is ready for external verification: midpoint divergence is assessed against the per-indicator registry tolerance, the first tolerance/status written for a datapoint pair is immutable on rerun, and the live entry point fetches/persists both peer venues behind the US-303 timestamp gate. Targeted tests: 7 passed with live deselected; changed-file ruff/mypy and registry validation clean; deterministic regressions: 93 passed. The fail-loud live integration test could not connect to Supabase from this sandbox.
+- 2026-09-10 (session): PRD-003 at 3/7, all first attempt. Both venues verified live and
+  aligned — OKX 78,300.70, Coinbase 78,283.98, both on a genuine 00:00 UTC boundary
+  asserted **independently per venue**, **2.1 bps apart** against the measured 25 bps
+  tolerance. US-301 is **blast radius**: it extends the unique identity with
+  `source_vendor` (two venues previously collided and the second write silently UPDATEd
+  the first) and adds a `corroborations` table. **Manual G4 owed before merge — the
+  migration is written but NOT applied to `public`.**
+  Bullets below prefixed with a bare date are Codex's per-story sandbox notes, not
+  session state.
+- 2026-09-10 — US-303 implementation is ready for external verification: timestamp validation rejects each source independently when off UTC midnight or future, unequal timestamps return a TIMESTAMP_MISMATCH carrying both timestamps without invoking comparison, and equal timestamps invoke the comparison callback. Targeted tests: 7 passed; mypy and ruff clean; deterministic non-network/non-Postgres regressions: 90 passed. Full suite: 93 passed, with existing live socket and Postgres checks failing loud because this sandbox cannot reach them. Git commit was not possible because the sandbox denies writes to .git.
+- 2026-09-10 — US-302 implementation is ready for external verification: Coinbase is decoded into named strict fields, asserts its own UTC-midnight buckets, excludes the live bucket, and stores bucket-end timestamps. Targeted tests: 10 passed (live deselected); unaffected non-DB regressions: 69 passed. The fail-loud live test is present but this sandbox blocks sockets with WinError 10013; existing real-Postgres fixtures are likewise unreachable here.
 - 2026-09-10: **PRD-002 complete, 7/7, every story first attempt**, merged to `main`. The
   harness now guards PRD-004 onward: exactly-N-bar slices, goldens with an external oracle,
   `extra='forbid'` + strict vendor models, recorded shapes, truncation/gap/duplicate detection,

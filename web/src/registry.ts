@@ -9,6 +9,14 @@ export type IndicatorDefinition = {
   source_field: string;
   freshness_warn_seconds: number;
   freshness_stale_seconds: number;
+  corroboration?: {
+    venue: string;
+    pair: string;
+    tolerance_bps: number;
+  };
+  uncorroborated?: {
+    note: string;
+  };
 };
 
 const definitions = parse(registryYaml) as IndicatorDefinition[];
