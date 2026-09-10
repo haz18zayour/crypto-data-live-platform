@@ -1,0 +1,80 @@
+{
+  "storyId": "US-401",
+  "passes": true,
+  "verifier": {
+    "agent": "claude",
+    "sandbox": "restricted:read-only"
+  },
+  "implementer": "codex",
+  "results": [
+    {
+      "criterionId": "US-401-C1",
+      "met": true,
+      "evidence": {
+        "file": "pyproject.toml",
+        "line": 10,
+        "testName": null,
+        "exitCode": 0
+      },
+      "note": "pyproject.toml:10 pins `TA-Lib==0.7.1`; uv.lock:581-591 resolves it to a single prebuilt wheel (ta_lib-0.7.1-cp312-cp312-win_amd64.whl) with no local build step. The dedicated US-401-C1 gate (`uv sync`) exited 0, proving the wheel installs cleanly on this environment. The lock only records the current dev platform/interpreter (cp312-win_amd64) — I cannot independently verify from the repo that wheels exist for the full 3.9–3.14 matrix on other platforms, but this is an external fact about the pinned release, not something the repo state can prove either way, and the designated cmd gate for this criterion passed."
+    },
+    {
+      "criterionId": "US-401-C2",
+      "met": true,
+      "evidence": {
+        "file": "tests/conftest.py",
+        "line": 42,
+        "testName": "guard_talib_unstable_periods",
+        "exitCode": 0
+      },
+      "note": "`@pytest.fixture(autouse=True)` on guard_talib_unstable_periods (conftest.py:42-46) makes the pre/post default-value assertion run around every test collected under tests/ (pyproject.toml:21 testpaths=[\"tests\"]), not just the two talib-specific tests. The full-suite gate (`uv run pytest -q`) exited 0 with this fixture active across all existing tests, confirming it runs suite-wide without breaking anything."
+    },
+    {
+      "criterionId": "US-401-C3",
+      "met": true,
+      "evidence": {
+        "file": "tests/test_talib_environment.py",
+        "line": 17,
+        "testName": "test_setting_an_unstable_period_fails_the_suite",
+        "exitCode": 0
+      },
+      "note": "This test writes a throwaway test file that calls `talib.set_unstable_period('RSI', 1)`, runs it in a fresh subprocess pytest invocation, and asserts both a non-zero return code and that the guard's exact assertion message ('TA-Lib unstable periods must remain at default 0') appears in output (lines 53-54). This is a real, assertion-bearing proof that the guard actually catches the mutation, not just a test that the guard exists."
+    },
+    {
+      "criterionId": "US-401-C4",
+      "met": true,
+      "evidence": {
+        "file": "tests/test_talib_environment.py",
+        "line": 10,
+        "testName": "test_get_unstable_period_returns_zero_out_of_the_box",
+        "exitCode": 0
+      },
+      "note": "Asserts every unstable-period-bearing TA-Lib function (the 22-entry TALIB_UNSTABLE_FUNCTIONS tuple shared with conftest.py) reports the documented default of 0 out of the box. If a future TA-Lib release changed its default, this pinned assertion would fail here rather than silently propagating."
+    },
+    {
+      "criterionId": "US-401-C5",
+      "met": true,
+      "evidence": {
+        "file": null,
+        "line": null,
+        "testName": null,
+        "exitCode": 0
+      },
+      "note": "Dedicated gate result US-401-C5 (`uv run mypy ingest --strict`) exited 0 with TA-Lib added as a dependency, and the separately listed typecheck gate also exited 0."
+    },
+    {
+      "criterionId": "US-401-C6",
+      "met": true,
+      "evidence": {
+        "file": null,
+        "line": null,
+        "testName": null,
+        "exitCode": 0
+      },
+      "note": "Gate US-401-C6 (`uv run pytest -q --no-header -o addopts=`) exited 0. Spot-counted ~112 top-level `def test_` functions plus 13 parametrize decorators across tests/ (including the 2 new talib tests), consistent with the claimed 131 total once parametrized cases expand; the authoritative proof is the passing gate itself."
+    }
+  ],
+  "tripwires": [],
+  "note": "All 6 criteria are backed by concrete, verifiable evidence: the autouse fixture genuinely runs suite-wide, the 'guard bites' test spawns a real subprocess and asserts on its failure output (not a tautology), the default-pinning test asserts real values, and the cmd-method criteria (C1, C5, C6) are covered by the already-executed passing gates named in the prompt. No faked or assertion-free tests found; diff only touches the declared files plus the expected .uf/events.ndjson log entry.",
+  "at": "2026-09-10T11:32:51.361Z"
+}
