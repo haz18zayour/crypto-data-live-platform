@@ -29,7 +29,7 @@ uf run PRD-003-corroboration
 | PRD-002-harness | 7 | 7 | **all green** |
 | PRD-003-corroboration | 7 | 6 | 6/7 |
 
-Spend to date: **$20.47** Claude · **62409k** Codex tokens.
+Spend to date: **$20.80** Claude · **65106k** Codex tokens.
 
 ## What happened
 
@@ -210,6 +210,10 @@ Spend to date: **$20.47** Claude · **62409k** Codex tokens.
 - 07:30  US-306 started, attempt 1 (codex)
 - 07:47  US-306 — codex finished `282ad541` · 2159k tok
 - 07:51  US-306 **PASSED** — 5/5 criteria, judged by claude · $0.33
+- 07:51  US-306 — codex finished `1c76e217` · 2697k tok
+- 07:51  US-306 failed — interrupted while verifying — the process stopped before a verdict
+- 07:51  US-306 started, attempt 2 (codex)
+- 07:53  US-306 **PASSED** — 5/5 criteria, judged by claude · $0.33
 
 <!-- uf:generated:end -->
 
