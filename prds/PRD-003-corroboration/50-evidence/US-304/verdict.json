@@ -1,6 +1,6 @@
 {
   "storyId": "US-304",
-  "passes": false,
+  "passes": true,
   "verifier": {
     "agent": "claude",
     "sandbox": "restricted:read-only"
@@ -16,7 +16,7 @@
         "testName": "test_divergence_is_computed_in_basis_points_against_the_midpoint",
         "exitCode": 0
       },
-      "note": "compute_divergence_bps divides by the midpoint of the two values (ingest/corroborate.py:50-54), not by either source_a or source_b. The test at tests/test_divergence.py:81-88 asserts forward==reverse for swapped argument order and that the result differs from what dividing by either single value (100.0 or 101.0) would produce, directly proving the comparison is order-independent / not judged against either venue's value."
+      "note": "compute_divergence_bps divides by the midpoint (source_a+source_b)/2, not either single venue value. The test (tests/test_divergence.py:81-88) asserts forward(100,101)==reverse(101,100) and that both differ from dividing by either single value alone, proving the sign/order of the comparison cannot matter."
     },
     {
       "criterionId": "US-304-C2",
@@ -27,18 +27,18 @@
         "testName": "test_tolerance_is_read_per_indicator_from_the_registry",
         "exitCode": 0
       },
-      "note": "CorroborationDefinition.tolerance_bps is nested inside each IndicatorDefinition (registry.py:27-51), not a module-level constant. tests/test_divergence.py:91-130 loads a registry with two indicators carrying different tolerance_bps (25 vs 40) and shows the same 35bps divergence is DIVERGED under one and CORROBORATED under the other, proving tolerance is per-indicator rather than global."
+      "note": "CorroborationDefinition.tolerance_bps is nested per IndicatorDefinition (registry.py:27-51), not global. tests/test_divergence.py:91-130 loads two indicators with tolerance_bps 25 vs 40 and shows the same 35.2bps divergence is DIVERGED under one and CORROBORATED under the other."
     },
     {
       "criterionId": "US-304-C3",
       "met": true,
       "evidence": {
-        "file": "tests/test_divergence.py",
-        "line": 133,
+        "file": "supabase/migrations/20260910120000_create_corroborations.sql",
+        "line": 46,
         "testName": "test_tolerance_in_force_at_write_time_cannot_be_retroactively_changed",
         "exitCode": 0
       },
-      "note": "record_corroboration (ingest/corroborate.py:100-122) inserts with 'on conflict (datapoint_a_id, datapoint_b_id) do nothing' and falls back to selecting the already-stored row rather than re-computing. The unit test calls record_corroboration twice for the same pair with a changed tolerance (25 then 40) and asserts the second call returns the identical first result. This is backed by a real DB-level unique index (supabase/migrations/20260910120000_create_corroborations.sql:46-47), though the unit test itself exercises a mock connection rather than a live Postgres uniqueness violation."
+      "note": "record_corroboration (ingest/corroborate.py:79-133) inserts with 'on conflict (datapoint_a_id, datapoint_b_id) do nothing' and falls back to selecting the already-stored row; this is backed by a real unique index (migration line 46-47). The unit test calls record_corroboration twice for the same pair with tolerance changed 25->40 and asserts the second call returns the identical first (DIVERGED, tolerance_bps_at_write=25.0) result, unaffected by the edit."
     },
     {
       "criterionId": "US-304-C4",
@@ -49,7 +49,7 @@
         "testName": "test_divergence_inside_tolerance_is_recorded_with_its_number",
         "exitCode": 0
       },
-      "note": "test_divergence_inside_tolerance_is_recorded_with_its_number asserts that a CORROBORATED (within-tolerance) result is still written (connection.stored is not None) with its numeric divergence_bps and tolerance_bps_at_write preserved, proving agreement is persisted rather than only disagreement. The corroborations table (migration lines 16-44) has no write path that special-cases or drops CORROBORATED rows."
+      "note": "Asserts a within-tolerance (13.8bps) comparison is still written to the store (connection.stored is not None) with its numeric divergence_bps and tolerance_bps_at_write, proving agreement is persisted, not only disagreement. The corroborations table schema has no write path that special-cases CORROBORATED rows."
     },
     {
       "criterionId": "US-304-C5",
@@ -60,18 +60,18 @@
         "testName": "test_measured_defect_is_flagged_and_worst_honest_case_is_not",
         "exitCode": 0
       },
-      "note": "The parametrized test directly asserts a defect-magnitude divergence (35.0 bps, above the 25 bps registry tolerance) is judged DIVERGED and a honest-disagreement-magnitude divergence (13.0 bps, below tolerance) is judged CORROBORATED — a direct assertion of the specific failure mode (a real defect crossing the threshold) the PRD exists to catch."
+      "note": "Directly asserts a defect-magnitude divergence is judged DIVERGED and an honest-disagreement-magnitude divergence is judged CORROBORATED against the registry's 25bps tolerance -- the specific failure mode (a real defect crossing threshold, distinguished from ordinary venue basis) the PRD exists to catch."
     },
     {
       "criterionId": "US-304-C6",
-      "met": false,
+      "met": true,
       "evidence": {
         "file": "tests/test_divergence.py",
-        "line": 195,
+        "line": 197,
         "testName": "test_measured_defect_is_flagged_and_worst_honest_case_is_not",
         "exitCode": 0
       },
-      "note": "The story's own measured numbers are the bar=1D defect at 35.2 bps and the worst honest disagreement (max over 59 days) at 13.8 bps — both appear verbatim in prds/PRD-003-corroboration/40-stories/US-304-divergence.md and 30-spec.md. The regression test instead parametrizes on 35.0 and 13.0, rounded synthetic values that never actually appear anywhere in the diff or registry; grep for '35.2' and '13.8' across the repo finds them only in PRD documentation, never in code or tests. This pins approximations, not the measured values the criterion names, so the specific regression protection the criterion asks for is not actually in place."
+      "note": "Re-verified against the current repo state (post second implementation attempt, commit 6ce69ce): the parametrize list is now `((35.2, \"DIVERGED\"), (13.8, \"CORROBORATED\"))` -- the exact measured constants from the story (bar=1D defect 35.2 bps; worst honest max-over-59-days 13.8 bps), not rounded stand-ins. Confirmed by direct grep of the file on disk. This fixes the defect that failed C6 on the first implementation attempt (which used rounded 35.0/13.0); the fix is present in the file as it currently stands."
     },
     {
       "criterionId": "US-304-C7",
@@ -82,10 +82,10 @@
         "testName": "test_real_run_against_both_live_venues_stores_divergence_and_tolerance",
         "exitCode": 0
       },
-      "note": "Marked @pytest.mark.integration, this test calls run_live_corroboration(postgres) — the actual public entry point (ingest/corroborate.py:193-247) that calls the real okx.fetch_btc_daily_close() and coinbase.fetch_btc_daily_close() with no injected client, persists both via persist_datapoint, and writes a corroborations row via record_corroboration against a schema built from the real supabase/migrations/*.sql. It then re-reads the row with a join against datapoints to confirm both source_vendor values and float prices were actually persisted. pyproject.toml declares the 'integration' marker with no addopts deselecting it and no conftest.py filters it, so the declared test gate (exit 0) necessarily ran this against live venues and a live Postgres, consistent with the precedent already accepted for US-302-C6 in this same session's verification history."
+      "note": "Marked @pytest.mark.integration, calls run_live_corroboration(postgres) -- the real public entry point (ingest/corroborate.py:193-247) -- which calls the actual okx.fetch_btc_daily_close() and coinbase.fetch_btc_daily_close() with no injected client, persists both via the real persist_datapoint (verified persist.py wiring: definition/asset/measured_on/result signature matches call sites), and writes a corroborations row via record_corroboration against a schema built from the real supabase/migrations/*.sql. It re-reads the row via a join confirming both source_vendor values ('okx','coinbase') and float prices were persisted. pyproject.toml declares the 'integration' marker with no addopts deselecting it (confirmed by reading pyproject.toml directly) and no conftest.py filter, so the declared gate 'uv run pytest -q' (exit 0) necessarily exercised this live-venue, live-Postgres path -- consistent with the precedent already accepted for the equivalent live tests in US-301/US-302/US-303 in this same session."
     }
   ],
   "tripwires": [],
-  "note": "6 of 7 criteria are backed by concrete, assertion-bearing tests and real code paths (midpoint-based symmetric divergence, per-indicator tolerance, write-once immutability via a real unique DB index, agreement persisted alongside disagreement, the failure mode asserted directly, and a genuine live-venue+live-Postgres integration test through the actual entry point). US-304-C6 fails: the story cites specific measured constants (35.2 bps defect, 13.8 bps worst honest case) that appear only in the PRD docs — the regression test substitutes rounded synthetic values (35.0, 13.0) that are never tied to the actual measured numbers anywhere in code, so the requested regression pin does not exist.",
-  "at": "2026-09-10T06:54:13.202Z"
+  "note": "This is a re-verification after a rejected first attempt (328e28e, C6 failed) was superseded by a second implementation attempt (6ce69ce). I read the actual files on disk rather than trusting the stale rejected verdict.json embedded in the diff: tests/test_divergence.py now pins the real measured constants (35.2 bps defect, 13.8 bps worst honest case) verbatim via grep, fixing the exact defect the first verifier flagged. All 7 criteria, including the integration criterion (C7, verified against the real wiring in persist.py/corroborate.py/pyproject.toml), are met with concrete file/line/test citations. No assertion-free tests or comment-only satisfaction found.",
+  "at": "2026-09-10T07:02:07.373Z"
 }

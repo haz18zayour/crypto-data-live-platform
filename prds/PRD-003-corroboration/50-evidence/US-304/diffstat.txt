@@ -1,7 +1,10 @@
-.uf/events.ndjson        |   3 +
- SESSION.md               |  30 ++++-
- ingest/corroborate.py    | 175 ++++++++++++++++++++++++++-
- ingest/registry.py       |  32 ++++-
- ingest/registry.yaml     |   4 +
- tests/test_divergence.py | 305 +++++++++++++++++++++++++++++++++++++++++++++++
- 6 files changed, 539 insertions(+), 10 deletions(-)
+.uf/events.ndjson                                  |   6 +
+ SESSION.md                                         |  24 +-
+ ingest/corroborate.py                              | 175 +++++++++++-
+ ingest/registry.py                                 |  32 ++-
+ ingest/registry.yaml                               |   4 +
+ .../50-evidence/US-304/diffstat.txt                |   7 +
+ .../50-evidence/US-304/gates.json                  |  14 +
+ .../50-evidence/US-304/verdict.json                |  91 ++++++
+ tests/test_divergence.py                           | 305 +++++++++++++++++++++
+ 9 files changed, 650 insertions(+), 8 deletions(-)
