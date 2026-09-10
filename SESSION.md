@@ -9,7 +9,7 @@ Do not hand-edit it — it is regenerated. The hand-written sections below it su
 
 ## ▶ Resume here
 
-**PRD-003-corroboration — 1/7 stories passed**
+**PRD-003-corroboration — 2/7 stories passed**
 
 Codex implements, a different vendor verifies read-only. It stops only for a blast-radius merge, a third failure, or a human criterion.
 
@@ -19,7 +19,7 @@ Owner: **`uf`.** Run the command; it drives the agents itself.
 uf run PRD-003-corroboration
 ```
 
-**Last handoff note:** 2026-09-10: **PRD-002 complete, 7/7, every story first attempt**, merged to `main`. The
+**Last handoff note:** 2026-09-10 — US-302 implementation is ready for external verification: Coinbase is decoded into named strict fields, asserts its own UTC-midnight buckets, excludes the live bucket, and stores bucket-end timestamps. Targeted tests: 10 passed (live deselected); unaffected non-DB regressions: 69 passed. The fail-loud live test is present but this sandbox blocks sockets with WinError 10013; existing real-Postgres fixtures are likewise unreachable here.
 
 ## Where this stands
 
@@ -27,9 +27,9 @@ uf run PRD-003-corroboration
 |---|---|---|---|
 | PRD-001-spine | 8 | 8 | **all green** |
 | PRD-002-harness | 7 | 7 | **all green** |
-| PRD-003-corroboration | 7 | 1 | 1/7 |
+| PRD-003-corroboration | 7 | 2 | 2/7 |
 
-Spend to date: **$17.94** Claude · **50906k** Codex tokens.
+Spend to date: **$18.23** Claude · **52889k** Codex tokens.
 
 ## What happened
 
@@ -186,11 +186,15 @@ Spend to date: **$17.94** Claude · **50906k** Codex tokens.
 - 05:51  US-301 started, attempt 1 (codex)
 - 06:06  US-301 — codex finished `7b949311` · 2473k tok
 - 06:09  US-301 **PASSED** — 6/6 criteria, judged by claude · $0.75
+- 06:09  US-302 started, attempt 1 (codex)
+- 06:26  US-302 — codex finished `6065ec4b` · 1983k tok
+- 06:27  US-302 **PASSED** — 6/6 criteria, judged by claude · $0.29
 
 <!-- uf:generated:end -->
 
 ## Handoff
 
+- 2026-09-10 — US-303 implementation is ready for external verification: timestamp validation rejects each source independently when off UTC midnight or future, unequal timestamps return a TIMESTAMP_MISMATCH carrying both timestamps without invoking comparison, and equal timestamps invoke the comparison callback. Targeted tests: 7 passed; mypy and ruff clean; deterministic non-network/non-Postgres regressions: 90 passed. Full suite: 93 passed, with existing live socket and Postgres checks failing loud because this sandbox cannot reach them. Git commit was not possible because the sandbox denies writes to .git.
 - 2026-09-10 — US-302 implementation is ready for external verification: Coinbase is decoded into named strict fields, asserts its own UTC-midnight buckets, excludes the live bucket, and stores bucket-end timestamps. Targeted tests: 10 passed (live deselected); unaffected non-DB regressions: 69 passed. The fail-loud live test is present but this sandbox blocks sockets with WinError 10013; existing real-Postgres fixtures are likewise unreachable here.
 - 2026-09-10: **PRD-002 complete, 7/7, every story first attempt**, merged to `main`. The
   harness now guards PRD-004 onward: exactly-N-bar slices, goldens with an external oracle,
