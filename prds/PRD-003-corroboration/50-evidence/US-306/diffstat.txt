@@ -1,0 +1,9 @@
+.uf/events.ndjson                                  |   6 ++
+ SESSION.md                                         |  25 +++--
+ ingest/registry.py                                 |  27 +++++-
+ ingest/registry.yaml                               |   3 +
+ .../50-evidence/US-305/diffstat.txt                |  13 ++-
+ .../50-evidence/US-305/gates.json                  |   2 +-
+ .../50-evidence/US-305/verdict.json                |  26 ++---
+ tests/test_uncorroborated.py                       | 107 +++++++++++++++++++++
+ 8 files changed, 183 insertions(+), 26 deletions(-)
