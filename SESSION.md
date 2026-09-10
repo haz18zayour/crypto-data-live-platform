@@ -203,6 +203,7 @@ Spend to date: **$19.32** Claude · **56156k** Codex tokens.
 
 ## Handoff
 
+- 2026-09-10 — US-305 implementation and tests are ready for external verification. Missing Coinbase target-day bars, including the real older-latest-candle shape, persist the primary value and a reasoned NOT_CORROBORATED record with no divergence fields; HTTP errors remain Error outcomes and only those trigger corroboration failure policy. Targeted US-303-305 tests: 20 passed (1 live deselected); Ruff and scoped mypy clean; non-network/non-DB regressions: 92 passed (3 live deselected). Live PostgreSQL fixtures are unreachable from this sandbox; full-project mypy has 8 pre-existing test errors outside touched files.
 - 2026-09-10 — US-304 implementation is ready for external verification: midpoint divergence is assessed against the per-indicator registry tolerance, the first tolerance/status written for a datapoint pair is immutable on rerun, and the live entry point fetches/persists both peer venues behind the US-303 timestamp gate. Targeted tests: 7 passed with live deselected; changed-file ruff/mypy and registry validation clean; deterministic regressions: 93 passed. The fail-loud live integration test could not connect to Supabase from this sandbox.
 - 2026-09-10 (session): PRD-003 at 3/7, all first attempt. Both venues verified live and
   aligned — OKX 78,300.70, Coinbase 78,283.98, both on a genuine 00:00 UTC boundary

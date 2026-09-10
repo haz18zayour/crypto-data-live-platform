@@ -273,9 +273,8 @@ def run_live_corroboration(
     source_b = source_b_fetcher()
     if not isinstance(source_a, Ok):
         raise TypeError(f"the first live venue must return a value: okx={source_a!r}")
-    if isinstance(source_b, Error):
-        return source_b
-    if isinstance(source_b, Unavailable):
+
+    def persist_missing_comparison(reason: Reason) -> NotCorroboratedRecord:
         source_a_id = persist_datapoint(
             connection,
             definition=definition,
@@ -286,13 +285,32 @@ def run_live_corroboration(
         return record_not_corroborated(
             connection,
             datapoint_id=source_a_id,
-            reason=source_b.reason,
+            reason=reason,
         )
+
+    if isinstance(source_b, Error):
+        return source_b
+    if isinstance(source_b, Unavailable):
+        return persist_missing_comparison(source_b.reason)
     if not isinstance(source_b, Ok):
         raise TypeError(
             f"the second live venue must return a current value: "
             f"coinbase={source_b!r}"
         )
+
+    current_time = datetime.now(UTC)
+    _validate_source_timestamp(
+        source_a.source_timestamp,
+        source="source_a",
+        now=current_time,
+    )
+    _validate_source_timestamp(
+        source_b.source_timestamp,
+        source="source_b",
+        now=current_time,
+    )
+    if source_b.source_timestamp < source_a.source_timestamp:
+        return persist_missing_comparison(Reason.FETCH_FAILED)
 
     def persist_comparison() -> CorroborationRecord:
         source_a_id = persist_datapoint(
@@ -328,4 +346,5 @@ def run_live_corroboration(
         source_a.source_timestamp,
         source_b.source_timestamp,
         compare=persist_comparison,
+        now=current_time,
     )

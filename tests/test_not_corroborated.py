@@ -1,19 +1,21 @@
 from contextlib import nullcontext
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from typing import Any
 
 import pytest
 
 from ingest import corroborate
 from ingest.corroborate import (
+    CorroborationOutcome,
     NotCorroboratedRecord,
     corroboration_is_failure,
     record_not_corroborated,
     run_live_corroboration,
 )
-from ingest.status import Error, Ok, Reason, Unavailable
+from ingest.status import Error, Ok, Reason, Result, Unavailable
 
 SOURCE_TIMESTAMP = datetime(2026, 9, 9, tzinfo=UTC)
+OLDER_TIMESTAMP = SOURCE_TIMESTAMP - timedelta(days=1)
 
 
 class _Cursor:
@@ -47,8 +49,8 @@ class RecordingConnection:
 
 def _run_with_second_venue(
     monkeypatch: pytest.MonkeyPatch,
-    second_venue: Unavailable | Error,
-) -> tuple[NotCorroboratedRecord | Error, list[Ok]]:
+    second_venue: Result,
+) -> tuple[CorroborationOutcome, list[Ok]]:
     persisted: list[Ok] = []
 
     def persist_primary(*args: object, **kwargs: object) -> int:
@@ -67,8 +69,11 @@ def _run_with_second_venue(
         ),
         source_b_fetcher=lambda: second_venue,
     )
-    assert isinstance(result, (NotCorroboratedRecord, Error))
     return result, persisted
+
+
+def _older_second_venue_bar() -> Ok:
+    return Ok(value=78_250.0, source_timestamp=OLDER_TIMESTAMP)
 
 
 def test_a_missing_second_venue_bar_yields_not_corroborated_not_error(
@@ -76,7 +81,7 @@ def test_a_missing_second_venue_bar_yields_not_corroborated_not_error(
 ) -> None:
     result, persisted = _run_with_second_venue(
         monkeypatch,
-        Unavailable(reason=Reason.FETCH_FAILED),
+        _older_second_venue_bar(),
     )
 
     assert isinstance(result, NotCorroboratedRecord)
@@ -93,7 +98,7 @@ def test_not_corroborated_is_distinct_from_a_second_venue_fetch_failure(
 ) -> None:
     missing, _ = _run_with_second_venue(
         monkeypatch,
-        Unavailable(reason=Reason.FETCH_FAILED),
+        _older_second_venue_bar(),
     )
     failed, persisted = _run_with_second_venue(
         monkeypatch,
@@ -113,7 +118,7 @@ def test_no_divergence_exists_when_there_is_nothing_to_compare(
 ) -> None:
     result, _ = _run_with_second_venue(
         monkeypatch,
-        Unavailable(reason=Reason.FETCH_FAILED),
+        _older_second_venue_bar(),
     )
 
     assert isinstance(result, NotCorroboratedRecord)
@@ -126,7 +131,7 @@ def test_dead_mans_switch_does_not_fire_for_not_corroborated(
 ) -> None:
     missing, _ = _run_with_second_venue(
         monkeypatch,
-        Unavailable(reason=Reason.FETCH_FAILED),
+        _older_second_venue_bar(),
     )
     failed = Error(
         reason=Reason.FETCH_FAILED,
@@ -135,6 +140,18 @@ def test_dead_mans_switch_does_not_fire_for_not_corroborated(
 
     assert not corroboration_is_failure(missing)
     assert corroboration_is_failure(failed)
+
+
+def test_no_closed_second_venue_bars_is_also_not_corroborated(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    result, persisted = _run_with_second_venue(
+        monkeypatch,
+        Unavailable(reason=Reason.FETCH_FAILED),
+    )
+
+    assert isinstance(result, NotCorroboratedRecord)
+    assert len(persisted) == 1
 
 
 def test_not_corroborated_reason_is_recorded_for_the_page() -> None:
