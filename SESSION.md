@@ -9,17 +9,21 @@ Do not hand-edit it — it is regenerated. The hand-written sections below it su
 
 ## ▶ Resume here
 
-**Every PRD is green**
+**12 uncommitted file(s) — the runner will not start**
 
-Nothing is outstanding. Merge and ship, or add the next PRD from the roadmap.
+A previous session edited source and did not commit. uf refuses to run on a dirty tree rather than auto-committing someone else's half-finished work.
 
 Owner: **You.** This one cannot be delegated.
 
 ```
-review the branch, then merge — or start the next PRD
+review the diff, then: git add -A && git commit
 ```
 
-**Last handoff note:** 2026-09-10 — US-306 implementation evidence is ready for external verification: registry entries must explicitly choose a second-source corroboration block or an uncorroborated note; Coin Metrics-style upstream consolidation is preserved in the note; PRD-002 generated coverage rejects silence. US-306 tests: 4 passed; registry-focused tests: 24 passed; ruff/mypy and registry validation clean; deterministic regressions: 107 passed (6 integration deselected). Live PostgreSQL remains unreachable from this sandbox.
+**Left in flight by the previous session:**
+
+- 12 uncommitted file(s): prds/PRD-004-indicators/10-research.md, prds/PRD-004-indicators/20-decisions.yaml, prds/PRD-004-indicators/30-spec.md, prds/PRD-004-indicators/40-stories/US-001-example.md…
+
+**Last handoff note:** 2026-09-10 (session): **PRD-003 complete, 7/7**, merged. Corroboration is live: OKX and
 
 ## Where this stands
 
@@ -28,8 +32,9 @@ review the branch, then merge — or start the next PRD
 | PRD-001-spine | 8 | 8 | **all green** |
 | PRD-002-harness | 7 | 7 | **all green** |
 | PRD-003-corroboration | 7 | 7 | **all green** |
+| PRD-004-indicators | 8 | 0 | 0/8 |
 
-Spend to date: **$21.63** Claude · **65106k** Codex tokens.
+Spend to date: **$25.12** Claude · **65106k** Codex tokens.
 
 ## What happened
 
@@ -226,6 +231,8 @@ Spend to date: **$21.63** Claude · **65106k** Codex tokens.
 - 08:18  US-307 started, attempt 3 (codex)
 - 08:19  US-307 — codex finished `9782787b`
 - 08:21  US-307 **PASSED** — 6/6 criteria, judged by claude · $0.56
+- 10:52  researched PRD-004-indicators — 20 sources · $3.48
+- 10:55  **PRD-004-indicators** compiled — 8 stories
 
 <!-- uf:generated:end -->
 

@@ -1,34 +1,118 @@
-# GATE G1 — scope lock.
-#
-# Produced by /pre-prd-research interrogating you, then confirmed by you. The research
-# agent commits to a hypothesis for every question so you are correcting a draft rather
-# than answering a blank form: skim, override what is wrong, confirm the out-of-scope list.
-#
-# Anything you do NOT answer becomes an `assumptions:` row below — an explicit assumption
-# with a tripwire, never a silent guess. That is the whole point of this file.
+# GATE G1 — scope lock for PRD-004. Hypotheses from 10-research.md.
 
 decisions:
-  - q: <the question the research agent asked>
-    hypothesis: <what it guessed>
-    answer: <your answer, or leave blank to accept the hypothesis>
+  - q: How many bars does a recursive indicator need?
+    hypothesis: >
+      250 for the whole recursive family — RSI, ATR, EMA, StochRSI AND MACD. Our previous
+      estimate of 50-70 bars was our own derivation and is understated by roughly 4x.
+      StockCharts, an operator who had to answer this and published the number, computes over
+      "at least 250 data points" and warns a formula fed less "will not replicate our RSI
+      numbers". TA-Lib's own users reach the same conclusion: the most-cited TradingView
+      mismatch issue resolves as warm-up, not a bug, with a 200-candle rolling window as the
+      cause. Non-recursive indicators (Bollinger, OBV) get their own smaller N.
+    answer:
 
-# The one field with no default. Half of all scope creep is features someone assumed
-# were included, so this list is load-bearing and you must physically write it.
+  - q: Does MACD need 250 too, given TA-Lib does not flag it?
+    hypothesis: >
+      Yes, and this is the trap. TA-Lib annotates RSI and STOCHRSI with an unstable period and
+      leaves MACD unannotated, so a reader deriving required_bars from the docs sets MACD at 35
+      and everything else at 250. The EMA-26 inside MACD is recursive regardless of what the
+      docs annotate.
+    answer:
+
+  - q: How is required_bars validated rather than asserted?
+    hypothesis: >
+      TA-Lib exposes `Function(name).lookback` as a first-class property returning the leading
+      inputs consumed before the first output, for the given parameters. That is the mechanical
+      FLOOR, computed by the engine rather than by us reading a table. A test asserts our chosen
+      N exceeds the lookback for every indicator. It does not prove convergence - it proves
+      legality, cheaply and per-parameter.
+    answer:
+
+  - q: Where do the goldens come from?
+    hypothesis: >
+      Three sources, in descending strength. (A) Published worked-example vectors - StockCharts
+      ships downloadable spreadsheets for RSI and ATR; Bollinger and OBV are hand-computable.
+      These are the merge gate: a number computed outside this codebase, by someone else,
+      before we existed, and variant-specific enough that a Wilder-vs-EMA mismatch cannot pass.
+      (B) Differential testing against pandas-ta-classic for MACD and StochRSI, where no
+      published table exists. (C) One TradingView spot-check committed once as an evidence
+      artifact.
+    answer:
+
+  - q: What makes the differential test real rather than a tautology?
+    hypothesis: >
+      An explicit assertion that `talib=False` is in effect. pandas-ta-classic documents that
+      "34 core indicators auto-use TA-Lib's C implementation when installed". Our environment
+      WILL have TA-Lib installed - it is the compute engine - so a differential test written the
+      obvious way compares TA-Lib against TA-Lib and passes unconditionally. That is US-006's
+      failure at library scope, with no visible symptom.
+    answer:
+
+  - q: What StochRSI parameters?
+    hypothesis: >
+      fastk_period corrected to 14, not TA-Lib's default of 5, and the registry records that
+      TA-Lib's `fastd` output corresponds to TradingView's **K** rather than its D - TA-Lib
+      applies fast stochastic where TradingView applies the smoothed form. Ship the defaults and
+      the board displays a number that is defensible, reproducible, self-consistent, and matches
+      no external reference on earth.
+    answer:
+
+  - q: Bollinger standard deviation convention?
+    hypothesis: >
+      Population (ddof=0), which is what TA-Lib's BBANDS does by construction. No decision
+      needed unless something cross-checks with pandas, where the default is ddof=1 and the
+      mismatch becomes live again.
+    answer:
+
+  - q: Which assets, given history limits?
+    hypothesis: >
+      BTC, ETH, SOL, BNB on OKX. For corroboration, BNB is the constraint: **Coinbase has no
+      daily BNB candles before late October 2025 - measured today, roughly 317 bars available**.
+      That clears a 250-bar requirement by about 67 days, which is thin. The registry records
+      the measured availability per asset per venue so a shortfall is a declared limit rather
+      than a runtime surprise.
+    answer:
+
+  - q: Which library?
+    hypothesis: >
+      TA-Lib 0.7.1 (2026-07-16, wheels for Python 3.9-3.14) as the compute engine, as the
+      architecture already decided. pandas-ta-classic v0.6.52 as a TEST-ONLY differential
+      oracle. Rejected `ta` (bukosabino) as a maintained alternative - PyPI shows v0.11.0 from
+      2023-11-02 with Python 3.6/3.7 classifiers; our note calling it actively maintained was
+      wrong. Rejected hand-rolling: our implementation would then BE the thing under test.
+    answer:
+
 out_of_scope:
-  - <thing this PRD explicitly does not do>
+  - Any composite, score, signal or ranking. Permanent, from G1.
+  - Derivatives, on-chain and macro panels - PRD-006, 007, 008.
+  - Dashboard design - PRD-005, which comes next precisely so it can be designed against these cells.
+  - Any indicator we cannot obtain an external golden for. A smaller honest board beats a value that agrees only with itself.
+  - New venues beyond OKX and Coinbase.
+  - Intraday timeframes. Daily only.
 
-# Each assumption needs a tripwire: a condition that, if it appears later, reopens G1
-# rather than quietly proceeding on a guess that has stopped being true.
 assumptions:
-  - claim: <e.g. fewer than 100 users in the first six months>
-    tripwire: <e.g. any story mentioning scale, sharding, or rate limits>
-    acceptedBy: default    # or: human
+  - claim: 250 bars is sufficient for convergence on all recursive indicators here.
+    tripwire: Any indicator still moving materially between N=250 and N=500 on the same tail - then raise N for that indicator and record the measurement.
+    acceptedBy: default
+  - claim: BNB has enough Coinbase history for corroboration.
+    tripwire: Measured at ~317 daily bars today against a 250 requirement. If any asset falls below its required_bars at a venue, that pair is declared uncorroborated rather than silently computed on short data.
+    acceptedBy: default
+  - claim: TA-Lib will not silently return unconverged values to us.
+    tripwire: >
+      It absolutely will - the unstable period defaults to zero, get_unstable_period returns 0
+      for every function, and a 30-bar RSI array returns a plausible float at index 14. There is
+      no NaN band and no exception. Our exactly-N contract is the ONLY thing preventing this.
+    acceptedBy: default
 
-# Options the research agent surfaced, and which you picked. Recording the rejected
-# option is what stops a later story quietly re-litigating a settled decision.
 chosen_approach:
-  option: <name>
-  because: <one line>
+  option: Published vectors as the gate, differential testing for the gaps, one TradingView artifact
+  because: >
+    Published worked examples are the only source that satisfies the adversarial case literally -
+    a number computed outside this codebase before we existed. Differential testing is the only
+    way to reach MACD and StochRSI, which no publisher tabulates.
   rejected:
-    - option: <name>
-      because: <one line>
+    - option: Differential testing alone
+      because: Two implementations agreeing is weaker than a published number, and they can share an inherited error.
+    - option: Hand-rolling the indicators
+      because: Our implementation would then be the thing under test, needing strictly more external verification, and it reopens the Wilder-vs-EMA question the architecture closed.
