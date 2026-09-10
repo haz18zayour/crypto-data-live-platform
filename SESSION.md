@@ -202,6 +202,15 @@ Spend to date: **$18.36** Claude · **54074k** Codex tokens.
 
 ## Handoff
 
+- 2026-09-10 (session): PRD-003 at 3/7, all first attempt. Both venues verified live and
+  aligned — OKX 78,300.70, Coinbase 78,283.98, both on a genuine 00:00 UTC boundary
+  asserted **independently per venue**, **2.1 bps apart** against the measured 25 bps
+  tolerance. US-301 is **blast radius**: it extends the unique identity with
+  `source_vendor` (two venues previously collided and the second write silently UPDATEd
+  the first) and adds a `corroborations` table. **Manual G4 owed before merge — the
+  migration is written but NOT applied to `public`.**
+  Bullets below prefixed with a bare date are Codex's per-story sandbox notes, not
+  session state.
 - 2026-09-10 — US-303 implementation is ready for external verification: timestamp validation rejects each source independently when off UTC midnight or future, unequal timestamps return a TIMESTAMP_MISMATCH carrying both timestamps without invoking comparison, and equal timestamps invoke the comparison callback. Targeted tests: 7 passed; mypy and ruff clean; deterministic non-network/non-Postgres regressions: 90 passed. Full suite: 93 passed, with existing live socket and Postgres checks failing loud because this sandbox cannot reach them. Git commit was not possible because the sandbox denies writes to .git.
 - 2026-09-10 — US-302 implementation is ready for external verification: Coinbase is decoded into named strict fields, asserts its own UTC-midnight buckets, excludes the live bucket, and stores bucket-end timestamps. Targeted tests: 10 passed (live deselected); unaffected non-DB regressions: 69 passed. The fail-loud live test is present but this sandbox blocks sockets with WinError 10013; existing real-Postgres fixtures are likewise unreachable here.
 - 2026-09-10: **PRD-002 complete, 7/7, every story first attempt**, merged to `main`. The
