@@ -9,17 +9,21 @@ Do not hand-edit it — it is regenerated. The hand-written sections below it su
 
 ## ▶ Resume here
 
-**Every PRD is green**
+**11 uncommitted file(s) — the runner will not start**
 
-Nothing is outstanding. Merge and ship, or add the next PRD from the roadmap.
+A previous session edited source and did not commit. uf refuses to run on a dirty tree rather than auto-committing someone else's half-finished work.
 
 Owner: **You.** This one cannot be delegated.
 
 ```
-review the branch, then merge — or start the next PRD
+review the diff, then: git add -A && git commit
 ```
 
-**Last handoff note:** 2026-09-10: PRD-002 is 4/7 with every story passing first attempt — US-201 bar-slice
+**Left in flight by the previous session:**
+
+- 11 uncommitted file(s): prds/PRD-003-corroboration/10-research.md, prds/PRD-003-corroboration/20-decisions.yaml, prds/PRD-003-corroboration/30-spec.md, prds/PRD-003-corroboration/40-stories/US-001-example.md…
+
+**Last handoff note:** 2026-09-10: **PRD-002 complete, 7/7, every story first attempt**, merged to `main`. The
 
 ## Where this stands
 
@@ -27,8 +31,9 @@ review the branch, then merge — or start the next PRD
 |---|---|---|---|
 | PRD-001-spine | 8 | 8 | **all green** |
 | PRD-002-harness | 7 | 7 | **all green** |
+| PRD-003-corroboration | 7 | 0 | 0/7 |
 
-Spend to date: **$14.34** Claude · **48433k** Codex tokens.
+Spend to date: **$17.19** Claude · **48433k** Codex tokens.
 
 ## What happened
 
@@ -177,6 +182,11 @@ Spend to date: **$14.34** Claude · **48433k** Codex tokens.
 - 22:14  US-207 started, attempt 1 (codex)
 - 22:19  US-207 — codex finished `15667825` · 726k tok
 - 22:21  US-207 **PASSED** — 6/6 criteria, judged by claude · $0.25
+
+### 2026-09-10
+
+- 05:47  researched PRD-003-corroboration — 9 sources · $2.85
+- 05:50  **PRD-003-corroboration** compiled — 7 stories
 
 <!-- uf:generated:end -->
 

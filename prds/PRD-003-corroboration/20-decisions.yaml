@@ -1,34 +1,122 @@
-# GATE G1 — scope lock.
-#
-# Produced by /pre-prd-research interrogating you, then confirmed by you. The research
-# agent commits to a hypothesis for every question so you are correcting a draft rather
-# than answering a blank form: skim, override what is wrong, confirm the out-of-scope list.
-#
-# Anything you do NOT answer becomes an `assumptions:` row below — an explicit assumption
-# with a tripwire, never a silent guess. That is the whole point of this file.
+# GATE G1 — scope lock for PRD-003.
+# Hypotheses from 10-research.md. Blank `answer:` means the hypothesis stands.
 
 decisions:
-  - q: <the question the research agent asked>
-    hypothesis: <what it guessed>
-    answer: <your answer, or leave blank to accept the hypothesis>
+  - q: How are two venues stored for one quantity?
+    hypothesis: >
+      Option B — one row per venue, unique identity extended to
+      (indicator_key, asset, source_vendor, source_timestamp), with divergence held separately.
+      The current identity is (indicator_key, asset, source_timestamp), so two venues COLLIDE
+      and the second write silently UPDATEs the first, losing a number with no error.
+      Rejected Option A (value_secondary columns) because the schema would then speak the
+      vocabulary of "primary" and "secondary", and the first person wanting a single number
+      reaches for `value` — the exact failure the brief forbids. Rejected Option C (two
+      registry keys) because nothing in the data would say the two rows measure the same thing.
+      Rejected Option D (Pyth-style confidence half-width) because with two sources the
+      half-width IS the spread, and it discards which venue said what — diagnosing the bar=1D
+      defect required knowing which side was 78,834.1.
+    answer:
 
-# The one field with no default. Half of all scope creep is features someone assumed
-# were included, so this list is load-bearing and you must physically write it.
+  - q: Which second venue?
+    hypothesis: >
+      Coinbase `BTC-USD`. Binance and Bybit are unreachable from GitHub US runners (451/403),
+      so the choice is forced to Coinbase or Kraken. Coinbase is chosen because 59 overlapping
+      UTC days have already been measured against it. Kraken remains the documented fallback:
+      it publishes a positional guarantee ("the last entry is for the current, not-yet-committed
+      timeframe, and will always be present"), which is a stronger closure contract than
+      Coinbase's silence — but its last bar being always-unclosed is itself a trap.
+    answer:
+
+  - q: What tolerance, and where does it live?
+    hypothesis: >
+      25 bps for this pair, in the registry, per indicator — never global. Measured 2026-09-10
+      over 59 UTC days: median 7.1, p90 10.8, max 13.8 bps; the bar=1D defect was 35.2 bps.
+      25 sits in the empty gap, ~1.8x above the worst honest disagreement and catching the
+      known defect with margin. Two caveats recorded rather than hidden: 59 days is a small
+      sample and a violent day may exceed 13.8; and Coin Metrics excludes a market at 300 bps,
+      so ours is ~1/15th of the loosest shipped equivalent and WILL fire more often than
+      intuition suggests. That is correct for a system that reports rather than resolves.
+    answer:
+
+  - q: Is the tolerance stored with the row?
+    hypothesis: >
+      Yes — `tolerance_bps_at_write`. A view that recomputes "was this in tolerance?" against
+      the current registry retroactively re-judges every historical row whenever a tolerance is
+      edited, quietly rewriting the past to agree with the present.
+    answer:
+
+  - q: What happens when the two timestamps differ?
+    hypothesis: >
+      Timestamp equality GATES the comparison; it does not accompany it. If the two
+      source_timestamps are not equal, no divergence is computed at all. Comparing day N to
+      day N+1 produces a real-looking number — on a quiet day it looks like a plausible 20 bps
+      disagreement, which is worse than an obvious failure. Note our OKX fetcher converts
+      bucket-start to bucket-END (adds a day at okx.py:84-85) while Coinbase returns
+      bucket-start; without matching conventions this misalignment happens EVERY run.
+    answer:
+
+  - q: What if the second venue has no bar for that day?
+    hypothesis: >
+      A third outcome — NOT_CORROBORATED — distinct from both a value and a fetch failure.
+      Coinbase publishes no candle when there were no ticks and warns historical data "may be
+      incomplete". Degrading this to a fetch error fires the dead-man's-switch on a non-event;
+      degrading it to zero produces a 10,000 bps divergence and the page screams.
+    answer:
+
+  - q: How are fields read at the second venue?
+    hypothesis: >
+      By name, per venue, in the registry — never by shared array index. Close happens to land
+      at index 4 on OKX, Coinbase AND Kraken, so a naive port works. But Coinbase's array is
+      [time, low, high, open, close, volume] — low and high BEFORE open — so the first person
+      to also read high/low silently swaps them. It works by luck today and breaks silently
+      the moment it is generalised.
+    answer:
+
+  - q: What about indicators with only one source?
+    hypothesis: >
+      Marked UNCORROBORATED explicitly, and visibly. Coin Metrics MVRV is not merely
+      uncorroborated — it is a resolved consolidation of many venues whose disagreement was
+      already discarded by someone else (they exclude a market at 3% from the median and
+      publish no dispersion). "Uncorroborated" is correct but understates it.
+    answer:
+
 out_of_scope:
-  - <thing this PRD explicitly does not do>
+  - Averaging, "primary wins", medians, or any silent reconciliation. Disagreement is the output.
+  - A third venue. Two detects disagreement; three invites a voting scheme, and voting resolves.
+  - New indicator families. This corroborates what exists.
+  - Automatic threshold tuning. A tolerance changes only by a committed edit carrying the
+    measurement that justifies it.
+  - UI redesign — PRD-005 owns the dashboard. This PRD makes divergence *visible*, not pretty.
 
-# Each assumption needs a tripwire: a condition that, if it appears later, reopens G1
-# rather than quietly proceeding on a guess that has stopped being true.
 assumptions:
-  - claim: <e.g. fewer than 100 users in the first six months>
-    tripwire: <e.g. any story mentioning scale, sharding, or rate limits>
-    acceptedBy: default    # or: human
+  - claim: Coinbase's 86400 buckets are UTC-aligned.
+    tripwire: >
+      Their docs are SILENT on it, and this project exists because an undocumented bucket
+      alignment was assumed once already. The 59-day measurement tracking OKX 1Dutc closely is
+      evidence, not proof. A per-venue assertion that hour==minute==second==0 is mandatory and
+      must be its own criterion.
+    acceptedBy: default
+  - claim: 25 bps separates honest basis from real error for this pair.
+    tripwire: More than two false positives in a month, or a real defect under 25 bps — either reopens the measurement with a larger sample.
+    acceptedBy: default
+  - claim: Corroboration defends against a wrong number at one source.
+    tripwire: >
+      It does NOT defend against a wrong number in the code reading both. If our own code
+      applies the same wrong offset to both venues, divergence is exactly zero and the check
+      reports agreement. The per-venue UTC assertion is the only thing standing between us and
+      that, which is why it is not optional.
+    acceptedBy: default
 
-# Options the research agent surfaced, and which you picked. Recording the rejected
-# option is what stops a later story quietly re-litigating a settled decision.
 chosen_approach:
-  option: <name>
-  because: <one line>
+  option: One row per venue, peers in the schema, divergence stored separately
+  because: >
+    It is the only shape where the schema cannot express a preference, and the brief's central
+    risk is that a preference gets expressed later by someone who did not read the brief. Pay
+    the migration once, while PRD-002's harness exists to verify it.
   rejected:
-    - option: <name>
-      because: <one line>
+    - option: value_secondary columns on the existing row
+      because: The schema would say "primary" and "secondary", structurally encouraging the single-number reach.
+    - option: Two separate registry keys
+      because: Nothing in the data would record that the two rows measure the same quantity.
+    - option: Pyth-style confidence half-width
+      because: With two sources the half-width is the spread, and it loses which venue said what.
