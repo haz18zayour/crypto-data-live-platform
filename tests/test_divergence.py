@@ -124,7 +124,7 @@ def test_tolerance_is_read_per_indicator_from_the_registry(
         encoding="utf-8",
     )
     strict, loose = load_registry(registry_path).root
-    source_a, source_b = _values_with_divergence(35.0)
+    source_a, source_b = _values_with_divergence(35.2)
 
     assert assess_divergence(strict, source_a, source_b).status == "DIVERGED"
     assert assess_divergence(loose, source_a, source_b).status == "CORROBORATED"
@@ -134,7 +134,7 @@ def test_tolerance_in_force_at_write_time_cannot_be_retroactively_changed() -> (
     None
 ):
     connection = RecordingConnection()
-    source_a, source_b = _values_with_divergence(35.0)
+    source_a, source_b = _values_with_divergence(35.2)
 
     original = record_corroboration(
         connection,  # type: ignore[arg-type]
@@ -160,7 +160,7 @@ def test_tolerance_in_force_at_write_time_cannot_be_retroactively_changed() -> (
 
 def test_divergence_inside_tolerance_is_recorded_with_its_number() -> None:
     connection = RecordingConnection()
-    source_a, source_b = _values_with_divergence(13.0)
+    source_a, source_b = _values_with_divergence(13.8)
 
     stored = record_corroboration(
         connection,  # type: ignore[arg-type]
@@ -172,7 +172,7 @@ def test_divergence_inside_tolerance_is_recorded_with_its_number() -> None:
     )
 
     assert stored.status == "CORROBORATED"
-    assert stored.divergence_bps == pytest.approx(13.0)
+    assert stored.divergence_bps == pytest.approx(13.8)
     assert stored.tolerance_bps_at_write == 25.0
     assert connection.stored is not None
 
@@ -194,7 +194,7 @@ def test_corroboration_never_produces_a_combined_venue_value() -> None:
 
 @pytest.mark.parametrize(
     ("divergence_bps", "expected_status"),
-    ((35.0, "DIVERGED"), (13.0, "CORROBORATED")),
+    ((35.2, "DIVERGED"), (13.8, "CORROBORATED")),
 )
 def test_measured_defect_is_flagged_and_worst_honest_case_is_not(
     divergence_bps: float,

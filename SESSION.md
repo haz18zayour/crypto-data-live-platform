@@ -9,21 +9,17 @@ Do not hand-edit it — it is regenerated. The hand-written sections below it su
 
 ## ▶ Resume here
 
-**1 story left mid-run by an interrupted session**
+**PRD-003-corroboration — 3/7 stories passed**
 
-Recovery is automatic: the partial work is committed under that story and it is retried. An interruption does not cost a retry attempt.
+Codex implements, a different vendor verifies read-only. It stops only for a blast-radius merge, a third failure, or a human criterion.
 
 Owner: **`uf`.** Run the command; it drives the agents itself.
 
 ```
-uf run
+uf run PRD-003-corroboration
 ```
 
-**Left in flight by the previous session:**
-
-- PRD-003-corroboration/US-304 left running
-
-**Last handoff note:** 2026-09-10 — US-303 implementation is ready for external verification: timestamp validation rejects each source independently when off UTC midnight or future, unequal timestamps return a TIMESTAMP_MISMATCH carrying both timestamps without invoking comparison, and equal timestamps invoke the comparison callback. Targeted tests: 7 passed; mypy and ruff clean; deterministic non-network/non-Postgres regressions: 90 passed. Full suite: 93 passed, with existing live socket and Postgres checks failing loud because this sandbox cannot reach them. Git commit was not possible because the sandbox denies writes to .git.
+**Last handoff note:** 2026-09-10 — US-304 implementation is ready for external verification: midpoint divergence is assessed against the per-indicator registry tolerance, the first tolerance/status written for a datapoint pair is immutable on rerun, and the live entry point fetches/persists both peer venues behind the US-303 timestamp gate. Targeted tests: 7 passed with live deselected; changed-file ruff/mypy and registry validation clean; deterministic regressions: 93 passed. The fail-loud live integration test could not connect to Supabase from this sandbox.
 
 ## Where this stands
 
@@ -33,7 +29,7 @@ uf run
 | PRD-002-harness | 7 | 7 | **all green** |
 | PRD-003-corroboration | 7 | 3 | 3/7 |
 
-Spend to date: **$18.36** Claude · **54074k** Codex tokens.
+Spend to date: **$18.85** Claude · **55746k** Codex tokens.
 
 ## What happened
 
@@ -197,6 +193,8 @@ Spend to date: **$18.36** Claude · **54074k** Codex tokens.
 - 06:35  US-303 — codex finished `3d82c879` · 1184k tok
 - 06:37  US-303 **PASSED** — 5/5 criteria, judged by claude · $0.13
 - 06:37  US-304 started, attempt 1 (codex)
+- 06:51  US-304 — codex finished `328e28ef` · 1672k tok
+- 06:54  US-304 **rejected** — 6/7 criteria, judged by claude · $0.49
 
 <!-- uf:generated:end -->
 
