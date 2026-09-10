@@ -1,6 +1,8 @@
 # Every entry declares either corroboration or uncorroborated.note. For consolidated
 # single-source metrics such as Coin Metrics MVRV, the note must say that source-level
 # disagreement was resolved upstream and no dispersion is published.
+# TA-Lib-backed entries also declare talib_function and parameters. Validation reads that
+# exact parameter set when checking required_bars against TA-Lib's own lookback.
 - key: btc_daily_close
   vendor: okx
   endpoint: https://www.okx.com/api/v5/market/candles?instId=BTC-USDT&bar=1Dutc

@@ -19,9 +19,11 @@ from pydantic import (
     field_validator,
     model_validator,
 )
+from talib import abstract
 
 REGISTRY_PATH = Path(__file__).with_name("registry.yaml")
 NonEmptyString = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1)]
+RECURSIVE_TALIB_FUNCTIONS = frozenset({"RSI", "ATR", "EMA", "STOCHRSI", "MACD"})
 
 
 class CorroborationDefinition(BaseModel):
@@ -53,6 +55,8 @@ class IndicatorDefinition(BaseModel):
     source_field: NonEmptyString
     definable_for: tuple[NonEmptyString, ...] = Field(min_length=1)
     required_bars: PositiveInt | None = None
+    talib_function: NonEmptyString | None = None
+    parameters: dict[NonEmptyString, int | float] | None = None
     expected_update_interval_seconds: PositiveInt
     freshness_warn_seconds: PositiveInt
     freshness_stale_seconds: PositiveInt
@@ -67,6 +71,24 @@ class IndicatorDefinition(BaseModel):
                 "definable_for must list explicit assets; wildcards are forbidden"
             )
         return assets
+
+    @model_validator(mode="after")
+    def require_more_bars_than_talib_lookback(self) -> IndicatorDefinition:
+        if self.talib_function is None:
+            if self.parameters is not None:
+                raise ValueError("parameters require a talib_function")
+            return self
+        if self.parameters is None:
+            raise ValueError(f"{self.key} is missing TA-Lib parameters")
+
+        function = abstract.Function(self.talib_function)  # type: ignore[attr-defined]
+        function.set_parameters(self.parameters)
+        if self.required_bars is not None and self.required_bars <= function.lookback:
+            raise ValueError(
+                f"{self.talib_function} required_bars {self.required_bars} must be "
+                f"greater than its TA-Lib lookback {function.lookback}"
+            )
+        return self
 
 
 class IndicatorRegistry(RootModel[tuple[IndicatorDefinition, ...]]):
@@ -88,6 +110,14 @@ class IndicatorRegistry(RootModel[tuple[IndicatorDefinition, ...]]):
         for entry in self.root:
             if entry.required_bars is None:
                 raise ValueError(f"{entry.key} is missing required_bars")
+            if (
+                entry.talib_function is not None
+                and entry.talib_function.upper() in RECURSIVE_TALIB_FUNCTIONS
+                and entry.required_bars < 250
+            ):
+                raise ValueError(
+                    f"{entry.talib_function} must declare at least 250 required bars"
+                )
         return self
 
 

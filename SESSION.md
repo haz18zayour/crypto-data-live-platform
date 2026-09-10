@@ -237,6 +237,7 @@ Spend to date: **$25.73** Claude · **75718k** Codex tokens.
 
 ## Handoff
 
+- 2026-09-10 — US-402 implementation pending external verification: parameterized TA-Lib lookback validation and the 250-bar recursive floor are in ingest/registry.py; tests/test_lookback.py has criterion-named biting tests. Targeted 8 passed, deterministic 117 passed, registry CLI/ruff/strict mypy clean. Full suite reached 120 passed but live sockets and PostgreSQL are blocked in this sandbox.
 - 2026-09-10 (session): **PRD-003 complete, 7/7**, merged. Corroboration is live: OKX and
   Coinbase compared per UTC day, tolerance **25 bps measured** from 59 days (median 7.1,
   p90 10.8, max 13.8; the bar=1D defect was 35.2). G4 migration **applied to production** —
