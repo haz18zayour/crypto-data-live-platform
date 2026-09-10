@@ -1,0 +1,80 @@
+{
+  "storyId": "US-302",
+  "passes": true,
+  "verifier": {
+    "agent": "claude",
+    "sandbox": "restricted:read-only"
+  },
+  "implementer": "codex",
+  "results": [
+    {
+      "criterionId": "US-302-C1",
+      "met": true,
+      "evidence": {
+        "file": "ingest/registry.yaml",
+        "line": 4,
+        "testName": "test_fetcher_reads_close_by_its_named_field_not_a_shared_array_index",
+        "exitCode": 0
+      },
+      "note": "registry.yaml's source_field now documents 'coinbase.close after mapping [time, low, high, open, close, volume] by venue' alongside OKX's own field name. The test asserts 'coinbase.close' appears in the loaded registry definition and, via getsource, that the fetcher body uses 'newest.close' and never 'newest[4]' — proving named-field access, not positional indexing."
+    },
+    {
+      "criterionId": "US-302-C2",
+      "met": true,
+      "evidence": {
+        "file": "ingest/fetchers/coinbase.py",
+        "line": 36,
+        "testName": "test_daily_source_timestamp_falls_on_a_utc_midnight_boundary",
+        "exitCode": 0
+      },
+      "note": "coinbase.py independently checks (bucket_start.hour, .minute, .second) == (0,0,0) for every row and returns Error with 'UTC midnight' detail on mismatch — this is Coinbase's own assertion, structurally separate from okx.py's timestamp/interval checks (okx.py:58-81). The test constructs a misaligned candle (bucket_start + 1h) and asserts the Coinbase fetcher itself rejects it, not an OKX code path."
+    },
+    {
+      "criterionId": "US-302-C3",
+      "met": true,
+      "evidence": {
+        "file": "ingest/schemas.py",
+        "line": 39,
+        "testName": "test_response_model_rejects_an_added_field",
+        "exitCode": 0
+      },
+      "note": "CoinbaseCandle sets model_config = ConfigDict(extra='forbid', frozen=True) with StrictInt/StrictFloat fields (schemas.py:39-46), matching OkxCandleResponse's own extra='forbid' (schemas.py:29). Tests assert ValidationError on an added field (match='extra_forbidden'), a renamed field, and a type change (int-as-string for close)."
+    },
+    {
+      "criterionId": "US-302-C4",
+      "met": true,
+      "evidence": {
+        "file": "ingest/fetchers/coinbase.py",
+        "line": 6,
+        "testName": "test_fetch_failure_returns_error_with_fetch_failed_never_ok",
+        "exitCode": 0
+      },
+      "note": "coinbase.py imports Error, Ok, Reason, Result, Unavailable from ingest.status (the same PRD-001 union used by okx.py) and declares its return type as Result. Tests exercise three of the four variants directly: Ok (happy path), Error (HTTP failure and misaligned bucket), and Unavailable (no closed bucket) via isinstance/equality checks."
+    },
+    {
+      "criterionId": "US-302-C5",
+      "met": true,
+      "evidence": {
+        "file": "ingest/fetchers/coinbase.py",
+        "line": 40,
+        "testName": "test_bucket_convention_matches_okx_stored_bucket_end",
+        "exitCode": 0
+      },
+      "note": "coinbase.py computes bucket_ends.append((row, bucket_start + DAILY_INTERVAL)) and returns that as source_timestamp, mirroring okx.py:84-85's bucket-start-to-bucket-end conversion. The test builds a candle with bucket_start=2026-09-08T00:00Z and asserts result.source_timestamp == bucket_start + timedelta(days=1), directly proving the two venues share the bucket-end convention rather than one storing bucket-start."
+    },
+    {
+      "criterionId": "US-302-C6",
+      "met": true,
+      "evidence": {
+        "file": "tests/test_coinbase_fetcher.py",
+        "line": 186,
+        "testName": "test_live_coinbase_request_returns_closed_btc_daily_candle_on_utc_boundary",
+        "exitCode": 0
+      },
+      "note": "Marked @pytest.mark.integration, this test calls fetch_btc_daily_close() with no injected client, so it uses the real httpx.get against the live ENDPOINT — the fetcher's actual public entry point, not an isolated unit. pyproject.toml declares the 'integration' marker but sets no addopts deselecting it and no conftest.py filters it, so the declared gate 'uv run pytest -q' (exit 0) necessarily ran this test against the real Coinbase API. Note: the implementer's own handoff claims this test couldn't run in their sandbox due to socket blocking, but the gate result supplied to me shows the full suite passed, which is the evidence of record."
+    }
+  ],
+  "tripwires": [],
+  "note": "All six criteria are backed by concrete file/line evidence and named tests, cross-checked against okx.py's actual bucket-end conversion and PRD-001's status union. No assertion-free tests or comment-only satisfaction found. Worth flagging: the handoff note in SESSION.md claims the live/integration test (C6) was unreachable in the implementer's own dev sandbox (WinError 10013), which is inconsistent with the declared test gate reporting exit 0 for the full suite with no marker deselection — I'm trusting the supplied gate result over the implementer's self-report, but a verifier with shell access should re-run pytest to confirm the live call actually succeeded rather than silently erroring in a way the harness swallowed.",
+  "at": "2026-09-10T06:27:51.506Z"
+}

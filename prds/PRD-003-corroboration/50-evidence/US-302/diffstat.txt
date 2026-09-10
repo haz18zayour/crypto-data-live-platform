@@ -1,0 +1,7 @@
+.uf/events.ndjson              |   3 +
+ SESSION.md                     |  20 ++---
+ ingest/fetchers/coinbase.py    |  72 +++++++++++++++
+ ingest/registry.yaml           |   2 +-
+ ingest/schemas.py              |  44 ++++++++-
+ tests/test_coinbase_fetcher.py | 196 +++++++++++++++++++++++++++++++++++++++++
+ 6 files changed, 325 insertions(+), 12 deletions(-)
