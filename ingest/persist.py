@@ -41,7 +41,7 @@ def persist_datapoint(
         source_timestamp = None
 
     identity = (
-        f"{definition.key}\x1f{asset}\x1f"
+        f"{definition.key}\x1f{asset}\x1f{definition.vendor}\x1f"
         f"{source_timestamp.isoformat() if source_timestamp else '<NULL>'}"
     )
     values = (
@@ -66,10 +66,11 @@ def persist_datapoint(
             from datapoints
             where indicator_key = %s
               and asset = %s
+              and source_vendor = %s
               and source_timestamp is not distinct from %s
             for update
             """,
-            (definition.key, asset, source_timestamp),
+            (definition.key, asset, definition.vendor, source_timestamp),
         ).fetchone()
 
         if existing is None:
