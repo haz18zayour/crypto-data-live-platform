@@ -9,21 +9,17 @@ Do not hand-edit it — it is regenerated. The hand-written sections below it su
 
 ## ▶ Resume here
 
-**1 story left mid-run by an interrupted session**
+**PRD-003-corroboration — 6/7 stories passed**
 
-Recovery is automatic: the partial work is committed under that story and it is retried. An interruption does not cost a retry attempt.
+Codex implements, a different vendor verifies read-only. It stops only for a blast-radius merge, a third failure, or a human criterion.
 
 Owner: **`uf`.** Run the command; it drives the agents itself.
 
 ```
-uf run
+uf run PRD-003-corroboration
 ```
 
-**Left in flight by the previous session:**
-
-- PRD-003-corroboration/US-306 left running
-
-**Last handoff note:** 2026-09-10 — US-305 implementation and tests are ready for external verification. Missing Coinbase target-day bars, including the real older-latest-candle shape, persist the primary value and a reasoned NOT_CORROBORATED record with no divergence fields; HTTP errors remain Error outcomes and only those trigger corroboration failure policy. Targeted US-303-305 tests: 20 passed (1 live deselected); Ruff and scoped mypy clean; non-network/non-DB regressions: 92 passed (3 live deselected). Live PostgreSQL fixtures are unreachable from this sandbox; full-project mypy has 8 pre-existing test errors outside touched files.
+**Last handoff note:** 2026-09-10 — US-306 implementation evidence is ready for external verification: registry entries must explicitly choose a second-source corroboration block or an uncorroborated note; Coin Metrics-style upstream consolidation is preserved in the note; PRD-002 generated coverage rejects silence. US-306 tests: 4 passed; registry-focused tests: 24 passed; ruff/mypy and registry validation clean; deterministic regressions: 107 passed (6 integration deselected). Live PostgreSQL remains unreachable from this sandbox.
 
 ## Where this stands
 
@@ -31,9 +27,9 @@ uf run
 |---|---|---|---|
 | PRD-001-spine | 8 | 8 | **all green** |
 | PRD-002-harness | 7 | 7 | **all green** |
-| PRD-003-corroboration | 7 | 5 | 5/7 |
+| PRD-003-corroboration | 7 | 6 | 6/7 |
 
-Spend to date: **$20.14** Claude · **60250k** Codex tokens.
+Spend to date: **$20.47** Claude · **62409k** Codex tokens.
 
 ## What happened
 
@@ -210,6 +206,10 @@ Spend to date: **$20.14** Claude · **60250k** Codex tokens.
 - 07:28  US-305 **PASSED** — 5/5 criteria, judged by claude · $0.47
 - 07:29  US-306 started, attempt 1 (codex)
 - 07:30  US-305 **PASSED** — 5/5 criteria, judged by claude · $0.36
+- 07:30  US-306 failed — interrupted while running — the process stopped before a verdict
+- 07:30  US-306 started, attempt 1 (codex)
+- 07:47  US-306 — codex finished `282ad541` · 2159k tok
+- 07:51  US-306 **PASSED** — 5/5 criteria, judged by claude · $0.33
 
 <!-- uf:generated:end -->
 
