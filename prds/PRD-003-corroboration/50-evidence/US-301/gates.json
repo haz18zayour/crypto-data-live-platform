@@ -1,0 +1,20 @@
+[
+  {
+    "name": "typecheck",
+    "run": "node -e \"const f=require('fs'),c=require('child_process');let r=0;const run=(cmd)=>{try{c.execSync(cmd,{stdio:'inherit'})}catch(e){r=1}};if(f.existsSync('package.json'))run('npm run typecheck --if-present');if(f.existsSync('pyproject.toml'))run('uv run mypy ingest --strict');process.exit(r)\"",
+    "exitCode": 0,
+    "output": "Success: no issues found in 12 source files\r\n"
+  },
+  {
+    "name": "test",
+    "run": "node -e \"const f=require('fs'),c=require('child_process');let r=0;const run=(cmd)=>{try{c.execSync(cmd,{stdio:'inherit'})}catch(e){r=1}};if(f.existsSync('package.json'))run('npm test --if-present');if(f.existsSync('tests'))run('uv run pytest -q');process.exit(r)\"",
+    "exitCode": 0,
+    "output": "........................................................................ [ 75%]\r\n.......................                                                  [100%]\r\n95 passed in 45.65s\r\n"
+  },
+  {
+    "name": "US-301-C6",
+    "run": "uv run pytest tests/ -q --no-header -o addopts= --tb=line",
+    "exitCode": 0,
+    "output": "........................................................................ [ 75%]\r\n.......................                                                  [100%]\r\n95 passed in 41.92s\r\n"
+  }
+]
