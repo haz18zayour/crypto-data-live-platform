@@ -1,0 +1,7 @@
+.uf/events.ndjson                  |   3 +
+ SESSION.md                         |  20 +++---
+ ingest/registry.py                 |  30 +++++++++
+ ingest/registry.yaml               |   2 +
+ project-documents/11_Data_Model.md |  35 ++++++++++
+ tests/test_lookback.py             | 132 +++++++++++++++++++++++++++++++++++++
+ 6 files changed, 212 insertions(+), 10 deletions(-)
