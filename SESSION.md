@@ -9,14 +9,14 @@ Do not hand-edit it — it is regenerated. The hand-written sections below it su
 
 ## ▶ Resume here
 
-**PRD-003-corroboration — 6/7 stories passed**
+**Every PRD is green**
 
-Codex implements, a different vendor verifies read-only. It stops only for a blast-radius merge, a third failure, or a human criterion.
+Nothing is outstanding. Merge and ship, or add the next PRD from the roadmap.
 
-Owner: **`uf`.** Run the command; it drives the agents itself.
+Owner: **You.** This one cannot be delegated.
 
 ```
-uf run PRD-003-corroboration
+review the branch, then merge — or start the next PRD
 ```
 
 **Last handoff note:** 2026-09-10 — US-306 implementation evidence is ready for external verification: registry entries must explicitly choose a second-source corroboration block or an uncorroborated note; Coin Metrics-style upstream consolidation is preserved in the note; PRD-002 generated coverage rejects silence. US-306 tests: 4 passed; registry-focused tests: 24 passed; ruff/mypy and registry validation clean; deterministic regressions: 107 passed (6 integration deselected). Live PostgreSQL remains unreachable from this sandbox.
@@ -27,9 +27,9 @@ uf run PRD-003-corroboration
 |---|---|---|---|
 | PRD-001-spine | 8 | 8 | **all green** |
 | PRD-002-harness | 7 | 7 | **all green** |
-| PRD-003-corroboration | 7 | 6 | 6/7 |
+| PRD-003-corroboration | 7 | 7 | **all green** |
 
-Spend to date: **$21.08** Claude · **65106k** Codex tokens.
+Spend to date: **$21.63** Claude · **65106k** Codex tokens.
 
 ## What happened
 
@@ -223,11 +223,23 @@ Spend to date: **$21.08** Claude · **65106k** Codex tokens.
 - 08:14  US-307 — codex finished `6705162b`
 - 08:15  US-307 **rejected** — 0/6 criteria, judged by claude
 - 08:15  US-307 **rejected** — 0/6 criteria, judged by claude
+- 08:18  US-307 started, attempt 3 (codex)
+- 08:19  US-307 — codex finished `9782787b`
+- 08:21  US-307 **PASSED** — 6/6 criteria, judged by claude · $0.56
 
 <!-- uf:generated:end -->
 
 ## Handoff
 
+- 2026-09-10 (session): **PRD-003 complete, 7/7**, merged. Corroboration is live: OKX and
+  Coinbase compared per UTC day, tolerance **25 bps measured** from 59 days (median 7.1,
+  p90 10.8, max 13.8; the bar=1D defect was 35.2). G4 migration **applied to production** —
+  two venues now coexist where the second write previously UPDATEd the first. Adversarial
+  proof at `prds/PRD-003-corroboration/50-evidence/US-307/divergence.png`.
+  **Known limits, do not overstate this:** only spot close has a second venue, so most of
+  the board stays uncorroborated; 59 days is a thin sample; and a shared bug in our own
+  comparison code is invisible to corroboration (same wrong offset twice = zero
+  divergence). Next: **PRD-004 technical indicators**, the first real scale test.
 - 2026-09-10 — US-306 implementation evidence is ready for external verification: registry entries must explicitly choose a second-source corroboration block or an uncorroborated note; Coin Metrics-style upstream consolidation is preserved in the note; PRD-002 generated coverage rejects silence. US-306 tests: 4 passed; registry-focused tests: 24 passed; ruff/mypy and registry validation clean; deterministic regressions: 107 passed (6 integration deselected). Live PostgreSQL remains unreachable from this sandbox.
 - 2026-09-10 — US-305 implementation and tests are ready for external verification. Missing Coinbase target-day bars, including the real older-latest-candle shape, persist the primary value and a reasoned NOT_CORROBORATED record with no divergence fields; HTTP errors remain Error outcomes and only those trigger corroboration failure policy. Targeted US-303-305 tests: 20 passed (1 live deselected); Ruff and scoped mypy clean; non-network/non-DB regressions: 92 passed (3 live deselected). Live PostgreSQL fixtures are unreachable from this sandbox; full-project mypy has 8 pre-existing test errors outside touched files.
 - 2026-09-10 — US-304 implementation is ready for external verification: midpoint divergence is assessed against the per-indicator registry tolerance, the first tolerance/status written for a datapoint pair is immutable on rerun, and the live entry point fetches/persists both peer venues behind the US-303 timestamp gate. Targeted tests: 7 passed with live deselected; changed-file ruff/mypy and registry validation clean; deterministic regressions: 93 passed. The fail-loud live integration test could not connect to Supabase from this sandbox.
