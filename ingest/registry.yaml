@@ -1,3 +1,6 @@
+# Every entry declares either corroboration or uncorroborated.note. For consolidated
+# single-source metrics such as Coin Metrics MVRV, the note must say that source-level
+# disagreement was resolved upstream and no dispersion is published.
 - key: btc_daily_close
   vendor: okx
   endpoint: https://www.okx.com/api/v5/market/candles?instId=BTC-USDT&bar=1Dutc

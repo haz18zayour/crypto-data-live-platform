@@ -34,6 +34,14 @@ class CorroborationDefinition(BaseModel):
     tolerance_bps: PositiveFloat
 
 
+class UncorroboratedDefinition(BaseModel):
+    """Why this indicator has no independent second source."""
+
+    model_config = ConfigDict(extra="forbid", frozen=True)
+
+    note: NonEmptyString
+
+
 class IndicatorDefinition(BaseModel):
     """One indicator's source, applicability, and freshness contract."""
 
@@ -49,6 +57,7 @@ class IndicatorDefinition(BaseModel):
     freshness_warn_seconds: PositiveInt
     freshness_stale_seconds: PositiveInt
     corroboration: CorroborationDefinition | None = None
+    uncorroborated: UncorroboratedDefinition | None = None
 
     @field_validator("definable_for")
     @classmethod
@@ -166,7 +175,17 @@ def load_registry(path: Path = REGISTRY_PATH) -> IndicatorRegistry:
     """Load and validate every indicator, rejecting ambiguous keys."""
 
     raw_entries = _parse_yaml(path.read_text(encoding="utf-8"))
-    return IndicatorRegistry.model_validate(raw_entries)
+    registry = IndicatorRegistry.model_validate(raw_entries)
+    for entry in raw_entries:
+        has_second_source = entry.get("corroboration") is not None
+        is_uncorroborated = entry.get("uncorroborated") is not None
+        if has_second_source == is_uncorroborated:
+            key = entry.get("key", "unknown indicator")
+            raise ValueError(
+                f"{key} must declare exactly one corroboration declaration: "
+                "corroboration or uncorroborated"
+            )
+    return registry
 
 
 def assert_registry_coverage(
@@ -179,6 +198,12 @@ def assert_registry_coverage(
 
     failures: list[str] = []
     for entry in registry.root:
+        has_second_source = entry.corroboration is not None
+        is_uncorroborated = entry.uncorroborated is not None
+        if has_second_source == is_uncorroborated:
+            failures.append(
+                f"{entry.key} is missing exactly one corroboration declaration"
+            )
         if entry.key not in golden_keys:
             failures.append(f"{entry.key} is missing a golden file")
         if entry.required_bars is None:
