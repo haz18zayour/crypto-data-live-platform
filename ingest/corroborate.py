@@ -10,7 +10,7 @@ import psycopg
 from ingest.fetchers import coinbase, okx
 from ingest.persist import persist_datapoint
 from ingest.registry import IndicatorDefinition, load_registry
-from ingest.status import Ok
+from ingest.status import Error, Ok, Reason, Result, Unavailable
 
 CorroborationStatus = Literal["CORROBORATED", "DIVERGED"]
 
@@ -34,6 +34,18 @@ class CorroborationRecord:
     divergence_bps: float
     tolerance_bps_at_write: float
     status: CorroborationStatus
+
+
+@dataclass(frozen=True, slots=True)
+class NotCorroboratedRecord:
+    """A surviving venue value with no second value to compare."""
+
+    id: int
+    datapoint_id: int
+    reason: Reason
+    status: Literal["NOT_CORROBORATED"] = field(
+        default="NOT_CORROBORATED", init=False
+    )
 
 
 @dataclass(frozen=True, slots=True)
@@ -133,6 +145,47 @@ def record_corroboration(
     )
 
 
+def record_not_corroborated(
+    connection: psycopg.Connection[tuple[object, ...]],
+    *,
+    datapoint_id: int,
+    reason: Reason,
+) -> NotCorroboratedRecord:
+    """Record why one stored venue value had nothing to compare against."""
+
+    parameters = (datapoint_id, "NOT_CORROBORATED", reason.value)
+    with connection.transaction():
+        row = connection.execute(
+            """
+            insert into corroborations (
+              datapoint_a_id, status, reason
+            ) values (%s, %s, %s)
+            on conflict (datapoint_a_id, datapoint_b_id) do nothing
+            returning id, datapoint_a_id, reason, status
+            """,
+            parameters,
+        ).fetchone()
+        if row is None:
+            row = connection.execute(
+                """
+                select id, datapoint_a_id, reason, status
+                from corroborations
+                where datapoint_a_id = %s and datapoint_b_id is null
+                """,
+                (datapoint_id,),
+            ).fetchone()
+
+    if row is None:
+        raise RuntimeError("database did not return the corroboration record")
+    if row[3] != "NOT_CORROBORATED":
+        raise RuntimeError("stored corroboration has an unexpected status")
+    return NotCorroboratedRecord(
+        id=cast(int, row[0]),
+        datapoint_id=cast(int, row[1]),
+        reason=Reason(cast(str, row[2])),
+    )
+
+
 def _validate_source_timestamp(
     timestamp: datetime,
     *,
@@ -190,9 +243,23 @@ def gate_timestamp_comparison[ComparisonResult](
     return compare()
 
 
+type CorroborationOutcome = (
+    CorroborationRecord | NotCorroboratedRecord | TimestampMismatch | Error
+)
+
+
+def corroboration_is_failure(outcome: CorroborationOutcome) -> bool:
+    """Return whether this outcome should fire the dead-man's-switch."""
+
+    return isinstance(outcome, Error)
+
+
 def run_live_corroboration(
     connection: psycopg.Connection[tuple[object, ...]],
-) -> CorroborationRecord | TimestampMismatch:
+    *,
+    source_a_fetcher: Callable[[], Result] = okx.fetch_btc_daily_close,
+    source_b_fetcher: Callable[[], Result] = coinbase.fetch_btc_daily_close,
+) -> CorroborationOutcome:
     """Fetch, persist, and compare the registered close at both live venues."""
 
     definition = next(
@@ -202,11 +269,28 @@ def run_live_corroboration(
     if corroboration is None:
         raise ValueError(f"{definition.key} has no corroboration definition")
 
-    source_a = okx.fetch_btc_daily_close()
-    source_b = coinbase.fetch_btc_daily_close()
-    if not isinstance(source_a, Ok) or not isinstance(source_b, Ok):
+    source_a = source_a_fetcher()
+    source_b = source_b_fetcher()
+    if not isinstance(source_a, Ok):
+        raise TypeError(f"the first live venue must return a value: okx={source_a!r}")
+    if isinstance(source_b, Error):
+        return source_b
+    if isinstance(source_b, Unavailable):
+        source_a_id = persist_datapoint(
+            connection,
+            definition=definition,
+            asset=definition.definable_for[0],
+            measured_on=okx.MEASURED_ON,
+            result=source_a,
+        )
+        return record_not_corroborated(
+            connection,
+            datapoint_id=source_a_id,
+            reason=source_b.reason,
+        )
+    if not isinstance(source_b, Ok):
         raise TypeError(
-            f"both live venues must return values: okx={source_a!r}, "
+            f"the second live venue must return a current value: "
             f"coinbase={source_b!r}"
         )
 
