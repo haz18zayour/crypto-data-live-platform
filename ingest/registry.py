@@ -12,6 +12,7 @@ from pydantic import (
     BaseModel,
     ConfigDict,
     Field,
+    PositiveFloat,
     PositiveInt,
     RootModel,
     StringConstraints,
@@ -21,6 +22,16 @@ from pydantic import (
 
 REGISTRY_PATH = Path(__file__).with_name("registry.yaml")
 NonEmptyString = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1)]
+
+
+class CorroborationDefinition(BaseModel):
+    """A second venue and the measured tolerance for comparing it."""
+
+    model_config = ConfigDict(extra="forbid", frozen=True)
+
+    venue: NonEmptyString
+    pair: NonEmptyString
+    tolerance_bps: PositiveFloat
 
 
 class IndicatorDefinition(BaseModel):
@@ -37,6 +48,7 @@ class IndicatorDefinition(BaseModel):
     expected_update_interval_seconds: PositiveInt
     freshness_warn_seconds: PositiveInt
     freshness_stale_seconds: PositiveInt
+    corroboration: CorroborationDefinition | None = None
 
     @field_validator("definable_for")
     @classmethod
@@ -110,6 +122,7 @@ def _parse_yaml(contents: str) -> list[dict[str, Any]]:
 
     entries: list[dict[str, Any]] = []
     current: dict[str, Any] | None = None
+    nested: dict[str, Any] | None = None
     for line_number, original_line in enumerate(contents.splitlines(), start=1):
         line = _without_comment(original_line).rstrip()
         if not line.strip():
@@ -119,17 +132,30 @@ def _parse_yaml(contents: str) -> list[dict[str, Any]]:
         if line == stripped and stripped.startswith("- "):
             current = {}
             entries.append(current)
+            nested = None
             stripped = stripped[2:]
-        elif current is None or line == stripped:
+            indentation = 0
+        else:
+            indentation = len(line) - len(stripped)
+
+        if current is None or (indentation == 0 and not original_line.startswith("- ")):
             raise ValueError(f"invalid registry YAML on line {line_number}")
 
         field, separator, value = stripped.partition(":")
         if not separator or not field.strip():
             raise ValueError(f"invalid registry YAML on line {line_number}")
         field = field.strip()
-        if field in current:
+        target = nested if indentation == 4 and nested is not None else current
+        if indentation not in (0, 2, 4) or (indentation == 4 and nested is None):
+            raise ValueError(f"invalid registry YAML indentation on line {line_number}")
+        if field in target:
             raise ValueError(f"duplicate field {field!r} on line {line_number}")
-        current[field] = _parse_value(value)
+        parsed = _parse_value(value)
+        if indentation in (0, 2):
+            nested = {} if parsed is None else None
+            target[field] = nested if nested is not None else parsed
+        else:
+            target[field] = parsed
 
     if not entries:
         raise ValueError("registry must contain at least one indicator")

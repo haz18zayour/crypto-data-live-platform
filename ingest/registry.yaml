@@ -7,3 +7,7 @@
   expected_update_interval_seconds: 86400
   freshness_warn_seconds: 108000
   freshness_stale_seconds: 172800
+  corroboration:
+    venue: coinbase
+    pair: BTC-USD
+    tolerance_bps: 25

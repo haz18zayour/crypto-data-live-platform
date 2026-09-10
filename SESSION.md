@@ -202,6 +202,7 @@ Spend to date: **$18.36** Claude · **54074k** Codex tokens.
 
 ## Handoff
 
+- 2026-09-10 — US-304 implementation is ready for external verification: midpoint divergence is assessed against the per-indicator registry tolerance, the first tolerance/status written for a datapoint pair is immutable on rerun, and the live entry point fetches/persists both peer venues behind the US-303 timestamp gate. Targeted tests: 7 passed with live deselected; changed-file ruff/mypy and registry validation clean; deterministic regressions: 93 passed. The fail-loud live integration test could not connect to Supabase from this sandbox.
 - 2026-09-10 (session): PRD-003 at 3/7, all first attempt. Both venues verified live and
   aligned — OKX 78,300.70, Coinbase 78,283.98, both on a genuine 00:00 UTC boundary
   asserted **independently per venue**, **2.1 bps apart** against the measured 25 bps
