@@ -33,8 +33,9 @@ self-consistent, and matches no external reference on earth.
 - [test: the differential oracle asserts talib=False is actually in effect] Not merely passed as an argument — asserted, so the tautology cannot return silently
 - [test: forcing the oracle to delegate to TA-Lib makes the differential test fail] Proves the guard bites rather than being decorative
 - [test: MACD agrees with the independent implementation within epsilon after warm-up] Compared on the converged tail, not the leading bars
-- [test: StochRSI uses fastk_period 14, not TA-Lib's default of 5] Asserted against the registry
-- [test: the registry records that TA-Lib fastd corresponds to TradingView K] So a future reader comparing against a chart is not misled
+- [test: the registry contains real MACD and STOCHRSI entries, loaded through load_registry] Parsed and validated as IndicatorDefinition objects — a substring search of registry.yaml proves only that a comment exists
+- [test: the loaded STOCHRSI definition declares fastk_period 14, not TA-Lib's default of 5] Read from the parsed parameters, not from the file's text
+- [test: the loaded MACD and STOCHRSI definitions declare required_bars 250] Both are recursive despite TA-Lib annotating only STOCHRSI
 - [cmd: uv run pytest tests/test_differential.py -q --no-header -o addopts= --tb=short] Runs on its own
 
 ## Notes for the implementer
@@ -43,3 +44,10 @@ self-consistent, and matches no external reference on earth.
 - Two implementations agreeing is weaker evidence than a published number — they can share an
   inherited error. That is why this story covers only the two families no publisher tabulates,
   and why US-404 remains the merge gate.
+- **Add the MACD and STOCHRSI registry entries in this story.** They are the two indicators
+  this story owns; US-407 grows the registry to full scale but does not create these. A
+  previous attempt added only comment lines and a test that grepped for them — the test
+  passed and proved nothing, which is this project's signature failure appearing inside a
+  story written to prevent it.
+- **Assert against parsed objects, never file text.** `REGISTRY_PATH.read_text()` with a
+  substring check cannot tell a registered indicator from a comment.
