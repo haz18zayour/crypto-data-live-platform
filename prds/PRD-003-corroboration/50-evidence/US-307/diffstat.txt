@@ -1,8 +1,11 @@
-.uf/events.ndjson                                  |   8 +
- SESSION.md                                         |  19 ++-
+.uf/events.ndjson                                  |   9 +
+ SESSION.md                                         |  14 +-
  .../50-evidence/US-306/diffstat.txt                |   8 +-
  .../50-evidence/US-306/gates.json                  |   2 +-
  .../50-evidence/US-306/verdict.json                |  18 +-
+ .../50-evidence/US-307/diffstat.txt                |  15 ++
+ .../50-evidence/US-307/gates.json                  |  14 ++
+ .../50-evidence/US-307/verdict.json                |  46 +++++
  web/src/App.test.tsx                               |  61 +++++++
  web/src/App.tsx                                    |  37 ++--
  web/src/CorroborationPanel.test.tsx                | 123 ++++++++++++++
@@ -12,4 +15,4 @@
  web/src/data.ts                                    | 149 +++++++++++++++-
  web/src/registry.ts                                |   8 +
  web/src/styles.css                                 | 187 ++++++++++++++++++++-
- 14 files changed, 817 insertions(+), 45 deletions(-)
+ 17 files changed, 891 insertions(+), 42 deletions(-)

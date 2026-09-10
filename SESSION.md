@@ -9,19 +9,15 @@ Do not hand-edit it — it is regenerated. The hand-written sections below it su
 
 ## ▶ Resume here
 
-**1 story left mid-run by an interrupted session**
+**PRD-003-corroboration — 6/7 stories passed**
 
-Recovery is automatic: the partial work is committed under that story and it is retried. An interruption does not cost a retry attempt.
+Codex implements, a different vendor verifies read-only. It stops only for a blast-radius merge, a third failure, or a human criterion.
 
 Owner: **`uf`.** Run the command; it drives the agents itself.
 
 ```
-uf run
+uf run PRD-003-corroboration
 ```
-
-**Left in flight by the previous session:**
-
-- PRD-003-corroboration/US-307 left running
 
 **Last handoff note:** 2026-09-10 — US-306 implementation evidence is ready for external verification: registry entries must explicitly choose a second-source corroboration block or an uncorroborated note; Coin Metrics-style upstream consolidation is preserved in the note; PRD-002 generated coverage rejects silence. US-306 tests: 4 passed; registry-focused tests: 24 passed; ruff/mypy and registry validation clean; deterministic regressions: 107 passed (6 integration deselected). Live PostgreSQL remains unreachable from this sandbox.
 
@@ -221,6 +217,11 @@ Spend to date: **$21.08** Claude · **65106k** Codex tokens.
 - 07:54  US-307 started, attempt 1 (codex)
 - 07:55  US-306 — codex finished `488bceeb`
 - 07:56  US-306 **PASSED** — 5/5 criteria, judged by claude · $0.27
+- 07:57  US-307 failed — interrupted while running — the process stopped before a verdict
+- 07:57  US-307 started, attempt 1 (codex)
+- 08:14  US-307 — codex finished
+- 08:14  US-307 — codex finished `6705162b`
+- 08:15  US-307 **rejected** — 0/6 criteria, judged by claude
 
 <!-- uf:generated:end -->
 
