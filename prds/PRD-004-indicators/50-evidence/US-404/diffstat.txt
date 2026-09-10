@@ -1,0 +1,7 @@
+.uf/events.ndjson                               |   3 +
+ SESSION.md                                      |  12 ++-
+ ingest/indicators.py                            |  29 +++++++
+ tests/goldens/published/stockcharts_atr_14.json |  60 ++++++++++++++
+ tests/goldens/published/stockcharts_rsi_14.json |  65 +++++++++++++++
+ tests/test_published_vectors.py                 | 104 ++++++++++++++++++++++++
+ 6 files changed, 269 insertions(+), 4 deletions(-)
