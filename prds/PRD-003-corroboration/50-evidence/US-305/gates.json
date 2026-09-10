@@ -9,6 +9,6 @@
     "name": "test",
     "run": "node -e \"const f=require('fs'),c=require('child_process');let r=0;const run=(cmd)=>{try{c.execSync(cmd,{stdio:'inherit'})}catch(e){r=1}};if(f.existsSync('package.json'))run('npm test --if-present');if(f.existsSync('tests'))run('uv run pytest -q');process.exit(r)\"",
     "exitCode": 0,
-    "output": "........................................................................ [ 56%]\r\n.......................................................                  [100%]\r\n127 passed in 74.70s (0:01:14)\r\n"
+    "output": "........................................................................ [ 56%]\r\n.......................................................                  [100%]\r\n127 passed in 66.32s (0:01:06)\r\n"
   }
 ]

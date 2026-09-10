@@ -1,5 +1,8 @@
-.uf/events.ndjson              |   5 ++
- SESSION.md                     |   1 +
- ingest/corroborate.py          | 115 +++++++++++++++++++++++++--
- tests/test_not_corroborated.py | 176 +++++++++++++++++++++++++++++++++++++++++
- 4 files changed, 291 insertions(+), 6 deletions(-)
+.uf/events.ndjson                                  |   7 +
+ SESSION.md                                         |  15 +-
+ ingest/corroborate.py                              | 115 +++++++++++++-
+ .../50-evidence/US-305/diffstat.txt                |   5 +
+ .../50-evidence/US-305/gates.json                  |  14 ++
+ .../50-evidence/US-305/verdict.json                |  69 ++++++++
+ tests/test_not_corroborated.py                     | 176 +++++++++++++++++++++
+ 7 files changed, 391 insertions(+), 10 deletions(-)

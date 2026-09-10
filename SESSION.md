@@ -9,7 +9,7 @@ Do not hand-edit it — it is regenerated. The hand-written sections below it su
 
 ## ▶ Resume here
 
-**PRD-003-corroboration — 4/7 stories passed**
+**PRD-003-corroboration — 5/7 stories passed**
 
 Codex implements, a different vendor verifies read-only. It stops only for a blast-radius merge, a third failure, or a human criterion.
 
@@ -19,7 +19,7 @@ Owner: **`uf`.** Run the command; it drives the agents itself.
 uf run PRD-003-corroboration
 ```
 
-**Last handoff note:** 2026-09-10 — US-304 implementation is ready for external verification: midpoint divergence is assessed against the per-indicator registry tolerance, the first tolerance/status written for a datapoint pair is immutable on rerun, and the live entry point fetches/persists both peer venues behind the US-303 timestamp gate. Targeted tests: 7 passed with live deselected; changed-file ruff/mypy and registry validation clean; deterministic regressions: 93 passed. The fail-loud live integration test could not connect to Supabase from this sandbox.
+**Last handoff note:** 2026-09-10 — US-305 implementation and tests are ready for external verification. Missing Coinbase target-day bars, including the real older-latest-candle shape, persist the primary value and a reasoned NOT_CORROBORATED record with no divergence fields; HTTP errors remain Error outcomes and only those trigger corroboration failure policy. Targeted US-303-305 tests: 20 passed (1 live deselected); Ruff and scoped mypy clean; non-network/non-DB regressions: 92 passed (3 live deselected). Live PostgreSQL fixtures are unreachable from this sandbox; full-project mypy has 8 pre-existing test errors outside touched files.
 
 ## Where this stands
 
@@ -27,9 +27,9 @@ uf run PRD-003-corroboration
 |---|---|---|---|
 | PRD-001-spine | 8 | 8 | **all green** |
 | PRD-002-harness | 7 | 7 | **all green** |
-| PRD-003-corroboration | 7 | 4 | 4/7 |
+| PRD-003-corroboration | 7 | 5 | 5/7 |
 
-Spend to date: **$19.32** Claude · **56156k** Codex tokens.
+Spend to date: **$19.78** Claude · **60250k** Codex tokens.
 
 ## What happened
 
@@ -198,6 +198,12 @@ Spend to date: **$19.32** Claude · **56156k** Codex tokens.
 - 06:54  US-304 started, attempt 2 (codex)
 - 06:59  US-304 — codex finished `6ce69cec` · 410k tok
 - 07:02  US-304 **PASSED** — 7/7 criteria, judged by claude · $0.47
+- 07:06  US-305 started, attempt 1 (codex)
+- 07:16  US-305 failed — interrupted while running — the process stopped before a verdict
+- 07:16  US-305 started, attempt 1 (codex)
+- 07:24  US-305 — codex finished `2e16ba55` · 2169k tok
+- 07:27  US-305 — codex finished `93143f4b` · 1925k tok
+- 07:28  US-305 **PASSED** — 5/5 criteria, judged by claude · $0.47
 
 <!-- uf:generated:end -->
 
