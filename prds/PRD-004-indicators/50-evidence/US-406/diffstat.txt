@@ -1,8 +1,11 @@
-.uf/events.ndjson          |   3 +
- SESSION.md                 |  11 ++-
- ingest/indicators.py       |  37 ++++++++++
- ingest/registry.yaml       |   2 +
- pyproject.toml             |   1 +
- tests/test_differential.py | 174 +++++++++++++++++++++++++++++++++++++++++++
- uv.lock                    | 179 ++++++++++++++++++++++++++++++++++++++++++---
- 7 files changed, 392 insertions(+), 15 deletions(-)
+.uf/events.ndjson                                  |   6 +
+ SESSION.md                                         |  14 +-
+ ingest/indicators.py                               |  37 +++++
+ ingest/registry.yaml                               |   2 +
+ .../50-evidence/US-406/diffstat.txt                |   8 +
+ .../50-evidence/US-406/gates.json                  |  20 +++
+ .../50-evidence/US-406/verdict.json                |  80 +++++++++
+ pyproject.toml                                     |   1 +
+ tests/test_differential.py                         | 174 ++++++++++++++++++++
+ uv.lock                                            | 179 +++++++++++++++++++--
+ 10 files changed, 506 insertions(+), 15 deletions(-)
