@@ -1,0 +1,46 @@
+{
+  "storyId": "US-307",
+  "passes": false,
+  "verifier": {
+    "agent": "claude",
+    "sandbox": "not-run"
+  },
+  "implementer": "codex",
+  "results": [
+    {
+      "criterionId": "US-307-C1",
+      "met": false,
+      "note": "not judged — a cheaper layer already failed"
+    },
+    {
+      "criterionId": "US-307-C2",
+      "met": false,
+      "note": "not judged — a cheaper layer already failed"
+    },
+    {
+      "criterionId": "US-307-C3",
+      "met": false,
+      "note": "not judged — a cheaper layer already failed"
+    },
+    {
+      "criterionId": "US-307-C4",
+      "met": false,
+      "note": "not judged — a cheaper layer already failed"
+    },
+    {
+      "criterionId": "US-307-C5",
+      "met": false,
+      "note": "not judged — a cheaper layer already failed"
+    },
+    {
+      "criterionId": "US-307-C6",
+      "met": false,
+      "note": "not judged — a cheaper layer already failed"
+    }
+  ],
+  "tripwires": [
+    "criterion US-307-C6 requires a screenshot at prds/PRD-003-corroboration/50-evidence/US-307/divergence.png — it does not exist"
+  ],
+  "note": "tripwires: criterion US-307-C6 requires a screenshot at prds/PRD-003-corroboration/50-evidence/US-307/divergence.png — it does not exist",
+  "at": "2026-09-10T08:15:53.701Z"
+}
