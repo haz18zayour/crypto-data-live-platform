@@ -1,0 +1,80 @@
+{
+  "storyId": "US-406",
+  "passes": false,
+  "verifier": {
+    "agent": "claude",
+    "sandbox": "restricted:read-only"
+  },
+  "implementer": "codex",
+  "results": [
+    {
+      "criterionId": "US-406-C1",
+      "met": true,
+      "evidence": {
+        "file": "tests/test_differential.py",
+        "line": 50,
+        "testName": "test_the_differential_oracle_asserts_talib_false_is_actually_in_effect",
+        "exitCode": 0
+      },
+      "note": "native_macd_oracle (tests/test_differential.py:33-54) and native_stochrsi_oracle (:57-91) each wrap the real talib.MACD/STOCHRSI/RSI C functions with unittest.mock.patch.object(..., wraps=...) and assert call_count == 0 after invoking pandas_ta with talib=False — a hard runtime check that delegation didn't happen, not merely trusting the passed argument."
+    },
+    {
+      "criterionId": "US-406-C2",
+      "met": true,
+      "evidence": {
+        "file": "tests/test_differential.py",
+        "line": 132,
+        "testName": "test_forcing_the_oracle_to_delegate_to_talib_makes_the_differential_fail",
+        "exitCode": 0
+      },
+      "note": "Deliberately sets talib_enabled=True (so pandas_ta.macd delegates to the real talib.MACD) and asserts the guard's AssertionError actually fires with message 'oracle delegated to TA-Lib' — proves the call_count==0 guard bites on a genuine delegation rather than being a no-op assertion. Only demonstrated for MACD, not a mirrored control for StochRSI, but the mechanism (and criterion) is generic."
+    },
+    {
+      "criterionId": "US-406-C3",
+      "met": true,
+      "evidence": {
+        "file": "tests/test_differential.py",
+        "line": 17,
+        "testName": "test_macd_agrees_with_the_independent_implementation_within_epsilon_after_warmup",
+        "exitCode": 0
+      },
+      "note": "CONVERGED_TAIL_LENGTH=32 bars sliced from the end of a 500-bar synthetic series for both MACD (lines 98-113) and StochRSI (lines 142-157) comparisons, well past each indicator's warmup (~35 bars for MACD(12,26,9), ~31 for StochRSI(14,14,3)) — leading bars are excluded from both oracle and actual arrays."
+    },
+    {
+      "criterionId": "US-406-C4",
+      "met": false,
+      "evidence": {
+        "file": "ingest/registry.yaml",
+        "line": 6,
+        "testName": "test_stochrsi_uses_fastk_period_14_not_talibs_default_5_in_the_registry",
+        "exitCode": 0
+      },
+      "note": "The diff adds only two free-floating YAML comment lines to registry.yaml (lines 6-7); no IndicatorDefinition entry for MACD or STOCHRSI was added despite ingest/registry.py already reserving RECURSIVE_TALIB_FUNCTIONS={'RSI','ATR','EMA','STOCHRSI','MACD'} and a talib_function/parameters schema for exactly this purpose (ingest/registry.py:26,58-59,84-90). The 'registry' test (tests/test_differential.py:160-168) just does REGISTRY_PATH.read_text() and asserts a hardcoded string is a substring of the raw file — it never loads/validates via load_registry()/IndicatorRegistry, and nothing cross-checks the comment against indicators.py's actual default parameters. This is a criterion satisfied by a comment, not a genuine registry assertion."
+    },
+    {
+      "criterionId": "US-406-C5",
+      "met": true,
+      "evidence": {
+        "file": "tests/test_differential.py",
+        "line": 142,
+        "testName": "test_stochrsi_agrees_with_the_independent_tradingview_k_after_warmup",
+        "exitCode": 0
+      },
+      "note": "Numerically proves ingest/indicators.py's stochrsi() (which returns TA-Lib's fastd, ingest/indicators.py:86-93) matches the independent pandas-ta-classic oracle's first/K column within 1e-6 on the converged tail — real evidence that TA-Lib's fastd equals TradingView's K, backed also by the function's docstring ('Return TradingView-style StochRSI K for the newest bar.', ingest/indicators.py:83), so a reader comparing the returned value to a TradingView chart's K line is not misled into thinking it's D."
+    },
+    {
+      "criterionId": "US-406-C6",
+      "met": true,
+      "evidence": {
+        "file": "tests/test_differential.py",
+        "line": 1,
+        "testName": null,
+        "exitCode": 0
+      },
+      "note": "Named gate `uv run pytest tests/test_differential.py -q --no-header -o addopts= --tb=short` exited 0, confirming the file runs standalone."
+    }
+  ],
+  "tripwires": [],
+  "note": "5 of 6 criteria hold up under inspection with real, non-tautological tests (mocked TA-Lib call-count guards that actually fire, tail-only comparisons past warmup, and a genuine numeric proof that TA-Lib's fastd equals TradingView's K). C4 is gamed: the 'registry' assertion is just a substring check against two comment lines bolted onto registry.yaml — no structured IndicatorDefinition/talib_function entry for MACD or STOCHRSI was added to the actual validated registry, even though the schema (ingest/registry.py) already anticipates exactly that.",
+  "at": "2026-09-10T13:42:23.983Z"
+}
