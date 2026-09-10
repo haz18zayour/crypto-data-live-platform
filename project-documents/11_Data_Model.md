@@ -199,6 +199,41 @@ Concretely:
   (Coin Metrics MVRV) has no second opinion, and that fact should itself be visible rather than
   implied.
 
+## 4d. Warm-up: measured, not assumed
+
+**A recursive indicator's value depends on how much history preceded it.** Measured 2026-09-10
+on 599 real OKX BTC daily closes — the *same final bar*, RSI(14), varying only the length of
+history supplied:
+
+| bars supplied | RSI(14) | drift vs converged |
+|---|---|---|
+| 15 | 47.56 | −11.94 |
+| 20 | 48.62 | −10.88 |
+| 30 | **63.90** | **+4.40** |
+| 50 | 58.98 | −0.52 |
+| 100 | 59.51 | +0.008 |
+| 150 → 500 | **59.4972** | **0.0000** |
+
+A **16-point spread on a 0–100 oscillator** — the difference between reading oversold and
+overbought — with no error, no NaN and a plausible number at every length. This is the prior
+system's *"same market, different score"* reproduced exactly, in TA-Lib.
+
+**Two traps this exposes:**
+
+1. **TA-Lib's own `lookback` is not a warm-up figure.** It reports RSI 14, ATR 14, MACD 33,
+   STOCHRSI 20, EMA(200) 199. Those are the *mechanical floor* — the inputs consumed before any
+   output exists. Taking them as `required_bars` gives RSI 14 bars and a value 12 points wrong.
+2. **The unstable period defaults to 0**, so TA-Lib strips nothing and warns nothing. A 30-bar
+   RSI array returns a confident float at index 14.
+
+**Therefore:** recursive indicators (RSI, ATR, EMA, StochRSI, **and MACD**, which TA-Lib does
+*not* annotate despite its EMA-26 core) declare **250 bars**. Convergence arrives near 150 in
+this measurement; 250 is deliberate headroom. Non-recursive indicators (Bollinger, OBV) declare
+their own smaller honest N.
+
+The exactly-N contract from PRD-002 is what makes this safe: a cache growing from 30 bars to 150
+would otherwise walk RSI from 63.9 to 59.5 over weeks, silently.
+
 ## 5. Fallbacks are different indicators
 
 If a value cannot be obtained from its declared source, the answer is `UNAVAILABLE` — **not a

@@ -9,19 +9,15 @@ Do not hand-edit it — it is regenerated. The hand-written sections below it su
 
 ## ▶ Resume here
 
-**12 uncommitted file(s) — the runner will not start**
+**PRD-004-indicators — 1/8 stories passed**
 
-A previous session edited source and did not commit. uf refuses to run on a dirty tree rather than auto-committing someone else's half-finished work.
+Codex implements, a different vendor verifies read-only. It stops only for a blast-radius merge, a third failure, or a human criterion.
 
-Owner: **You.** This one cannot be delegated.
+Owner: **`uf`.** Run the command; it drives the agents itself.
 
 ```
-review the diff, then: git add -A && git commit
+uf run PRD-004-indicators
 ```
-
-**Left in flight by the previous session:**
-
-- 12 uncommitted file(s): prds/PRD-004-indicators/10-research.md, prds/PRD-004-indicators/20-decisions.yaml, prds/PRD-004-indicators/30-spec.md, prds/PRD-004-indicators/40-stories/US-001-example.md…
 
 **Last handoff note:** 2026-09-10 (session): **PRD-003 complete, 7/7**, merged. Corroboration is live: OKX and
 
@@ -32,9 +28,9 @@ review the diff, then: git add -A && git commit
 | PRD-001-spine | 8 | 8 | **all green** |
 | PRD-002-harness | 7 | 7 | **all green** |
 | PRD-003-corroboration | 7 | 7 | **all green** |
-| PRD-004-indicators | 8 | 0 | 0/8 |
+| PRD-004-indicators | 8 | 1 | 1/8 |
 
-Spend to date: **$25.12** Claude · **65106k** Codex tokens.
+Spend to date: **$25.73** Claude · **75718k** Codex tokens.
 
 ## What happened
 
@@ -233,6 +229,9 @@ Spend to date: **$25.12** Claude · **65106k** Codex tokens.
 - 08:21  US-307 **PASSED** — 6/6 criteria, judged by claude · $0.56
 - 10:52  researched PRD-004-indicators — 20 sources · $3.48
 - 10:55  **PRD-004-indicators** compiled — 8 stories
+- 10:56  US-401 started, attempt 1 (codex)
+- 11:28  US-401 — codex finished `92a6d3ad` · 10612k tok
+- 11:32  US-401 **PASSED** — 6/6 criteria, judged by claude · $0.61
 
 <!-- uf:generated:end -->
 
