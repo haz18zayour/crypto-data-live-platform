@@ -9,7 +9,7 @@ Do not hand-edit it — it is regenerated. The hand-written sections below it su
 
 ## ▶ Resume here
 
-**PRD-003-corroboration — 3/7 stories passed**
+**PRD-003-corroboration — 4/7 stories passed**
 
 Codex implements, a different vendor verifies read-only. It stops only for a blast-radius merge, a third failure, or a human criterion.
 
@@ -27,9 +27,9 @@ uf run PRD-003-corroboration
 |---|---|---|---|
 | PRD-001-spine | 8 | 8 | **all green** |
 | PRD-002-harness | 7 | 7 | **all green** |
-| PRD-003-corroboration | 7 | 3 | 3/7 |
+| PRD-003-corroboration | 7 | 4 | 4/7 |
 
-Spend to date: **$18.85** Claude · **55746k** Codex tokens.
+Spend to date: **$19.32** Claude · **56156k** Codex tokens.
 
 ## What happened
 
@@ -195,6 +195,9 @@ Spend to date: **$18.85** Claude · **55746k** Codex tokens.
 - 06:37  US-304 started, attempt 1 (codex)
 - 06:51  US-304 — codex finished `328e28ef` · 1672k tok
 - 06:54  US-304 **rejected** — 6/7 criteria, judged by claude · $0.49
+- 06:54  US-304 started, attempt 2 (codex)
+- 06:59  US-304 — codex finished `6ce69cec` · 410k tok
+- 07:02  US-304 **PASSED** — 7/7 criteria, judged by claude · $0.47
 
 <!-- uf:generated:end -->
 
