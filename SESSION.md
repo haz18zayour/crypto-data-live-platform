@@ -9,7 +9,7 @@ Do not hand-edit it — it is regenerated. The hand-written sections below it su
 
 ## ▶ Resume here
 
-**PRD-004-indicators — 1/8 stories passed**
+**PRD-004-indicators — 2/8 stories passed**
 
 Codex implements, a different vendor verifies read-only. It stops only for a blast-radius merge, a third failure, or a human criterion.
 
@@ -19,7 +19,7 @@ Owner: **`uf`.** Run the command; it drives the agents itself.
 uf run PRD-004-indicators
 ```
 
-**Last handoff note:** 2026-09-10 (session): **PRD-003 complete, 7/7**, merged. Corroboration is live: OKX and
+**Last handoff note:** 2026-09-10 — US-402 implementation pending external verification: parameterized TA-Lib lookback validation and the 250-bar recursive floor are in ingest/registry.py; tests/test_lookback.py has criterion-named biting tests. Targeted 8 passed, deterministic 117 passed, registry CLI/ruff/strict mypy clean. Full suite reached 120 passed but live sockets and PostgreSQL are blocked in this sandbox.
 
 ## Where this stands
 
@@ -28,9 +28,9 @@ uf run PRD-004-indicators
 | PRD-001-spine | 8 | 8 | **all green** |
 | PRD-002-harness | 7 | 7 | **all green** |
 | PRD-003-corroboration | 7 | 7 | **all green** |
-| PRD-004-indicators | 8 | 1 | 1/8 |
+| PRD-004-indicators | 8 | 2 | 2/8 |
 
-Spend to date: **$25.73** Claude · **75718k** Codex tokens.
+Spend to date: **$25.96** Claude · **78950k** Codex tokens.
 
 ## What happened
 
@@ -232,11 +232,15 @@ Spend to date: **$25.73** Claude · **75718k** Codex tokens.
 - 10:56  US-401 started, attempt 1 (codex)
 - 11:28  US-401 — codex finished `92a6d3ad` · 10612k tok
 - 11:32  US-401 **PASSED** — 6/6 criteria, judged by claude · $0.61
+- 11:34  US-402 started, attempt 1 (codex)
+- 11:55  US-402 — codex finished `e092acba` · 3232k tok
+- 11:57  US-402 **PASSED** — 5/5 criteria, judged by claude · $0.23
 
 <!-- uf:generated:end -->
 
 ## Handoff
 
+- 2026-09-10 — US-403 implementation is ready for external verification: OKX history pagination is capped at 100 and Coinbase time-window pagination at 300; both fail on short pages and validate exact newest-first UTC-daily contiguity after assembly. Criterion tests: 5 passed (live deselected); deterministic regressions: 118 passed; Ruff, ingest mypy, registry validation clean. Live test exists and fails loud because this sandbox blocks outbound sockets (WinError 10013). Commit was unavailable because .git is read-only.
 - 2026-09-10 — US-402 implementation pending external verification: parameterized TA-Lib lookback validation and the 250-bar recursive floor are in ingest/registry.py; tests/test_lookback.py has criterion-named biting tests. Targeted 8 passed, deterministic 117 passed, registry CLI/ruff/strict mypy clean. Full suite reached 120 passed but live sockets and PostgreSQL are blocked in this sandbox.
 - 2026-09-10 (session): **PRD-003 complete, 7/7**, merged. Corroboration is live: OKX and
   Coinbase compared per UTC day, tolerance **25 bps measured** from 59 days (median 7.1,
