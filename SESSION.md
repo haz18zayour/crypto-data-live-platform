@@ -9,7 +9,7 @@ Do not hand-edit it — it is regenerated. The hand-written sections below it su
 
 ## ▶ Resume here
 
-**PRD-004-indicators — 4/8 stories passed**
+**PRD-004-indicators — 5/8 stories passed**
 
 Codex implements, a different vendor verifies read-only. It stops only for a blast-radius merge, a third failure, or a human criterion.
 
@@ -19,7 +19,7 @@ Owner: **`uf`.** Run the command; it drives the agents itself.
 uf run PRD-004-indicators
 ```
 
-**Last handoff note:** 2026-09-10 — US-404 implementation is ready for external verification: StockCharts cs-rsi.xls and cs-atr (1).xls rows are committed as nested external fixtures; TA-Lib wrappers match every published output, reject an EMA-smoothed RSI control, and RSI/ATR N=250 vs N=500 tails agree within 1e-6. Named gate 5 passed; scoped regressions 123 passed with 5 live integrations deselected; Ruff and strict mypy clean. Full local suite reached 129 passed but 15 fail-loud PostgreSQL fixtures cannot connect in this sandbox. Commit unavailable because .git is read-only.
+**Last handoff note:** 2026-09-10 — US-405 implementation evidence is ready for external verification: TA-Lib Bollinger(20,2,SMA) matches the committed 1..20 population-stdev arithmetic; the sample-stdev control is rejected; OBV matches a five-step hand calculation including a positive-volume flat close and ignores conflicting quote volume; venue base-volume source_field text and the flat rule are pinned in the golden registry fixture. Named gate 5 passed; deterministic regressions 132 passed with 7 live integrations deselected; Ruff and strict mypy clean. Full suite reached 135 passed but blocked sockets caused 4 live failures and unavailable PostgreSQL caused 18 fail-loud fixture errors. Commit unavailable because .git is read-only.
 
 ## Where this stands
 
@@ -28,9 +28,9 @@ uf run PRD-004-indicators
 | PRD-001-spine | 8 | 8 | **all green** |
 | PRD-002-harness | 7 | 7 | **all green** |
 | PRD-003-corroboration | 7 | 7 | **all green** |
-| PRD-004-indicators | 8 | 4 | 4/8 |
+| PRD-004-indicators | 8 | 5 | 5/8 |
 
-Spend to date: **$26.63** Claude · **86048k** Codex tokens.
+Spend to date: **$26.86** Claude · **90609k** Codex tokens.
 
 ## What happened
 
@@ -241,6 +241,9 @@ Spend to date: **$26.63** Claude · **86048k** Codex tokens.
 - 12:23  US-404 started, attempt 1 (codex)
 - 12:45  US-404 — codex finished `e42479a2` · 4346k tok
 - 12:48  US-404 **PASSED** — 6/6 criteria, judged by claude · $0.23
+- 12:48  US-405 started, attempt 1 (codex)
+- 13:12  US-405 — codex finished `ae552207` · 4561k tok
+- 13:14  US-405 **PASSED** — 6/6 criteria, judged by claude · $0.24
 
 <!-- uf:generated:end -->
 

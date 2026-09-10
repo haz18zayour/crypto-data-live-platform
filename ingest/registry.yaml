@@ -3,6 +3,8 @@
 # disagreement was resolved upstream and no dispersion is published.
 # TA-Lib-backed entries also declare talib_function and parameters. Validation reads that
 # exact parameter set when checking required_bars against TA-Lib's own lookback.
+# STOCHRSI_CONVENTION timeperiod=14 fastk_period=14 fastd_period=3 fastd_matype=0
+# STOCHRSI_OUTPUT TA-Lib fastd corresponds to TradingView K (not D).
 - key: btc_daily_close
   vendor: okx
   endpoint: https://www.okx.com/api/v5/market/candles?instId=BTC-USDT&bar=1Dutc

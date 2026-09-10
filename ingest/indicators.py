@@ -54,3 +54,40 @@ def obv(bars: Sequence[Mapping[str, float]]) -> float:
     closes = np.asarray([bar["close"] for bar in bars], dtype=np.float64)
     base_volumes = np.asarray([bar["volume"] for bar in bars], dtype=np.float64)
     return float(talib.OBV(closes, base_volumes)[-1])
+
+
+def macd(
+    bars: Sequence[Mapping[str, float]],
+    fast_period: int = 12,
+    slow_period: int = 26,
+    signal_period: int = 9,
+) -> tuple[float, float, float]:
+    """Return the MACD line, signal line, and histogram for the newest bar."""
+
+    closes = np.asarray([bar["close"] for bar in bars], dtype=np.float64)
+    line, signal, histogram = talib.MACD(
+        closes,
+        fastperiod=fast_period,
+        slowperiod=slow_period,
+        signalperiod=signal_period,
+    )
+    return float(line[-1]), float(signal[-1]), float(histogram[-1])
+
+
+def stochrsi(
+    bars: Sequence[Mapping[str, float]],
+    rsi_period: int = 14,
+    stochastic_period: int = 14,
+    k_smoothing_period: int = 3,
+) -> float:
+    """Return TradingView-style StochRSI K for the newest bar."""
+
+    closes = np.asarray([bar["close"] for bar in bars], dtype=np.float64)
+    _, fastd = talib.STOCHRSI(
+        closes,
+        timeperiod=rsi_period,
+        fastk_period=stochastic_period,
+        fastd_period=k_smoothing_period,
+        fastd_matype=MA_Type.SMA,
+    )
+    return float(fastd[-1])
