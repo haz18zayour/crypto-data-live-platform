@@ -16,7 +16,7 @@
         "testName": "test_an_indicator_with_no_second_source_is_marked_uncorroborated_in_the_registry",
         "exitCode": 0
       },
-      "note": "UncorroboratedDefinition (registry.py:37-42) is a plain optional field on IndicatorDefinition (line 60), defaulting to None with no computed/inferred logic anywhere in the class. tests/test_uncorroborated.py:31-42 loads an entry that explicitly sets uncorroborated.note and asserts corroboration is None while uncorroborated carries the exact note text — confirms the flag is only ever set by explicit YAML."
+      "note": "Verified directly: UncorroboratedDefinition (registry.py:37-42) is a plain optional field on IndicatorDefinition (line 60), default None, no computed/inferred logic. Test (tests/test_uncorroborated.py:31-42) loads an entry with explicit uncorroborated.note and asserts corroboration is None / uncorroborated carries the exact note text."
     },
     {
       "criterionId": "US-306-C2",
@@ -27,7 +27,7 @@
         "testName": "test_a_corroborated_and_an_uncorroborated_value_are_distinguishable_in_stored_data",
         "exitCode": 0
       },
-      "note": "Test model_dumps a corroborated and an uncorroborated IndicatorDefinition and asserts the dicts differ, with each carrying the opposite field populated/None (lines 53-68) — real, non-vacuous assertions. This story's declared touched files are registry.yaml/registry.py/tests only (per US-306-uncorroborated.md), so 'stored data' here is the registry model, not the corroborations DB table; ingest/corroborate.py has zero references to `uncorroborated` (confirmed by grep), so the distinction does not yet reach the actual datapoint/corroboration write path. Since the AC's method is 'test' and the named test matches verbatim and passes with genuine assertions, the criterion as written is satisfied."
+      "note": "Verified: test model_dumps a corroborated and an uncorroborated definition and asserts the dicts differ, each carrying the opposite field populated/None (lines 60-68) — real assertions, not vacuous. Caveat carried from prior verdict still applies: this proves distinguishability at the registry-model level only; ingest/corroborate.py (the DB write path) has no reference to `uncorroborated`, so the distinction doesn't yet reach the corroborations table. Story's declared touched files are registry.yaml/registry.py/tests only, so this is in scope."
     },
     {
       "criterionId": "US-306-C3",
@@ -38,7 +38,7 @@
         "testName": "test_registry_validation_rejects_an_indicator_that_declares_neither_a_second_source_nor_uncorroborated",
         "exitCode": 0
       },
-      "note": "load_registry (registry.py:174-188) raises ValueError when has_second_source == is_uncorroborated, i.e. both false (silence) or both true — the same XOR discipline as reject_wildcards on definable_for (lines 62-69). Test at line 71 strips the uncorroborated block and asserts ValueError with matching message 'corroboration declaration'."
+      "note": "Verified: load_registry (registry.py:174-188) raises ValueError when has_second_source == is_uncorroborated (both false = silence, both true = double-declare), mirroring reject_wildcards on definable_for (lines 62-69, same file). Test strips the uncorroborated block and asserts ValueError matching 'corroboration declaration'."
     },
     {
       "criterionId": "US-306-C4",
@@ -49,21 +49,21 @@
         "testName": "test_coverage_from_prd_002_includes_the_corroboration_declaration",
         "exitCode": 0
       },
-      "note": "assert_registry_coverage (registry.py:191-215) appends a failure when has_second_source == is_uncorroborated (lines 201-206), extending the existing PRD-002 coverage mechanism rather than a new hand-kept list. Test at line 88 constructs a definition with neither field set and asserts AssertionError matching 'corroboration declaration'."
+      "note": "Verified: assert_registry_coverage (registry.py:191-215) appends a failure when has_second_source == is_uncorroborated (lines 201-206), extending the existing PRD-002 coverage-checking mechanism. Test constructs a definition with neither field set and asserts AssertionError matching 'corroboration declaration'."
     },
     {
       "criterionId": "US-306-C5",
       "met": true,
       "evidence": {
-        "file": null,
-        "line": null,
+        "file": "ingest/registry.yaml",
+        "line": 13,
         "testName": null,
         "exitCode": 0
       },
-      "note": "Deterministic gate `uv run python -m ingest.registry --validate` exited 0 (given). Confirmed by reading the shipped ingest/registry.yaml: its sole entry (btc_daily_close) declares corroboration and not uncorroborated, so has_second_source=True/is_uncorroborated=False are unequal and load_registry's new check does not raise."
+      "note": "Deterministic gate `uv run python -m ingest.registry --validate` exited 0 (given, and matches the story's DETERMINISTIC GATE RESULTS). Confirmed by reading the shipped registry.yaml directly: its sole entry declares `corroboration` (line 13) and not `uncorroborated`, so has_second_source=True/is_uncorroborated=False are unequal and load_registry's new XOR check does not raise."
     }
   ],
   "tripwires": [],
-  "note": "All five criteria are backed by real, assertion-bearing named tests in tests/test_uncorroborated.py that match the story's declared AC test names verbatim, exercising genuine registry.py logic (explicit-only optional field, XOR validation in both load_registry and assert_registry_coverage). One honest scope caveat on C2: the uncorroborated field is a registry/YAML-level declaration only — ingest/corroborate.py, the module that writes actual datapoint/corroboration rows, never references it (zero grep hits outside registry.py/registry.yaml/tests), so the distinction is proven at the registry-model level, not the corroborations-table level. This does not fail the criterion since the story's declared touched files are registry.yaml/registry.py/tests only and the named test is the literal contract. Also note the registry.yaml still ships only the original btc_daily_close entry; the Coin Metrics MVRV example with the upstream-consolidation note exists only inside the test file's synthetic fixture, not as a real shipped indicator — this is consistent with the story's scope (mechanism + validation) but the narrative framing about MVRV itself is illustrative, not literally deployed.",
-  "at": "2026-09-10T07:53:55.863Z"
+  "note": "All five criteria verified by directly reading ingest/registry.py, ingest/registry.yaml, and tests/test_uncorroborated.py (not just trusting the diff or prior verdict). Tests are assertion-bearing and exercise real registry.py logic. One scope caveat carried forward on C2: the `uncorroborated` field is registry/YAML-level only — ingest/corroborate.py, the module that writes actual datapoint/corroboration rows, has zero references to it, so the value/absence distinction is proven at the registry-model level, not the corroborations-table level. This matches the story's declared touched files (registry.yaml/registry.py/tests only) so it does not fail any criterion, but the story's narrative claim that Coin Metrics MVRV itself now ships with this note is not true of the shipped registry.yaml (only btc_daily_close/corroboration is shipped; the MVRV example lives only inside the test file's fixture). No evidence of faked work — tests contain genuine, non-trivial assertions.",
+  "at": "2026-09-10T07:56:55.972Z"
 }
