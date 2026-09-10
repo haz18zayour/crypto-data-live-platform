@@ -1,0 +1,61 @@
+{
+  "indicator": "Bollinger Bands",
+  "external": true,
+  "source": "John Bollinger, A complete explanation of Bollinger Bands",
+  "source_url": "https://www.bollingerbands.com/bollinger-bands",
+  "source_accessed": "2026-09-10",
+  "source_convention": "A 20-period simple moving average with bands at plus and minus two population standard deviations.",
+  "parameters": {
+    "period": 20,
+    "deviations": 2.0,
+    "moving_average": "simple",
+    "standard_deviation": "population (ddof=0)"
+  },
+  "registry": {
+    "required_bars": 20,
+    "talib_function": "BBANDS",
+    "parameters": {
+      "timeperiod": 20,
+      "nbdevup": 2.0,
+      "nbdevdn": 2.0,
+      "matype": 0
+    }
+  },
+  "input_bars": [
+    {"close": 1.0},
+    {"close": 2.0},
+    {"close": 3.0},
+    {"close": 4.0},
+    {"close": 5.0},
+    {"close": 6.0},
+    {"close": 7.0},
+    {"close": 8.0},
+    {"close": 9.0},
+    {"close": 10.0},
+    {"close": 11.0},
+    {"close": 12.0},
+    {"close": 13.0},
+    {"close": 14.0},
+    {"close": 15.0},
+    {"close": 16.0},
+    {"close": 17.0},
+    {"close": 18.0},
+    {"close": 19.0},
+    {"close": 20.0}
+  ],
+  "arithmetic": {
+    "sum": "1 + 2 + ... + 20 = 210",
+    "mean": "210 / 20 = 10.5",
+    "sum_squared_deviations": "sum((x - 10.5)^2 for x=1..20) = 665",
+    "population_variance": "665 / 20 = 33.25",
+    "population_stdev": "sqrt(33.25) = 5.766281297335398",
+    "upper_band": "10.5 + 2 * 5.766281297335398 = 22.032562594670797",
+    "lower_band": "10.5 - 2 * 5.766281297335398 = -1.0325625946707966"
+  },
+  "expected": {
+    "middle": 10.5,
+    "population_stdev": 5.766281297335398,
+    "upper": 22.032562594670797,
+    "lower": -1.0325625946707966
+  }
+}
