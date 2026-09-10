@@ -9,19 +9,15 @@ Do not hand-edit it — it is regenerated. The hand-written sections below it su
 
 ## ▶ Resume here
 
-**11 uncommitted file(s) — the runner will not start**
+**PRD-003-corroboration — 1/7 stories passed**
 
-A previous session edited source and did not commit. uf refuses to run on a dirty tree rather than auto-committing someone else's half-finished work.
+Codex implements, a different vendor verifies read-only. It stops only for a blast-radius merge, a third failure, or a human criterion.
 
-Owner: **You.** This one cannot be delegated.
+Owner: **`uf`.** Run the command; it drives the agents itself.
 
 ```
-review the diff, then: git add -A && git commit
+uf run PRD-003-corroboration
 ```
-
-**Left in flight by the previous session:**
-
-- 11 uncommitted file(s): prds/PRD-003-corroboration/10-research.md, prds/PRD-003-corroboration/20-decisions.yaml, prds/PRD-003-corroboration/30-spec.md, prds/PRD-003-corroboration/40-stories/US-001-example.md…
 
 **Last handoff note:** 2026-09-10: **PRD-002 complete, 7/7, every story first attempt**, merged to `main`. The
 
@@ -31,9 +27,9 @@ review the diff, then: git add -A && git commit
 |---|---|---|---|
 | PRD-001-spine | 8 | 8 | **all green** |
 | PRD-002-harness | 7 | 7 | **all green** |
-| PRD-003-corroboration | 7 | 0 | 0/7 |
+| PRD-003-corroboration | 7 | 1 | 1/7 |
 
-Spend to date: **$17.19** Claude · **48433k** Codex tokens.
+Spend to date: **$17.94** Claude · **50906k** Codex tokens.
 
 ## What happened
 
@@ -187,11 +183,15 @@ Spend to date: **$17.19** Claude · **48433k** Codex tokens.
 
 - 05:47  researched PRD-003-corroboration — 9 sources · $2.85
 - 05:50  **PRD-003-corroboration** compiled — 7 stories
+- 05:51  US-301 started, attempt 1 (codex)
+- 06:06  US-301 — codex finished `7b949311` · 2473k tok
+- 06:09  US-301 **PASSED** — 6/6 criteria, judged by claude · $0.75
 
 <!-- uf:generated:end -->
 
 ## Handoff
 
+- 2026-09-10 — US-302 implementation is ready for external verification: Coinbase is decoded into named strict fields, asserts its own UTC-midnight buckets, excludes the live bucket, and stores bucket-end timestamps. Targeted tests: 10 passed (live deselected); unaffected non-DB regressions: 69 passed. The fail-loud live test is present but this sandbox blocks sockets with WinError 10013; existing real-Postgres fixtures are likewise unreachable here.
 - 2026-09-10: **PRD-002 complete, 7/7, every story first attempt**, merged to `main`. The
   harness now guards PRD-004 onward: exactly-N-bar slices, goldens with an external oracle,
   `extra='forbid'` + strict vendor models, recorded shapes, truncation/gap/duplicate detection,
