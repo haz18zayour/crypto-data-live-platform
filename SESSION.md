@@ -9,15 +9,19 @@ Do not hand-edit it — it is regenerated. The hand-written sections below it su
 
 ## ▶ Resume here
 
-**PRD-003-corroboration — 5/7 stories passed**
+**1 story left mid-run by an interrupted session**
 
-Codex implements, a different vendor verifies read-only. It stops only for a blast-radius merge, a third failure, or a human criterion.
+Recovery is automatic: the partial work is committed under that story and it is retried. An interruption does not cost a retry attempt.
 
 Owner: **`uf`.** Run the command; it drives the agents itself.
 
 ```
-uf run PRD-003-corroboration
+uf run
 ```
+
+**Left in flight by the previous session:**
+
+- PRD-003-corroboration/US-306 left running
 
 **Last handoff note:** 2026-09-10 — US-305 implementation and tests are ready for external verification. Missing Coinbase target-day bars, including the real older-latest-candle shape, persist the primary value and a reasoned NOT_CORROBORATED record with no divergence fields; HTTP errors remain Error outcomes and only those trigger corroboration failure policy. Targeted US-303-305 tests: 20 passed (1 live deselected); Ruff and scoped mypy clean; non-network/non-DB regressions: 92 passed (3 live deselected). Live PostgreSQL fixtures are unreachable from this sandbox; full-project mypy has 8 pre-existing test errors outside touched files.
 
@@ -29,7 +33,7 @@ uf run PRD-003-corroboration
 | PRD-002-harness | 7 | 7 | **all green** |
 | PRD-003-corroboration | 7 | 5 | 5/7 |
 
-Spend to date: **$19.78** Claude · **60250k** Codex tokens.
+Spend to date: **$20.14** Claude · **60250k** Codex tokens.
 
 ## What happened
 
@@ -204,6 +208,8 @@ Spend to date: **$19.78** Claude · **60250k** Codex tokens.
 - 07:24  US-305 — codex finished `2e16ba55` · 2169k tok
 - 07:27  US-305 — codex finished `93143f4b` · 1925k tok
 - 07:28  US-305 **PASSED** — 5/5 criteria, judged by claude · $0.47
+- 07:29  US-306 started, attempt 1 (codex)
+- 07:30  US-305 **PASSED** — 5/5 criteria, judged by claude · $0.36
 
 <!-- uf:generated:end -->
 
