@@ -145,7 +145,7 @@ def test_all_four_assets_produce_an_indicator_value_or_explicit_status() -> None
     }
     assert Counter(
         definition.definable_for[0] for definition in technical_definitions
-    ) == Counter({asset: 8 for asset in ASSETS})
+    ) == Counter({asset: 11 for asset in ASSETS})
     assert all(
         result.status in {"OK", "STALE", "UNAVAILABLE", "ERROR"}
         for result in run.indicators.values()

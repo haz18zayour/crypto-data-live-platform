@@ -1,0 +1,29 @@
+{
+  "indicator": "Exponential Moving Average",
+  "external": true,
+  "source": "StockCharts ChartSchool, Moving Averages - Simple and Exponential",
+  "source_url": "https://chartschool.stockcharts.com/table-of-contents/technical-indicators-and-overlays/technical-overlays/moving-averages-simple-and-exponential",
+  "source_accessed": "2026-09-12",
+  "source_convention": "EMA uses multiplier 2 / (timeperiod + 1); the first EMA is seeded with the simple average of the first timeperiod values.",
+  "input_series": {
+    "field": "close",
+    "start": 1.0,
+    "stop": 250.0,
+    "step": 1.0,
+    "bars": 250
+  },
+  "arithmetic": {
+    "rule": "For the arithmetic progression close[t] = t, the SMA seed at t = N is (N + 1) / 2. Applying alpha = 2 / (N + 1) makes every subsequent EMA equal t - (N - 1) / 2.",
+    "expected_at_bar_250": {
+      "20": "250 - (20 - 1) / 2 = 240.5",
+      "50": "250 - (50 - 1) / 2 = 225.5",
+      "200": "250 - (200 - 1) / 2 = 150.5"
+    }
+  },
+  "expected": {
+    "20": 240.5,
+    "50": 225.5,
+    "200": 150.5
+  },
+  "absolute_tolerance": 1e-12
+}

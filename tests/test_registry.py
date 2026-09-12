@@ -94,7 +94,7 @@ def test_definable_for_requires_a_nonempty_asset_list(
 def test_shipped_registry_definitions_cover_four_assets_at_scale() -> None:
     registry = load_registry()
 
-    assert len(registry.root) == 33
+    assert len(registry.root) == 45
     assert {asset for entry in registry.root for asset in entry.definable_for} == {
         "BTC",
         "ETH",

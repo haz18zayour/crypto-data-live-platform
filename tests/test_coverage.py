@@ -53,7 +53,7 @@ def test_every_registry_entry_has_a_golden_required_bars_and_response_model() ->
 ):
     registry = load_registry()
 
-    assert 30 <= len(registry.root) <= 36
+    assert len(registry.root) == 45
     assert_registry_coverage(
         registry,
         golden_keys=golden_keys(),

@@ -36,6 +36,54 @@
   freshness_stale_seconds: 172800
   uncorroborated:
     note: The derived output is not cross-venue corroborated; its OKX input bars are corroborated against Coinbase.
+- key: btc_ema_20
+  vendor: okx
+  endpoint: https://www.okx.com/api/v5/market/candles?instId=BTC-USDT&bar=1Dutc
+  source_field: 'TA-Lib EMA(20) from closed okx candle[4] values where candle[8] == "1"'
+  definable_for: [BTC]
+  golden: hand_computed/ema_20_50_200.json
+  response_model: okx_candle
+  required_bars: 250
+  talib_function: EMA
+  parameters:
+    timeperiod: 20
+  expected_update_interval_seconds: 86400
+  freshness_warn_seconds: 108000
+  freshness_stale_seconds: 172800
+  uncorroborated:
+    note: The derived output is not cross-venue corroborated; its OKX input bars are corroborated against Coinbase.
+- key: btc_ema_50
+  vendor: okx
+  endpoint: https://www.okx.com/api/v5/market/candles?instId=BTC-USDT&bar=1Dutc
+  source_field: 'TA-Lib EMA(50) from closed okx candle[4] values where candle[8] == "1"'
+  definable_for: [BTC]
+  golden: hand_computed/ema_20_50_200.json
+  response_model: okx_candle
+  required_bars: 250
+  talib_function: EMA
+  parameters:
+    timeperiod: 50
+  expected_update_interval_seconds: 86400
+  freshness_warn_seconds: 108000
+  freshness_stale_seconds: 172800
+  uncorroborated:
+    note: The derived output is not cross-venue corroborated; its OKX input bars are corroborated against Coinbase.
+- key: btc_ema_200
+  vendor: okx
+  endpoint: https://www.okx.com/api/v5/market/candles?instId=BTC-USDT&bar=1Dutc
+  source_field: 'TA-Lib EMA(200) from closed okx candle[4] values where candle[8] == "1"'
+  definable_for: [BTC]
+  golden: hand_computed/ema_20_50_200.json
+  response_model: okx_candle
+  required_bars: 250
+  talib_function: EMA
+  parameters:
+    timeperiod: 200
+  expected_update_interval_seconds: 86400
+  freshness_warn_seconds: 108000
+  freshness_stale_seconds: 172800
+  uncorroborated:
+    note: The derived output is not cross-venue corroborated; its OKX input bars are corroborated against Coinbase.
 - key: btc_atr
   vendor: okx
   endpoint: https://www.okx.com/api/v5/market/candles?instId=BTC-USDT&bar=1Dutc
@@ -116,9 +164,10 @@
   definable_for: [BTC]
   golden: hand_computed/obv_base_volume.json
   response_model: okx_candle
-  required_bars: 1
+  required_bars: 200
   talib_function: OBV
   parameters:
+  note: 'OBV is cumulative and has no convergence point; 200 daily bars is a product window chosen to show sustained volume conviction over roughly six months, independent of the five-bar formula golden.'
   expected_update_interval_seconds: 86400
   freshness_warn_seconds: 108000
   freshness_stale_seconds: 172800
@@ -174,6 +223,54 @@
   parameters:
     timeperiod: 14
   note: 'History availability measured 2026-09-10: okx at least 250 daily bars; coinbase at least 250 daily bars.'
+  expected_update_interval_seconds: 86400
+  freshness_warn_seconds: 108000
+  freshness_stale_seconds: 172800
+  uncorroborated:
+    note: The derived output is not cross-venue corroborated; its OKX input bars are corroborated against Coinbase.
+- key: eth_ema_20
+  vendor: okx
+  endpoint: https://www.okx.com/api/v5/market/candles?instId=ETH-USDT&bar=1Dutc
+  source_field: 'TA-Lib EMA(20) from closed okx candle[4] values where candle[8] == "1"'
+  definable_for: [ETH]
+  golden: hand_computed/ema_20_50_200.json
+  response_model: okx_candle
+  required_bars: 250
+  talib_function: EMA
+  parameters:
+    timeperiod: 20
+  expected_update_interval_seconds: 86400
+  freshness_warn_seconds: 108000
+  freshness_stale_seconds: 172800
+  uncorroborated:
+    note: The derived output is not cross-venue corroborated; its OKX input bars are corroborated against Coinbase.
+- key: eth_ema_50
+  vendor: okx
+  endpoint: https://www.okx.com/api/v5/market/candles?instId=ETH-USDT&bar=1Dutc
+  source_field: 'TA-Lib EMA(50) from closed okx candle[4] values where candle[8] == "1"'
+  definable_for: [ETH]
+  golden: hand_computed/ema_20_50_200.json
+  response_model: okx_candle
+  required_bars: 250
+  talib_function: EMA
+  parameters:
+    timeperiod: 50
+  expected_update_interval_seconds: 86400
+  freshness_warn_seconds: 108000
+  freshness_stale_seconds: 172800
+  uncorroborated:
+    note: The derived output is not cross-venue corroborated; its OKX input bars are corroborated against Coinbase.
+- key: eth_ema_200
+  vendor: okx
+  endpoint: https://www.okx.com/api/v5/market/candles?instId=ETH-USDT&bar=1Dutc
+  source_field: 'TA-Lib EMA(200) from closed okx candle[4] values where candle[8] == "1"'
+  definable_for: [ETH]
+  golden: hand_computed/ema_20_50_200.json
+  response_model: okx_candle
+  required_bars: 250
+  talib_function: EMA
+  parameters:
+    timeperiod: 200
   expected_update_interval_seconds: 86400
   freshness_warn_seconds: 108000
   freshness_stale_seconds: 172800
@@ -259,9 +356,10 @@
   definable_for: [ETH]
   golden: hand_computed/obv_base_volume.json
   response_model: okx_candle
-  required_bars: 1
+  required_bars: 200
   talib_function: OBV
   parameters:
+  note: 'OBV is cumulative and has no convergence point; 200 daily bars is a product window chosen to show sustained volume conviction over roughly six months, independent of the five-bar formula golden.'
   expected_update_interval_seconds: 86400
   freshness_warn_seconds: 108000
   freshness_stale_seconds: 172800
@@ -317,6 +415,54 @@
   parameters:
     timeperiod: 14
   note: 'History availability measured 2026-09-10: okx at least 250 daily bars; coinbase at least 250 daily bars.'
+  expected_update_interval_seconds: 86400
+  freshness_warn_seconds: 108000
+  freshness_stale_seconds: 172800
+  uncorroborated:
+    note: The derived output is not cross-venue corroborated; its OKX input bars are corroborated against Coinbase.
+- key: sol_ema_20
+  vendor: okx
+  endpoint: https://www.okx.com/api/v5/market/candles?instId=SOL-USDT&bar=1Dutc
+  source_field: 'TA-Lib EMA(20) from closed okx candle[4] values where candle[8] == "1"'
+  definable_for: [SOL]
+  golden: hand_computed/ema_20_50_200.json
+  response_model: okx_candle
+  required_bars: 250
+  talib_function: EMA
+  parameters:
+    timeperiod: 20
+  expected_update_interval_seconds: 86400
+  freshness_warn_seconds: 108000
+  freshness_stale_seconds: 172800
+  uncorroborated:
+    note: The derived output is not cross-venue corroborated; its OKX input bars are corroborated against Coinbase.
+- key: sol_ema_50
+  vendor: okx
+  endpoint: https://www.okx.com/api/v5/market/candles?instId=SOL-USDT&bar=1Dutc
+  source_field: 'TA-Lib EMA(50) from closed okx candle[4] values where candle[8] == "1"'
+  definable_for: [SOL]
+  golden: hand_computed/ema_20_50_200.json
+  response_model: okx_candle
+  required_bars: 250
+  talib_function: EMA
+  parameters:
+    timeperiod: 50
+  expected_update_interval_seconds: 86400
+  freshness_warn_seconds: 108000
+  freshness_stale_seconds: 172800
+  uncorroborated:
+    note: The derived output is not cross-venue corroborated; its OKX input bars are corroborated against Coinbase.
+- key: sol_ema_200
+  vendor: okx
+  endpoint: https://www.okx.com/api/v5/market/candles?instId=SOL-USDT&bar=1Dutc
+  source_field: 'TA-Lib EMA(200) from closed okx candle[4] values where candle[8] == "1"'
+  definable_for: [SOL]
+  golden: hand_computed/ema_20_50_200.json
+  response_model: okx_candle
+  required_bars: 250
+  talib_function: EMA
+  parameters:
+    timeperiod: 200
   expected_update_interval_seconds: 86400
   freshness_warn_seconds: 108000
   freshness_stale_seconds: 172800
@@ -402,9 +548,10 @@
   definable_for: [SOL]
   golden: hand_computed/obv_base_volume.json
   response_model: okx_candle
-  required_bars: 1
+  required_bars: 200
   talib_function: OBV
   parameters:
+  note: 'OBV is cumulative and has no convergence point; 200 daily bars is a product window chosen to show sustained volume conviction over roughly six months, independent of the five-bar formula golden.'
   expected_update_interval_seconds: 86400
   freshness_warn_seconds: 108000
   freshness_stale_seconds: 172800
@@ -460,6 +607,54 @@
   parameters:
     timeperiod: 14
   note: 'History availability measured 2026-09-10: okx at least 250 daily bars; coinbase exactly 317 daily bars.'
+  expected_update_interval_seconds: 86400
+  freshness_warn_seconds: 108000
+  freshness_stale_seconds: 172800
+  uncorroborated:
+    note: The derived output is not cross-venue corroborated; its OKX input bars are corroborated against Coinbase.
+- key: bnb_ema_20
+  vendor: okx
+  endpoint: https://www.okx.com/api/v5/market/candles?instId=BNB-USDT&bar=1Dutc
+  source_field: 'TA-Lib EMA(20) from closed okx candle[4] values where candle[8] == "1"'
+  definable_for: [BNB]
+  golden: hand_computed/ema_20_50_200.json
+  response_model: okx_candle
+  required_bars: 250
+  talib_function: EMA
+  parameters:
+    timeperiod: 20
+  expected_update_interval_seconds: 86400
+  freshness_warn_seconds: 108000
+  freshness_stale_seconds: 172800
+  uncorroborated:
+    note: The derived output is not cross-venue corroborated; its OKX input bars are corroborated against Coinbase.
+- key: bnb_ema_50
+  vendor: okx
+  endpoint: https://www.okx.com/api/v5/market/candles?instId=BNB-USDT&bar=1Dutc
+  source_field: 'TA-Lib EMA(50) from closed okx candle[4] values where candle[8] == "1"'
+  definable_for: [BNB]
+  golden: hand_computed/ema_20_50_200.json
+  response_model: okx_candle
+  required_bars: 250
+  talib_function: EMA
+  parameters:
+    timeperiod: 50
+  expected_update_interval_seconds: 86400
+  freshness_warn_seconds: 108000
+  freshness_stale_seconds: 172800
+  uncorroborated:
+    note: The derived output is not cross-venue corroborated; its OKX input bars are corroborated against Coinbase.
+- key: bnb_ema_200
+  vendor: okx
+  endpoint: https://www.okx.com/api/v5/market/candles?instId=BNB-USDT&bar=1Dutc
+  source_field: 'TA-Lib EMA(200) from closed okx candle[4] values where candle[8] == "1"'
+  definable_for: [BNB]
+  golden: hand_computed/ema_20_50_200.json
+  response_model: okx_candle
+  required_bars: 250
+  talib_function: EMA
+  parameters:
+    timeperiod: 200
   expected_update_interval_seconds: 86400
   freshness_warn_seconds: 108000
   freshness_stale_seconds: 172800
@@ -545,9 +740,10 @@
   definable_for: [BNB]
   golden: hand_computed/obv_base_volume.json
   response_model: okx_candle
-  required_bars: 1
+  required_bars: 200
   talib_function: OBV
   parameters:
+  note: 'OBV is cumulative and has no convergence point; 200 daily bars is a product window chosen to show sustained volume conviction over roughly six months, independent of the five-bar formula golden.'
   expected_update_interval_seconds: 86400
   freshness_warn_seconds: 108000
   freshness_stale_seconds: 172800

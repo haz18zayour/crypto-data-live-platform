@@ -14,6 +14,13 @@ def rsi(bars: Sequence[Mapping[str, float]], period: int = 14) -> float:
     return float(talib.RSI(closes, timeperiod=period)[-1])
 
 
+def ema(bars: Sequence[Mapping[str, float]], period: int) -> float:
+    """Return the exponential moving average for the newest bar."""
+
+    closes = np.asarray([bar["close"] for bar in bars], dtype=np.float64)
+    return float(talib.EMA(closes, timeperiod=period)[-1])
+
+
 def atr(bars: Sequence[Mapping[str, float]], period: int = 14) -> float:
     """Return Wilder's ATR for the newest bar using the first high-low as TR."""
 
