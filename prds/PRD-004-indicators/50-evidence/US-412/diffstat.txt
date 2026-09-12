@@ -1,0 +1,13 @@
+.uf/events.ndjson                                |   2 +
+ ingest/indicators.py                             |   7 +
+ ingest/pipeline.py                               |   4 +-
+ ingest/registry.yaml                             | 200 ++++++++++++++++++++++-
+ pyproject.toml                                   |   4 +-
+ tests/goldens/hand_computed/ema_20_50_200.json   |  29 ++++
+ tests/goldens/hand_computed/obv_base_volume.json |   2 +-
+ tests/test_assets.py                             |   2 +-
+ tests/test_coverage.py                           |   2 +-
+ tests/test_ema.py                                |  77 +++++++++
+ tests/test_obv_window.py                         |  47 ++++++
+ tests/test_registry.py                           |   2 +-
+ 12 files changed, 367 insertions(+), 11 deletions(-)
