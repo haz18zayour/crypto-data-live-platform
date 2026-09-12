@@ -1,0 +1,6 @@
+.uf/events.ndjson    |   3 +
+ SESSION.md           |  12 +-
+ ingest/pipeline.py   | 320 ++++++++++++++++++++++++++++++++++++++++++++++++++-
+ ingest/registry.yaml |   4 +
+ tests/test_assets.py | 256 +++++++++++++++++++++++++++++++++++++++++
+ 5 files changed, 587 insertions(+), 8 deletions(-)
