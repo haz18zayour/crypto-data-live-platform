@@ -1,0 +1,4 @@
+.uf/events.ndjson        |  2 ++
+ ingest/registry.yaml     | 12 ++++++----
+ tests/test_obv_window.py | 57 +++++++++++++++++++++++++++++++-----------------
+ 3 files changed, 47 insertions(+), 24 deletions(-)
