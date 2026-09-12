@@ -1,0 +1,49 @@
+{
+  "storyId": "US-414",
+  "passes": false,
+  "verifier": {
+    "agent": "claude",
+    "sandbox": "restricted:read-only"
+  },
+  "implementer": "codex",
+  "results": [
+    {
+      "criterionId": "US-414-C1",
+      "met": false,
+      "note": "verifier produced no parseable verdict"
+    },
+    {
+      "criterionId": "US-414-C2",
+      "met": false,
+      "note": "verifier produced no parseable verdict"
+    },
+    {
+      "criterionId": "US-414-C3",
+      "met": false,
+      "note": "verifier produced no parseable verdict"
+    },
+    {
+      "criterionId": "US-414-C4",
+      "met": false,
+      "note": "verifier produced no parseable verdict"
+    },
+    {
+      "criterionId": "US-414-C5",
+      "met": false,
+      "note": "verifier produced no parseable verdict"
+    },
+    {
+      "criterionId": "US-414-C6",
+      "met": false,
+      "note": "verifier produced no parseable verdict"
+    },
+    {
+      "criterionId": "US-414-C7",
+      "met": false,
+      "note": "verifier produced no parseable verdict"
+    }
+  ],
+  "tripwires": [],
+  "note": "verifier returned no usable JSON (exit 1)",
+  "at": "2026-09-12T20:42:48.492Z"
+}
