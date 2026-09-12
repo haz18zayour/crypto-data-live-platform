@@ -9,7 +9,7 @@ Do not hand-edit it — it is regenerated. The hand-written sections below it su
 
 ## ▶ Resume here
 
-**PRD-004-indicators — 5/8 stories passed**
+**PRD-004-indicators — 5/9 stories passed**
 
 Codex implements, a different vendor verifies read-only. It stops only for a blast-radius merge, a third failure, or a human criterion.
 
@@ -28,9 +28,9 @@ uf run PRD-004-indicators
 | PRD-001-spine | 8 | 8 | **all green** |
 | PRD-002-harness | 7 | 7 | **all green** |
 | PRD-003-corroboration | 7 | 7 | **all green** |
-| PRD-004-indicators | 8 | 5 | 5/8 |
+| PRD-004-indicators | 9 | 5 | 5/9 |
 
-Spend to date: **$27.98** Claude · **90609k** Codex tokens.
+Spend to date: **$27.98** Claude · **92909k** Codex tokens.
 
 ## What happened
 
@@ -254,6 +254,15 @@ Spend to date: **$27.98** Claude · **90609k** Codex tokens.
 - 13:45  US-406 — codex finished `130c8f87`
 - 13:46  **PRD-004-indicators** compiled — 8 stories
 - 13:46  US-406 **rejected** — 0/6 criteria, judged by claude · $0.04
+- 13:46  ⏸ **gate opened** — US-406 has failed 3 times — is the story wrong?
+
+### 2026-09-12
+
+- 12:40  ▶ gate answered **split** — The story bundles two separable concerns and kept half-landing as a result: (a) registering MACD and STOCHRSI as real IndicatorDefinition entries with corrected parameters, and (b) building a differential oracle whose independence from TA-Lib is proven rather than assumed. Verified on disk: load_registry() returns 1 entry, so the registration half genuinely did not land - this is incomplete work, not a verifier artifact, and a re-identified story will therefore produce a real diff. Splitting into US-409 (registration) and US-410 (oracle). Note the last attempt failed with 'verifier produced no parseable verdict' on C6, which is a verifier-side failure layered on top of the real gap.
+- 12:41  **PRD-004-indicators** compiled — 9 stories
+- 12:41  US-409 started, attempt 1 (codex)
+- 12:52  US-409 — codex finished `1eebc6e2` · 2299k tok
+- 12:53  US-409 **rejected** — 0/6 criteria, judged by claude
 
 <!-- uf:generated:end -->
 
