@@ -9,7 +9,7 @@ Do not hand-edit it — it is regenerated. The hand-written sections below it su
 
 ## ▶ Resume here
 
-**PRD-004-indicators — 6/8 stories passed**
+**PRD-004-indicators — 7/8 stories passed**
 
 Codex implements, a different vendor verifies read-only. It stops only for a blast-radius merge, a third failure, or a human criterion.
 
@@ -19,7 +19,7 @@ Owner: **`uf`.** Run the command; it drives the agents itself.
 uf run PRD-004-indicators
 ```
 
-**Last handoff note:** 2026-09-12 — US-411 artifacts are present in recovered commits: 21 criterion-scoped tests pass, including parsed registry entries, corrected parameters, TA-Lib spy and delegation-bite controls, converged-tail differential checks, goldens, response models, and whole-registry coverage. Ruff and ingest mypy pass. The exact full-suite command reaches 147 passed but this sandbox blocks OKX/Coinbase sockets and PostgreSQL, producing 4 live failures and 18 fail-loud setup errors; do not weaken or skip those gates.
+**Last handoff note:** 2026-09-12 — US-407 implementation is ready for external verification: the real registry has 33 rows (32 technical outputs across BTC/ETH/SOL/BNB plus btc_daily_close), each explicitly references parameters, a reusable golden, required_bars and the okx_candle response model. tests/test_coverage.py has criterion-named scale, uncovered-entry, uniqueness, explicit-parameter, diagnostic-message and real-registry integration tests. Coverage: 9 passed; surrounding registry/indicator tests: 38 passed; Ruff and ingest mypy pass; exact registry --validate exits 0. Full suite: 151 passed, with the known sandbox-only 4 live socket failures and 18 fail-loud PostgreSQL setup errors.
 
 ## Where this stands
 
@@ -28,9 +28,9 @@ uf run PRD-004-indicators
 | PRD-001-spine | 8 | 8 | **all green** |
 | PRD-002-harness | 7 | 7 | **all green** |
 | PRD-003-corroboration | 7 | 7 | **all green** |
-| PRD-004-indicators | 8 | 6 | 6/8 |
+| PRD-004-indicators | 8 | 7 | 7/8 |
 
-Spend to date: **$29.23** Claude · **96583k** Codex tokens.
+Spend to date: **$29.86** Claude · **101032k** Codex tokens.
 
 ## What happened
 
@@ -273,11 +273,15 @@ Spend to date: **$29.23** Claude · **96583k** Codex tokens.
 - 13:20  US-411 — codex finished `32d4eaea` · 1652k tok
 - 13:24  US-411 **PASSED** — 7/7 criteria, judged by claude · $0.58
 - 13:25  US-411 **PASSED** — 7/7 criteria, judged by claude · $0.67
+- 13:27  US-407 started, attempt 1 (codex)
+- 13:43  US-407 — codex finished `b1d70bb1` · 4449k tok
+- 13:46  US-407 **PASSED** — 7/7 criteria, judged by claude · $0.63
 
 <!-- uf:generated:end -->
 
 ## Handoff
 
+- 2026-09-12 — US-408 implementation evidence is ready for external verification: registry notes declare dated history for all 8 asset/venue pairs, including Coinbase BNB=317 on 2026-09-10; tests/test_assets.py proves the 249-vs-250 uncorroborated path, 317-vs-250 margin, all 32 technical cells, pair routing, and a fail-loud live four-asset run. Scoped regressions: 91 passed with 5 live tests deselected; Ruff and mypy clean. Exact full suite: 156 passed, with this sandbox's known socket restriction causing 5 live failures and unavailable PostgreSQL causing 18 fail-loud setup errors.
 - 2026-09-12 — US-407 implementation is ready for external verification: the real registry has 33 rows (32 technical outputs across BTC/ETH/SOL/BNB plus btc_daily_close), each explicitly references parameters, a reusable golden, required_bars and the okx_candle response model. tests/test_coverage.py has criterion-named scale, uncovered-entry, uniqueness, explicit-parameter, diagnostic-message and real-registry integration tests. Coverage: 9 passed; surrounding registry/indicator tests: 38 passed; Ruff and ingest mypy pass; exact registry --validate exits 0. Full suite: 151 passed, with the known sandbox-only 4 live socket failures and 18 fail-loud PostgreSQL setup errors.
 - 2026-09-12 — US-411 artifacts are present in recovered commits: 21 criterion-scoped tests pass, including parsed registry entries, corrected parameters, TA-Lib spy and delegation-bite controls, converged-tail differential checks, goldens, response models, and whole-registry coverage. Ruff and ingest mypy pass. The exact full-suite command reaches 147 passed but this sandbox blocks OKX/Coinbase sockets and PostgreSQL, producing 4 live failures and 18 fail-loud setup errors; do not weaken or skip those gates.
 - 2026-09-10 — US-405 implementation evidence is ready for external verification: TA-Lib Bollinger(20,2,SMA) matches the committed 1..20 population-stdev arithmetic; the sample-stdev control is rejected; OBV matches a five-step hand calculation including a positive-volume flat close and ignores conflicting quote volume; venue base-volume source_field text and the flat rule are pinned in the golden registry fixture. Named gate 5 passed; deterministic regressions 132 passed with 7 live integrations deselected; Ruff and strict mypy clean. Full suite reached 135 passed but blocked sockets caused 4 live failures and unavailable PostgreSQL caused 18 fail-loud fixture errors. Commit unavailable because .git is read-only.

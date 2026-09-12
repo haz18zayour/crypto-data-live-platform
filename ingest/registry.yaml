@@ -30,6 +30,7 @@
   talib_function: RSI
   parameters:
     timeperiod: 14
+  note: 'History availability measured 2026-09-10: okx at least 250 daily bars; coinbase at least 250 daily bars.'
   expected_update_interval_seconds: 86400
   freshness_warn_seconds: 108000
   freshness_stale_seconds: 172800
@@ -172,6 +173,7 @@
   talib_function: RSI
   parameters:
     timeperiod: 14
+  note: 'History availability measured 2026-09-10: okx at least 250 daily bars; coinbase at least 250 daily bars.'
   expected_update_interval_seconds: 86400
   freshness_warn_seconds: 108000
   freshness_stale_seconds: 172800
@@ -314,6 +316,7 @@
   talib_function: RSI
   parameters:
     timeperiod: 14
+  note: 'History availability measured 2026-09-10: okx at least 250 daily bars; coinbase at least 250 daily bars.'
   expected_update_interval_seconds: 86400
   freshness_warn_seconds: 108000
   freshness_stale_seconds: 172800
@@ -456,6 +459,7 @@
   talib_function: RSI
   parameters:
     timeperiod: 14
+  note: 'History availability measured 2026-09-10: okx at least 250 daily bars; coinbase exactly 317 daily bars.'
   expected_update_interval_seconds: 86400
   freshness_warn_seconds: 108000
   freshness_stale_seconds: 172800
