@@ -67,3 +67,4 @@ worked example — not against our own output.
 | US-411 | MACD and StochRSI — registered, oracle-checked, coverage green (replaces US-406/409/410) | US-401 |
 | US-407 | The registry carries ~32 entries and coverage still holds | US-404, US-405, US-411 |
 | US-408 | Four assets, with per-venue history availability declared | US-407 |
+| US-412 | The missing EMA stack, and OBV's meaningless one-bar window | US-407 |
