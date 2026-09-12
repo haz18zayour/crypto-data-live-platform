@@ -1,0 +1,80 @@
+{
+  "storyId": "US-405",
+  "passes": true,
+  "verifier": {
+    "agent": "claude",
+    "sandbox": "restricted:read-only"
+  },
+  "implementer": "codex",
+  "results": [
+    {
+      "criterionId": "US-405-C1",
+      "met": true,
+      "evidence": {
+        "file": "tests/test_bollinger_obv.py",
+        "line": 22,
+        "testName": "test_bollinger_bands_match_a_hand_computed_20_period_population_stdev_golden",
+        "exitCode": 0
+      },
+      "note": "Golden fixture (tests/goldens/hand_computed/bollinger_20_2_population.json) commits the 20 input closes plus a full 'arithmetic' block (sum, mean, sum_squared_deviations, population_variance, population_stdev, upper_band, lower_band). The test independently recomputes mean and population stdev from the raw input closes, checks that against the golden's expected values, then checks the actual bollinger_bands() output against that same hand-derived tuple — a real, checkable-by-hand chain, not a copy of the implementation's output into the fixture."
+    },
+    {
+      "criterionId": "US-405-C2",
+      "met": true,
+      "evidence": {
+        "file": "tests/test_bollinger_obv.py",
+        "line": 61,
+        "testName": "test_a_sample_stdev_implementation_fails_the_golden",
+        "exitCode": 0
+      },
+      "note": "Computes bands using ddof=1 sample stdev (sqrt(665/19)=5.916 vs. population sqrt(665/20)=5.766, a real ~2.6% difference) on the identical 1..20 series and asserts the comparison against the golden's expected bands raises AssertionError. This is a genuine adversarial control proving the golden would catch a ddof=1 implementation, not a self-confirming pass."
+    },
+    {
+      "criterionId": "US-405-C3",
+      "met": true,
+      "evidence": {
+        "file": "tests/test_bollinger_obv.py",
+        "line": 82,
+        "testName": "test_obv_matches_a_hand_computed_golden_over_a_short_series",
+        "exitCode": 0
+      },
+      "note": "obv_base_volume.json bars[1] and bars[2] both close at 11.0 (asserted equal at test_bollinger_obv.py:90) with a nonzero volume (300) on the flat bar; the test asserts OBV is unchanged across that step (actual[2]==actual[1], line 93) and the golden's expected_outputs pins [100,300,300,-100,400], explicitly encoding 'flat close leaves OBV unchanged' as required by the story."
+    },
+    {
+      "criterionId": "US-405-C4",
+      "met": true,
+      "evidence": {
+        "file": "tests/test_bollinger_obv.py",
+        "line": 96,
+        "testName": "test_obv_uses_base_volume_and_the_registry_records_which",
+        "exitCode": 0
+      },
+      "note": "ingest/registry.py:55 already requires IndicatorDefinition.source_field to be a NonEmptyString; the test builds one IndicatorDefinition per venue with the golden's distinct per-venue source_field text (okx vs coinbase, each naming the base-volume field and, for okx, explicitly excluding volCcy/volCcyQuote), validates them through IndicatorRegistry.model_validate, and asserts every stored source_field mentions 'base' — proving per-venue naming is enforced, not a shared/generic 'volume' string."
+    },
+    {
+      "criterionId": "US-405-C5",
+      "met": true,
+      "evidence": {
+        "file": "tests/test_bollinger_obv.py",
+        "line": 133,
+        "testName": "test_each_golden_names_its_external_source_and_the_arithmetic_used",
+        "exitCode": 0
+      },
+      "note": "For both goldens the test asserts external is True AND that source, source_url, source_convention and arithmetic are all non-empty/truthy — i.e. external=True alone is insufficient without the recorded working, matching the criterion's 'counts as external only if the working is recorded'."
+    },
+    {
+      "criterionId": "US-405-C6",
+      "met": true,
+      "evidence": {
+        "file": "tests/test_bollinger_obv.py",
+        "line": 1,
+        "testName": null,
+        "exitCode": 0
+      },
+      "note": "Named gate `uv run pytest tests/test_bollinger_obv.py -q --no-header -o addopts= --tb=short` exited 0, confirming the file runs standalone outside the project's default addopts/markers."
+    }
+  ],
+  "tripwires": [],
+  "note": "All 6 criteria are backed by concrete, non-tautological tests. Verified by hand: the Bollinger golden's population stdev (sqrt(665/20)=5.766281297335398) vs. the sample-stdev control (sqrt(665/19)≈5.916079) genuinely diverge, so the ddof=0/ddof=1 discrimination test is real, not decorative. The OBV golden genuinely embeds a flat-close step with nonzero volume and checks OBV is unchanged there. The per-venue source_field check uses the registry's real NonEmptyString-required field, not an invented attribute. No assertion-free tests or comment-only satisfactions found; diff is tightly scoped to the declared files plus expected SESSION.md/events.ndjson bookkeeping.",
+  "at": "2026-09-10T13:14:38.779Z"
+}

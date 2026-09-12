@@ -6,6 +6,7 @@ from typing import Any
 import pytest
 
 from ingest.compute import compute_indicator, daily_close
+from ingest.indicators import macd, stochrsi
 from ingest.registry import IndicatorDefinition, load_registry
 
 GOLDEN_DIRECTORY = Path(__file__).with_name("goldens")
@@ -30,7 +31,17 @@ def assert_matches_golden(
     actual = compute_indicator(
         definition_for(golden), golden["input_bars"], calculation
     )
-    assert actual == golden["expected"]
+    tolerance = golden.get("absolute_tolerance")
+    if tolerance is None:
+        assert actual == golden["expected"]
+    else:
+        assert actual == pytest.approx(
+            golden["expected"], abs=tolerance, rel=0.0
+        )
+
+
+def macd_line(bars: Sequence[Mapping[str, float]]) -> float:
+    return macd(bars)[0]
 
 
 def test_each_golden_file_records_where_its_expected_value_came_from() -> None:
@@ -62,7 +73,11 @@ def test_recomputing_from_the_stored_input_bars_reproduces_the_golden_exactly(
     path: Path,
 ) -> None:
     golden = load_golden(path)
-    calculations = {"daily_close": daily_close}
+    calculations = {
+        "daily_close": daily_close,
+        "macd_line": macd_line,
+        "stochrsi_k": stochrsi,
+    }
 
     assert_matches_golden(golden, calculations[golden["calculation"]])
 

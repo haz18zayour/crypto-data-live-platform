@@ -1,0 +1,44 @@
+{
+  "storyId": "US-409",
+  "passes": false,
+  "verifier": {
+    "agent": "claude",
+    "sandbox": "not-run"
+  },
+  "implementer": "codex",
+  "results": [
+    {
+      "criterionId": "US-409-C1",
+      "met": false,
+      "note": "not judged — a cheaper layer already failed"
+    },
+    {
+      "criterionId": "US-409-C2",
+      "met": false,
+      "note": "not judged — a cheaper layer already failed"
+    },
+    {
+      "criterionId": "US-409-C3",
+      "met": false,
+      "note": "not judged — a cheaper layer already failed"
+    },
+    {
+      "criterionId": "US-409-C4",
+      "met": false,
+      "note": "not judged — a cheaper layer already failed"
+    },
+    {
+      "criterionId": "US-409-C5",
+      "met": false,
+      "note": "not judged — a cheaper layer already failed"
+    },
+    {
+      "criterionId": "US-409-C6",
+      "met": false,
+      "note": "not judged — a cheaper layer already failed"
+    }
+  ],
+  "tripwires": [],
+  "note": "gates failed: test",
+  "at": "2026-09-12T12:53:37.588Z"
+}

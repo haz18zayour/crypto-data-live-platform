@@ -9,17 +9,21 @@ Do not hand-edit it — it is regenerated. The hand-written sections below it su
 
 ## ▶ Resume here
 
-**Every PRD is green**
+**2 uncommitted file(s) — the runner will not start**
 
-Nothing is outstanding. Merge and ship, or add the next PRD from the roadmap.
+A previous session edited source and did not commit. uf refuses to run on a dirty tree rather than auto-committing someone else's half-finished work.
 
 Owner: **You.** This one cannot be delegated.
 
 ```
-review the branch, then merge — or start the next PRD
+review the diff, then: git add -A && git commit
 ```
 
-**Last handoff note:** 2026-09-10 — US-306 implementation evidence is ready for external verification: registry entries must explicitly choose a second-source corroboration block or an uncorroborated note; Coin Metrics-style upstream consolidation is preserved in the note; PRD-002 generated coverage rejects silence. US-306 tests: 4 passed; registry-focused tests: 24 passed; ruff/mypy and registry validation clean; deterministic regressions: 107 passed (6 integration deselected). Live PostgreSQL remains unreachable from this sandbox.
+**Left in flight by the previous session:**
+
+- 2 uncommitted file(s): .github/workflows/uf-verify.yml, pyproject.toml
+
+**Last handoff note:** 2026-09-12 — US-408 implementation evidence is ready for external verification: registry notes declare dated history for all 8 asset/venue pairs, including Coinbase BNB=317 on 2026-09-10; tests/test_assets.py proves the 249-vs-250 uncorroborated path, 317-vs-250 margin, all 32 technical cells, pair routing, and a fail-loud live four-asset run. Scoped regressions: 91 passed with 5 live tests deselected; Ruff and mypy clean. Exact full suite: 156 passed, with this sandbox's known socket restriction causing 5 live failures and unavailable PostgreSQL causing 18 fail-loud setup errors.
 
 ## Where this stands
 
@@ -28,8 +32,9 @@ review the branch, then merge — or start the next PRD
 | PRD-001-spine | 8 | 8 | **all green** |
 | PRD-002-harness | 7 | 7 | **all green** |
 | PRD-003-corroboration | 7 | 7 | **all green** |
+| PRD-004-indicators | 8 | 8 | **all green** |
 
-Spend to date: **$21.63** Claude · **65106k** Codex tokens.
+Spend to date: **$30.42** Claude · **103913k** Codex tokens.
 
 ## What happened
 
@@ -226,11 +231,79 @@ Spend to date: **$21.63** Claude · **65106k** Codex tokens.
 - 08:18  US-307 started, attempt 3 (codex)
 - 08:19  US-307 — codex finished `9782787b`
 - 08:21  US-307 **PASSED** — 6/6 criteria, judged by claude · $0.56
+- 10:52  researched PRD-004-indicators — 20 sources · $3.48
+- 10:55  **PRD-004-indicators** compiled — 8 stories
+- 10:56  US-401 started, attempt 1 (codex)
+- 11:28  US-401 — codex finished `92a6d3ad` · 10612k tok
+- 11:32  US-401 **PASSED** — 6/6 criteria, judged by claude · $0.61
+- 11:34  US-402 started, attempt 1 (codex)
+- 11:55  US-402 — codex finished `e092acba` · 3232k tok
+- 11:57  US-402 **PASSED** — 5/5 criteria, judged by claude · $0.23
+- 11:57  US-403 started, attempt 1 (codex)
+- 12:19  US-403 — codex finished `2ac29895` · 2753k tok
+- 12:22  US-403 **PASSED** — 6/6 criteria, judged by claude · $0.44
+- 12:23  US-404 started, attempt 1 (codex)
+- 12:45  US-404 — codex finished `e42479a2` · 4346k tok
+- 12:48  US-404 **PASSED** — 6/6 criteria, judged by claude · $0.23
+- 12:48  US-405 started, attempt 1 (codex)
+- 13:12  US-405 — codex finished `ae552207` · 4561k tok
+- 13:14  US-405 **PASSED** — 6/6 criteria, judged by claude · $0.24
+- 13:14  US-406 started, attempt 1 (codex)
+- 13:38  US-406 — codex finished `e07ed030`
+- 13:42  US-406 **rejected** — 5/6 criteria, judged by claude · $0.58
+- 13:42  US-406 started, attempt 2 (codex)
+- 13:42  US-406 — codex finished `2b6d0a49`
+- 13:44  US-406 **rejected** — 5/6 criteria, judged by claude · $0.50
+- 13:45  US-406 started, attempt 3 (codex)
+- 13:45  US-406 — codex finished `130c8f87`
+- 13:46  **PRD-004-indicators** compiled — 8 stories
+- 13:46  US-406 **rejected** — 0/6 criteria, judged by claude · $0.04
+- 13:46  ⏸ **gate opened** — US-406 has failed 3 times — is the story wrong?
+
+### 2026-09-12
+
+- 12:40  ▶ gate answered **split** — The story bundles two separable concerns and kept half-landing as a result: (a) registering MACD and STOCHRSI as real IndicatorDefinition entries with corrected parameters, and (b) building a differential oracle whose independence from TA-Lib is proven rather than assumed. Verified on disk: load_registry() returns 1 entry, so the registration half genuinely did not land - this is incomplete work, not a verifier artifact, and a re-identified story will therefore produce a real diff. Splitting into US-409 (registration) and US-410 (oracle). Note the last attempt failed with 'verifier produced no parseable verdict' on C6, which is a verifier-side failure layered on top of the real gap.
+- 12:41  **PRD-004-indicators** compiled — 9 stories
+- 12:41  US-409 started, attempt 1 (codex)
+- 12:52  US-409 — codex finished `1eebc6e2` · 2299k tok
+- 12:53  US-409 **rejected** — 0/6 criteria, judged by claude
+- 12:57  **PRD-004-indicators** compiled — 8 stories
+- 13:04  US-411 started, attempt 1 (codex)
+- 13:12  US-411 failed — interrupted while running — the process stopped before a verdict
+- 13:12  US-411 started, attempt 1 (codex)
+- 13:13  US-411 failed — interrupted while running — the process stopped before a verdict
+- 13:13  US-411 started, attempt 1 (codex)
+- 13:19  US-411 — codex finished `00a148cb` · 2022k tok
+- 13:20  US-411 — codex finished `32d4eaea` · 1652k tok
+- 13:24  US-411 **PASSED** — 7/7 criteria, judged by claude · $0.58
+- 13:25  US-411 **PASSED** — 7/7 criteria, judged by claude · $0.67
+- 13:27  US-407 started, attempt 1 (codex)
+- 13:43  US-407 — codex finished `b1d70bb1` · 4449k tok
+- 13:46  US-407 **PASSED** — 7/7 criteria, judged by claude · $0.63
+- 13:47  US-408 started, attempt 1 (codex)
+- 14:02  US-408 — codex finished `12647e80` · 2881k tok
+- 14:06  US-408 **PASSED** — 6/6 criteria, judged by claude · $0.56
 
 <!-- uf:generated:end -->
 
 ## Handoff
 
+- 2026-09-12 (session): **PRD-004 complete, 8/8**, board at **33 indicators across BTC/ETH/SOL/BNB**.
+  Strongest evidence in the project: RSI matches StockCharts' published spreadsheet across 19
+  values to within **0.005**, and an EMA-smoothed variant misses by 6 points — so the test
+  discriminates rather than merely passing.
+  **Scale problem found and mitigated:** the full suite went 73s → **4h03m** once 33 indicators
+  needed 250 bars each (OKX history-candles caps at 100/request). Nine live tests caused it,
+  throttling both venues. Integration is now deselected by default (**170 offline tests in
+  53s**) and runs as a separate non-blocking CI step. **The underlying inefficiency is not
+  fixed** — live tests still refetch instead of sharing a cached fixture. Worth a small PRD.
+- 2026-09-12 — US-408 implementation evidence is ready for external verification: registry notes declare dated history for all 8 asset/venue pairs, including Coinbase BNB=317 on 2026-09-10; tests/test_assets.py proves the 249-vs-250 uncorroborated path, 317-vs-250 margin, all 32 technical cells, pair routing, and a fail-loud live four-asset run. Scoped regressions: 91 passed with 5 live tests deselected; Ruff and mypy clean. Exact full suite: 156 passed, with this sandbox's known socket restriction causing 5 live failures and unavailable PostgreSQL causing 18 fail-loud setup errors.
+- 2026-09-12 — US-407 implementation is ready for external verification: the real registry has 33 rows (32 technical outputs across BTC/ETH/SOL/BNB plus btc_daily_close), each explicitly references parameters, a reusable golden, required_bars and the okx_candle response model. tests/test_coverage.py has criterion-named scale, uncovered-entry, uniqueness, explicit-parameter, diagnostic-message and real-registry integration tests. Coverage: 9 passed; surrounding registry/indicator tests: 38 passed; Ruff and ingest mypy pass; exact registry --validate exits 0. Full suite: 151 passed, with the known sandbox-only 4 live socket failures and 18 fail-loud PostgreSQL setup errors.
+- 2026-09-12 — US-411 artifacts are present in recovered commits: 21 criterion-scoped tests pass, including parsed registry entries, corrected parameters, TA-Lib spy and delegation-bite controls, converged-tail differential checks, goldens, response models, and whole-registry coverage. Ruff and ingest mypy pass. The exact full-suite command reaches 147 passed but this sandbox blocks OKX/Coinbase sockets and PostgreSQL, producing 4 live failures and 18 fail-loud setup errors; do not weaken or skip those gates.
+- 2026-09-10 — US-405 implementation evidence is ready for external verification: TA-Lib Bollinger(20,2,SMA) matches the committed 1..20 population-stdev arithmetic; the sample-stdev control is rejected; OBV matches a five-step hand calculation including a positive-volume flat close and ignores conflicting quote volume; venue base-volume source_field text and the flat rule are pinned in the golden registry fixture. Named gate 5 passed; deterministic regressions 132 passed with 7 live integrations deselected; Ruff and strict mypy clean. Full suite reached 135 passed but blocked sockets caused 4 live failures and unavailable PostgreSQL caused 18 fail-loud fixture errors. Commit unavailable because .git is read-only.
+- 2026-09-10 — US-404 implementation is ready for external verification: StockCharts cs-rsi.xls and cs-atr (1).xls rows are committed as nested external fixtures; TA-Lib wrappers match every published output, reject an EMA-smoothed RSI control, and RSI/ATR N=250 vs N=500 tails agree within 1e-6. Named gate 5 passed; scoped regressions 123 passed with 5 live integrations deselected; Ruff and strict mypy clean. Full local suite reached 129 passed but 15 fail-loud PostgreSQL fixtures cannot connect in this sandbox. Commit unavailable because .git is read-only.
+- 2026-09-10 — US-403 implementation is ready for external verification: OKX history pagination is capped at 100 and Coinbase time-window pagination at 300; both fail on short pages and validate exact newest-first UTC-daily contiguity after assembly. Criterion tests: 5 passed (live deselected); deterministic regressions: 118 passed; Ruff, ingest mypy, registry validation clean. Live test exists and fails loud because this sandbox blocks outbound sockets (WinError 10013). Commit was unavailable because .git is read-only.
+- 2026-09-10 — US-402 implementation pending external verification: parameterized TA-Lib lookback validation and the 250-bar recursive floor are in ingest/registry.py; tests/test_lookback.py has criterion-named biting tests. Targeted 8 passed, deterministic 117 passed, registry CLI/ruff/strict mypy clean. Full suite reached 120 passed but live sockets and PostgreSQL are blocked in this sandbox.
 - 2026-09-10 (session): **PRD-003 complete, 7/7**, merged. Corroboration is live: OKX and
   Coinbase compared per UTC day, tolerance **25 bps measured** from 59 days (median 7.1,
   p90 10.8, max 13.8; the bar=1D defect was 35.2). G4 migration **applied to production** —

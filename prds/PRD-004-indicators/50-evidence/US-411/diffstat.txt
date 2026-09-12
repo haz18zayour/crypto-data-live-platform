@@ -1,0 +1,12 @@
+.uf/events.ndjson                                  |   8 +
+ SESSION.md                                         |  18 +-
+ ingest/canary.py                                   |   4 +-
+ .../50-evidence/US-411/diffstat.txt                |   9 +
+ .../50-evidence/US-411/gates.json                  |  20 +
+ .../50-evidence/US-411/verdict.json                |  91 +++
+ tests/goldens/btc_macd.json                        | 771 +++++++++++++++++++++
+ tests/goldens/btc_stochrsi.json                    | 768 ++++++++++++++++++++
+ tests/test_differential.py                         | 100 ++-
+ tests/test_goldens.py                              |  19 +-
+ tests/test_macd_stochrsi.py                        |  67 ++
+ 11 files changed, 1832 insertions(+), 43 deletions(-)

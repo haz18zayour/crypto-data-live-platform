@@ -1,0 +1,8 @@
+.uf/events.ndjson      |   2 +
+ SESSION.md             |   1 +
+ ingest/canary.py       |   9 +-
+ ingest/registry.py     |  21 +-
+ ingest/registry.yaml   | 549 ++++++++++++++++++++++++++++++++++++++++++++++++-
+ tests/test_coverage.py | 129 ++++++++----
+ tests/test_registry.py |  16 +-
+ 7 files changed, 667 insertions(+), 60 deletions(-)

@@ -1,0 +1,13 @@
+.uf/events.ndjson                                  |  10 ++
+ SESSION.md                                         |  17 +-
+ ingest/indicators.py                               |  37 +++++
+ ingest/registry.yaml                               |   2 +
+ .../40-stories/US-406-differential-oracle.md       |  12 +-
+ .../50-evidence/US-406/diffstat.txt                |  11 ++
+ .../50-evidence/US-406/gates.json                  |  20 +++
+ .../50-evidence/US-406/verdict.json                |  44 +++++
+ prds/PRD-004-indicators/spec.lock.json             |  32 ++--
+ pyproject.toml                                     |   1 +
+ tests/test_differential.py                         | 174 ++++++++++++++++++++
+ uv.lock                                            | 179 +++++++++++++++++++--
+ 12 files changed, 512 insertions(+), 27 deletions(-)

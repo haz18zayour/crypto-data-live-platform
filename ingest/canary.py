@@ -15,8 +15,13 @@ from ingest.registry import IndicatorDefinition, load_registry
 from ingest.schemas import OkxCandleResponse
 
 REQUEST_TIMEOUT_SECONDS = 10
+RESPONSE_MODEL_TYPES: dict[str, type[BaseModel]] = {
+    "okx_candle": OkxCandleResponse,
+}
 RESPONSE_MODELS: dict[str, type[BaseModel]] = {
-    "btc_daily_close": OkxCandleResponse
+    definition.key: RESPONSE_MODEL_TYPES[definition.response_model]
+    for definition in load_registry().root
+    if definition.response_model in RESPONSE_MODEL_TYPES
 }
 
 

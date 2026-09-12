@@ -7,11 +7,13 @@ dependencies = [
     "pydantic-settings>=2,<3",
     "psycopg[binary]>=3.2,<4",
     "structlog>=24,<26",
+    "TA-Lib==0.7.1",
 ]
 
 [dependency-groups]
 dev = [
     "mypy>=1.11,<2",
+    "pandas-ta-classic==0.6.52",
     "pytest>=8,<9",
     "ruff>=0.8,<1",
 ]
@@ -23,6 +25,11 @@ testpaths = ["tests"]
 # test that imports ingest at module level fails collection with ModuleNotFoundError.
 pythonpath = ["."]
 markers = ["integration: touches a live third-party endpoint"]
+# Integration tests hit live venues. With 33 indicators needing 250 bars each and OKX
+# history-candles capped at 100/request, running all nine together throttles both venues:
+# measured 4h03m with 5 failures, versus 53s for the 170 offline tests. Deselected by
+# default so local feedback stays usable; CI runs them in a separate step.
+addopts = ["-m", "not integration"]
 
 [tool.ruff]
 target-version = "py312"

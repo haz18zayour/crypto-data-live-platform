@@ -1,0 +1,22 @@
+{
+  "gate": "G5_THIRD_FAILURE",
+  "question": "US-406 has failed 3 times — is the story wrong?",
+  "feature": "PRD-004-indicators",
+  "story": "US-406",
+  "options": [
+    "split",
+    "rewrite-criteria",
+    "skip",
+    "retry-anyway"
+  ],
+  "context": "Criteria judged not met:\n  - US-406-C1: verifier produced no parseable verdict\n  - US-406-C2: verifier produced no parseable verdict\n  - US-406-C3: verifier produced no parseable verdict\n  - US-406-C4: verifier produced no parseable verdict\n  - US-406-C5: verifier produced no parseable verdict\n  - US-406-C6: verifier produced no parseable verdict",
+  "defaultOnTimeout": "block",
+  "id": "G5_THIRD_FAILURE-2c8939de",
+  "openedAt": "2026-09-10T13:46:45.700Z",
+  "answer": {
+    "choice": "split",
+    "reason": "The story bundles two separable concerns and kept half-landing as a result: (a) registering MACD and STOCHRSI as real IndicatorDefinition entries with corrected parameters, and (b) building a differential oracle whose independence from TA-Lib is proven rather than assumed. Verified on disk: load_registry() returns 1 entry, so the registration half genuinely did not land - this is incomplete work, not a verifier artifact, and a re-identified story will therefore produce a real diff. Splitting into US-409 (registration) and US-410 (oracle). Note the last attempt failed with 'verifier produced no parseable verdict' on C6, which is a verifier-side failure layered on top of the real gap.",
+    "at": "2026-09-12T12:40:44.450Z",
+    "by": "human"
+  }
+}
