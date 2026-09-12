@@ -164,9 +164,10 @@
   definable_for: [BTC]
   golden: hand_computed/obv_base_volume.json
   response_model: okx_candle
-  required_bars: 5
+  required_bars: 200
   talib_function: OBV
   parameters:
+  note: 'OBV is cumulative and has no convergence point; 200 daily bars is a product window chosen to show sustained volume conviction over roughly six months, independent of the five-bar formula golden.'
   expected_update_interval_seconds: 86400
   freshness_warn_seconds: 108000
   freshness_stale_seconds: 172800
@@ -355,9 +356,10 @@
   definable_for: [ETH]
   golden: hand_computed/obv_base_volume.json
   response_model: okx_candle
-  required_bars: 5
+  required_bars: 200
   talib_function: OBV
   parameters:
+  note: 'OBV is cumulative and has no convergence point; 200 daily bars is a product window chosen to show sustained volume conviction over roughly six months, independent of the five-bar formula golden.'
   expected_update_interval_seconds: 86400
   freshness_warn_seconds: 108000
   freshness_stale_seconds: 172800
@@ -546,9 +548,10 @@
   definable_for: [SOL]
   golden: hand_computed/obv_base_volume.json
   response_model: okx_candle
-  required_bars: 5
+  required_bars: 200
   talib_function: OBV
   parameters:
+  note: 'OBV is cumulative and has no convergence point; 200 daily bars is a product window chosen to show sustained volume conviction over roughly six months, independent of the five-bar formula golden.'
   expected_update_interval_seconds: 86400
   freshness_warn_seconds: 108000
   freshness_stale_seconds: 172800
@@ -737,9 +740,10 @@
   definable_for: [BNB]
   golden: hand_computed/obv_base_volume.json
   response_model: okx_candle
-  required_bars: 5
+  required_bars: 200
   talib_function: OBV
   parameters:
+  note: 'OBV is cumulative and has no convergence point; 200 daily bars is a product window chosen to show sustained volume conviction over roughly six months, independent of the five-bar formula golden.'
   expected_update_interval_seconds: 86400
   freshness_warn_seconds: 108000
   freshness_stale_seconds: 172800
