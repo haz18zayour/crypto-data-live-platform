@@ -293,6 +293,7 @@ Spend to date: **$31.34** Claude · **107196k** Codex tokens.
 
 ## Handoff
 
+- 2026-09-12 — US-414 implementation and tests are in the worktree. Fast board/heartbeat evidence: 8 passed; Ruff and ingest mypy clean. Exact pytest gate: 166 passed, 10 live deselected, 16 fail-loud Postgres setup errors because this sandbox cannot reach the configured database. Real Postgres and live full-board tests are in tests/test_persist_board.py for external verification; do not mark complete from this handoff.
 - 2026-09-12 (session): **PRD-004 complete including two late defects the 8/8 green run
   missed.** Board is **45 entries**, 11–12 indicators per asset across BTC/ETH/SOL/BNB:
   RSI, EMA 20/50/200, ATR, Bollinger (3 bands), OBV, MACD, StochRSI, daily close.
