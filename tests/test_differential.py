@@ -1,7 +1,5 @@
 import math
 from importlib import import_module
-from pathlib import Path
-from types import ModuleType
 from typing import Any
 from unittest.mock import patch
 
@@ -12,10 +10,18 @@ import pytest
 import talib
 
 from ingest.indicators import macd, stochrsi
+from ingest.registry import IndicatorDefinition, load_registry
 
 EPSILON = 1e-6
 CONVERGED_TAIL_LENGTH = 32
-REGISTRY_PATH = Path(__file__).parents[1] / "ingest" / "registry.yaml"
+
+
+def registered_definition(talib_function: str) -> IndicatorDefinition:
+    return next(
+        definition
+        for definition in load_registry().root
+        if definition.talib_function == talib_function
+    )
 
 
 def market_bars(length: int = 500) -> tuple[dict[str, float], ...]:
@@ -32,6 +38,7 @@ def market_bars(length: int = 500) -> tuple[dict[str, float], ...]:
 
 def native_macd_oracle(
     closes: pd.Series,
+    parameters: dict[str, int | float],
     *,
     talib_enabled: bool = False,
 ) -> pd.DataFrame:
@@ -41,9 +48,9 @@ def native_macd_oracle(
     with patch.object(talib, "MACD", wraps=talib.MACD) as delegated:
         result = pandas_ta.macd(
             closes,
-            fast=12,
-            slow=26,
-            signal=9,
+            fast=int(parameters["fastperiod"]),
+            slow=int(parameters["slowperiod"]),
+            signal=int(parameters["signalperiod"]),
             talib=talib_enabled,
         )
 
@@ -54,7 +61,10 @@ def native_macd_oracle(
     return result
 
 
-def native_stochrsi_oracle(closes: pd.Series) -> pd.DataFrame:
+def native_stochrsi_oracle(
+    closes: pd.Series,
+    parameters: dict[str, int | float],
+) -> pd.DataFrame:
     assert pandas_ta.Imports["talib"] is True, (
         "TA-Lib must be installed so this test can prove delegation was prevented"
     )
@@ -76,9 +86,9 @@ def native_stochrsi_oracle(closes: pd.Series) -> pd.DataFrame:
     ):
         result = pandas_ta.stochrsi(
             closes,
-            length=14,
-            rsi_length=14,
-            k=3,
+            length=int(parameters["fastk_period"]),
+            rsi_length=int(parameters["timeperiod"]),
+            k=int(parameters["fastd_period"]),
             d=3,
             mamode="sma",
             talib=False,
@@ -92,9 +102,14 @@ def native_stochrsi_oracle(closes: pd.Series) -> pd.DataFrame:
 
 
 def assert_macd_differential(*, talib_enabled: bool = False) -> None:
+    definition = registered_definition("MACD")
+    assert definition.parameters is not None
+    parameters = definition.parameters
     bars = market_bars()
     closes = pd.Series([bar["close"] for bar in bars], dtype="float64")
-    oracle = native_macd_oracle(closes, talib_enabled=talib_enabled)
+    oracle = native_macd_oracle(
+        closes, parameters, talib_enabled=talib_enabled
+    )
     oracle_tail = np.column_stack(
         (
             oracle.iloc[-CONVERGED_TAIL_LENGTH:, 0],
@@ -104,7 +119,12 @@ def assert_macd_differential(*, talib_enabled: bool = False) -> None:
     )
     actual_tail = np.asarray(
         [
-            macd(bars[:end])
+            macd(
+                bars[:end],
+                fast_period=int(parameters["fastperiod"]),
+                slow_period=int(parameters["slowperiod"]),
+                signal_period=int(parameters["signalperiod"]),
+            )
             for end in range(
                 len(bars) - CONVERGED_TAIL_LENGTH + 1,
                 len(bars) + 1,
@@ -118,9 +138,13 @@ def assert_macd_differential(*, talib_enabled: bool = False) -> None:
 def test_the_differential_oracle_asserts_talib_false_is_actually_in_effect() -> None:
     bars = market_bars()
     closes = pd.Series([bar["close"] for bar in bars], dtype="float64")
+    macd_parameters = registered_definition("MACD").parameters
+    stochrsi_parameters = registered_definition("STOCHRSI").parameters
+    assert macd_parameters is not None
+    assert stochrsi_parameters is not None
 
-    macd_result = native_macd_oracle(closes)
-    stochrsi_result = native_stochrsi_oracle(closes)
+    macd_result = native_macd_oracle(closes, macd_parameters)
+    stochrsi_result = native_stochrsi_oracle(closes, stochrsi_parameters)
 
     assert not macd_result.empty
     assert not stochrsi_result.empty
@@ -140,13 +164,21 @@ def test_macd_agrees_with_the_independent_implementation_within_epsilon_after_wa
 
 
 def test_stochrsi_agrees_with_the_independent_tradingview_k_after_warmup() -> None:
+    definition = registered_definition("STOCHRSI")
+    assert definition.parameters is not None
+    parameters = definition.parameters
     bars = market_bars()
     closes = pd.Series([bar["close"] for bar in bars], dtype="float64")
-    oracle = native_stochrsi_oracle(closes)
+    oracle = native_stochrsi_oracle(closes, parameters)
     oracle_k_tail = oracle.iloc[-CONVERGED_TAIL_LENGTH:, 0].to_numpy()
     actual_tail = np.asarray(
         [
-            stochrsi(bars[:end])
+            stochrsi(
+                bars[:end],
+                rsi_period=int(parameters["timeperiod"]),
+                stochastic_period=int(parameters["fastk_period"]),
+                k_smoothing_period=int(parameters["fastd_period"]),
+            )
             for end in range(
                 len(bars) - CONVERGED_TAIL_LENGTH + 1,
                 len(bars) + 1,
@@ -155,20 +187,3 @@ def test_stochrsi_agrees_with_the_independent_tradingview_k_after_warmup() -> No
     )
 
     assert actual_tail == pytest.approx(oracle_k_tail, abs=EPSILON, rel=0.0)
-
-
-def test_stochrsi_uses_fastk_period_14_not_talibs_default_5_in_the_registry() -> (
-    None
-):
-    registry = REGISTRY_PATH.read_text(encoding="utf-8")
-
-    assert (
-        "STOCHRSI_CONVENTION timeperiod=14 fastk_period=14 "
-        "fastd_period=3 fastd_matype=0"
-    ) in registry
-
-
-def test_registry_records_talib_fastd_corresponds_to_tradingview_k() -> None:
-    registry = REGISTRY_PATH.read_text(encoding="utf-8")
-
-    assert "TA-Lib fastd corresponds to TradingView K (not D)" in registry

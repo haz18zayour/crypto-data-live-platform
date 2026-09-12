@@ -16,7 +16,9 @@ from ingest.schemas import OkxCandleResponse
 
 REQUEST_TIMEOUT_SECONDS = 10
 RESPONSE_MODELS: dict[str, type[BaseModel]] = {
-    "btc_daily_close": OkxCandleResponse
+    "btc_daily_close": OkxCandleResponse,
+    "btc_macd": OkxCandleResponse,
+    "btc_stochrsi": OkxCandleResponse,
 }
 
 
