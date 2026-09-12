@@ -1,0 +1,7 @@
+.uf/events.ndjson                    |  2 ++
+ ingest/registry.py                   |  1 +
+ ingest/registry.yaml                 | 34 +++++++++++++++++++++++++++
+ tests/test_lookback.py               |  2 +-
+ tests/test_macd_stochrsi_registry.py | 45 ++++++++++++++++++++++++++++++++++++
+ tests/test_registry.py               | 10 +++++---
+ 6 files changed, 90 insertions(+), 4 deletions(-)
