@@ -28,9 +28,9 @@ review the branch, then merge — or start the next PRD
 | PRD-001-spine | 8 | 8 | **all green** |
 | PRD-002-harness | 7 | 7 | **all green** |
 | PRD-003-corroboration | 7 | 7 | **all green** |
-| PRD-004-indicators | 8 | 9 | 9/8 |
+| PRD-004-indicators | 10 | 10 | **all green** |
 
-Spend to date: **$31.10** Claude · **106071k** Codex tokens.
+Spend to date: **$31.34** Claude · **107196k** Codex tokens.
 
 ## What happened
 
@@ -282,11 +282,29 @@ Spend to date: **$31.10** Claude · **106071k** Codex tokens.
 - 18:24  US-412 started, attempt 1 (codex)
 - 18:32  US-412 — codex finished `8a2bc500` · 2158k tok
 - 18:35  US-412 **PASSED** — 8/8 criteria, judged by claude · $0.68
+- 18:38  **PRD-004-indicators** compiled — 8 stories
+- 18:39  **PRD-004-indicators** compiled — 9 stories
+- 18:42  **PRD-004-indicators** compiled — 10 stories
+- 18:42  US-413 started, attempt 1 (codex)
+- 18:47  US-413 — codex finished `c5cd20a6` · 1126k tok
+- 18:49  US-413 **PASSED** — 6/6 criteria, judged by claude · $0.24
 
 <!-- uf:generated:end -->
 
 ## Handoff
 
+- 2026-09-12 (session): **PRD-004 complete including two late defects the 8/8 green run
+  missed.** Board is **45 entries**, 11–12 indicators per asset across BTC/ETH/SOL/BNB:
+  RSI, EMA 20/50/200, ATR, Bollinger (3 bands), OBV, MACD, StochRSI, daily close.
+  **EMA was named in the spec and never built** — `grep -c EMA registry.yaml` returned 0 while
+  every story passed, because registry coverage checks that registered indicators have
+  evidence and is blind to one nobody registered. **OBV shipped with `required_bars: 1`**
+  (cumulative indicator over one bar = that bar's volume), then 5 (its golden's length),
+  now **200 with the reasoning on the entry**. Both fixed as US-412/US-413.
+  Suite: **176 offline tests in 39s**; integration deselected by default after the full run
+  hit **4h03m** by throttling OKX/Coinbase. That inefficiency is mitigated, **not fixed** —
+  live tests still refetch rather than share a cached fixture. Owed work.
+  Next: **PRD-005, the dashboard**, against a board that is finally real.
 - 2026-09-12 (session): **PRD-004 complete, 8/8**, board at **33 indicators across BTC/ETH/SOL/BNB**.
   Strongest evidence in the project: RSI matches StockCharts' published spreadsheet across 19
   values to within **0.005**, and an EMA-smoothed variant misses by 6 points — so the test
