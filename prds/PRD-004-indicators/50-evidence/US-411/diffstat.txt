@@ -1,0 +1,9 @@
+.uf/events.ndjson               |   7 +
+ SESSION.md                      |   1 +
+ ingest/canary.py                |   4 +-
+ tests/goldens/btc_macd.json     | 771 ++++++++++++++++++++++++++++++++++++++++
+ tests/goldens/btc_stochrsi.json | 768 +++++++++++++++++++++++++++++++++++++++
+ tests/test_differential.py      | 100 ++++--
+ tests/test_goldens.py           |  19 +-
+ tests/test_macd_stochrsi.py     |  67 ++++
+ 8 files changed, 1698 insertions(+), 39 deletions(-)
