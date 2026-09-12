@@ -9,7 +9,7 @@ Do not hand-edit it — it is regenerated. The hand-written sections below it su
 
 ## ▶ Resume here
 
-**PRD-004-indicators — 5/9 stories passed**
+**PRD-004-indicators — 6/8 stories passed**
 
 Codex implements, a different vendor verifies read-only. It stops only for a blast-radius merge, a third failure, or a human criterion.
 
@@ -19,7 +19,7 @@ Owner: **`uf`.** Run the command; it drives the agents itself.
 uf run PRD-004-indicators
 ```
 
-**Last handoff note:** 2026-09-10 — US-405 implementation evidence is ready for external verification: TA-Lib Bollinger(20,2,SMA) matches the committed 1..20 population-stdev arithmetic; the sample-stdev control is rejected; OBV matches a five-step hand calculation including a positive-volume flat close and ignores conflicting quote volume; venue base-volume source_field text and the flat rule are pinned in the golden registry fixture. Named gate 5 passed; deterministic regressions 132 passed with 7 live integrations deselected; Ruff and strict mypy clean. Full suite reached 135 passed but blocked sockets caused 4 live failures and unavailable PostgreSQL caused 18 fail-loud fixture errors. Commit unavailable because .git is read-only.
+**Last handoff note:** 2026-09-12 — US-411 artifacts are present in recovered commits: 21 criterion-scoped tests pass, including parsed registry entries, corrected parameters, TA-Lib spy and delegation-bite controls, converged-tail differential checks, goldens, response models, and whole-registry coverage. Ruff and ingest mypy pass. The exact full-suite command reaches 147 passed but this sandbox blocks OKX/Coinbase sockets and PostgreSQL, producing 4 live failures and 18 fail-loud setup errors; do not weaken or skip those gates.
 
 ## Where this stands
 
@@ -28,9 +28,9 @@ uf run PRD-004-indicators
 | PRD-001-spine | 8 | 8 | **all green** |
 | PRD-002-harness | 7 | 7 | **all green** |
 | PRD-003-corroboration | 7 | 7 | **all green** |
-| PRD-004-indicators | 9 | 5 | 5/9 |
+| PRD-004-indicators | 8 | 6 | 6/8 |
 
-Spend to date: **$27.98** Claude · **92909k** Codex tokens.
+Spend to date: **$28.56** Claude · **96583k** Codex tokens.
 
 ## What happened
 
@@ -263,6 +263,15 @@ Spend to date: **$27.98** Claude · **92909k** Codex tokens.
 - 12:41  US-409 started, attempt 1 (codex)
 - 12:52  US-409 — codex finished `1eebc6e2` · 2299k tok
 - 12:53  US-409 **rejected** — 0/6 criteria, judged by claude
+- 12:57  **PRD-004-indicators** compiled — 8 stories
+- 13:04  US-411 started, attempt 1 (codex)
+- 13:12  US-411 failed — interrupted while running — the process stopped before a verdict
+- 13:12  US-411 started, attempt 1 (codex)
+- 13:13  US-411 failed — interrupted while running — the process stopped before a verdict
+- 13:13  US-411 started, attempt 1 (codex)
+- 13:19  US-411 — codex finished `00a148cb` · 2022k tok
+- 13:20  US-411 — codex finished `32d4eaea` · 1652k tok
+- 13:24  US-411 **PASSED** — 7/7 criteria, judged by claude · $0.58
 
 <!-- uf:generated:end -->
 
