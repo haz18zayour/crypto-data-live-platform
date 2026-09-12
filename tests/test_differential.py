@@ -4,8 +4,8 @@ from typing import Any
 from unittest.mock import patch
 
 import numpy as np
-import pandas as pd
-import pandas_ta_classic as pandas_ta
+import pandas as pd  # type: ignore[import-untyped]
+import pandas_ta_classic as pandas_ta  # type: ignore[import-untyped]
 import pytest
 import talib
 
@@ -64,6 +64,8 @@ def native_macd_oracle(
 def native_stochrsi_oracle(
     closes: pd.Series,
     parameters: dict[str, int | float],
+    *,
+    talib_enabled: bool = False,
 ) -> pd.DataFrame:
     assert pandas_ta.Imports["talib"] is True, (
         "TA-Lib must be installed so this test can prove delegation was prevented"
@@ -91,7 +93,7 @@ def native_stochrsi_oracle(
             k=int(parameters["fastd_period"]),
             d=3,
             mamode="sma",
-            talib=False,
+            talib=talib_enabled,
         )
 
     assert delegated_stochrsi.call_count == delegated_rsi.call_count == 0, (
@@ -153,8 +155,19 @@ def test_the_differential_oracle_asserts_talib_false_is_actually_in_effect() -> 
 def test_forcing_the_oracle_to_delegate_to_talib_makes_the_differential_fail() -> (
     None
 ):
+    bars = market_bars()
+    closes = pd.Series([bar["close"] for bar in bars], dtype="float64")
+    stochrsi_parameters = registered_definition("STOCHRSI").parameters
+    assert stochrsi_parameters is not None
+
     with pytest.raises(AssertionError, match="oracle delegated to TA-Lib"):
         assert_macd_differential(talib_enabled=True)
+    with pytest.raises(AssertionError, match="oracle delegated to TA-Lib"):
+        native_stochrsi_oracle(
+            closes,
+            stochrsi_parameters,
+            talib_enabled=True,
+        )
 
 
 def test_macd_agrees_with_the_independent_implementation_within_epsilon_after_warmup() -> (
