@@ -30,7 +30,7 @@ uf run PRD-004-indicators
 | PRD-003-corroboration | 7 | 7 | **all green** |
 | PRD-004-indicators | 8 | 5 | 5/8 |
 
-Spend to date: **$27.94** Claude · **90609k** Codex tokens.
+Spend to date: **$27.98** Claude · **90609k** Codex tokens.
 
 ## What happened
 
@@ -250,6 +250,10 @@ Spend to date: **$27.94** Claude · **90609k** Codex tokens.
 - 13:42  US-406 started, attempt 2 (codex)
 - 13:42  US-406 — codex finished `2b6d0a49`
 - 13:44  US-406 **rejected** — 5/6 criteria, judged by claude · $0.50
+- 13:45  US-406 started, attempt 3 (codex)
+- 13:45  US-406 — codex finished `130c8f87`
+- 13:46  **PRD-004-indicators** compiled — 8 stories
+- 13:46  US-406 **rejected** — 0/6 criteria, judged by claude · $0.04
 
 <!-- uf:generated:end -->
 

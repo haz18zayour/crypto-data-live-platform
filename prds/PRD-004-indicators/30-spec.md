@@ -64,6 +64,7 @@ worked example — not against our own output.
 | US-403 | Historical bars fetched to depth, truncation and gaps still fatal | — |
 | US-404 | RSI and ATR pinned to published worked examples | US-401, US-403 |
 | US-405 | Bollinger and OBV, population stdev, hand-computed goldens | US-401 |
-| US-406 | MACD and StochRSI via a differential oracle that cannot be a tautology | US-401 |
-| US-407 | The registry carries ~32 entries and coverage still holds | US-404, US-405, US-406 |
+| US-409 | Register MACD and StochRSI with corrected parameters (replaces US-406) | US-401 |
+| US-410 | A differential oracle that cannot be a tautology | US-409 |
+| US-407 | The registry carries ~32 entries and coverage still holds | US-404, US-405, US-410 |
 | US-408 | Four assets, with per-venue history availability declared | US-407 |
