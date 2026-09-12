@@ -69,3 +69,4 @@ worked example — not against our own output.
 | US-408 | Four assets, with per-venue history availability declared | US-407 |
 | US-412 | The missing EMA stack, and OBV window | US-407 |
 | US-413 | OBV needs a window chosen for the board, not for the test | US-412 |
+| US-414 | Persist the computed board — 44 indicators reach the database | US-413 |

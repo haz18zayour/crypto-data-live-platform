@@ -9,17 +9,21 @@ Do not hand-edit it — it is regenerated. The hand-written sections below it su
 
 ## ▶ Resume here
 
-**Every PRD is green**
+**2 uncommitted file(s) — the runner will not start**
 
-Nothing is outstanding. Merge and ship, or add the next PRD from the roadmap.
+A previous session edited source and did not commit. uf refuses to run on a dirty tree rather than auto-committing someone else's half-finished work.
 
 Owner: **You.** This one cannot be delegated.
 
 ```
-review the branch, then merge — or start the next PRD
+review the diff, then: git add -A && git commit
 ```
 
-**Last handoff note:** 2026-09-12 (session): **PRD-004 complete, 8/8**, board at **33 indicators across BTC/ETH/SOL/BNB**.
+**Left in flight by the previous session:**
+
+- 2 uncommitted file(s): prds/PRD-004-indicators/30-spec.md, prds/PRD-004-indicators/40-stories/US-414-persist-the-board.md
+
+**Last handoff note:** 2026-09-12 (session): **PRD-004 complete including two late defects the 8/8 green run
 
 ## Where this stands
 
@@ -28,7 +32,7 @@ review the branch, then merge — or start the next PRD
 | PRD-001-spine | 8 | 8 | **all green** |
 | PRD-002-harness | 7 | 7 | **all green** |
 | PRD-003-corroboration | 7 | 7 | **all green** |
-| PRD-004-indicators | 10 | 10 | **all green** |
+| PRD-004-indicators | 11 | 10 | 10/11 |
 
 Spend to date: **$31.34** Claude · **107196k** Codex tokens.
 
@@ -288,11 +292,20 @@ Spend to date: **$31.34** Claude · **107196k** Codex tokens.
 - 18:42  US-413 started, attempt 1 (codex)
 - 18:47  US-413 — codex finished `c5cd20a6` · 1126k tok
 - 18:49  US-413 **PASSED** — 6/6 criteria, judged by claude · $0.24
+- 20:20  **PRD-004-indicators** compiled — 11 stories
 
 <!-- uf:generated:end -->
 
 ## Handoff
 
+- 2026-09-12 (session): **The board computes but does not persist.** `run_all_assets()`
+  produces **44 indicators in 49s, all OK** against live venues — BTC RSI 54.89, EMA
+  20/50/200 stacked in trend order, Bollinger straddling the middle band — then discards
+  them, because its signature takes **no connection**. The scheduled job calls
+  `run_pipeline(connection, fetcher)`, which persists exactly one indicator. The database
+  holds **5 rows across 1 distinct indicator**, so localhost still shows only the BTC daily
+  close. US-414 closes this. A criterion gap, not an implementation failure: US-408 asked
+  that a run *computes* the indicators and it does — nobody asked for persistence.
 - 2026-09-12 (session): **PRD-004 complete including two late defects the 8/8 green run
   missed.** Board is **45 entries**, 11–12 indicators per asset across BTC/ETH/SOL/BNB:
   RSI, EMA 20/50/200, ATR, Bollinger (3 bands), OBV, MACD, StochRSI, daily close.
