@@ -24,7 +24,7 @@
   },
   "expected_outputs": [100.0, 300.0, 300.0, -100.0, 400.0],
   "registry": {
-    "required_bars": 1,
+    "required_bars": 5,
     "parameters": {},
     "source_fields": {
       "okx": "candle[4] (close) and candle[5] (vol, base-currency quantity for SPOT); never candle[6]/candle[7] quote volume",

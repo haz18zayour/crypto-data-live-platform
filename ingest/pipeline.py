@@ -14,7 +14,7 @@ import psycopg
 from ingest.compute import compute_indicator
 from ingest.fetchers import coinbase, okx
 from ingest.fetchers.okx import INDICATOR_KEY, MEASURED_ON, fetch_btc_daily_close
-from ingest.indicators import atr, bollinger_bands, macd, obv, rsi, stochrsi
+from ingest.indicators import atr, bollinger_bands, ema, macd, obv, rsi, stochrsi
 from ingest.persist import persist_datapoint
 from ingest.registry import IndicatorDefinition, load_registry
 from ingest.status import Error, Ok, Reason, Result, Unavailable
@@ -205,6 +205,8 @@ def _calculate(definition: IndicatorDefinition, bars: Sequence[Bar]) -> float:
     parameters = definition.parameters or {}
     if definition.talib_function == "RSI":
         return rsi(bars, period=int(parameters["timeperiod"]))
+    if definition.talib_function == "EMA":
+        return ema(bars, period=int(parameters["timeperiod"]))
     if definition.talib_function == "ATR":
         return atr(bars, period=int(parameters["timeperiod"]))
     if definition.talib_function == "BBANDS":
