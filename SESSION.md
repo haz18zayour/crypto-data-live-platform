@@ -9,21 +9,17 @@ Do not hand-edit it — it is regenerated. The hand-written sections below it su
 
 ## ▶ Resume here
 
-**2 uncommitted file(s) — the runner will not start**
+**Every PRD is green**
 
-A previous session edited source and did not commit. uf refuses to run on a dirty tree rather than auto-committing someone else's half-finished work.
+Nothing is outstanding. Merge and ship, or add the next PRD from the roadmap.
 
 Owner: **You.** This one cannot be delegated.
 
 ```
-review the diff, then: git add -A && git commit
+review the branch, then merge — or start the next PRD
 ```
 
-**Left in flight by the previous session:**
-
-- 2 uncommitted file(s): .github/workflows/uf-verify.yml, pyproject.toml
-
-**Last handoff note:** 2026-09-12 — US-408 implementation evidence is ready for external verification: registry notes declare dated history for all 8 asset/venue pairs, including Coinbase BNB=317 on 2026-09-10; tests/test_assets.py proves the 249-vs-250 uncorroborated path, 317-vs-250 margin, all 32 technical cells, pair routing, and a fail-loud live four-asset run. Scoped regressions: 91 passed with 5 live tests deselected; Ruff and mypy clean. Exact full suite: 156 passed, with this sandbox's known socket restriction causing 5 live failures and unavailable PostgreSQL causing 18 fail-loud setup errors.
+**Last handoff note:** 2026-09-12 (session): **PRD-004 complete, 8/8**, board at **33 indicators across BTC/ETH/SOL/BNB**.
 
 ## Where this stands
 
@@ -32,9 +28,9 @@ review the diff, then: git add -A && git commit
 | PRD-001-spine | 8 | 8 | **all green** |
 | PRD-002-harness | 7 | 7 | **all green** |
 | PRD-003-corroboration | 7 | 7 | **all green** |
-| PRD-004-indicators | 8 | 8 | **all green** |
+| PRD-004-indicators | 8 | 9 | 9/8 |
 
-Spend to date: **$30.42** Claude · **103913k** Codex tokens.
+Spend to date: **$31.10** Claude · **106071k** Codex tokens.
 
 ## What happened
 
@@ -283,6 +279,9 @@ Spend to date: **$30.42** Claude · **103913k** Codex tokens.
 - 13:47  US-408 started, attempt 1 (codex)
 - 14:02  US-408 — codex finished `12647e80` · 2881k tok
 - 14:06  US-408 **PASSED** — 6/6 criteria, judged by claude · $0.56
+- 18:24  US-412 started, attempt 1 (codex)
+- 18:32  US-412 — codex finished `8a2bc500` · 2158k tok
+- 18:35  US-412 **PASSED** — 8/8 criteria, judged by claude · $0.68
 
 <!-- uf:generated:end -->
 
