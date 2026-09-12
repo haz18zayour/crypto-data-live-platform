@@ -54,6 +54,8 @@ class IndicatorDefinition(BaseModel):
     endpoint: NonEmptyString
     source_field: NonEmptyString
     definable_for: tuple[NonEmptyString, ...] = Field(min_length=1)
+    golden: NonEmptyString | None = None
+    response_model: NonEmptyString | None = None
     required_bars: PositiveInt | None = None
     talib_function: NonEmptyString | None = None
     parameters: dict[NonEmptyString, int | float] | None = None
@@ -76,8 +78,10 @@ class IndicatorDefinition(BaseModel):
     @model_validator(mode="after")
     def require_more_bars_than_talib_lookback(self) -> IndicatorDefinition:
         if self.talib_function is None:
-            if self.parameters is not None:
-                raise ValueError("parameters require a talib_function")
+            if self.parameters not in (None, {}):
+                raise ValueError(
+                    "parameters without a talib_function must be an empty mapping"
+                )
             return self
         if self.parameters is None:
             raise ValueError(f"{self.key} is missing TA-Lib parameters")
@@ -154,7 +158,10 @@ def _parse_value(value: str) -> object:
     try:
         return int(value)
     except ValueError:
-        return value
+        try:
+            return float(value)
+        except ValueError:
+            return value
 
 
 def _parse_yaml(contents: str) -> list[dict[str, Any]]:
@@ -235,12 +242,14 @@ def assert_registry_coverage(
             failures.append(
                 f"{entry.key} is missing exactly one corroboration declaration"
             )
-        if entry.key not in golden_keys:
+        if entry.golden is None or entry.golden not in golden_keys:
             failures.append(f"{entry.key} is missing a golden file")
         if entry.required_bars is None:
             failures.append(f"{entry.key} is missing required_bars")
-        if entry.key not in response_models:
-            failures.append(f"{entry.vendor} has no response model for {entry.key}")
+        if entry.response_model is None or entry.key not in response_models:
+            failures.append(f"{entry.key} is missing a response model")
+        if entry.parameters is None:
+            failures.append(f"{entry.key} is missing parameters")
 
     if failures:
         raise AssertionError("; ".join(failures))

@@ -91,12 +91,14 @@ def test_definable_for_requires_a_nonempty_asset_list(
         load_registry(registry_path)
 
 
-def test_shipped_registry_definitions_are_for_btc() -> None:
+def test_shipped_registry_definitions_cover_four_assets_at_scale() -> None:
     registry = load_registry()
 
-    assert [entry.key for entry in registry.root] == [
-        "btc_daily_close",
-        "btc_macd",
-        "btc_stochrsi",
-    ]
-    assert all(entry.definable_for == ("BTC",) for entry in registry.root)
+    assert len(registry.root) == 33
+    assert {asset for entry in registry.root for asset in entry.definable_for} == {
+        "BTC",
+        "ETH",
+        "SOL",
+        "BNB",
+    }
+    assert all(len(entry.definable_for) == 1 for entry in registry.root)

@@ -1,16 +1,17 @@
-# Every entry declares either corroboration or uncorroborated.note. For consolidated
-# single-source metrics such as Coin Metrics MVRV, the note must say that source-level
-# disagreement was resolved upstream and no dispersion is published.
-# TA-Lib-backed entries also declare talib_function and parameters. Validation reads that
-# exact parameter set when checking required_bars against TA-Lib's own lookback.
-# STOCHRSI_CONVENTION timeperiod=14 fastk_period=14 fastd_period=3 fastd_matype=0
-# STOCHRSI_OUTPUT TA-Lib fastd corresponds to TradingView K (not D).
+# Every row names its reusable golden and response model. Coverage resolves both
+# declarations from the real files and runtime model mapping; neither is a parallel
+# hand-maintained list of indicator keys.
+# TA-Lib-backed entries declare the complete parameter set used for lookback validation.
+# The 32 technical rows are the eight already-verified outputs for each of four assets.
 - key: btc_daily_close
   vendor: okx
   endpoint: https://www.okx.com/api/v5/market/candles?instId=BTC-USDT&bar=1Dutc
   source_field: 'okx candle[4] (close), where candle[8] == "1"; coinbase.close after mapping [time, low, high, open, close, volume] by venue; both use a 00:00 UTC boundary'
   definable_for: [BTC]
+  golden: btc_daily_close.json
+  response_model: okx_candle
   required_bars: 1
+  parameters:
   expected_update_interval_seconds: 86400
   freshness_warn_seconds: 108000
   freshness_stale_seconds: 172800
@@ -18,11 +19,117 @@
     venue: coinbase
     pair: BTC-USD
     tolerance_bps: 25
+- key: btc_rsi
+  vendor: okx
+  endpoint: https://www.okx.com/api/v5/market/candles?instId=BTC-USDT&bar=1Dutc
+  source_field: 'TA-Lib RSI from closed okx candle[4] values where candle[8] == "1"'
+  definable_for: [BTC]
+  golden: published/stockcharts_rsi_14.json
+  response_model: okx_candle
+  required_bars: 250
+  talib_function: RSI
+  parameters:
+    timeperiod: 14
+  expected_update_interval_seconds: 86400
+  freshness_warn_seconds: 108000
+  freshness_stale_seconds: 172800
+  uncorroborated:
+    note: The derived output is not cross-venue corroborated; its OKX input bars are corroborated against Coinbase.
+- key: btc_atr
+  vendor: okx
+  endpoint: https://www.okx.com/api/v5/market/candles?instId=BTC-USDT&bar=1Dutc
+  source_field: 'TA-Lib ATR from closed okx candle[2] high, candle[3] low, and candle[4] close values where candle[8] == "1"'
+  definable_for: [BTC]
+  golden: published/stockcharts_atr_14.json
+  response_model: okx_candle
+  required_bars: 250
+  talib_function: ATR
+  parameters:
+    timeperiod: 14
+  expected_update_interval_seconds: 86400
+  freshness_warn_seconds: 108000
+  freshness_stale_seconds: 172800
+  uncorroborated:
+    note: The derived output is not cross-venue corroborated; its OKX input bars are corroborated against Coinbase.
+- key: btc_bollinger_upper
+  vendor: okx
+  endpoint: https://www.okx.com/api/v5/market/candles?instId=BTC-USDT&bar=1Dutc
+  source_field: 'TA-Lib BBANDS upper output from closed okx candle[4] values where candle[8] == "1"'
+  definable_for: [BTC]
+  golden: hand_computed/bollinger_20_2_population.json
+  response_model: okx_candle
+  required_bars: 20
+  talib_function: BBANDS
+  parameters:
+    timeperiod: 20
+    nbdevup: 2.0
+    nbdevdn: 2.0
+    matype: 0
+  expected_update_interval_seconds: 86400
+  freshness_warn_seconds: 108000
+  freshness_stale_seconds: 172800
+  uncorroborated:
+    note: The derived output is not cross-venue corroborated; its OKX input bars are corroborated against Coinbase.
+- key: btc_bollinger_middle
+  vendor: okx
+  endpoint: https://www.okx.com/api/v5/market/candles?instId=BTC-USDT&bar=1Dutc
+  source_field: 'TA-Lib BBANDS middle output from closed okx candle[4] values where candle[8] == "1"'
+  definable_for: [BTC]
+  golden: hand_computed/bollinger_20_2_population.json
+  response_model: okx_candle
+  required_bars: 20
+  talib_function: BBANDS
+  parameters:
+    timeperiod: 20
+    nbdevup: 2.0
+    nbdevdn: 2.0
+    matype: 0
+  expected_update_interval_seconds: 86400
+  freshness_warn_seconds: 108000
+  freshness_stale_seconds: 172800
+  uncorroborated:
+    note: The derived output is not cross-venue corroborated; its OKX input bars are corroborated against Coinbase.
+- key: btc_bollinger_lower
+  vendor: okx
+  endpoint: https://www.okx.com/api/v5/market/candles?instId=BTC-USDT&bar=1Dutc
+  source_field: 'TA-Lib BBANDS lower output from closed okx candle[4] values where candle[8] == "1"'
+  definable_for: [BTC]
+  golden: hand_computed/bollinger_20_2_population.json
+  response_model: okx_candle
+  required_bars: 20
+  talib_function: BBANDS
+  parameters:
+    timeperiod: 20
+    nbdevup: 2.0
+    nbdevdn: 2.0
+    matype: 0
+  expected_update_interval_seconds: 86400
+  freshness_warn_seconds: 108000
+  freshness_stale_seconds: 172800
+  uncorroborated:
+    note: The derived output is not cross-venue corroborated; its OKX input bars are corroborated against Coinbase.
+- key: btc_obv
+  vendor: okx
+  endpoint: https://www.okx.com/api/v5/market/candles?instId=BTC-USDT&bar=1Dutc
+  source_field: 'TA-Lib OBV from closed okx candle[4] close and candle[5] base volume where candle[8] == "1"'
+  definable_for: [BTC]
+  golden: hand_computed/obv_base_volume.json
+  response_model: okx_candle
+  required_bars: 1
+  talib_function: OBV
+  parameters:
+  expected_update_interval_seconds: 86400
+  freshness_warn_seconds: 108000
+  freshness_stale_seconds: 172800
+  uncorroborated:
+    note: The derived output is not cross-venue corroborated; its OKX input bars are corroborated against Coinbase.
 - key: btc_macd
   vendor: okx
   endpoint: https://www.okx.com/api/v5/market/candles?instId=BTC-USDT&bar=1Dutc
   source_field: 'TA-Lib MACD outputs from closed okx candle[4] values where candle[8] == "1"'
   definable_for: [BTC]
+  golden: btc_macd.json
+  response_model: okx_candle
   required_bars: 250
   talib_function: MACD
   parameters:
@@ -39,6 +146,434 @@
   endpoint: https://www.okx.com/api/v5/market/candles?instId=BTC-USDT&bar=1Dutc
   source_field: 'TA-Lib STOCHRSI fastd from closed okx candle[4] values where candle[8] == "1"'
   definable_for: [BTC]
+  golden: btc_stochrsi.json
+  response_model: okx_candle
+  required_bars: 250
+  talib_function: STOCHRSI
+  parameters:
+    timeperiod: 14
+    fastk_period: 14
+    fastd_period: 3
+    fastd_matype: 0
+  note: TA-Lib fastd corresponds to TradingView K (not D).
+  expected_update_interval_seconds: 86400
+  freshness_warn_seconds: 108000
+  freshness_stale_seconds: 172800
+  uncorroborated:
+    note: The derived output is not cross-venue corroborated; its OKX input bars are corroborated against Coinbase.
+- key: eth_rsi
+  vendor: okx
+  endpoint: https://www.okx.com/api/v5/market/candles?instId=ETH-USDT&bar=1Dutc
+  source_field: 'TA-Lib RSI from closed okx candle[4] values where candle[8] == "1"'
+  definable_for: [ETH]
+  golden: published/stockcharts_rsi_14.json
+  response_model: okx_candle
+  required_bars: 250
+  talib_function: RSI
+  parameters:
+    timeperiod: 14
+  expected_update_interval_seconds: 86400
+  freshness_warn_seconds: 108000
+  freshness_stale_seconds: 172800
+  uncorroborated:
+    note: The derived output is not cross-venue corroborated; its OKX input bars are corroborated against Coinbase.
+- key: eth_atr
+  vendor: okx
+  endpoint: https://www.okx.com/api/v5/market/candles?instId=ETH-USDT&bar=1Dutc
+  source_field: 'TA-Lib ATR from closed okx candle[2] high, candle[3] low, and candle[4] close values where candle[8] == "1"'
+  definable_for: [ETH]
+  golden: published/stockcharts_atr_14.json
+  response_model: okx_candle
+  required_bars: 250
+  talib_function: ATR
+  parameters:
+    timeperiod: 14
+  expected_update_interval_seconds: 86400
+  freshness_warn_seconds: 108000
+  freshness_stale_seconds: 172800
+  uncorroborated:
+    note: The derived output is not cross-venue corroborated; its OKX input bars are corroborated against Coinbase.
+- key: eth_bollinger_upper
+  vendor: okx
+  endpoint: https://www.okx.com/api/v5/market/candles?instId=ETH-USDT&bar=1Dutc
+  source_field: 'TA-Lib BBANDS upper output from closed okx candle[4] values where candle[8] == "1"'
+  definable_for: [ETH]
+  golden: hand_computed/bollinger_20_2_population.json
+  response_model: okx_candle
+  required_bars: 20
+  talib_function: BBANDS
+  parameters:
+    timeperiod: 20
+    nbdevup: 2.0
+    nbdevdn: 2.0
+    matype: 0
+  expected_update_interval_seconds: 86400
+  freshness_warn_seconds: 108000
+  freshness_stale_seconds: 172800
+  uncorroborated:
+    note: The derived output is not cross-venue corroborated; its OKX input bars are corroborated against Coinbase.
+- key: eth_bollinger_middle
+  vendor: okx
+  endpoint: https://www.okx.com/api/v5/market/candles?instId=ETH-USDT&bar=1Dutc
+  source_field: 'TA-Lib BBANDS middle output from closed okx candle[4] values where candle[8] == "1"'
+  definable_for: [ETH]
+  golden: hand_computed/bollinger_20_2_population.json
+  response_model: okx_candle
+  required_bars: 20
+  talib_function: BBANDS
+  parameters:
+    timeperiod: 20
+    nbdevup: 2.0
+    nbdevdn: 2.0
+    matype: 0
+  expected_update_interval_seconds: 86400
+  freshness_warn_seconds: 108000
+  freshness_stale_seconds: 172800
+  uncorroborated:
+    note: The derived output is not cross-venue corroborated; its OKX input bars are corroborated against Coinbase.
+- key: eth_bollinger_lower
+  vendor: okx
+  endpoint: https://www.okx.com/api/v5/market/candles?instId=ETH-USDT&bar=1Dutc
+  source_field: 'TA-Lib BBANDS lower output from closed okx candle[4] values where candle[8] == "1"'
+  definable_for: [ETH]
+  golden: hand_computed/bollinger_20_2_population.json
+  response_model: okx_candle
+  required_bars: 20
+  talib_function: BBANDS
+  parameters:
+    timeperiod: 20
+    nbdevup: 2.0
+    nbdevdn: 2.0
+    matype: 0
+  expected_update_interval_seconds: 86400
+  freshness_warn_seconds: 108000
+  freshness_stale_seconds: 172800
+  uncorroborated:
+    note: The derived output is not cross-venue corroborated; its OKX input bars are corroborated against Coinbase.
+- key: eth_obv
+  vendor: okx
+  endpoint: https://www.okx.com/api/v5/market/candles?instId=ETH-USDT&bar=1Dutc
+  source_field: 'TA-Lib OBV from closed okx candle[4] close and candle[5] base volume where candle[8] == "1"'
+  definable_for: [ETH]
+  golden: hand_computed/obv_base_volume.json
+  response_model: okx_candle
+  required_bars: 1
+  talib_function: OBV
+  parameters:
+  expected_update_interval_seconds: 86400
+  freshness_warn_seconds: 108000
+  freshness_stale_seconds: 172800
+  uncorroborated:
+    note: The derived output is not cross-venue corroborated; its OKX input bars are corroborated against Coinbase.
+- key: eth_macd
+  vendor: okx
+  endpoint: https://www.okx.com/api/v5/market/candles?instId=ETH-USDT&bar=1Dutc
+  source_field: 'TA-Lib MACD outputs from closed okx candle[4] values where candle[8] == "1"'
+  definable_for: [ETH]
+  golden: btc_macd.json
+  response_model: okx_candle
+  required_bars: 250
+  talib_function: MACD
+  parameters:
+    fastperiod: 12
+    slowperiod: 26
+    signalperiod: 9
+  expected_update_interval_seconds: 86400
+  freshness_warn_seconds: 108000
+  freshness_stale_seconds: 172800
+  uncorroborated:
+    note: The derived output is not cross-venue corroborated; its OKX input bars are corroborated against Coinbase.
+- key: eth_stochrsi
+  vendor: okx
+  endpoint: https://www.okx.com/api/v5/market/candles?instId=ETH-USDT&bar=1Dutc
+  source_field: 'TA-Lib STOCHRSI fastd from closed okx candle[4] values where candle[8] == "1"'
+  definable_for: [ETH]
+  golden: btc_stochrsi.json
+  response_model: okx_candle
+  required_bars: 250
+  talib_function: STOCHRSI
+  parameters:
+    timeperiod: 14
+    fastk_period: 14
+    fastd_period: 3
+    fastd_matype: 0
+  note: TA-Lib fastd corresponds to TradingView K (not D).
+  expected_update_interval_seconds: 86400
+  freshness_warn_seconds: 108000
+  freshness_stale_seconds: 172800
+  uncorroborated:
+    note: The derived output is not cross-venue corroborated; its OKX input bars are corroborated against Coinbase.
+- key: sol_rsi
+  vendor: okx
+  endpoint: https://www.okx.com/api/v5/market/candles?instId=SOL-USDT&bar=1Dutc
+  source_field: 'TA-Lib RSI from closed okx candle[4] values where candle[8] == "1"'
+  definable_for: [SOL]
+  golden: published/stockcharts_rsi_14.json
+  response_model: okx_candle
+  required_bars: 250
+  talib_function: RSI
+  parameters:
+    timeperiod: 14
+  expected_update_interval_seconds: 86400
+  freshness_warn_seconds: 108000
+  freshness_stale_seconds: 172800
+  uncorroborated:
+    note: The derived output is not cross-venue corroborated; its OKX input bars are corroborated against Coinbase.
+- key: sol_atr
+  vendor: okx
+  endpoint: https://www.okx.com/api/v5/market/candles?instId=SOL-USDT&bar=1Dutc
+  source_field: 'TA-Lib ATR from closed okx candle[2] high, candle[3] low, and candle[4] close values where candle[8] == "1"'
+  definable_for: [SOL]
+  golden: published/stockcharts_atr_14.json
+  response_model: okx_candle
+  required_bars: 250
+  talib_function: ATR
+  parameters:
+    timeperiod: 14
+  expected_update_interval_seconds: 86400
+  freshness_warn_seconds: 108000
+  freshness_stale_seconds: 172800
+  uncorroborated:
+    note: The derived output is not cross-venue corroborated; its OKX input bars are corroborated against Coinbase.
+- key: sol_bollinger_upper
+  vendor: okx
+  endpoint: https://www.okx.com/api/v5/market/candles?instId=SOL-USDT&bar=1Dutc
+  source_field: 'TA-Lib BBANDS upper output from closed okx candle[4] values where candle[8] == "1"'
+  definable_for: [SOL]
+  golden: hand_computed/bollinger_20_2_population.json
+  response_model: okx_candle
+  required_bars: 20
+  talib_function: BBANDS
+  parameters:
+    timeperiod: 20
+    nbdevup: 2.0
+    nbdevdn: 2.0
+    matype: 0
+  expected_update_interval_seconds: 86400
+  freshness_warn_seconds: 108000
+  freshness_stale_seconds: 172800
+  uncorroborated:
+    note: The derived output is not cross-venue corroborated; its OKX input bars are corroborated against Coinbase.
+- key: sol_bollinger_middle
+  vendor: okx
+  endpoint: https://www.okx.com/api/v5/market/candles?instId=SOL-USDT&bar=1Dutc
+  source_field: 'TA-Lib BBANDS middle output from closed okx candle[4] values where candle[8] == "1"'
+  definable_for: [SOL]
+  golden: hand_computed/bollinger_20_2_population.json
+  response_model: okx_candle
+  required_bars: 20
+  talib_function: BBANDS
+  parameters:
+    timeperiod: 20
+    nbdevup: 2.0
+    nbdevdn: 2.0
+    matype: 0
+  expected_update_interval_seconds: 86400
+  freshness_warn_seconds: 108000
+  freshness_stale_seconds: 172800
+  uncorroborated:
+    note: The derived output is not cross-venue corroborated; its OKX input bars are corroborated against Coinbase.
+- key: sol_bollinger_lower
+  vendor: okx
+  endpoint: https://www.okx.com/api/v5/market/candles?instId=SOL-USDT&bar=1Dutc
+  source_field: 'TA-Lib BBANDS lower output from closed okx candle[4] values where candle[8] == "1"'
+  definable_for: [SOL]
+  golden: hand_computed/bollinger_20_2_population.json
+  response_model: okx_candle
+  required_bars: 20
+  talib_function: BBANDS
+  parameters:
+    timeperiod: 20
+    nbdevup: 2.0
+    nbdevdn: 2.0
+    matype: 0
+  expected_update_interval_seconds: 86400
+  freshness_warn_seconds: 108000
+  freshness_stale_seconds: 172800
+  uncorroborated:
+    note: The derived output is not cross-venue corroborated; its OKX input bars are corroborated against Coinbase.
+- key: sol_obv
+  vendor: okx
+  endpoint: https://www.okx.com/api/v5/market/candles?instId=SOL-USDT&bar=1Dutc
+  source_field: 'TA-Lib OBV from closed okx candle[4] close and candle[5] base volume where candle[8] == "1"'
+  definable_for: [SOL]
+  golden: hand_computed/obv_base_volume.json
+  response_model: okx_candle
+  required_bars: 1
+  talib_function: OBV
+  parameters:
+  expected_update_interval_seconds: 86400
+  freshness_warn_seconds: 108000
+  freshness_stale_seconds: 172800
+  uncorroborated:
+    note: The derived output is not cross-venue corroborated; its OKX input bars are corroborated against Coinbase.
+- key: sol_macd
+  vendor: okx
+  endpoint: https://www.okx.com/api/v5/market/candles?instId=SOL-USDT&bar=1Dutc
+  source_field: 'TA-Lib MACD outputs from closed okx candle[4] values where candle[8] == "1"'
+  definable_for: [SOL]
+  golden: btc_macd.json
+  response_model: okx_candle
+  required_bars: 250
+  talib_function: MACD
+  parameters:
+    fastperiod: 12
+    slowperiod: 26
+    signalperiod: 9
+  expected_update_interval_seconds: 86400
+  freshness_warn_seconds: 108000
+  freshness_stale_seconds: 172800
+  uncorroborated:
+    note: The derived output is not cross-venue corroborated; its OKX input bars are corroborated against Coinbase.
+- key: sol_stochrsi
+  vendor: okx
+  endpoint: https://www.okx.com/api/v5/market/candles?instId=SOL-USDT&bar=1Dutc
+  source_field: 'TA-Lib STOCHRSI fastd from closed okx candle[4] values where candle[8] == "1"'
+  definable_for: [SOL]
+  golden: btc_stochrsi.json
+  response_model: okx_candle
+  required_bars: 250
+  talib_function: STOCHRSI
+  parameters:
+    timeperiod: 14
+    fastk_period: 14
+    fastd_period: 3
+    fastd_matype: 0
+  note: TA-Lib fastd corresponds to TradingView K (not D).
+  expected_update_interval_seconds: 86400
+  freshness_warn_seconds: 108000
+  freshness_stale_seconds: 172800
+  uncorroborated:
+    note: The derived output is not cross-venue corroborated; its OKX input bars are corroborated against Coinbase.
+- key: bnb_rsi
+  vendor: okx
+  endpoint: https://www.okx.com/api/v5/market/candles?instId=BNB-USDT&bar=1Dutc
+  source_field: 'TA-Lib RSI from closed okx candle[4] values where candle[8] == "1"'
+  definable_for: [BNB]
+  golden: published/stockcharts_rsi_14.json
+  response_model: okx_candle
+  required_bars: 250
+  talib_function: RSI
+  parameters:
+    timeperiod: 14
+  expected_update_interval_seconds: 86400
+  freshness_warn_seconds: 108000
+  freshness_stale_seconds: 172800
+  uncorroborated:
+    note: The derived output is not cross-venue corroborated; its OKX input bars are corroborated against Coinbase.
+- key: bnb_atr
+  vendor: okx
+  endpoint: https://www.okx.com/api/v5/market/candles?instId=BNB-USDT&bar=1Dutc
+  source_field: 'TA-Lib ATR from closed okx candle[2] high, candle[3] low, and candle[4] close values where candle[8] == "1"'
+  definable_for: [BNB]
+  golden: published/stockcharts_atr_14.json
+  response_model: okx_candle
+  required_bars: 250
+  talib_function: ATR
+  parameters:
+    timeperiod: 14
+  expected_update_interval_seconds: 86400
+  freshness_warn_seconds: 108000
+  freshness_stale_seconds: 172800
+  uncorroborated:
+    note: The derived output is not cross-venue corroborated; its OKX input bars are corroborated against Coinbase.
+- key: bnb_bollinger_upper
+  vendor: okx
+  endpoint: https://www.okx.com/api/v5/market/candles?instId=BNB-USDT&bar=1Dutc
+  source_field: 'TA-Lib BBANDS upper output from closed okx candle[4] values where candle[8] == "1"'
+  definable_for: [BNB]
+  golden: hand_computed/bollinger_20_2_population.json
+  response_model: okx_candle
+  required_bars: 20
+  talib_function: BBANDS
+  parameters:
+    timeperiod: 20
+    nbdevup: 2.0
+    nbdevdn: 2.0
+    matype: 0
+  expected_update_interval_seconds: 86400
+  freshness_warn_seconds: 108000
+  freshness_stale_seconds: 172800
+  uncorroborated:
+    note: The derived output is not cross-venue corroborated; its OKX input bars are corroborated against Coinbase.
+- key: bnb_bollinger_middle
+  vendor: okx
+  endpoint: https://www.okx.com/api/v5/market/candles?instId=BNB-USDT&bar=1Dutc
+  source_field: 'TA-Lib BBANDS middle output from closed okx candle[4] values where candle[8] == "1"'
+  definable_for: [BNB]
+  golden: hand_computed/bollinger_20_2_population.json
+  response_model: okx_candle
+  required_bars: 20
+  talib_function: BBANDS
+  parameters:
+    timeperiod: 20
+    nbdevup: 2.0
+    nbdevdn: 2.0
+    matype: 0
+  expected_update_interval_seconds: 86400
+  freshness_warn_seconds: 108000
+  freshness_stale_seconds: 172800
+  uncorroborated:
+    note: The derived output is not cross-venue corroborated; its OKX input bars are corroborated against Coinbase.
+- key: bnb_bollinger_lower
+  vendor: okx
+  endpoint: https://www.okx.com/api/v5/market/candles?instId=BNB-USDT&bar=1Dutc
+  source_field: 'TA-Lib BBANDS lower output from closed okx candle[4] values where candle[8] == "1"'
+  definable_for: [BNB]
+  golden: hand_computed/bollinger_20_2_population.json
+  response_model: okx_candle
+  required_bars: 20
+  talib_function: BBANDS
+  parameters:
+    timeperiod: 20
+    nbdevup: 2.0
+    nbdevdn: 2.0
+    matype: 0
+  expected_update_interval_seconds: 86400
+  freshness_warn_seconds: 108000
+  freshness_stale_seconds: 172800
+  uncorroborated:
+    note: The derived output is not cross-venue corroborated; its OKX input bars are corroborated against Coinbase.
+- key: bnb_obv
+  vendor: okx
+  endpoint: https://www.okx.com/api/v5/market/candles?instId=BNB-USDT&bar=1Dutc
+  source_field: 'TA-Lib OBV from closed okx candle[4] close and candle[5] base volume where candle[8] == "1"'
+  definable_for: [BNB]
+  golden: hand_computed/obv_base_volume.json
+  response_model: okx_candle
+  required_bars: 1
+  talib_function: OBV
+  parameters:
+  expected_update_interval_seconds: 86400
+  freshness_warn_seconds: 108000
+  freshness_stale_seconds: 172800
+  uncorroborated:
+    note: The derived output is not cross-venue corroborated; its OKX input bars are corroborated against Coinbase.
+- key: bnb_macd
+  vendor: okx
+  endpoint: https://www.okx.com/api/v5/market/candles?instId=BNB-USDT&bar=1Dutc
+  source_field: 'TA-Lib MACD outputs from closed okx candle[4] values where candle[8] == "1"'
+  definable_for: [BNB]
+  golden: btc_macd.json
+  response_model: okx_candle
+  required_bars: 250
+  talib_function: MACD
+  parameters:
+    fastperiod: 12
+    slowperiod: 26
+    signalperiod: 9
+  expected_update_interval_seconds: 86400
+  freshness_warn_seconds: 108000
+  freshness_stale_seconds: 172800
+  uncorroborated:
+    note: The derived output is not cross-venue corroborated; its OKX input bars are corroborated against Coinbase.
+- key: bnb_stochrsi
+  vendor: okx
+  endpoint: https://www.okx.com/api/v5/market/candles?instId=BNB-USDT&bar=1Dutc
+  source_field: 'TA-Lib STOCHRSI fastd from closed okx candle[4] values where candle[8] == "1"'
+  definable_for: [BNB]
+  golden: btc_stochrsi.json
+  response_model: okx_candle
   required_bars: 250
   talib_function: STOCHRSI
   parameters:
