@@ -91,8 +91,12 @@ def test_definable_for_requires_a_nonempty_asset_list(
         load_registry(registry_path)
 
 
-def test_shipped_registry_declares_only_btc_daily_close() -> None:
+def test_shipped_registry_definitions_are_for_btc() -> None:
     registry = load_registry()
 
-    assert [entry.key for entry in registry.root] == ["btc_daily_close"]
-    assert registry.root[0].definable_for == ("BTC",)
+    assert [entry.key for entry in registry.root] == [
+        "btc_daily_close",
+        "btc_macd",
+        "btc_stochrsi",
+    ]
+    assert all(entry.definable_for == ("BTC",) for entry in registry.root)

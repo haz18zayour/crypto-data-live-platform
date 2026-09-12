@@ -12,7 +12,7 @@ def definition(
 ) -> IndicatorDefinition:
     return IndicatorDefinition.model_validate(
         {
-            "key": f"btc_{function.casefold()}",
+            "key": f"fixture_{function.casefold()}",
             "vendor": "okx",
             "endpoint": "https://example.test/history-candles",
             "source_field": "closed UTC daily candles",

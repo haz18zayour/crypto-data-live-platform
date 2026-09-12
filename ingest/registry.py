@@ -57,6 +57,7 @@ class IndicatorDefinition(BaseModel):
     required_bars: PositiveInt | None = None
     talib_function: NonEmptyString | None = None
     parameters: dict[NonEmptyString, int | float] | None = None
+    note: NonEmptyString | None = None
     expected_update_interval_seconds: PositiveInt
     freshness_warn_seconds: PositiveInt
     freshness_stale_seconds: PositiveInt

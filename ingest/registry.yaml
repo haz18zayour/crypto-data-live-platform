@@ -18,3 +18,37 @@
     venue: coinbase
     pair: BTC-USD
     tolerance_bps: 25
+- key: btc_macd
+  vendor: okx
+  endpoint: https://www.okx.com/api/v5/market/candles?instId=BTC-USDT&bar=1Dutc
+  source_field: 'TA-Lib MACD outputs from closed okx candle[4] values where candle[8] == "1"'
+  definable_for: [BTC]
+  required_bars: 250
+  talib_function: MACD
+  parameters:
+    fastperiod: 12
+    slowperiod: 26
+    signalperiod: 9
+  expected_update_interval_seconds: 86400
+  freshness_warn_seconds: 108000
+  freshness_stale_seconds: 172800
+  uncorroborated:
+    note: The derived output is not cross-venue corroborated; its OKX input bars are corroborated against Coinbase.
+- key: btc_stochrsi
+  vendor: okx
+  endpoint: https://www.okx.com/api/v5/market/candles?instId=BTC-USDT&bar=1Dutc
+  source_field: 'TA-Lib STOCHRSI fastd from closed okx candle[4] values where candle[8] == "1"'
+  definable_for: [BTC]
+  required_bars: 250
+  talib_function: STOCHRSI
+  parameters:
+    timeperiod: 14
+    fastk_period: 14
+    fastd_period: 3
+    fastd_matype: 0
+  note: TA-Lib fastd corresponds to TradingView K (not D).
+  expected_update_interval_seconds: 86400
+  freshness_warn_seconds: 108000
+  freshness_stale_seconds: 172800
+  uncorroborated:
+    note: The derived output is not cross-venue corroborated; its OKX input bars are corroborated against Coinbase.
