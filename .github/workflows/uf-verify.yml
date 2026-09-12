@@ -84,3 +84,11 @@ jobs:
             python -m pip install --quiet pytest
             python -m pytest -q
           fi
+
+      - name: Python integration tests (live venues)
+        if: steps.detect.outputs.python == 'true'
+        # Deselected from the default suite because running all of them together
+        # throttles OKX and Coinbase. Run here, serially, and do not fail the build
+        # on a venue rate-limiting us.
+        continue-on-error: true
+        run: uv run pytest -q -m integration -p no:randomly
