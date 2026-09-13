@@ -2,38 +2,38 @@
   "storyId": "US-501",
   "passes": false,
   "verifier": {
-    "agent": "claude",
-    "sandbox": "not-run"
+    "agent": "codex",
+    "sandbox": "codex:read-only"
   },
   "implementer": "claude",
   "results": [
     {
       "criterionId": "US-501-C1",
       "met": false,
-      "note": "not judged — a cheaper layer already failed"
+      "note": "verifier produced no parseable verdict"
     },
     {
       "criterionId": "US-501-C2",
       "met": false,
-      "note": "not judged — a cheaper layer already failed"
+      "note": "verifier produced no parseable verdict"
     },
     {
       "criterionId": "US-501-C3",
       "met": false,
-      "note": "not judged — a cheaper layer already failed"
+      "note": "verifier produced no parseable verdict"
     },
     {
       "criterionId": "US-501-C4",
       "met": false,
-      "note": "not judged — a cheaper layer already failed"
+      "note": "verifier produced no parseable verdict"
     },
     {
       "criterionId": "US-501-C5",
       "met": false,
-      "note": "not judged — a cheaper layer already failed"
+      "note": "verifier produced no parseable verdict"
     }
   ],
   "tripwires": [],
-  "note": "gates failed: US-501-C1, US-501-C2, US-501-C5",
-  "at": "2026-09-13T09:08:19.154Z"
+  "note": "verifier returned no usable JSON (exit 1)",
+  "at": "2026-09-13T10:11:20.831Z"
 }
