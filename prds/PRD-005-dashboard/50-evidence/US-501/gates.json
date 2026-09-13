@@ -1,0 +1,32 @@
+[
+  {
+    "name": "typecheck",
+    "run": "node -e \"const f=require('fs'),c=require('child_process');let r=0;const run=(cmd)=>{try{c.execSync(cmd,{stdio:'inherit'})}catch(e){r=1}};if(f.existsSync('package.json'))run('npm run typecheck --if-present');if(f.existsSync('pyproject.toml'))run('uv run mypy ingest --strict');process.exit(r)\"",
+    "exitCode": 0,
+    "output": "Success: no issues found in 15 source files\r\n"
+  },
+  {
+    "name": "test",
+    "run": "node -e \"const f=require('fs'),c=require('child_process');let r=0;const run=(cmd)=>{try{c.execSync(cmd,{stdio:'inherit'})}catch(e){r=1}};if(f.existsSync('package.json'))run('npm test --if-present');if(f.existsSync('tests'))run('uv run pytest -q');process.exit(r)\"",
+    "exitCode": 0,
+    "output": "........................................................................ [ 39%]\r\n........................................................................ [ 79%]\r\n......................................                                   [100%]\r\n182 passed, 10 deselected in 154.49s (0:02:34)\r\n"
+  },
+  {
+    "name": "US-501-C1",
+    "run": "node scripts/gates-cover-web.mjs",
+    "exitCode": 1,
+    "output": "\n=== gate: typecheck ===\n\n> crypto-data-live-web@0.0.0 typecheck\n> tsc -b --pretty false\n\nsrc/gates.test.ts(1,27): error TS2307: Cannot find module 'node:child_process' or its corresponding type declarations.\r\nsrc/gates.test.ts(2,58): error TS2307: Cannot find module 'node:fs' or its corresponding type declarations.\r\nsrc/gates.test.ts(3,24): error TS2307: Cannot find module 'node:os' or its corresponding type declarations.\r\nsrc/gates.test.ts(4,22): error TS2307: Cannot find module 'node:path' or its corresponding type declarations.\r\nsrc/gates.test.ts(5,31): error TS2307: Cannot find module 'node:url' or its corresponding type declarations.\r\nsrc/gates.test.ts(25,20): error TS2591: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node` and then add 'node' to the types field in your tsconfig.\r\nSuccess: no issues found in 15 source files\r\n\n=== gate: test ===\n\n> crypto-data-live-web@0.0.0 test\n> vitest run --configLoader runner\n\n\n RUN  v4.1.9 C:/Users/zayou/OneDrive/Desktop/Projects/crypto-data-live-platform/web\n\n ❯ src/gates.test.ts (0 test)\n\n Test Files  1 failed | 4 passed (5)\n      Tests  13 passed (13)\n   Start at  12:05:30\n   Duration  7.06s (transform 1.86s, setup 4.19s, import 2.35s, tests 2.71s, environment 17.65s)\n\n........................................................................ [ 39%]\r\n........................................................................ [ 79%]\r\n......................................                                   [100%]\r\n182 passed, 10 deselected in 148.80s (0:02:28)\r\n\nweb typecheck and web test both ran inside the gates of C:\\Users\\zayou\\OneDrive\\Desktop\\Projects\\crypto-data-live-platform\\.uf\\config.json\n\ngate typecheck exited 1\n\n⎯⎯⎯⎯⎯⎯ Failed Suites 1 ⎯⎯⎯⎯⎯⎯⎯\n\n FAIL  src/gates.test.ts [ src/gates.test.ts ]\nTypeError: The URL must be of scheme file\n ❯ src/gates.test.ts:9:14\n      7| import { parse } from \"yaml\";\n      8|\n      9| const root = fileURLToPath(new URL(\"../..\", import.meta.url).href);\n       |              ^\n     10| const web = JSON.parse(readFileSync(join(root, \"web/package.json\"), \"u…\n     11|\n\n⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯\n\ngate test exited 1\n"
+  },
+  {
+    "name": "US-501-C2",
+    "run": "npm --prefix web test",
+    "exitCode": 1,
+    "output": "\n> crypto-data-live-web@0.0.0 test\n> vitest run --configLoader runner\n\n\n RUN  v4.1.9 C:/Users/zayou/OneDrive/Desktop/Projects/crypto-data-live-platform/web\n\n ❯ src/gates.test.ts (0 test)\n\n Test Files  1 failed | 4 passed (5)\n      Tests  13 passed (13)\n   Start at  12:08:13\n   Duration  5.30s (transform 1.76s, setup 3.71s, import 2.24s, tests 2.53s, environment 11.87s)\n\n\n\n⎯⎯⎯⎯⎯⎯ Failed Suites 1 ⎯⎯⎯⎯⎯⎯⎯\n\n FAIL  src/gates.test.ts [ src/gates.test.ts ]\nTypeError: The URL must be of scheme file\n ❯ src/gates.test.ts:9:14\n      7| import { parse } from \"yaml\";\n      8|\n      9| const root = fileURLToPath(new URL(\"../..\", import.meta.url).href);\n       |              ^\n     10| const web = JSON.parse(readFileSync(join(root, \"web/package.json\"), \"u…\n     11|\n\n⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯\n\n"
+  },
+  {
+    "name": "US-501-C5",
+    "run": "uv run pytest -q --no-header",
+    "exitCode": 3221225794,
+    "output": "\n"
+  }
+]
