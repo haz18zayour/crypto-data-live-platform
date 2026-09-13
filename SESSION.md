@@ -19,7 +19,7 @@ Owner: **You.** This one cannot be delegated.
 review the branch, then merge — or start the next PRD
 ```
 
-**Last handoff note:** 2026-09-12 — US-414 implementation and tests are in the worktree. Fast board/heartbeat evidence: 8 passed; Ruff and ingest mypy clean. Exact pytest gate: 166 passed, 10 live deselected, 16 fail-loud Postgres setup errors because this sandbox cannot reach the configured database. Real Postgres and live full-board tests are in tests/test_persist_board.py for external verification; do not mark complete from this handoff.
+**Last handoff note:** 2026-09-13 — US-414 attempt 2: persistence code/tests already landed in bb5e6f8; verifier exit-1 root cause was the absent story/criteria file, restored and compiled in 8f98ce5. Five fast US-414 tests pass; Ruff and strict ingest mypy pass. Exact pytest collected 166 passes and 16 fail-loud Postgres setup errors only because this restricted sandbox cannot reach the configured DB; committed gate evidence from the DB-enabled run records 182 passed. Independent verifier should now read US-414 from spec.lock.json and judge the existing named tests.
 
 ## Where this stands
 
@@ -28,9 +28,9 @@ review the branch, then merge — or start the next PRD
 | PRD-001-spine | 8 | 8 | **all green** |
 | PRD-002-harness | 7 | 7 | **all green** |
 | PRD-003-corroboration | 7 | 7 | **all green** |
-| PRD-004-indicators | 10 | 10 | **all green** |
+| PRD-004-indicators | 11 | 11 | **all green** |
 
-Spend to date: **$31.86** Claude · **109624k** Codex tokens.
+Spend to date: **$32.73** Claude · **110227k** Codex tokens.
 
 ## What happened
 
@@ -292,10 +292,27 @@ Spend to date: **$31.86** Claude · **109624k** Codex tokens.
 - 20:34  US-414 — codex finished `bb5e6f8f` · 2428k tok
 - 20:42  US-414 **rejected** — 0/7 criteria, judged by claude · $0.52
 
+### 2026-09-13
+
+- 08:21  **PRD-004-indicators** compiled — 11 stories
+- 08:21  US-414 started, attempt 2 (codex)
+- 08:26  US-414 — codex finished `b4109a9b` · 603k tok
+- 08:32  US-414 **PASSED** — 7/7 criteria, judged by claude · $0.87
+
 <!-- uf:generated:end -->
 
 ## Handoff
 
+- 2026-09-13 (session): **PRD-004 fully complete, 11/11 stories, merged.** The board now
+  **persists**: `run_all_assets()` + `persist_board()` computes 44 indicators in ~23s and
+  writes them — database holds **50 rows, 45 distinct indicators, 4 assets**. Every asset
+  shows `EMA200 < EMA50 < EMA20` independently, a coherent uptrend stack.
+  **localhost still renders only the BTC daily close** — the page is PRD-001's single-value
+  view. Turning 45 cells into the completeness matrix is **PRD-005**, which now has real
+  data to design against instead of placeholders.
+  Suite: 182 tests, 150s. Note `uf run` checks out the branch in `30-spec.md` front-matter —
+  author story files there or they vanish mid-run and the verifier gets no criteria text
+  (that caused two 'no usable JSON' failures here).
 - 2026-09-13 — US-414 attempt 2: persistence code/tests already landed in bb5e6f8; verifier exit-1 root cause was the absent story/criteria file, restored and compiled in 8f98ce5. Five fast US-414 tests pass; Ruff and strict ingest mypy pass. Exact pytest collected 166 passes and 16 fail-loud Postgres setup errors only because this restricted sandbox cannot reach the configured DB; committed gate evidence from the DB-enabled run records 182 passed. Independent verifier should now read US-414 from spec.lock.json and judge the existing named tests.
 - 2026-09-12 — US-414 implementation and tests are in the worktree. Fast board/heartbeat evidence: 8 passed; Ruff and ingest mypy clean. Exact pytest gate: 166 passed, 10 live deselected, 16 fail-loud Postgres setup errors because this sandbox cannot reach the configured database. Real Postgres and live full-board tests are in tests/test_persist_board.py for external verification; do not mark complete from this handoff.
 - 2026-09-12 (session): **PRD-004 complete including two late defects the 8/8 green run
