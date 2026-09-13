@@ -311,6 +311,9 @@ Spend to date: **$35.73** Claude · **110257k** Codex tokens.
 - 10:11  US-501 started, attempt 2 (claude)
 - 10:13  US-501 — codex finished `f6da2f98` · $0.93 · 5k tok
 - 10:22  US-501 **PASSED** — 5/5 criteria, judged by codex
+- 10:22  US-502 started, attempt 1 (claude)
+- 10:23  US-502 — codex finished `115620d8`
+- 10:27  US-502 **rejected** — 0/6 criteria, judged by claude
 
 <!-- uf:generated:end -->
 
