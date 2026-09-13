@@ -19,7 +19,7 @@ Owner: **You.** This one cannot be delegated.
 review the branch, then merge — or start the next PRD
 ```
 
-**Last handoff note:** 2026-09-12 (session): **PRD-004 complete, 8/8**, board at **33 indicators across BTC/ETH/SOL/BNB**.
+**Last handoff note:** 2026-09-12 — US-414 implementation and tests are in the worktree. Fast board/heartbeat evidence: 8 passed; Ruff and ingest mypy clean. Exact pytest gate: 166 passed, 10 live deselected, 16 fail-loud Postgres setup errors because this sandbox cannot reach the configured database. Real Postgres and live full-board tests are in tests/test_persist_board.py for external verification; do not mark complete from this handoff.
 
 ## Where this stands
 
@@ -30,7 +30,7 @@ review the branch, then merge — or start the next PRD
 | PRD-003-corroboration | 7 | 7 | **all green** |
 | PRD-004-indicators | 10 | 10 | **all green** |
 
-Spend to date: **$31.34** Claude · **107196k** Codex tokens.
+Spend to date: **$31.86** Claude · **109624k** Codex tokens.
 
 ## What happened
 
@@ -288,6 +288,9 @@ Spend to date: **$31.34** Claude · **107196k** Codex tokens.
 - 18:42  US-413 started, attempt 1 (codex)
 - 18:47  US-413 — codex finished `c5cd20a6` · 1126k tok
 - 18:49  US-413 **PASSED** — 6/6 criteria, judged by claude · $0.24
+- 20:21  US-414 started, attempt 1 (codex)
+- 20:34  US-414 — codex finished `bb5e6f8f` · 2428k tok
+- 20:42  US-414 **rejected** — 0/7 criteria, judged by claude · $0.52
 
 <!-- uf:generated:end -->
 
