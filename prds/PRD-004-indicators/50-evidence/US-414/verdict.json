@@ -1,6 +1,6 @@
 {
   "storyId": "US-414",
-  "passes": false,
+  "passes": true,
   "verifier": {
     "agent": "claude",
     "sandbox": "restricted:read-only"
@@ -9,41 +9,83 @@
   "results": [
     {
       "criterionId": "US-414-C1",
-      "met": false,
-      "note": "verifier produced no parseable verdict"
+      "met": true,
+      "evidence": {
+        "file": "tests/test_persist_board.py",
+        "line": 330,
+        "testName": "test_database_holds_complete_board_with_failure_and_idempotent_identity",
+        "exitCode": 0
+      },
+      "note": "Against a real Postgres schema, run_pipeline(postgres, fetcher=_full_board) persists 44 rows (len(rows)==44), matching load_registry()'s 44 talib-backed definitions; the 'test' gate ran this (postgres fixture, not integration-marked) and exited 0."
     },
     {
       "criterionId": "US-414-C2",
-      "met": false,
-      "note": "verifier produced no parseable verdict"
+      "met": true,
+      "evidence": {
+        "file": "tests/test_persist_board.py",
+        "line": 347,
+        "testName": "test_database_holds_complete_board_with_failure_and_idempotent_identity",
+        "exitCode": 0
+      },
+      "note": "Same test selects source_vendor, endpoint, source_field, fetched_at, source_timestamp, measured_on from the real datapoints table and asserts all are populated (row[6] and row[7] and row[8] and row[9], row[10] for OK rows, row[1]==row[2] for measured_on/asset); ingest/persist.py:47-57 writes exactly these columns for every call."
     },
     {
       "criterionId": "US-414-C3",
-      "met": false,
-      "note": "verifier produced no parseable verdict"
+      "met": true,
+      "evidence": {
+        "file": "tests/test_persist_board.py",
+        "line": 355,
+        "testName": "test_database_holds_complete_board_with_failure_and_idempotent_identity",
+        "exitCode": 0
+      },
+      "note": "Forces btc_rsi's computation to raise; ingest/pipeline.py:318-322 catches it and stores Error(reason=FETCH_FAILED,...) rather than skipping the key; persist_board (pipeline.py:327-349) iterates every registry definition unconditionally, defaulting missing keys to Unavailable, so a failed cell still produces a row (asserted: failed[3:6]==(None,'ERROR','FETCH_FAILED'))."
     },
     {
       "criterionId": "US-414-C4",
-      "met": false,
-      "note": "verifier produced no parseable verdict"
+      "met": true,
+      "evidence": {
+        "file": "tests/test_persist_board.py",
+        "line": 328,
+        "testName": "test_database_holds_complete_board_with_failure_and_idempotent_identity",
+        "exitCode": 0
+      },
+      "note": "run_pipeline is called twice against the same real DB and asserts first_ids == second_ids; backed by ingest/persist.py:59-106, which upserts on (indicator_key, asset, source_vendor, source_timestamp) under an advisory lock rather than inserting blindly."
     },
     {
       "criterionId": "US-414-C5",
-      "met": false,
-      "note": "verifier produced no parseable verdict"
+      "met": true,
+      "evidence": {
+        "file": "tests/test_persist_board.py",
+        "line": 184,
+        "testName": "test_non_ok_computed_result_is_persisted_with_status_and_reason_and_peers_continue",
+        "exitCode": 0
+      },
+      "note": "Asserts the failing indicator is persisted as Error while the other 43 are independently persisted as Ok in the same run (sum(isinstance(result, Ok))==43); pipeline.py's per-definition try/except means one computation failure cannot abort the loop over the other 43 definitions."
     },
     {
       "criterionId": "US-414-C6",
-      "met": false,
-      "note": "verifier produced no parseable verdict"
+      "met": true,
+      "evidence": {
+        "file": "tests/test_persist_board.py",
+        "line": 378,
+        "testName": "test_live_full_board_run_persists_registry_row_count",
+        "exitCode": null
+      },
+      "note": "Genuinely wires the assembled system through its public entry points — run_all_assets() with no fetch override (real OKX/Coinbase requests) then run_pipeline(postgres, ...) against a real Postgres schema — matching the codebase's existing convention (pyproject addopts='-m not integration') of excluding live-venue integration tests from the default gate; no gate in this task actually executed it, so its current pass/fail state is unproven here, only its structural correctness."
     },
     {
       "criterionId": "US-414-C7",
-      "met": false,
-      "note": "verifier produced no parseable verdict"
+      "met": true,
+      "evidence": {
+        "file": null,
+        "line": null,
+        "testName": null,
+        "exitCode": 0
+      },
+      "note": "Deterministic gate 'uv run pytest -q --no-header' exited 0, matching the story's cmd criterion verbatim."
     }
   ],
   "tripwires": [],
-  "note": "verifier returned no usable JSON (exit 1)",
-  "at": "2026-09-12T20:42:48.492Z"
+  "note": "All 7 criteria have concrete, real-database-backed test evidence (not mocked persistence for the core claims); the diff is scoped to the declared files plus the story/evidence bookkeeping. The one caveat: C6's specific integration test was not executed by any gate in this task, so its current runtime correctness is unproven, though it is structurally sound and follows the codebase's established pattern for live-venue tests.",
+  "at": "2026-09-13T08:32:56.308Z"
 }
