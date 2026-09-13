@@ -324,16 +324,44 @@ def run_all_assets(*, fetch_bars: BarFetcher | None = None) -> FullAssetRun:
     return FullAssetRun(indicators=indicators, history=history)
 
 
+def persist_board(
+    connection: psycopg.Connection[tuple[object, ...]],
+    run: FullAssetRun,
+) -> tuple[int, ...]:
+    """Persist one visible datapoint for every registered technical cell."""
+
+    definitions = tuple(
+        definition
+        for definition in load_registry().root
+        if definition.talib_function is not None
+    )
+    return tuple(
+        persist_datapoint(
+            connection,
+            definition=definition,
+            asset=definition.definable_for[0],
+            measured_on=definition.definable_for[0],
+            result=run.indicators.get(
+                definition.key, Unavailable(reason=Reason.NOT_FETCHED)
+            ),
+        )
+        for definition in definitions
+    )
+
+
 def run_pipeline(
     connection: psycopg.Connection[tuple[object, ...]],
-    fetcher: Callable[[], Result] | None = fetch_btc_daily_close,
-) -> int:
-    """Fetch and persist the registered BTC daily close."""
+    fetcher: Callable[[], Result | FullAssetRun] | None = fetch_btc_daily_close,
+) -> int | tuple[int, ...]:
+    """Persist either the computed board or the legacy single close result."""
+
+    result = Unavailable(reason=Reason.NOT_FETCHED) if fetcher is None else fetcher()
+    if isinstance(result, FullAssetRun):
+        return persist_board(connection, result)
 
     definition = next(
         entry for entry in load_registry().root if entry.key == INDICATOR_KEY
     )
-    result = Unavailable(reason=Reason.NOT_FETCHED) if fetcher is None else fetcher()
     return persist_datapoint(
         connection,
         definition=definition,

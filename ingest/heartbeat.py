@@ -6,8 +6,7 @@ from collections.abc import Callable
 import httpx
 import psycopg
 
-from ingest.fetchers.okx import fetch_btc_daily_close
-from ingest.pipeline import run_pipeline
+from ingest.pipeline import FullAssetRun, run_all_assets, run_pipeline
 from ingest.status import Result
 
 HEARTBEAT_TIMEOUT_SECONDS = 10
@@ -36,29 +35,40 @@ def run_ingestion(
     database_url: str,
     heartbeat_url: str,
     *,
-    fetcher: Callable[[], Result] = fetch_btc_daily_close,
+    fetcher: Callable[[], Result | FullAssetRun] | None = None,
     heartbeat_client: httpx.Client | None = None,
-) -> int:
-    """Persist one fetched value, then signal success or explicit failure."""
+) -> int | tuple[int, ...]:
+    """Persist the full board, then signal success or explicit failure."""
 
-    fetch_result: Result | None = None
+    fetch_result: Result | FullAssetRun | None = None
+    selected_fetcher = run_all_assets if fetcher is None else fetcher
 
-    def observed_fetcher() -> Result:
+    def observed_fetcher() -> Result | FullAssetRun:
         nonlocal fetch_result
-        fetch_result = fetcher()
+        fetch_result = selected_fetcher()
         return fetch_result
 
     try:
         with psycopg.connect(database_url) as connection:
-            row_id = run_pipeline(connection, fetcher=observed_fetcher)
-        if fetch_result is None or fetch_result.status not in ("OK", "STALE"):
+            persisted = run_pipeline(connection, fetcher=observed_fetcher)
+        if isinstance(fetch_result, FullAssetRun):
+            if not isinstance(persisted, tuple) or len(persisted) != len(
+                fetch_result.indicators
+            ):
+                raise RuntimeError("ingestion did not persist the full board")
+            if any(
+                result.status not in ("OK", "STALE")
+                for result in fetch_result.indicators.values()
+            ):
+                raise RuntimeError("ingestion persisted a board with failed cells")
+        elif fetch_result is None or fetch_result.status not in ("OK", "STALE"):
             raise RuntimeError("ingestion did not fetch a value")
     except Exception:
         _ping(heartbeat_url, failed=True, client=heartbeat_client)
         raise
 
     _ping(heartbeat_url, failed=False, client=heartbeat_client)
-    return row_id
+    return persisted
 
 
 def main() -> None:

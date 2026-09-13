@@ -1,0 +1,11 @@
+.uf/events.ndjson                                  |   6 +
+ SESSION.md                                         |   9 +-
+ ingest/heartbeat.py                                |  32 +-
+ ingest/pipeline.py                                 |  36 +-
+ .../40-stories/US-414-persist-the-board.md         |  48 +++
+ .../50-evidence/US-414/diffstat.txt                |   6 +
+ .../50-evidence/US-414/gates.json                  |  20 ++
+ .../50-evidence/US-414/verdict.json                |  91 +++++
+ prds/PRD-004-indicators/spec.lock.json             |  95 ++++-
+ tests/test_persist_board.py                        | 396 +++++++++++++++++++++
+ 10 files changed, 720 insertions(+), 19 deletions(-)
