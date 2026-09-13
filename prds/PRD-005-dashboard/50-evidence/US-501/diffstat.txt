@@ -1,9 +1,10 @@
 .github/workflows/uf-verify.yml                    | 22 +++--
  .uf/config.json                                    |  4 +-
- .uf/events.ndjson                                  |  5 ++
- .../50-evidence/US-501/diffstat.txt                |  0
+ .uf/events.ndjson                                  |  8 ++
+ SESSION.md                                         | 20 +++--
+ .../50-evidence/US-501/diffstat.txt                |  9 ++
  .../50-evidence/US-501/gates.json                  | 32 +++++++
- .../50-evidence/US-501/verdict.json                | 39 +++++++++
+ .../50-evidence/US-501/verdict.json                | 69 +++++++++++++++
  scripts/gates-cover-web.mjs                        | 51 ++++++++++++
  web/src/gates.test.ts                              | 97 ++++++++++++++++++++++
- 8 files changed, 239 insertions(+), 11 deletions(-)
+ 9 files changed, 296 insertions(+), 16 deletions(-)

@@ -1,6 +1,6 @@
 {
   "storyId": "US-501",
-  "passes": false,
+  "passes": true,
   "verifier": {
     "agent": "codex",
     "sandbox": "codex:read-only"
@@ -9,31 +9,61 @@
   "results": [
     {
       "criterionId": "US-501-C1",
-      "met": false,
-      "note": "verifier produced no parseable verdict"
+      "met": true,
+      "note": "The script iterates over every configured gate, propagates gate failures, and requires evidence that both web scripts and at least one test executed; the deterministic US-501-C1 gate passed.",
+      "evidence": {
+        "file": "scripts/gates-cover-web.mjs",
+        "line": 18,
+        "testName": null,
+        "exitCode": 0
+      }
     },
     {
       "criterionId": "US-501-C2",
-      "met": false,
-      "note": "verifier produced no parseable verdict"
+      "met": true,
+      "note": "The root-invocable npm command runs the web Vitest script. Its deterministic gate exited 0 with all 16 current tests passing, comprising the original 13 browser tests plus three new gate tests.",
+      "evidence": {
+        "file": "web/package.json",
+        "line": 10,
+        "testName": null,
+        "exitCode": 0
+      }
     },
     {
       "criterionId": "US-501-C3",
-      "met": false,
-      "note": "verifier produced no parseable verdict"
+      "met": true,
+      "note": "A negative test supplies the former silently-skipping root guard and asserts that the coverage script exits 1 and identifies both missing web runs.",
+      "evidence": {
+        "file": "web/src/gates.test.ts",
+        "line": 35,
+        "testName": "the gate-coverage script fails when the web project is absent from the gate commands",
+        "exitCode": 0
+      }
     },
     {
       "criterionId": "US-501-C4",
-      "met": false,
-      "note": "verifier produced no parseable verdict"
+      "met": true,
+      "note": "The workflow test parses the YAML into an object before inspecting its steps and asserting the manifest guard, commands, conditions, and working directories.",
+      "evidence": {
+        "file": "web/src/gates.test.ts",
+        "line": 68,
+        "testName": "every node step in the CI workflow guards on the web manifest and none guards on a root manifest",
+        "exitCode": 0
+      }
     },
     {
       "criterionId": "US-501-C5",
-      "met": false,
-      "note": "verifier produced no parseable verdict"
+      "met": true,
+      "note": "The supplied deterministic Python-suite gate completed successfully with 182 tests passing and 10 deselected.",
+      "evidence": {
+        "file": "prds/PRD-005-dashboard/50-evidence/US-501/gates.json",
+        "line": 26,
+        "testName": null,
+        "exitCode": 0
+      }
     }
   ],
   "tripwires": [],
-  "note": "verifier returned no usable JSON (exit 1)",
-  "at": "2026-09-13T10:11:20.831Z"
+  "note": "The work is substantive, not faked: the gate script has fail-closed checks, and the tests contain concrete assertions against both skipped gates and parsed workflow structure. The extra event, session, and evidence files are framework bookkeeping rather than padding.",
+  "at": "2026-09-13T10:22:54.312Z"
 }
