@@ -1,0 +1,139 @@
+# GATE G1 - scope lock for PRD-005. Hypotheses from 10-research.md.
+
+decisions:
+  - q: The web test suite has never run in a gate or in CI. Fix it here, or defer?
+    hypothesis: >
+      Fix it here, as the first story. Both guards - the `typecheck` and `test` gates in
+      `.uf/config.json` and the Node steps in `.github/workflows/uf-verify.yml` - test for
+      `package.json` at the REPOSITORY ROOT, and `package.json` lives in `web/`. Measured today:
+      `test -f package.json` returns NO at the root, while `cd web && npm test` passes 13 tests
+      across 4 files. So thirteen tests have never been gated since US-009 wrote them, and every
+      guard reported success by skipping - this product's own failure mode, inside its own
+      harness. Every other story in this PRD is a web story, so until this is fixed no criterion
+      in PRD-005 means anything. It touches `.github/workflows/**`, which is blast radius.
+    answer:
+
+  - q: How do 45 cells reach the browser - one view, or reduce client-side?
+    hypothesis: >
+      A `board_read` view using `distinct on (indicator_key, asset) ... order by indicator_key,
+      asset, fetched_at desc`. Measured today: 50 rows collapse to exactly 45, and the table
+      grows ~45 rows per day, so the client-side alternative downloads the whole history to
+      render one screen and degrades a little every day until someone notices. This product
+      exists because things degrade invisibly; shipping that would contradict it directly. The
+      index `datapoints_indicator_asset_fetched_at_idx` on (indicator_key, asset, fetched_at
+      desc) is already exactly what this sort wants. It is a migration, so **blast radius, and
+      G4 must be run manually** - the framework gate does not fire.
+    answer:
+
+  - q: How is a grid cell with no registry entry rendered?
+    hypothesis: >
+      NOT_FETCHED, and it draws the eye - NOT as NOT_DEFINABLE. This is the single most
+      important decision in the PRD. The grid is 12 families x 4 assets = 48 cells against 45
+      registry entries; the three gaps are daily_close for ETH, SOL and BNB. The tempting rule
+      "no entry therefore not definable therefore calm grey" re-creates US-412 exactly: the EMA
+      stack was specced, never registered, and coverage was blind to it because coverage is
+      generated FROM the registry. That rule renders a forgotten indicator as the most
+      reassuring thing on the page. Absence is a problem unless the registry declares
+      non-definability explicitly, with a reason.
+    answer:
+
+  - q: Where does a NOT_DEFINABLE declaration live, given keys are per-asset?
+    hypothesis: >
+      A `not_definable` block on the family's existing registry entry, naming the assets and the
+      reason - one edit, not 45. `definable_for` is per-key and says nothing about the assets a
+      key does not cover, so it cannot carry this. Touching `**/registry*` is blast radius, so
+      this shares the same G4 review as the migration rather than triggering a second one.
+    answer:
+
+  - q: How are the matrix axes derived from the registry?
+    hypothesis: >
+      Asset from `definable_for`; family by stripping the lowercased asset prefix from the key,
+      with the strip ASSERTED rather than defaulted - a key that does not start with its own
+      asset raises, it does not fall back. Splitting the key alone works today and fails
+      silently into the wrong row later. Adding an explicit family field to all 45 entries is
+      more honest and costs a second blast-radius edit for safety we can get by assertion.
+    answer:
+
+  - q: Does colour stay the only status channel, as 20_Design_System.md says?
+    hypothesis: >
+      No, and the design doc is corrected as part of this PRD. Colour as the sole carrier of
+      status is a WCAG 1.4.1 Level A failure and is named in the accessibility literature as
+      the most common dashboard failure outright; ~8% of men have a colour vision deficiency.
+      Every state carries a glyph and a word alongside its hue. The doc's actual intent - chroma
+      means something is notable - survives; it just stops being load-bearing alone.
+    answer:
+
+  - q: Native table or CSS grid for a dense 12x4 matrix?
+    hypothesis: >
+      Native `<table>` semantics, laid out with `table-layout: fixed`. Applying `display: grid`
+      to a table silently removes row and column association for screen readers, and no test in
+      this suite would catch it. `role="grid"` is not the escape hatch - claiming it obliges the
+      full roving-tabindex keyboard contract, strictly more work than keeping the semantics we
+      already get free.
+    answer:
+
+  - q: Do cells show values, or only status?
+    hypothesis: >
+      Both. Value when OK or STALE, reason otherwise, never blank. The coverage count is the
+      headline and answers "how much of this is real"; the grid is where you look next and has
+      to be readable as data. `font-variant-numeric: tabular-nums` so columns align and do not
+      wiggle on refetch.
+    answer:
+
+  - q: How is the mixed board forced for the adversarial case?
+    hypothesis: >
+      A fixture-backed route rendering a hand-built board carrying OK, STALE, NOT_DEFINABLE and
+      FETCH_FAILED at once, plus one genuinely forced failure against the live board. Waiting
+      for a natural STALE is not an option: freshness_stale_seconds is 172800 against a 24h
+      cadence, so STALE only appears after collection has already been broken for two days.
+    answer:
+
+  - q: Which agent implements, given every design skill is Claude-only?
+    hypothesis: >
+      Claude implements, Codex verifies - every story in this PRD sets `agent: claude` in
+      front-matter. apple-hig, taste-skill, color-expert, design-review and ui-ux-pro-max are
+      all Claude-only; a design story routed the default way gets none of them and produces a
+      competent generic page. The different-vendor rule holds with the roles swapped.
+    answer:
+
+out_of_scope:
+  - Any composite, score, signal or ranking. Permanent, from G1.
+  - Deployment, auth, Cloudflare Access - PRD-011. Localhost is the target.
+  - New indicators, new venues, new sources.
+  - Charts, sparklines, history and distribution context - PRD-009.
+  - Frozen-value detection and the per-source SLA rollup - PRD-010.
+  - Any "last known good" fallback that presents an old number as current.
+  - Averaging or reconciling corroborated venues. Disagreement is a finding.
+
+assumptions:
+  - claim: A single `board_read` view keeps the page bounded as history grows.
+    tripwire: The view returns more than one row per (indicator_key, asset), or the request
+      exceeds ~45 rows while the registry has 45 entries - then the distinct-on ordering is
+      wrong and the page is reading stale or duplicated cells.
+    acceptedBy: default
+  - claim: Deriving family by stripping the asset prefix is safe because the strip is asserted.
+    tripwire: Any registry key whose name does not begin with its own `definable_for` asset,
+      lowercased. The parser raises rather than filing the cell under a wrong row.
+    acceptedBy: default
+  - claim: 48 cells is the correct denominator, not 45.
+    tripwire: A rendered grid with fewer than 48 cells, or any blank cell. "At least 45" passes
+      on a grid that drops the three daily_close gaps - which are precisely the cells the page
+      exists to make visible.
+    acceptedBy: default
+
+chosen_approach:
+  option: One bounded view, a registry-derived 48-cell grid, absence alarming by default, Claude implements and Codex verifies
+  because: >
+    Every part of it follows from the one thing the owner asked for - that data completeness is
+    always visible. A grid whose denominator comes from what the database returned can only ever
+    show you what arrived; a grid whose denominator comes from the registry can show you what
+    did not. That difference is the product.
+  rejected:
+    - option: Reduce latest-per-cell in the browser
+      because: Downloads the full history to render one screen and decays invisibly day by day - the exact failure mode this project was started to fix.
+    - option: Treat an unregistered cell as NOT_DEFINABLE
+      because: Renders a forgotten indicator as the calmest thing on the page. US-412 with a nicer font.
+    - option: CSS grid over a table element
+      because: Removes row and column semantics silently, and nothing in the suite would notice.
+    - option: Let Codex implement as usual
+      because: Every design skill in this environment is Claude-only, so the stories would ship without the direction the owner explicitly asked for.
