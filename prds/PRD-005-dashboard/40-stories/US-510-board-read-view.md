@@ -1,5 +1,5 @@
 ---
-id: US-502
+id: US-510
 title: board_read — one bounded query, latest row per cell
 priority: 2
 agent: claude
@@ -10,6 +10,11 @@ context:
   - AGENTS.md
   - project-documents/11_Data_Model.md
 ---
+
+**Re-identified from US-502.** All three of US-502's attempts died instantly on a Claude session
+rate limit — HTTP 429, `You've hit your session limit`, zero files changed, zero tokens spent.
+The story never ran. Answering G5 with `retry-anyway` does not restore attempts in this
+framework; only a new story id does. Nothing about the requirement has changed.
 
 As the owner, I want the whole board to arrive in one request that returns one row per cell,
 because the alternative downloads every row we have ever written in order to display 45 numbers.

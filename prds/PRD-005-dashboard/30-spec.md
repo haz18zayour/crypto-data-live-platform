@@ -81,7 +81,7 @@ US-504 builds the fixture that forces it, before any polish exists to flatter.
 | Story | Title | Depends on |
 |---|---|---|
 | US-501 | The web suite has never been gated — make it run | — |
-| US-502 | `board_read` — one bounded query, latest row per cell | US-501 |
+| US-510 | `board_read` — one bounded query, latest row per cell (re-identified from US-502, which never ran) | US-501 |
 | US-503 | The board model: 48 cells from the registry, absence is alarming | US-501 |
 | US-504 | Declared non-definability, so a settled gap reads settled | US-503 |
 | US-505 | The mixed board, before any pixels exist to flatter it | US-503 |

@@ -4,8 +4,8 @@
   "title": "The single page — completeness first",
   "product": "crypto-data-live-platform",
   "branch": "feat/prd-005-dashboard",
-  "inputDigest": "cca9e505f6beee6f",
-  "compiledAt": "2026-09-13T08:57:07.029Z",
+  "inputDigest": "0cdf5244f0139c8b",
+  "compiledAt": "2026-09-13T19:40:56.955Z",
   "stories": [
     {
       "id": "US-501",
@@ -86,13 +86,13 @@
       "agent": "claude"
     },
     {
-      "id": "US-502",
+      "id": "US-510",
       "title": "board_read — one bounded query, latest row per cell",
-      "source": "prds/PRD-005-dashboard/40-stories/US-502-board-read-view.md",
-      "description": "As the owner, I want the whole board to arrive in one request that returns one row per cell,\nbecause the alternative downloads every row we have ever written in order to display 45 numbers.\n\nMeasured 2026-09-13 against the live database: 50 rows, 45 distinct `(indicator_key, asset)`\npairs. `select distinct on (indicator_key, asset) ... order by indicator_key, asset, fetched_at\ndesc` returns exactly 45. The table gains roughly 45 rows per day.\n\nToday the gap is five rows and nobody would notice. In a year it is about sixteen thousand rows\nfetched to render one screen, getting slower every single day, with nothing anywhere reporting\nit. **That is the failure this product was started to fix**, so shipping the client-side\nreduction and promising to revisit it would be an unusually direct self-contradiction.\n\nThe index this sort wants — `datapoints_indicator_asset_fetched_at_idx` on `(indicator_key,\nasset, fetched_at desc)` — already exists from the original schema.\n\nThe view follows the pattern established twice already in this repo: `security_invoker = true`,\nthen `revoke all` followed by `grant select` to `anon` and `authenticated`. RLS on the\nunderlying table keeps doing the work; the view must not become a way around it.\n\n**Blast radius.** `**/migrations/**`. G4 does not fire on its own; it is run manually before\nmerge.",
+      "source": "prds/PRD-005-dashboard/40-stories/US-510-board-read-view.md",
+      "description": "**Re-identified from US-502.** All three of US-502's attempts died instantly on a Claude session\nrate limit — HTTP 429, `You've hit your session limit`, zero files changed, zero tokens spent.\nThe story never ran. Answering G5 with `retry-anyway` does not restore attempts in this\nframework; only a new story id does. Nothing about the requirement has changed.\n\nAs the owner, I want the whole board to arrive in one request that returns one row per cell,\nbecause the alternative downloads every row we have ever written in order to display 45 numbers.\n\nMeasured 2026-09-13 against the live database: 50 rows, 45 distinct `(indicator_key, asset)`\npairs. `select distinct on (indicator_key, asset) ... order by indicator_key, asset, fetched_at\ndesc` returns exactly 45. The table gains roughly 45 rows per day.\n\nToday the gap is five rows and nobody would notice. In a year it is about sixteen thousand rows\nfetched to render one screen, getting slower every single day, with nothing anywhere reporting\nit. **That is the failure this product was started to fix**, so shipping the client-side\nreduction and promising to revisit it would be an unusually direct self-contradiction.\n\nThe index this sort wants — `datapoints_indicator_asset_fetched_at_idx` on `(indicator_key,\nasset, fetched_at desc)` — already exists from the original schema.\n\nThe view follows the pattern established twice already in this repo: `security_invoker = true`,\nthen `revoke all` followed by `grant select` to `anon` and `authenticated`. RLS on the\nunderlying table keeps doing the work; the view must not become a way around it.\n\n**Blast radius.** `**/migrations/**`. G4 does not fire on its own; it is run manually before\nmerge.",
       "criteria": [
         {
-          "id": "US-502-C1",
+          "id": "US-510-C1",
           "text": "The count matches the distinct-pair count, computed in the test rather than hard-coded",
           "method": {
             "kind": "test",
@@ -100,7 +100,7 @@
           }
         },
         {
-          "id": "US-502-C2",
+          "id": "US-510-C2",
           "text": "Written with the older row inserted last, so an ordering bug cannot pass by accident",
           "method": {
             "kind": "test",
@@ -108,7 +108,7 @@
           }
         },
         {
-          "id": "US-502-C3",
+          "id": "US-510-C3",
           "text": "Named individually; a select-star view would satisfy a weaker criterion while hiding a later column drop",
           "method": {
             "kind": "test",
@@ -116,7 +116,7 @@
           }
         },
         {
-          "id": "US-502-C4",
+          "id": "US-510-C4",
           "text": "The view is a read surface, not a hole in RLS",
           "method": {
             "kind": "test",
@@ -124,7 +124,7 @@
           }
         },
         {
-          "id": "US-502-C5",
+          "id": "US-510-C5",
           "text": "The migration ledger is consistent",
           "method": {
             "kind": "cmd",
@@ -132,7 +132,7 @@
           }
         },
         {
-          "id": "US-502-C6",
+          "id": "US-510-C6",
           "text": "The Python suite passes",
           "method": {
             "kind": "cmd",
@@ -163,8 +163,8 @@
           "body": "# Authentication & Identity (Auth, Authorization, User Management)\n\n> Authentication (\"who are you?\") and authorization (\"what may you do?\") are the front door to every web app. This space spans **managed auth platforms** (Auth0/Okta, Clerk, Supabase Auth, Firebase Auth, AWS Cognito, Stytch, Kinde, Descope, PropelAuth), **enterprise-identity specialists** (WorkOS, Okta) that sell SSO/SAML/SCIM as a feature, **open-source self-hostable identity servers** (Keycloak, Ory, FusionAuth, Zitadel, SuperTokens), and **developer libraries** (Better Auth, Auth.js/NextAuth, Lucia) where you own the code and data. The big decisions: **buy vs build**, **B2C vs B2B multi-tenant**, and avoiding the **MAU-based pricing trap** where a free tier looks generous until enterprise features (SSO, SCIM, MFA, organizations) or a spike in monthly active users sends the bill from $0 to thousands overnight.\n\n> All prices are USD/month unless noted, current as of June 2026. Auth pricing changes frequently (Auth0, Cognito, and others re-priced in 2024–2025). MAU = Monthly Active User; MRU = Monthly Retained User (Clerk's variant). Always re-verify on vendor pages.\n\n---\n\n## Recommended picks (cost-optimized)\n\n| Scale | Pick | Why | Est. monthly cost |\n|-------|------|-----|-------------------|\n| **Small / SMB** | **Clerk** (managed, best DX) or **Supabase Auth** (if already on Supabase) or **Better Auth** (own your data, free) | Clerk is free to 10K MAU with polished prebuilt UI; Supabase Auth is free with your DB; Better Auth/Auth.js are free libraries you self-host | $0–25 |\n| **Medium** | **Clerk Pro** or **Kinde** (B2C/B2B with orgs) or **Supabase Auth Pro** | Built-in organizations, RBAC, MFA, social; predictable MAU pricing without enterprise sticker shock | $25–250 |\n| **Large / Enterprise** | **WorkOS** (add enterprise SSO/SCIM to existing auth) or **Auth0/Okta** (full enterprise IAM) or **Keycloak/Ory** (self-host, data sovereignty) | WorkOS is the cheapest path to SAML/SCIM (per-connection, not per-MAU); Auth0/Okta for breadth/compliance; Keycloak/Ory when you must own everything | WorkOS $125/connection; Auth0 custom (often $1K–5K+); Keycloak infra-only |\n\n**Rule of thumb:** New B2C app → Clerk or Supabase Auth. Want to own the code/data with no per-MAU fee → Better Auth (or Auth.js/Lucia). B2B SaaS that will sell to enterprises → start on Clerk/Kinde, add **WorkOS** for SSO/SCIM rather than paying Auth0's enterprise tier. Strict data-residency/regulated → self-host **Keycloak** or **Ory**.\n\n---\n\n## Comparison table\n\n| Service | What it is | Free tier | SMB $/mo | Medium $/mo | Enterprise $/mo | Pros | Cons | Best for |\n|---------|-----------|-----------|----------|-------------|-----------------|------|------|----------|\n| **Clerk** | Managed auth + prebuilt UI components, B2C/B2B | 10,000 MAU free | ~$25 Pro + $0.02/MAU over | $25–250 + add-ons | Enterprise custom | Best-in-class DX, drop-in `<SignIn/>`/`<UserButton/>`, orgs, passkeys, MFA | Costs add-ons (SAML, enterprise) climb; vendor lock-in | Next.js/React apps wanting fastest polished auth |\n| **Auth0 / Okta** | Enterprise IAM incumbent (CIAM) | 25,000 MAU free (limited) | varies | jumps fast | $1K–5K+ / custom | Every protocol, compliance, mature, huge ecosystem | Expensive; \"growth penalty\"; complex | B2B/enterprise that explicitly require it |\n| **Supabase Auth** | Auth built into the Supabase Postgres BaaS | 50,000 MAU free (with Supabase free) | $25 Pro (100K MAU) | $25 + $0.00325/MAU over | $599 Team / Enterprise custom | Free with your DB, RLS integration, OSS (GoTrue) | Tied to Supabase; SSO/SAML on paid; fewer prebuilt UIs | Apps already on Supabase/Postgres |\n| **Firebase Auth** | Google BaaS authentication | 50,000 MAU free | usage-based | usage-based | usage-based | Free-ish, easy, social/phone/anon, mobile-first | Tied to Firebase/Google; SAML/OIDC & SMS cost extra; weak UI | Mobile apps, Google ecosystem, MVPs |\n| **AWS Cognito** | AWS-native user pools & federation | 10,000 \n\n[…excerpt — full text at kb:08-auth-and-identity/README.md]"
         },
         {
-          "ref": "kb:20-testing-and-qa/README.md (auto-routed: is about testing)",
-          "body": "# Testing & QA\n\n> Testing & QA is the safety net that proves software actually works before users (or auditors) find out it doesn't. It spans a pyramid: many fast **unit tests** (single functions/components), fewer **integration tests** (modules + real dependencies), and a thin top of **end-to-end (E2E)** tests (full browser/user flows), wrapped by **component/visual regression**, **load/performance**, **API/contract**, and **accessibility** testing. In the age of AI, this layer is *more* important, not less: AI build agents and copilots generate plausible-looking code fast, but plausible is not correct. Tests are the executable specification that catches hallucinated APIs, off-by-one logic, broken edge cases, and regressions an LLM happily introduces while \"fixing\" something else. The modern playbook for an AI agent: write tests alongside the code, run them in CI on every \n\n[…excerpt — full text at kb:20-testing-and-qa/README.md]"
+          "ref": "kb:03-frameworks-and-cms/README.md (auto-routed: is choosing or configuring the framework)",
+          "body": "# Web Frameworks & CMS\n\n> Web frameworks are the libraries/runtimes you use to build a site or app's UI and server logic (frontend frameworks like React/Vue/Svelte, meta-frameworks like Next.js/Astro/Nuxt that add routing, SSR/SSG and data fetching, and backend frameworks like Django/Rails/Laravel/NestJS that expose APIs and business logic). A CMS (Content Management System) is the layer that lets non-engineers create, structure and publish content; modern CMS options split into **headless/API-first** (content via REST/GraphQL, you bring your own frontend) and **traditional/monolithic** (CMS renders the site). This doc helps an AI building agent or engineer pick a framework + CMS pairing that fits the project's scale and budget. Prices below are USD and reflect 2025-2026 published pricing; treat them as starting points, not quotes.\n\n## Recommended picks (cost-optimized)\n\n##\n\n[…excerpt — full text at kb:03-frameworks-and-cms/README.md]"
         }
       ],
       "agent": "claude"
