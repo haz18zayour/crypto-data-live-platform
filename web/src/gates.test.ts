@@ -1,3 +1,7 @@
+// @vitest-environment node
+// These tests spawn node and read files outside web/, so they run in node rather than jsdom,
+// and need the node types that tsconfig.app.json does not load for browser code.
+/// <reference types="node" />
 import { spawnSync } from "node:child_process";
 import { mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
