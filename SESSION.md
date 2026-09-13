@@ -296,6 +296,7 @@ Spend to date: **$31.86** Claude · **109624k** Codex tokens.
 
 ## Handoff
 
+- 2026-09-13 — US-414 attempt 2: persistence code/tests already landed in bb5e6f8; verifier exit-1 root cause was the absent story/criteria file, restored and compiled in 8f98ce5. Five fast US-414 tests pass; Ruff and strict ingest mypy pass. Exact pytest collected 166 passes and 16 fail-loud Postgres setup errors only because this restricted sandbox cannot reach the configured DB; committed gate evidence from the DB-enabled run records 182 passed. Independent verifier should now read US-414 from spec.lock.json and judge the existing named tests.
 - 2026-09-12 — US-414 implementation and tests are in the worktree. Fast board/heartbeat evidence: 8 passed; Ruff and ingest mypy clean. Exact pytest gate: 166 passed, 10 live deselected, 16 fail-loud Postgres setup errors because this sandbox cannot reach the configured database. Real Postgres and live full-board tests are in tests/test_persist_board.py for external verification; do not mark complete from this handoff.
 - 2026-09-12 (session): **PRD-004 complete including two late defects the 8/8 green run
   missed.** Board is **45 entries**, 11–12 indicators per asset across BTC/ETH/SOL/BNB:
