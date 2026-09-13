@@ -9,17 +9,17 @@ Do not hand-edit it — it is regenerated. The hand-written sections below it su
 
 ## ▶ Resume here
 
-**Every PRD is green**
+**PRD-005-dashboard — GATE G1, scope lock**
 
-Nothing is outstanding. Merge and ship, or add the next PRD from the roadmap.
+The research asked you questions and each carries the agent's own hypothesis. Anything you leave blank becomes an explicit assumption with a tripwire. The out-of-scope list is the one field with no default.
 
 Owner: **You.** This one cannot be delegated.
 
 ```
-review the branch, then merge — or start the next PRD
+open prds/PRD-005-dashboard/20-decisions.yaml
 ```
 
-**Last handoff note:** 2026-09-13 — US-414 attempt 2: persistence code/tests already landed in bb5e6f8; verifier exit-1 root cause was the absent story/criteria file, restored and compiled in 8f98ce5. Five fast US-414 tests pass; Ruff and strict ingest mypy pass. Exact pytest collected 166 passes and 16 fail-loud Postgres setup errors only because this restricted sandbox cannot reach the configured DB; committed gate evidence from the DB-enabled run records 182 passed. Independent verifier should now read US-414 from spec.lock.json and judge the existing named tests.
+**Last handoff note:** 2026-09-13 (session): **PRD-004 fully complete, 11/11 stories, merged.** The board now
 
 ## Where this stands
 
@@ -29,8 +29,9 @@ review the branch, then merge — or start the next PRD
 | PRD-002-harness | 7 | 7 | **all green** |
 | PRD-003-corroboration | 7 | 7 | **all green** |
 | PRD-004-indicators | 11 | 11 | **all green** |
+| PRD-005-dashboard | 9 | 0 | 0/9 |
 
-Spend to date: **$32.73** Claude · **110227k** Codex tokens.
+Spend to date: **$34.80** Claude · **110251k** Codex tokens.
 
 ## What happened
 
@@ -298,6 +299,15 @@ Spend to date: **$32.73** Claude · **110227k** Codex tokens.
 - 08:21  US-414 started, attempt 2 (codex)
 - 08:26  US-414 — codex finished `b4109a9b` · 603k tok
 - 08:32  US-414 **PASSED** — 7/7 criteria, judged by claude · $0.87
+- 08:56  **PRD-005-dashboard** compiled — 9 stories
+- 08:56  **PRD-005-dashboard** compiled — 9 stories
+- 08:57  **PRD-005-dashboard** compiled — 9 stories
+- 08:58  US-501 started, attempt 1 (claude)
+- 09:02  US-501 — codex finished `5b6a30f2` · $1.23 · 18k tok
+- 09:09  US-501 failed — interrupted while verifying — the process stopped before a verdict
+- 09:09  US-501 started, attempt 1 (claude)
+- 09:12  US-501 — codex finished `124c19b7` · $0.84 · 6k tok
+- 10:11  US-501 **rejected** — 0/5 criteria, judged by codex
 
 <!-- uf:generated:end -->
 
