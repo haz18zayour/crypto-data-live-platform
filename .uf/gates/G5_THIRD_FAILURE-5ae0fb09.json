@@ -12,5 +12,10 @@
   "context": "Structural problems: the story changed no files at all\nCriteria judged not met:\n  - US-502-C1: not judged — a cheaper layer already failed\n  - US-502-C2: not judged — a cheaper layer already failed\n  - US-502-C3: not judged — a cheaper layer already failed\n  - US-502-C4: not judged — a cheaper layer already failed\n  - US-502-C5: not judged — a cheaper layer already failed\n  - US-502-C6: not judged — a cheaper layer already failed",
   "defaultOnTimeout": "block",
   "id": "G5_THIRD_FAILURE-5ae0fb09",
-  "openedAt": "2026-09-13T19:40:11.473Z"
+  "openedAt": "2026-09-13T19:40:11.473Z",
+  "answer": {
+    "choice": "skip",
+    "at": "2026-09-13T19:41:17.446Z",
+    "by": "human"
+  }
 }
