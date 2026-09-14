@@ -1,0 +1,69 @@
+{
+  "storyId": "US-511",
+  "passes": false,
+  "verifier": {
+    "agent": "codex",
+    "sandbox": "not-run",
+    "independence": "cross-vendor"
+  },
+  "implementer": "claude",
+  "results": [
+    {
+      "criterionId": "US-511-C1",
+      "met": false,
+      "note": "not judged — a cheaper layer already failed"
+    },
+    {
+      "criterionId": "US-511-C2",
+      "met": false,
+      "note": "not judged — a cheaper layer already failed"
+    },
+    {
+      "criterionId": "US-511-C3",
+      "met": false,
+      "note": "not judged — a cheaper layer already failed"
+    },
+    {
+      "criterionId": "US-511-C4",
+      "met": false,
+      "note": "not judged — a cheaper layer already failed"
+    },
+    {
+      "criterionId": "US-511-C5",
+      "met": false,
+      "note": "not judged — a cheaper layer already failed"
+    },
+    {
+      "criterionId": "US-511-C6",
+      "met": false,
+      "note": "not judged — a cheaper layer already failed"
+    },
+    {
+      "criterionId": "US-511-C7",
+      "met": false,
+      "note": "not judged — a cheaper layer already failed"
+    },
+    {
+      "criterionId": "US-511-C8",
+      "met": false,
+      "note": "not judged — a cheaper layer already failed"
+    },
+    {
+      "criterionId": "US-511-C9",
+      "met": false,
+      "note": "not judged — a cheaper layer already failed"
+    },
+    {
+      "criterionId": "US-511-C10",
+      "met": false,
+      "note": "not judged — a cheaper layer already failed"
+    }
+  ],
+  "tripwires": [
+    "criterion US-511-C1 requires a screenshot at prds/PRD-005-dashboard/50-evidence/US-511/board-live-light.png — it does not exist",
+    "criterion US-511-C2 requires a screenshot at prds/PRD-005-dashboard/50-evidence/US-511/board-live-dark.png — it does not exist",
+    "criterion US-511-C3 requires a screenshot at prds/PRD-005-dashboard/50-evidence/US-511/board-mixed-light.png — it does not exist"
+  ],
+  "note": "gates failed: typecheck, test, US-511-C4, US-511-C5, US-511-C9, US-511-C10 | tripwires: criterion US-511-C1 requires a screenshot at prds/PRD-005-dashboard/50-evidence/US-511/board-live-light.png — it does not exist; criterion US-511-C2 requires a screenshot at prds/PRD-005-dashboard/50-evidence/US-511/board-live-dark.png — it does not exist; criterion US-511-C3 requires a screenshot at prds/PRD-005-dashboard/50-evidence/US-511/board-mixed-light.png — it does not exist",
+  "at": "2026-09-14T11:17:53.850Z"
+}
