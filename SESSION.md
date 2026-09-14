@@ -31,7 +31,7 @@ open prds/PRD-005-dashboard/20-decisions.yaml
 | PRD-004-indicators | 11 | 11 | **all green** |
 | PRD-005-dashboard | 9 | 8 | 8/9 |
 
-Spend to date: **$45.27** Claude · **118957k** Codex tokens.
+Spend to date: **$49.13** Claude · **119012k** Codex tokens.
 
 ## What happened
 
@@ -355,6 +355,9 @@ Spend to date: **$45.27** Claude · **118957k** Codex tokens.
 - 07:16  US-508 started, attempt 1 (codex)
 - 07:25  US-508 — codex finished `4ddc5913` · 1713k tok
 - 07:31  US-508 **PASSED** — 8/8 criteria, judged by claude · $0.29
+- 07:31  US-509 started, attempt 1 (claude)
+- 07:43  US-509 — codex finished `5add7873` · $3.86 · 55k tok
+- 07:48  US-509 **rejected** — 0/10 criteria, judged by claude
 
 <!-- uf:generated:end -->
 
