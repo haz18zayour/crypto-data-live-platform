@@ -8,6 +8,9 @@
   endpoint: https://www.okx.com/api/v5/market/candles?instId=BTC-USDT&bar=1Dutc
   source_field: 'okx candle[4] (close), where candle[8] == "1"; coinbase.close after mapping [time, low, high, open, close, volume] by venue; both use a 00:00 UTC boundary'
   definable_for: [BTC]
+  not_definable:
+    assets: [ETH, SOL, BNB]
+    reason: Daily close is intentionally BTC-only on this board.
   golden: btc_daily_close.json
   response_model: okx_candle
   required_bars: 1

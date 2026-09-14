@@ -48,27 +48,51 @@ describe("buildBoard", () => {
     }
   });
 
-  test("a family with no registry entry for an asset yields NOT_FETCHED and never NOT_DEFINABLE", () => {
+  test("declared daily close gaps are NOT_DEFINABLE and carry the registry reason unchanged", () => {
     const board = buildBoard(registry, [], BOARD_ASSETS);
+    const declaration = registry.find(
+      (entry) => entry.key === "btc_daily_close",
+    )?.not_definable;
     const dailyCloseGaps = board.cells.filter(
       (cell) => cell.family === "daily_close" && cell.asset !== "BTC",
     );
 
     expect(dailyCloseGaps).toHaveLength(BOARD_ASSETS.length - 1);
-    expect(dailyCloseGaps.map((cell) => cell.state)).toEqual(
-      expect.arrayContaining([
-        { status: "UNAVAILABLE", reason: "NOT_FETCHED" },
-        { status: "UNAVAILABLE", reason: "NOT_FETCHED" },
-        { status: "UNAVAILABLE", reason: "NOT_FETCHED" },
-      ]),
+    expect(declaration?.assets).toEqual(["ETH", "SOL", "BNB"]);
+    expect(dailyCloseGaps.map((cell) => cell.state)).toEqual([
+      {
+        status: "UNAVAILABLE",
+        reason: "NOT_DEFINABLE",
+        detail: declaration?.reason,
+      },
+      {
+        status: "UNAVAILABLE",
+        reason: "NOT_DEFINABLE",
+        detail: declaration?.reason,
+      },
+      {
+        status: "UNAVAILABLE",
+        reason: "NOT_DEFINABLE",
+        detail: declaration?.reason,
+      },
+    ]);
+  });
+
+  test("without the declaration all three daily close gaps return to NOT_FETCHED", () => {
+    const registryWithoutDeclaration = registry.map((entry) => {
+      const { not_definable: _removed, ...definition } = entry;
+      return definition;
+    });
+    const board = buildBoard(registryWithoutDeclaration, [], BOARD_ASSETS);
+    const dailyCloseGaps = board.cells.filter(
+      (cell) => cell.family === "daily_close" && cell.asset !== "BTC",
     );
-    expect(
-      dailyCloseGaps.some(
-        (cell) =>
-          cell.state.status === "UNAVAILABLE" &&
-          cell.state.reason === "NOT_DEFINABLE",
-      ),
-    ).toBe(false);
+
+    expect(dailyCloseGaps.map((cell) => cell.state)).toEqual([
+      { status: "UNAVAILABLE", reason: "NOT_FETCHED" },
+      { status: "UNAVAILABLE", reason: "NOT_FETCHED" },
+      { status: "UNAVAILABLE", reason: "NOT_FETCHED" },
+    ]);
   });
 
   test("a registry key that does not begin with its own lowercased asset throws", () => {

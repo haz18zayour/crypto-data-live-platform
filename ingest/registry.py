@@ -44,6 +44,15 @@ class UncorroboratedDefinition(BaseModel):
     note: NonEmptyString
 
 
+class NotDefinableDefinition(BaseModel):
+    """Assets deliberately excluded from an indicator family, and why."""
+
+    model_config = ConfigDict(extra="forbid", frozen=True)
+
+    assets: tuple[NonEmptyString, ...] = Field(min_length=1)
+    reason: NonEmptyString
+
+
 class IndicatorDefinition(BaseModel):
     """One indicator's source, applicability, and freshness contract."""
 
@@ -54,6 +63,7 @@ class IndicatorDefinition(BaseModel):
     endpoint: NonEmptyString
     source_field: NonEmptyString
     definable_for: tuple[NonEmptyString, ...] = Field(min_length=1)
+    not_definable: NotDefinableDefinition | None = None
     golden: NonEmptyString | None = None
     response_model: NonEmptyString | None = None
     required_bars: PositiveInt | None = None
@@ -74,6 +84,18 @@ class IndicatorDefinition(BaseModel):
                 "definable_for must list explicit assets; wildcards are forbidden"
             )
         return assets
+
+    @model_validator(mode="after")
+    def reject_contradictory_asset_declarations(self) -> IndicatorDefinition:
+        if self.not_definable is None:
+            return self
+        overlap = set(self.definable_for) & set(self.not_definable.assets)
+        if overlap:
+            assets = ", ".join(sorted(overlap))
+            raise ValueError(
+                f"{assets} cannot appear in both definable_for and not_definable"
+            )
+        return self
 
     @model_validator(mode="after")
     def require_more_bars_than_talib_lookback(self) -> IndicatorDefinition:
