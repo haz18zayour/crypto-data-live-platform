@@ -1,0 +1,6 @@
+.uf/events.ndjson                 |   3 ++
+ SESSION.md                        |   9 ++--
+ web/src/CoverageHeadline.test.tsx | 101 ++++++++++++++++++++++++++++++++++++++
+ web/src/CoverageHeadline.tsx      |  28 +++++++++++
+ web/src/coverage.ts               |  60 ++++++++++++++++++++++
+ 5 files changed, 198 insertions(+), 3 deletions(-)
