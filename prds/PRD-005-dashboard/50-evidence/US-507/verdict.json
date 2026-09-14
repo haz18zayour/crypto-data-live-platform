@@ -1,0 +1,64 @@
+{
+  "storyId": "US-507",
+  "passes": false,
+  "verifier": {
+    "agent": "claude",
+    "sandbox": "not-run"
+  },
+  "implementer": "claude",
+  "results": [
+    {
+      "criterionId": "US-507-C1",
+      "met": false,
+      "note": "not judged — a cheaper layer already failed"
+    },
+    {
+      "criterionId": "US-507-C2",
+      "met": false,
+      "note": "not judged — a cheaper layer already failed"
+    },
+    {
+      "criterionId": "US-507-C3",
+      "met": false,
+      "note": "not judged — a cheaper layer already failed"
+    },
+    {
+      "criterionId": "US-507-C4",
+      "met": false,
+      "note": "not judged — a cheaper layer already failed"
+    },
+    {
+      "criterionId": "US-507-C5",
+      "met": false,
+      "note": "not judged — a cheaper layer already failed"
+    },
+    {
+      "criterionId": "US-507-C6",
+      "met": false,
+      "note": "not judged — a cheaper layer already failed"
+    },
+    {
+      "criterionId": "US-507-C7",
+      "met": false,
+      "note": "not judged — a cheaper layer already failed"
+    },
+    {
+      "criterionId": "US-507-C8",
+      "met": false,
+      "note": "not judged — a cheaper layer already failed"
+    },
+    {
+      "criterionId": "US-507-C9",
+      "met": false,
+      "note": "not judged — a cheaper layer already failed"
+    },
+    {
+      "criterionId": "US-507-C10",
+      "met": false,
+      "note": "not judged — a cheaper layer already failed"
+    }
+  ],
+  "tripwires": [],
+  "note": "gates failed: test, US-507-C9",
+  "at": "2026-09-14T07:08:06.030Z"
+}

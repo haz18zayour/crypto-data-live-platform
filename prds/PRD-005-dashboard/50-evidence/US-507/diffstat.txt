@@ -1,0 +1,12 @@
+.uf/events.ndjson            |   3 +
+ SESSION.md                   |   7 +-
+ web/src/App.test.tsx         |   3 +
+ web/src/App.tsx              |  37 ++++--
+ web/src/BoardMatrix.test.tsx | 286 +++++++++++++++++++++++++++++++++++++++++++
+ web/src/BoardMatrix.tsx      |  40 ++++++
+ web/src/CellFace.tsx         |  89 ++++++++++++++
+ web/src/DatapointValue.tsx   |   2 +-
+ web/src/data.ts              |  27 +++-
+ web/src/registry.ts          |   4 +-
+ web/src/styles.css           | 115 ++++++++++++++++-
+ 11 files changed, 597 insertions(+), 16 deletions(-)
