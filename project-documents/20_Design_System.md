@@ -74,14 +74,35 @@ Apple-grade: restrained, dense, legible. Reference `open-design:apple-hig` (Appl
 skills), with `taste-skill`, `color-expert` and `wise-ui-skill` for typography, colour and
 tokens; `design-review` for the audit pass.
 
-- **Dense but calm.** Forty-plus indicators on one screen without feeling like a trading
+- **Dense but calm.** Forty-eight cells on one screen without feeling like a trading
   terminal. Generous type scale, tight vertical rhythm, few rules and borders.
-- **Colour carries meaning and nothing else.** Status is the only thing allowed to be
-  chromatic; values are neutral. If a cell is coloured, something is wrong or notable.
-- **No decoration that could be mistaken for data** — no sparkline flourishes on values that
+- **Colour carries meaning, but never alone.** Colour is reserved for status, and values are
+  neutral: if a cell is coloured, something is wrong or notable. Colour is never the sole
+  status channel, though. Relying on hue alone fails WCAG 1.4.1 (Use of Colour, Level A) and
+  leaves anyone who cannot tell the hues apart unable to read the board.
+- **The glyph-and-word rule.** Every state carries a glyph and a word as well as its hue, and
+  the glyph and the word each separate all five states on their own:
+
+  | State | Glyph | Word |
+  |---|---|---|
+  | `OK` | ● | OK |
+  | `STALE` | ◐ | Stale |
+  | `UNAVAILABLE / NOT_DEFINABLE` | ⊘ | n/a |
+  | `UNAVAILABLE / PAYWALLED` | ◇ | Requires paid tier |
+  | `ERROR / FETCH_FAILED` | ✕ | Unavailable |
+  | `UNAVAILABLE / NOT_FETCHED` (no row) | ! | Not fetched |
+
+  Greyscale is the test. If two states look the same with colour removed, the fix is a
+  different glyph or a different word, not a stronger hue. Every status colour also meets
+  WCAG AA contrast (4.5:1 for text) in both themes, checked with axe-core in a real browser.
+- **No decoration that could be mistaken for data**: no sparkline flourishes on values that
   have no history, no gauges implying precision the source does not have.
 - Dark and light both first-class; the viewer's system setting decides.
+- **The matrix stays a native `<table>`.** Never `display: grid` on the table or its rows and
+  cells, which strips row and column semantics from assistive technology. On a narrow screen
+  the matrix scrolls inside its own container; the page body never scrolls sideways.
 
-**Implementation note:** every design skill listed above is Claude-only, so PRD-008's stories
-must set `agent: claude` in front-matter. Codex then verifies, preserving the different-vendor
-rule.
+**Implementation note:** every design skill listed above is Claude-only, so the design-led
+stories of PRD-005 (US-507, US-509) set `agent: claude` in front-matter. Codex then verifies,
+preserving the different-vendor rule. `scripts/capture-board.mjs` photographs the board in
+headless Chromium and checks its table semantics and axe-core contrast.

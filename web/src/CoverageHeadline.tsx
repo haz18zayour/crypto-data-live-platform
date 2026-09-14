@@ -10,6 +10,7 @@ export function CoverageHeadline({ board }: CoverageHeadlineProps) {
 
   return (
     <p
+      className="coverage-headline"
       role="status"
       aria-atomic="true"
       style={{ fontVariantNumeric: "tabular-nums" }}
