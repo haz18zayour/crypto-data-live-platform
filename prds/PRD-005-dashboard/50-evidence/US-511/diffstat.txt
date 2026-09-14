@@ -1,5 +1,9 @@
-.uf/events.ndjson             |   2 +
- scripts/capture-board.mjs     | 194 ++++++++++++++++++++++++++++++++++++++++++
- web/package.json              |   3 +
- web/src/board.browser.test.ts | 129 ++++++++++++++++++++++++++++
- 4 files changed, 328 insertions(+)
+.uf/events.ndjson                                  |   5 +
+ SESSION.md                                         |   8 +-
+ .../50-evidence/US-511/diffstat.txt                |   5 +
+ .../50-evidence/US-511/gates.json                  |  44 +++++
+ .../50-evidence/US-511/verdict.json                |  69 ++++++++
+ scripts/capture-board.mjs                          | 194 +++++++++++++++++++++
+ web/package.json                                   |   3 +
+ web/src/board.browser.test.ts                      | 129 ++++++++++++++
+ 8 files changed, 456 insertions(+), 1 deletion(-)
