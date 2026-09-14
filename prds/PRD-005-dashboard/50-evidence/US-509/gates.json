@@ -9,7 +9,7 @@
     "name": "test",
     "run": "node -e \"const f=require('fs'),c=require('child_process');let r=0;const run=(cmd)=>{try{c.execSync(cmd,{stdio:'inherit'})}catch(e){r=1}};if(f.existsSync('web/package.json'))run('npm --prefix web test');if(f.existsSync('tests'))run('uv run pytest -q');process.exit(r)\"",
     "exitCode": 0,
-    "output": "\n> crypto-data-live-web@0.0.0 test\n> vitest run --configLoader runner\n\n\n RUN  v4.1.9 C:/Users/zayou/OneDrive/Desktop/Projects/crypto-data-live-platform/web\n\n\n Test Files  10 passed (10)\n      Tests  49 passed (49)\n   Start at  10:48:30\n   Duration  18.07s (transform 6.27s, setup 11.32s, import 11.09s, tests 28.14s, environment 32.15s)\n\n........................................................................ [ 37%]\r\n........................................................................ [ 75%]\r\n................................................                         [100%]\r\n192 passed, 10 deselected in 190.72s (0:03:10)\r\n"
+    "output": "\n> crypto-data-live-web@0.0.0 test\n> vitest run --configLoader runner\n\n\n RUN  v4.1.9 C:/Users/zayou/OneDrive/Desktop/Projects/crypto-data-live-platform/web\n\n\n Test Files  10 passed (10)\n      Tests  49 passed (49)\n   Start at  10:52:39\n   Duration  12.69s (transform 2.22s, setup 6.64s, import 4.24s, tests 15.55s, environment 24.85s)\n\n........................................................................ [ 37%]\r\n........................................................................ [ 75%]\r\n................................................                         [100%]\r\n192 passed, 10 deselected in 201.45s (0:03:21)\r\n"
   },
   {
     "name": "US-509-C4",
@@ -33,7 +33,7 @@
     "name": "US-509-C9",
     "run": "npm --prefix web test",
     "exitCode": 0,
-    "output": "\n> crypto-data-live-web@0.0.0 test\n> vitest run --configLoader runner\n\n\n RUN  v4.1.9 C:/Users/zayou/OneDrive/Desktop/Projects/crypto-data-live-platform/web\n\n\n Test Files  10 passed (10)\n      Tests  49 passed (49)\n   Start at  10:52:03\n   Duration  12.47s (transform 3.20s, setup 6.67s, import 5.75s, tests 16.66s, environment 22.78s)\n\n"
+    "output": "\n> crypto-data-live-web@0.0.0 test\n> vitest run --configLoader runner\n\n\n RUN  v4.1.9 C:/Users/zayou/OneDrive/Desktop/Projects/crypto-data-live-platform/web\n\n\n Test Files  10 passed (10)\n      Tests  49 passed (49)\n   Start at  10:56:21\n   Duration  18.25s (transform 3.34s, setup 7.98s, import 7.36s, tests 23.27s, environment 29.04s)\n\n"
   },
   {
     "name": "US-509-C10",

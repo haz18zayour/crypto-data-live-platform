@@ -1,6 +1,6 @@
-.uf/events.ndjson                                  |   6 +
- SESSION.md                                         |  12 +-
- .../50-evidence/US-509/diffstat.txt                |  10 +
+.uf/events.ndjson                                  |   9 +
+ SESSION.md                                         |  15 +-
+ .../50-evidence/US-509/diffstat.txt                |  13 +
  .../50-evidence/US-509/gates.json                  |  44 ++
  .../50-evidence/US-509/verdict.json                |  68 ++
  project-documents/20_Design_System.md              |  37 +-
@@ -10,4 +10,4 @@
  web/src/CoverageHeadline.tsx                       |   1 +
  web/src/fixtures/mixedBoardPage.tsx                |  22 +
  web/src/styles.css                                 | 738 +++++++++++----------
- 12 files changed, 659 insertions(+), 396 deletions(-)
+ 12 files changed, 668 insertions(+), 396 deletions(-)
