@@ -19,7 +19,7 @@ Owner: **You.** This one cannot be delegated.
 open prds/PRD-005-dashboard/20-decisions.yaml
 ```
 
-**Last handoff note:** 2026-09-13 (session): **PRD-004 fully complete, 11/11 stories, merged.** The board now
+**Last handoff note:** 2026-09-14 — US-504 implementation is ready for external verification: btc_daily_close declares ETH/SOL/BNB not_definable with a mandatory reason; overlap is rejected; board gaps render NOT_DEFINABLE with unchanged detail and revert to NOT_FETCHED when removed. Criterion-focused Python tests: 29 passed with 1 integration deselected; web: 23 passed, typecheck/build clean. Exact Python gate reached 172 passed and 10 deselected but has 20 fail-loud PostgreSQL setup errors because this restricted sandbox cannot connect.
 
 ## Where this stands
 
@@ -29,9 +29,9 @@ open prds/PRD-005-dashboard/20-decisions.yaml
 | PRD-002-harness | 7 | 7 | **all green** |
 | PRD-003-corroboration | 7 | 7 | **all green** |
 | PRD-004-indicators | 11 | 11 | **all green** |
-| PRD-005-dashboard | 9 | 3 | 3/9 |
+| PRD-005-dashboard | 9 | 4 | 4/9 |
 
-Spend to date: **$39.04** Claude · **112946k** Codex tokens.
+Spend to date: **$39.32** Claude · **114807k** Codex tokens.
 
 ## What happened
 
@@ -337,11 +337,15 @@ Spend to date: **$39.04** Claude · **112946k** Codex tokens.
 - 05:53  US-503 started, attempt 1 (codex)
 - 06:05  US-503 — codex finished `bc2821a2` · 2677k tok
 - 06:09  US-503 **PASSED** — 7/7 criteria, judged by claude · $0.66
+- 06:09  US-504 started, attempt 1 (codex)
+- 06:19  US-504 — codex finished `8fe474c2` · 1861k tok
+- 06:27  US-504 **PASSED** — 8/8 criteria, judged by claude · $0.28
 
 <!-- uf:generated:end -->
 
 ## Handoff
 
+- 2026-09-14 — US-505 implementation is present in the three expected story paths and awaits independent verification. The fixture uses the real buildBoard model and parsed registry; no story status was changed.
 - 2026-09-14 — US-504 implementation is ready for external verification: btc_daily_close declares ETH/SOL/BNB not_definable with a mandatory reason; overlap is rejected; board gaps render NOT_DEFINABLE with unchanged detail and revert to NOT_FETCHED when removed. Criterion-focused Python tests: 29 passed with 1 integration deselected; web: 23 passed, typecheck/build clean. Exact Python gate reached 172 passed and 10 deselected but has 20 fail-loud PostgreSQL setup errors because this restricted sandbox cannot connect.
 - 2026-09-13 (session): **PRD-004 fully complete, 11/11 stories, merged.** The board now
   **persists**: `run_all_assets()` + `persist_board()` computes 44 indicators in ~23s and
