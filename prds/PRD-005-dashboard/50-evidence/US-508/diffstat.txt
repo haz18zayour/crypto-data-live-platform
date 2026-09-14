@@ -1,0 +1,7 @@
+.uf/events.ndjson         |   3 +
+ SESSION.md                |  10 ++-
+ web/src/CellDetail.tsx    |  69 +++++++++++++++++++
+ web/src/CellFace.test.tsx | 165 ++++++++++++++++++++++++++++++++++++++++++++++
+ web/src/CellFace.tsx      |  76 +++++++++++++++++++--
+ web/src/styles.css        |  76 ++++++++++++++++++++-
+ 6 files changed, 389 insertions(+), 10 deletions(-)

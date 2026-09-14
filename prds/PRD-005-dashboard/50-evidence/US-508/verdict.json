@@ -1,0 +1,102 @@
+{
+  "storyId": "US-508",
+  "passes": true,
+  "verifier": {
+    "agent": "claude",
+    "sandbox": "restricted:read-only"
+  },
+  "implementer": "codex",
+  "results": [
+    {
+      "criterionId": "US-508-C1",
+      "met": true,
+      "evidence": {
+        "file": "web/src/CellFace.test.tsx",
+        "line": 46,
+        "testName": "every OK and STALE cell shows its vendor and its source timestamp with no interaction",
+        "exitCode": 0
+      },
+      "note": "Vendor (OKX) and source timestamp are asserted visible before any fireEvent, and the <details> is asserted not open. In CellFace.tsx the vendor/timestamp spans are children of <summary> (via CellDetail), so jest-dom's toBeVisible() (which special-cases closed <details>) can only pass if they render outside the collapsed region — confirming they are on the initial render."
+    },
+    {
+      "criterionId": "US-508-C2",
+      "met": true,
+      "evidence": {
+        "file": "web/src/CellFace.test.tsx",
+        "line": 66,
+        "testName": "a STALE cell shows its age in the same glance as its value",
+        "exitCode": 0
+      },
+      "note": "Asserts the summary text \"11,111.1 · 1 day old\" is visible, sourced from CellFace.tsx's STALE branch (`formatAge(state.publishedAt ?? state.sourceTimestamp, now)`), which sits in the always-visible primary detail span, not behind the disclosure."
+    },
+    {
+      "criterionId": "US-508-C3",
+      "met": true,
+      "evidence": {
+        "file": "web/src/CellFace.test.tsx",
+        "line": 79,
+        "testName": "the timestamp shown is source_timestamp and not fetched_at",
+        "exitCode": 0
+      },
+      "note": "Fixture has fetchedAt=2026-09-14T00:01:00Z and sourceTimestamp=2026-09-13T00:00:00Z (a day apart); the test asserts the source_timestamp string is visible in the summary and explicitly queries that the fetched_at-formatted string is NOT present. CellFace.tsx only renders `cell.state.sourceTimestamp` in the always-visible cell-provenance span."
+    },
+    {
+      "criterionId": "US-508-C4",
+      "met": true,
+      "evidence": {
+        "file": "web/src/CellFace.test.tsx",
+        "line": 96,
+        "testName": "an ERROR cell shows its reason and shows no number at all",
+        "exitCode": 0
+      },
+      "note": "Asserts the reason label (\"Fetch failed\") and detail text render, and that no element with data-testid=\"cell-value\" exists. CellFace.tsx only sets that testid for OK/STALE states, so an ERROR cell cannot expose a numeric value."
+    },
+    {
+      "criterionId": "US-508-C5",
+      "met": true,
+      "evidence": {
+        "file": "web/src/CellFace.test.tsx",
+        "line": 109,
+        "testName": "a cell with a reference period distinct from its publication date shows both",
+        "exitCode": 0
+      },
+      "note": "Simulates a lagged macro series (usd_m2) with referencePeriod=2026-07-01 and publishedAt=2026-09-08 and asserts both distinct dates and their \"Reference period\"/\"Published\" labels render — the field pair CellFace.tsx exposes via cell.state.referencePeriod / cell.state.publishedAt, present ahead of any macro-panel story."
+    },
+    {
+      "criterionId": "US-508-C6",
+      "met": true,
+      "evidence": {
+        "file": "web/src/CellFace.test.tsx",
+        "line": 130,
+        "testName": "opening a cell reveals endpoint source field and fetch time",
+        "exitCode": 0
+      },
+      "note": "Asserts endpoint, source field and formatted fetch time are absent until the summary is clicked, then present after — matching CellDetail.tsx's <dl> (Endpoint/Source field/Fetch time) rendered outside <summary>, i.e. one interaction deeper, never the first thing shown."
+    },
+    {
+      "criterionId": "US-508-C7",
+      "met": true,
+      "evidence": {
+        "file": "web/src/CellFace.test.tsx",
+        "line": 149,
+        "testName": "the detail view can be opened and closed by keyboard alone",
+        "exitCode": 0
+      },
+      "note": "Focuses the summary and toggles the <details> open/closed purely via Enter and Space keydown events (CellDetail.tsx's toggleWithKeyboard), proving the disclosure is operable without a mouse and is a normal part of page markup (native <details>/<summary>), not a hover-only feature. CellFace is wired into BoardMatrix.tsx:33, so it is part of the assembled page, not an isolated component."
+    },
+    {
+      "criterionId": "US-508-C8",
+      "met": true,
+      "evidence": {
+        "file": null,
+        "line": null,
+        "testName": null,
+        "exitCode": 0
+      },
+      "note": "Supplied deterministic gate 'US-508-C8: npm --prefix web test' and the general 'test' gate both report exit 0, which supersedes the stale in-repo handoff note claiming a 1-test live-Supabase failure (that failure was tied to the board_read migration gap US-507 already resolved earlier in this same session, seq 296, before US-508 started)."
+    }
+  ],
+  "tripwires": [],
+  "note": "All seven CellFace.test.tsx tests are assertion-heavy, one-to-one with the seven test criteria, and directly probe the DOM structure CellFace.tsx/CellDetail.tsx actually produce (summary-vs-details placement, testid absence, distinct timestamp strings) rather than asserting nothing or relying on comments. C8 is taken from the supplied deterministic exit-0 gate, which is newer than the stale SESSION.md handoff note warning of a failing live-integration test.",
+  "at": "2026-09-14T07:31:07.919Z"
+}
