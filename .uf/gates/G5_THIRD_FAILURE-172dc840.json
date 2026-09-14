@@ -1,0 +1,21 @@
+{
+  "gate": "G5_THIRD_FAILURE",
+  "question": "US-509 has failed 3 times — is the story wrong?",
+  "feature": "PRD-005-dashboard",
+  "story": "US-509",
+  "options": [
+    "split",
+    "rewrite-criteria",
+    "skip",
+    "retry-anyway"
+  ],
+  "context": "Structural problems: criterion US-509-C1 requires a screenshot at prds/PRD-005-dashboard/50-evidence/US-509/board-live-light.png — it does not exist; criterion US-509-C2 requires a screenshot at prds/PRD-005-dashboard/50-evidence/US-509/board-live-dark.png — it does not exist; criterion US-509-C3 requires a screenshot at prds/PRD-005-dashboard/50-evidence/US-509/board-mixed-light.png — it does not exist\nCriteria judged not met:\n  - US-509-C1: not judged — a cheaper layer already failed\n  - US-509-C2: not judged — a cheaper layer already failed\n  - US-509-C3: not judged — a cheaper layer already failed\n  - US-509-C4: not judged — a cheaper layer already failed\n  - US-509-C5: not judged — a cheaper layer already failed\n  - US-509-C6: not judged — a cheaper layer already failed\n  - US-509-C7: not judged — a cheaper layer already failed\n  - US-509-C8: not judged — a cheaper layer already failed\n  - US-509-C9: not judged — a cheaper layer already failed\n  - US-509-C10: not judged — a cheaper layer already failed",
+  "defaultOnTimeout": "block",
+  "id": "G5_THIRD_FAILURE-172dc840",
+  "openedAt": "2026-09-14T07:56:51.524Z",
+  "answer": {
+    "choice": "skip",
+    "at": "2026-09-14T11:06:26.770Z",
+    "by": "human"
+  }
+}

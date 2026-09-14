@@ -95,4 +95,4 @@ US-504 builds the fixture that forces it, before any polish exists to flatter.
 | US-506 | The coverage headline — the one line that is the product | US-503 |
 | US-507 | The completeness matrix — 48 cells, none of them blank | US-505, US-506 |
 | US-508 | Provenance on the face of the cell, without a click | US-507 |
-| US-509 | The Apple-grade pass, and the design document corrected | US-507, US-508 |
+| US-511 | The Apple-grade pass, and the design document corrected (re-identified from US-509, which was rate-limited) | US-507, US-508 |
