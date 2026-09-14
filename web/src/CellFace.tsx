@@ -1,5 +1,6 @@
 import type { BoardCell } from "./board";
-import { assertNever } from "./datapoint";
+import { CellDetail, formatUtcTimestamp } from "./CellDetail";
+import { assertNever, type Datapoint, type UnavailableReason } from "./datapoint";
 import { formatAge } from "./DatapointValue";
 
 type Face = {
@@ -11,6 +12,17 @@ type Face = {
 
 function formatValue(value: number): string {
   return value.toLocaleString("en-US", { maximumSignificantDigits: 6 });
+}
+
+const reasonLabels: Record<UnavailableReason, string> = {
+  NOT_DEFINABLE: "Not definable",
+  PAYWALLED: "Requires paid tier",
+  FETCH_FAILED: "Fetch failed",
+  NOT_FETCHED: "Not fetched",
+};
+
+function isSourced(state: BoardCell["state"]): state is Datapoint {
+  return "sourceVendor" in state;
 }
 
 // Every state, OK included, goes through this one switch, so no value reaches the page without
@@ -77,13 +89,65 @@ function faceOf(state: BoardCell["state"], now: Date): Face {
 export function CellFace({ cell, now }: { cell: BoardCell; now: Date }) {
   const face = faceOf(cell.state, now);
 
+  const content = (
+    <>
+      <span className="cell-primary">
+        <span className="cell-glyph" aria-hidden="true">
+          {face.glyph}
+        </span>{" "}
+        <span className="cell-word">{face.word}</span>{" "}
+        <span
+          className="cell-detail"
+          data-testid={
+            cell.state.status === "OK" || cell.state.status === "STALE"
+              ? "cell-value"
+              : undefined
+          }
+        >
+          {face.detail}
+        </span>
+      </span>
+      {cell.state.status === "ERROR" ? (
+        <span className="cell-reason">{reasonLabels[cell.state.reason]}</span>
+      ) : null}
+      {cell.state.status === "OK" || cell.state.status === "STALE" ? (
+        <>
+          <span className="cell-provenance">
+            <span className="cell-vendor">{cell.state.sourceVendor}</span>
+            <span aria-hidden="true"> · </span>
+            <span>Source</span>{" "}
+            <time dateTime={cell.state.sourceTimestamp}>
+              {formatUtcTimestamp(cell.state.sourceTimestamp)}
+            </time>
+          </span>
+          {cell.state.referencePeriod ? (
+            <span className="cell-reference-period">
+              <span>Reference period</span>{" "}
+              <time dateTime={cell.state.referencePeriod}>
+                {formatUtcTimestamp(cell.state.referencePeriod)}
+              </time>
+            </span>
+          ) : null}
+          {cell.state.publishedAt ? (
+            <span className="cell-published-at">
+              <span>Published</span>{" "}
+              <time dateTime={cell.state.publishedAt}>
+                {formatUtcTimestamp(cell.state.publishedAt)}
+              </time>
+            </span>
+          ) : null}
+        </>
+      ) : null}
+    </>
+  );
+
   return (
     <td className={`cell cell--${face.name}`}>
-      <span className="cell-glyph" aria-hidden="true">
-        {face.glyph}
-      </span>{" "}
-      <span className="cell-word">{face.word}</span>{" "}
-      <span className="cell-detail">{face.detail}</span>
+      {isSourced(cell.state) ? (
+        <CellDetail datapoint={cell.state}>{content}</CellDetail>
+      ) : (
+        content
+      )}
     </td>
   );
 }

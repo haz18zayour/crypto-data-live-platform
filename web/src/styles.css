@@ -315,6 +315,71 @@ main:has(.board-matrix) {
   font-weight: 700;
 }
 
+.cell-primary,
+.cell-provenance,
+.cell-reference-period,
+.cell-published-at,
+.cell-reason,
+.cell-detail-cue {
+  display: block;
+}
+
+.cell-provenance,
+.cell-reference-period,
+.cell-published-at,
+.cell-reason,
+.cell-detail-cue {
+  margin-top: 0.2rem;
+  font-size: 0.6875rem;
+  line-height: 1.3;
+}
+
+.cell-provenance,
+.cell-reference-period,
+.cell-published-at,
+.cell-detail-cue {
+  color: #66736d;
+}
+
+.cell-vendor,
+.cell-reason {
+  font-weight: 700;
+}
+
+.cell-disclosure summary {
+  cursor: pointer;
+}
+
+.cell-detail-cue {
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+}
+
+.cell-source-detail {
+  display: grid;
+  gap: 0.4rem;
+  margin: 0.5rem 0 0;
+  padding-top: 0.5rem;
+  border-top: 1px solid #dfe5e2;
+}
+
+.cell-source-detail div {
+  min-width: 0;
+}
+
+.cell-source-detail dt {
+  color: #66736d;
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.cell-source-detail dd {
+  margin: 0.1rem 0 0;
+  overflow-wrap: anywhere;
+}
+
 .cell--ok .cell-glyph {
   color: #08734e;
 }
@@ -433,12 +498,21 @@ main:has(.board-matrix) {
 
   .board-matrix caption,
   .board-matrix thead th,
-  .cell--not-definable {
+  .cell--not-definable,
+  .cell-provenance,
+  .cell-reference-period,
+  .cell-published-at,
+  .cell-detail-cue,
+  .cell-source-detail dt {
     color: #a7b6af;
   }
 
   .board-matrix th,
   .board-matrix td {
+    border-color: #293831;
+  }
+
+  .cell-source-detail {
     border-color: #293831;
   }
 
