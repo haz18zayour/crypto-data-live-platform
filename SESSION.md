@@ -378,6 +378,79 @@ Spend to date: **$52.59** Claude · **119047k** Codex tokens.
 
 ## Handoff
 
+- **2026-09-14 — STOPPED HERE. PRD-005 is 8 of 9 real stories done; `US-511` is the only one
+  left, and it is blocked on the environment, not on the work.** Read this whole bullet before
+  running anything.
+
+  **Branch:** `feat/prd-005-dashboard`, pushed. `main` is unchanged at `c4c0722` (PRD-004).
+  Do not merge yet — US-511 is unfinished.
+
+  **Story ledger.** `uf status` shows 8/11 because two ids are retired phantoms, not work:
+  `US-502` was re-identified as `US-510` and `US-509` as `US-511`. Both originals failed 3×
+  purely on Claude session rate limits (HTTP 429, zero files changed). Answering G5 with
+  `retry-anyway` does **not** restore attempts in this framework; only a new story id does.
+  Their G5 gates are answered `skip`. Real state: 501, 503, 504, 505, 506, 507, 508, 510 all
+  passed with full evidence. Only **US-511** remains, with **1 attempt left** (2 rejected,
+  1 interrupted by an OOM kill, which does not cost an attempt).
+
+  **What US-511 still needs.** Attempt 1 of the original US-509 already landed and committed
+  the design half: the stylesheet rewrite (738 lines), the `BoardMatrix` changes, the
+  `20_Design_System.md` correction, `scripts/check-design-doc.mjs`, and a mixed-board dev page
+  at `web/mixed-board.html`. `scripts/capture-board.mjs` also exists and is well-formed — it
+  starts Vite itself, drives headless Chromium, waits on the 48th cell rather than a timer, and
+  implements `--check-semantics` and `--check-contrast` via axe-core. **What is missing is only
+  its output:** the three PNGs under `prds/PRD-005-dashboard/50-evidence/US-511/`
+  (`board-live-light.png`, `board-live-dark.png`, `board-mixed-light.png`), plus the greyscale
+  and 400px-width tests.
+
+  **The blocker, and it will bite you again.** The implementer agent **cannot install
+  dependencies** — every `npm install` came back *"Permission for this tool use was denied. It
+  requires approval, and this session has no approval surface."* So anything a story needs from
+  a package manager must be in place **before** `uf run` starts. On the new machine, run these
+  by hand first:
+
+  ```
+  npm --prefix web install            # node_modules is not in git
+  cd web && npx playwright install chromium chromium-headless-shell
+  ```
+
+  `web/package.json` already pins `playwright@1.55.0` and `@axe-core/playwright@4.10.2`, and has
+  a `pretest` hook that installs the browser. Two traps I hit: Playwright 1.55 wants Chromium
+  build **1187** specifically (I had warmed the cache with 1.56, which fetches 1200+, and the
+  launch failed on the mismatch); and a killed download leaves a `__dirlock` directory in
+  `%LOCALAPPDATA%\ms-playwright` that blocks every later install until you delete it.
+
+  **Then simply:** `uf run`. If US-511 exhausts its last attempt, answer the G5 gate `skip`,
+  re-identify it as `US-512` the same way (git mv the story file, change `id:`, update the
+  path in the three `[browser:]` criteria and the story table in `30-spec.md`, `uf compile`),
+  and run again.
+
+  **Applied to production by hand, because nothing else will.** `ingest/migrate.py` only
+  supports `--check`; **it has no apply path at all**. `20260913120000_create_board_read.sql`
+  was executed against the live database on 2026-09-14 and PostgREST's schema cache reloaded
+  with `notify pgrst, 'reload schema'`. Verified: `board_read` returns **45 rows for 45 distinct
+  cells**, and an anonymous REST read returns HTTP 200 with real values. **US-510 had passed
+  6/6 while the view did not exist in production** — its tests run against `TEST_DATABASE_URL`,
+  so they proved the migration was correct and never that it was applied. US-507's integration
+  criterion is what caught it, at HTTP 404. Any future migration needs the same manual step.
+
+  **Agent routing was changed mid-PRD and the reasoning matters.** I originally set
+  `agent: claude` on all nine stories because every design skill is Claude-only. That was
+  over-applied: it put a SQL migration, a TypeScript model and a registry change through the one
+  quota the design skills need, and the quota became the bottleneck — **US-510 spent ten hours
+  on a single attempt, throttled eighteen times.** After rerouting, the same class of story
+  passed in minutes for $0.25–$0.66. **Only US-507 and US-511 carry `agent: claude` now.** Keep
+  it that way. The framework flips the verifier automatically when implementer equals the
+  configured verifier, so the different-vendor rule holds either way — verified in
+  `ultimate-framework/src/core/verify.ts`.
+
+  **Memory killed this run three times.** `uf run` needs roughly **5 GB free**; it died at
+  2–3 GB with Chrome open. This is the single biggest reason to move to a stronger machine.
+
+  **Still owed, unchanged:** rotate the Supabase database password, anon key and service-role
+  key — all three were pasted into a chat transcript. And integration tests still refetch rather
+  than sharing a cached fixture; the 4-hour suite is mitigated by deselection, not fixed.
+
 - 2026-09-14 — US-508 implementation is in the worktree: seven criterion-named CellFace tests pass, and web typecheck/build pass. Exact npm --prefix web test reaches 48 passed / 1 failed; only the pre-existing live Supabase BoardMatrix integration fails because fetch cannot reach board_read in this sandbox. Leave it fail-loud for external verification; do not mark the story complete.
 - 2026-09-14 — US-507 attempt 1 failed on one test only (C8/C9: live `board_read` → HTTP 404; 41/42 passed, typecheck clean). Cause is not in `web/`: `supabase/migrations/20260913120000_create_board_read.sql` was only ever executed inside throwaway schemas by `tests/test_board_read.py`, never against live `public`, so PostgREST has no such relation. G4 already approved it ("proceed"). **Owed before re-verifying US-507:** apply that one migration to production and `notify pgrst, 'reload schema'`. Attempt 2 could not do this: the session's permission mode denied the DB write, `npm test`, and typecheck. No code was changed. Do not work around it by reading `datapoints_read` instead, because that goes against the PRD's single-view decision.
 - 2026-09-14 — US-505 implementation is present in the three expected story paths and awaits independent verification. The fixture uses the real buildBoard model and parsed registry; no story status was changed.
