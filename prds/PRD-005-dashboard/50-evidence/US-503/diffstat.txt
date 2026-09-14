@@ -1,0 +1,12 @@
+.uf/events.ndjson                                  |   6 +
+ SESSION.md                                         |  15 ++-
+ prds/PRD-005-dashboard/30-spec.md                  |  15 ++-
+ .../40-stories/US-503-board-model.md               |   5 +-
+ .../40-stories/US-504-declared-non-definability.md |   5 +-
+ .../40-stories/US-505-mixed-board-fixture.md       |   5 +-
+ .../40-stories/US-506-coverage-headline.md         |   5 +-
+ .../40-stories/US-508-provenance-on-the-face.md    |   5 +-
+ prds/PRD-005-dashboard/spec.lock.json              |  19 ++-
+ web/src/board.test.ts                              | 129 +++++++++++++++++++++
+ web/src/board.ts                                   |  79 +++++++++++++
+ 11 files changed, 265 insertions(+), 23 deletions(-)
