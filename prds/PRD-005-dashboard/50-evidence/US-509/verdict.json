@@ -64,5 +64,5 @@
     "criterion US-509-C3 requires a screenshot at prds/PRD-005-dashboard/50-evidence/US-509/board-mixed-light.png — it does not exist"
   ],
   "note": "gates failed: US-509-C4, US-509-C5 | tripwires: criterion US-509-C1 requires a screenshot at prds/PRD-005-dashboard/50-evidence/US-509/board-live-light.png — it does not exist; criterion US-509-C2 requires a screenshot at prds/PRD-005-dashboard/50-evidence/US-509/board-live-dark.png — it does not exist; criterion US-509-C3 requires a screenshot at prds/PRD-005-dashboard/50-evidence/US-509/board-mixed-light.png — it does not exist",
-  "at": "2026-09-14T07:48:12.636Z"
+  "at": "2026-09-14T07:52:20.758Z"
 }
