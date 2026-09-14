@@ -63,7 +63,7 @@ describe("the board in a real browser", () => {
         "html { filter: grayscale(1); } * { color: #000 !important; background: #fff !important; }",
     });
 
-    const renders = [];
+    const renders: { face: string; glyph: Buffer; word: Buffer }[] = [];
     for (const face of FACES) {
       const cell = page.locator(`td.cell--${face}`).first();
       const parts: Record<string, Buffer> = {};
@@ -78,7 +78,7 @@ describe("the board in a real browser", () => {
         parts[part] = await drawAlone(page, text, font);
         expect(parts[part].equals(blank), `the ${face} ${part} draws nothing`).toBe(false);
       }
-      renders.push({ face, ...parts });
+      renders.push({ face, glyph: parts.glyph, word: parts.word });
     }
 
     for (const [index, a] of renders.entries()) {

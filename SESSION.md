@@ -31,7 +31,7 @@ open prds/PRD-005-dashboard/20-decisions.yaml
 | PRD-004-indicators | 11 | 11 | **all green** |
 | PRD-005-dashboard | 9 | 8 | 8/9 |
 
-Spend to date: **$49.13** Claude · **119012k** Codex tokens.
+Spend to date: **$51.62** Claude · **119042k** Codex tokens.
 
 ## What happened
 
@@ -364,6 +364,12 @@ Spend to date: **$49.13** Claude · **119012k** Codex tokens.
 - 07:52  US-509 started, attempt 3 (claude)
 - 07:52  US-509 — codex finished `daf8f49e`
 - 07:56  US-509 **rejected** — 0/10 criteria, judged by claude
+- 07:56  ⏸ **gate opened** — US-509 has failed 3 times — is the story wrong?
+- 11:06  ▶ gate answered **skip**
+- 11:06  **PRD-005-dashboard** compiled — 9 stories
+- 11:06  US-511 started, attempt 1 (claude)
+- 11:13  US-511 — codex finished `9853206c` · $2.49 · 30k tok
+- 11:17  US-511 **rejected** — 0/10 criteria, judged by codex
 
 <!-- uf:generated:end -->
 
