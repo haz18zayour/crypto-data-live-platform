@@ -1,0 +1,10 @@
+.uf/events.ndjson                     |   3 +
+ SESSION.md                            |   9 +-
+ project-documents/20_Design_System.md |  37 +-
+ scripts/check-design-doc.mjs          |  45 +++
+ web/mixed-board.html                  |  14 +
+ web/src/BoardMatrix.tsx               |  58 +--
+ web/src/CoverageHeadline.tsx          |   1 +
+ web/src/fixtures/mixedBoardPage.tsx   |  22 +
+ web/src/styles.css                    | 738 +++++++++++++++++-----------------
+ 9 files changed, 531 insertions(+), 396 deletions(-)

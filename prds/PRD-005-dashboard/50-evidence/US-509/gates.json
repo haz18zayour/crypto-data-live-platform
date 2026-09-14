@@ -1,0 +1,44 @@
+[
+  {
+    "name": "typecheck",
+    "run": "node -e \"const f=require('fs'),c=require('child_process');let r=0;const run=(cmd)=>{try{c.execSync(cmd,{stdio:'inherit'})}catch(e){r=1}};if(f.existsSync('web/package.json'))run('npm --prefix web run typecheck');if(f.existsSync('pyproject.toml'))run('uv run mypy ingest --strict');process.exit(r)\"",
+    "exitCode": 0,
+    "output": "\n> crypto-data-live-web@0.0.0 typecheck\n> tsc -b --pretty false\n\nSuccess: no issues found in 15 source files\r\n"
+  },
+  {
+    "name": "test",
+    "run": "node -e \"const f=require('fs'),c=require('child_process');let r=0;const run=(cmd)=>{try{c.execSync(cmd,{stdio:'inherit'})}catch(e){r=1}};if(f.existsSync('web/package.json'))run('npm --prefix web test');if(f.existsSync('tests'))run('uv run pytest -q');process.exit(r)\"",
+    "exitCode": 0,
+    "output": "\n> crypto-data-live-web@0.0.0 test\n> vitest run --configLoader runner\n\n\n RUN  v4.1.9 C:/Users/zayou/OneDrive/Desktop/Projects/crypto-data-live-platform/web\n\n\n Test Files  10 passed (10)\n      Tests  49 passed (49)\n   Start at  10:44:08\n   Duration  18.25s (transform 2.77s, setup 8.80s, import 6.75s, tests 22.05s, environment 30.79s)\n\n........................................................................ [ 37%]\r\n........................................................................ [ 75%]\r\n................................................                         [100%]\r\n192 passed, 10 deselected in 188.00s (0:03:07)\r\n"
+  },
+  {
+    "name": "US-509-C4",
+    "run": "node scripts/capture-board.mjs --check-semantics",
+    "exitCode": 1,
+    "output": "\nnode:internal/modules/cjs/loader:1503\r\n  throw err;\r\n  ^\r\n\r\nError: Cannot find module 'C:\\Users\\zayou\\OneDrive\\Desktop\\Projects\\crypto-data-live-platform\\scripts\\capture-board.mjs'\r\n    at Module._resolveFilename (node:internal/modules/cjs/loader:1500:15)\r\n    at wrapResolveFilename (node:internal/modules/cjs/loader:1071:27)\r\n    at defaultResolveImplForCJSLoading (node:internal/modules/cjs/loader:1095:10)\r\n    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1116:12)\r\n    at Module._load (node:internal/modules/cjs/loader:1285:25)\r\n    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)\r\n    at Module.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:154:5)\r\n    at node:internal/main/run_main_module:33:47 {\r\n  code: 'MODULE_NOT_FOUND',\r\n  requireStack: []\r\n}\r\n\r\nNode.js v24.16.0\r\n"
+  },
+  {
+    "name": "US-509-C5",
+    "run": "node scripts/capture-board.mjs --check-contrast",
+    "exitCode": 1,
+    "output": "\nnode:internal/modules/cjs/loader:1503\r\n  throw err;\r\n  ^\r\n\r\nError: Cannot find module 'C:\\Users\\zayou\\OneDrive\\Desktop\\Projects\\crypto-data-live-platform\\scripts\\capture-board.mjs'\r\n    at Module._resolveFilename (node:internal/modules/cjs/loader:1500:15)\r\n    at wrapResolveFilename (node:internal/modules/cjs/loader:1071:27)\r\n    at defaultResolveImplForCJSLoading (node:internal/modules/cjs/loader:1095:10)\r\n    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1116:12)\r\n    at Module._load (node:internal/modules/cjs/loader:1285:25)\r\n    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)\r\n    at Module.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:154:5)\r\n    at node:internal/main/run_main_module:33:47 {\r\n  code: 'MODULE_NOT_FOUND',\r\n  requireStack: []\r\n}\r\n\r\nNode.js v24.16.0\r\n"
+  },
+  {
+    "name": "US-509-C8",
+    "run": "node scripts/check-design-doc.mjs",
+    "exitCode": 0,
+    "output": "20_Design_System.md: glyph-and-word rule recorded for 6 faces, colour is not the sole channel, PRD-005 named\n"
+  },
+  {
+    "name": "US-509-C9",
+    "run": "npm --prefix web test",
+    "exitCode": 0,
+    "output": "\n> crypto-data-live-web@0.0.0 test\n> vitest run --configLoader runner\n\n\n RUN  v4.1.9 C:/Users/zayou/OneDrive/Desktop/Projects/crypto-data-live-platform/web\n\n\n Test Files  10 passed (10)\n      Tests  49 passed (49)\n   Start at  10:47:43\n   Duration  17.94s (transform 3.47s, setup 8.10s, import 7.45s, tests 22.32s, environment 29.06s)\n\n"
+  },
+  {
+    "name": "US-509-C10",
+    "run": "npm --prefix web run typecheck",
+    "exitCode": 0,
+    "output": "\n> crypto-data-live-web@0.0.0 typecheck\n> tsc -b --pretty false\n\n"
+  }
+]
