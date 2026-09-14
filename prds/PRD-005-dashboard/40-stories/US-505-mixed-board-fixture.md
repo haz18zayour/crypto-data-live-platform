@@ -2,7 +2,6 @@
 id: US-505
 title: The mixed board, before any pixels exist to flatter it
 priority: 5
-agent: claude
 touches:
   - web/src/fixtures/mixedBoard.ts
   - web/src/fixtures/mixedBoard.test.ts
@@ -53,3 +52,7 @@ for exactly this shape of risk, and the same approach applies here.
   before a later PRD needs it.
 - The sentinel for the bundle scan should be a string that exists only in the fixture module and
   would survive minification, so the scan cannot pass by accident.
+- **Routed to the default implementer, not Claude.** Fixture data and a bundle scan; no design skill applies.
+  Every story in this PRD was routed to Claude at first because the design skills are Claude-only;
+  that put the whole PRD through one quota and the quota became the bottleneck. Only US-507 and
+  US-509 actually need those skills.

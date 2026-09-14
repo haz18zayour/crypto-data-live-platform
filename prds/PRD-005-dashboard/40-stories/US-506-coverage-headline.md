@@ -2,7 +2,6 @@
 id: US-506
 title: The coverage headline — the one line that is the product
 priority: 6
-agent: claude
 touches:
   - web/src/CoverageHeadline.tsx
   - web/src/CoverageHeadline.test.tsx
@@ -56,3 +55,7 @@ definable is settled and needs nothing. One fetch failed is someone's afternoon.
   zero makes absence invisible again.
 - `font-variant-numeric: tabular-nums` on the figures so they do not shift width when the board
   refetches.
+- **Routed to the default implementer, not Claude.** Counting logic behind one line of text; US-509 does the visual pass.
+  Every story in this PRD was routed to Claude at first because the design skills are Claude-only;
+  that put the whole PRD through one quota and the quota became the bottleneck. Only US-507 and
+  US-509 actually need those skills.

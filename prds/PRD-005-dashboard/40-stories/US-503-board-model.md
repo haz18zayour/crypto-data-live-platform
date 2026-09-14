@@ -2,7 +2,6 @@
 id: US-503
 title: The board model — 48 cells from the registry, absence is alarming
 priority: 3
-agent: claude
 touches:
   - web/src/board.ts
   - web/src/board.test.ts
@@ -59,3 +58,7 @@ cell quietly under the wrong row.
   Keeping it pure is what lets every later story test the hard cases without a network.
 - `48` in the tests should be computed from the registry, so that adding an indicator family
   later fails loudly in one place rather than silently passing a stale literal.
+- **Routed to the default implementer, not Claude.** A pure TypeScript model with behavioural criteria; no design skill applies.
+  Every story in this PRD was routed to Claude at first because the design skills are Claude-only;
+  that put the whole PRD through one quota and the quota became the bottleneck. Only US-507 and
+  US-509 actually need those skills.

@@ -2,7 +2,6 @@
 id: US-508
 title: Provenance on the face of the cell, without a click
 priority: 8
-agent: claude
 touches:
   - web/src/CellFace.tsx
   - web/src/CellFace.test.tsx
@@ -58,3 +57,7 @@ Full detail — endpoint, source field, fetch time, corroboration — goes one i
   readers, and cannot be screenshotted at the checkpoint.
 - The lagged-series criterion has no live data behind it yet. Drive it from a fixture cell; the
   macro panel arrives in PRD-008 and should find this already working.
+- **Routed to the default implementer, not Claude.** Every criterion here is behavioural; US-509 does the visual pass.
+  Every story in this PRD was routed to Claude at first because the design skills are Claude-only;
+  that put the whole PRD through one quota and the quota became the bottleneck. Only US-507 and
+  US-509 actually need those skills.

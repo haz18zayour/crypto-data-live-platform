@@ -50,10 +50,17 @@ matrix is a native `<table>` laid out with `table-layout: fixed` — applying `d
 table silently destroys row and column semantics and no test here would catch it. See
 `20-decisions.yaml`.
 
-**Every story sets `agent: claude`.** Every design skill in this environment is Claude-only, so
-a story routed the default way ships a competent generic page. The framework flips the verifier
-automatically when the implementer matches the configured verifier, so Codex still grades the
-work and the different-vendor rule holds with the roles swapped.
+**US-507 and US-509 set `agent: claude`.** Those are the two design-led stories, and every
+design skill in this environment is Claude-only, so routing them the default way would ship a
+competent generic page. The framework flips the verifier automatically when the implementer
+matches the configured verifier, so Codex still grades them and the different-vendor rule holds
+with the roles swapped.
+
+Every story was routed to Claude at first. That was wrong: it put a SQL migration, a pure
+TypeScript model and a registry schema change through the one quota that the design skills need,
+and the quota promptly became the bottleneck for the whole PRD — US-510 spent ten hours on a
+single attempt, throttled eighteen times. The rest now run on the default implementer, which has
+its own quota.
 
 ## Data model changes
 

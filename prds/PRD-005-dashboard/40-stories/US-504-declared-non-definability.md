@@ -2,7 +2,6 @@
 id: US-504
 title: Declared non-definability, so a settled gap reads settled
 priority: 4
-agent: claude
 touches:
   - ingest/registry.yaml
   - ingest/registry.py
@@ -56,3 +55,7 @@ together with US-502's migration.
   fails at load, not at render.
 - The web side reads the same registry file that Python does. Do not introduce a second
   hand-maintained list of exclusions for the browser.
+- **Routed to the default implementer, not Claude.** A registry schema change; no design skill applies.
+  Every story in this PRD was routed to Claude at first because the design skills are Claude-only;
+  that put the whole PRD through one quota and the quota became the bottleneck. Only US-507 and
+  US-509 actually need those skills.
