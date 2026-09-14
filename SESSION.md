@@ -31,7 +31,7 @@ open prds/PRD-005-dashboard/20-decisions.yaml
 | PRD-004-indicators | 11 | 11 | **all green** |
 | PRD-005-dashboard | 9 | 6 | 6/9 |
 
-Spend to date: **$39.88** Claude · **117200k** Codex tokens.
+Spend to date: **$43.42** Claude · **117237k** Codex tokens.
 
 ## What happened
 
@@ -346,11 +346,15 @@ Spend to date: **$39.88** Claude · **117200k** Codex tokens.
 - 06:44  US-506 started, attempt 1 (codex)
 - 06:49  US-506 — codex finished `cbbf2d23` · 748k tok
 - 06:54  US-506 **PASSED** — 7/7 criteria, judged by claude · $0.25
+- 06:54  US-507 started, attempt 1 (claude)
+- 07:03  US-507 — codex finished `8b373379` · $3.54 · 36k tok
+- 07:08  US-507 **rejected** — 0/10 criteria, judged by claude
 
 <!-- uf:generated:end -->
 
 ## Handoff
 
+- 2026-09-14 — US-507 attempt 1 failed on one test only (C8/C9: live `board_read` → HTTP 404; 41/42 passed, typecheck clean). Cause is not in `web/`: `supabase/migrations/20260913120000_create_board_read.sql` was only ever executed inside throwaway schemas by `tests/test_board_read.py`, never against live `public`, so PostgREST has no such relation. G4 already approved it ("proceed"). **Owed before re-verifying US-507:** apply that one migration to production and `notify pgrst, 'reload schema'`. Attempt 2 could not do this: the session's permission mode denied the DB write, `npm test`, and typecheck. No code was changed. Do not work around it by reading `datapoints_read` instead, because that goes against the PRD's single-view decision.
 - 2026-09-14 — US-505 implementation is present in the three expected story paths and awaits independent verification. The fixture uses the real buildBoard model and parsed registry; no story status was changed.
 - 2026-09-14 — US-504 implementation is ready for external verification: btc_daily_close declares ETH/SOL/BNB not_definable with a mandatory reason; overlap is rejected; board gaps render NOT_DEFINABLE with unchanged detail and revert to NOT_FETCHED when removed. Criterion-focused Python tests: 29 passed with 1 integration deselected; web: 23 passed, typecheck/build clean. Exact Python gate reached 172 passed and 10 deselected but has 20 fail-loud PostgreSQL setup errors because this restricted sandbox cannot connect.
 - 2026-09-13 (session): **PRD-004 fully complete, 11/11 stories, merged.** The board now
