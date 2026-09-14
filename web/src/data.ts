@@ -1,6 +1,7 @@
 import type { Datapoint, Provenance, UnavailableReason } from "./datapoint";
 import type { Corroboration, VenueDatapoint } from "./corroboration";
-import type { IndicatorDefinition } from "./registry";
+import { BOARD_ASSETS, buildBoard, type BoardModel } from "./board";
+import { definitions, type IndicatorDefinition } from "./registry";
 
 type DatapointRow = {
   id: number;
@@ -257,6 +258,30 @@ export function applyFreshness(
     return { ...datapoint, status: "STALE" };
   }
   return datapoint;
+}
+
+// One request for the whole board: board_read already holds the latest row per cell, so the
+// page never fetches per cell. The cells themselves come from the registry, not the response.
+export async function fetchBoard(now: Date): Promise<BoardModel> {
+  const rows = await fetchRows<DatapointRow>(
+    "board_read",
+    new URLSearchParams({ select: "*" }),
+    browserConfig(),
+  );
+  const staleAfter = new Map(
+    definitions.map((definition) => [
+      definition.key,
+      definition.freshness_stale_seconds,
+    ]),
+  );
+  const datapoints = rows.map((row) => {
+    const datapoint = rowToDatapoint(row);
+    const staleAfterSeconds = staleAfter.get(row.indicator_key);
+    return staleAfterSeconds === undefined
+      ? datapoint
+      : applyFreshness(datapoint, staleAfterSeconds, now);
+  });
+  return buildBoard(definitions, datapoints, BOARD_ASSETS);
 }
 
 export async function fetchLatestDatapoint(

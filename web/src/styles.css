@@ -19,8 +19,7 @@ body {
   min-height: 100vh;
 }
 
-main,
-.loading {
+main {
   width: min(44rem, calc(100% - 2rem));
   margin: 0 auto;
   padding: 10vh 0 3rem;
@@ -272,6 +271,79 @@ h1 {
   font-weight: 700;
 }
 
+main:has(.board-matrix) {
+  width: min(64rem, calc(100% - 2rem));
+}
+
+/* A native table with fixed layout. Never display: grid here — it strips row and column
+   semantics from assistive technology. */
+.board-matrix {
+  width: 100%;
+  margin: 1.5rem 0 3rem;
+  border-collapse: collapse;
+  table-layout: fixed;
+  font-size: 0.8125rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.board-matrix caption {
+  padding-bottom: 0.5rem;
+  color: #52615a;
+  text-align: left;
+}
+
+.board-matrix th,
+.board-matrix td {
+  padding: 0.45rem 0.6rem;
+  border-bottom: 1px solid #e8ecea;
+  text-align: left;
+  vertical-align: top;
+  overflow-wrap: anywhere;
+}
+
+.board-matrix thead th {
+  color: #52615a;
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+}
+
+.board-matrix tbody th {
+  font-weight: 600;
+}
+
+.cell-word {
+  font-weight: 700;
+}
+
+.cell--ok .cell-glyph {
+  color: #08734e;
+}
+
+.cell--stale {
+  color: #6d6355;
+  background: #fff9ec;
+}
+
+.cell--stale .cell-glyph,
+.cell--stale .cell-word {
+  color: #905600;
+}
+
+.cell--not-definable {
+  color: #66736d;
+}
+
+.cell--paywalled .cell-glyph,
+.cell--paywalled .cell-word {
+  color: #1f5fa8;
+}
+
+.cell--fetch-failed,
+.cell--not-fetched {
+  color: #8f1b13;
+  background: #fff4f2;
+}
+
 @media (prefers-color-scheme: dark) {
   :root {
     color: #edf3f0;
@@ -358,11 +430,46 @@ h1 {
   .corroboration--uncorroborated .corroboration-summary {
     color: #c4cec9;
   }
+
+  .board-matrix caption,
+  .board-matrix thead th,
+  .cell--not-definable {
+    color: #a7b6af;
+  }
+
+  .board-matrix th,
+  .board-matrix td {
+    border-color: #293831;
+  }
+
+  .cell--ok .cell-glyph {
+    color: #7be0ba;
+  }
+
+  .cell--stale {
+    color: #cabda9;
+    background: #21190c;
+  }
+
+  .cell--stale .cell-glyph,
+  .cell--stale .cell-word {
+    color: #f0be73;
+  }
+
+  .cell--paywalled .cell-glyph,
+  .cell--paywalled .cell-word {
+    color: #8cbcf0;
+  }
+
+  .cell--fetch-failed,
+  .cell--not-fetched {
+    color: #ffd9dc;
+    background: #241113;
+  }
 }
 
 @media (max-width: 34rem) {
-  main,
-  .loading {
+  main {
     padding-top: 3rem;
   }
 

@@ -1,6 +1,7 @@
 import { parse } from "yaml";
 
 import registryYaml from "../../ingest/registry.yaml?raw";
+import type { BoardRegistryEntry } from "./board";
 
 export type IndicatorDefinition = {
   key: string;
@@ -19,7 +20,8 @@ export type IndicatorDefinition = {
   };
 };
 
-const definitions = parse(registryYaml) as IndicatorDefinition[];
+export const definitions = parse(registryYaml) as (IndicatorDefinition &
+  BoardRegistryEntry)[];
 
 export function getIndicatorDefinition(key: string): IndicatorDefinition {
   const definition = definitions.find((candidate) => candidate.key === key);

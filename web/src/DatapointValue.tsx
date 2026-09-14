@@ -30,7 +30,7 @@ function formatTimestamp(timestamp: string): string {
   return `${day} ${months[date.getUTCMonth()]} ${date.getUTCFullYear()}, ${time} UTC`;
 }
 
-function formatAge(timestamp: string | null, now: Date): string {
+export function formatAge(timestamp: string | null, now: Date): string {
   if (!timestamp) return "Age unavailable";
 
   const seconds = Math.max(

@@ -8,6 +8,9 @@ vi.mock("./data", async (importOriginal) => {
   const actual = await importOriginal<typeof import("./data")>();
   return {
     ...actual,
+    fetchBoard: vi.fn(
+      async () => (await import("./fixtures/mixedBoard")).mixedBoard,
+    ),
     fetchLatestCorroboration: vi.fn().mockResolvedValue({
       status: "DIVERGED",
       divergenceBps: 35.2,
