@@ -1,0 +1,102 @@
+{
+  "storyId": "US-504",
+  "passes": true,
+  "verifier": {
+    "agent": "claude",
+    "sandbox": "restricted:read-only"
+  },
+  "implementer": "codex",
+  "results": [
+    {
+      "criterionId": "US-504-C1",
+      "met": true,
+      "evidence": {
+        "file": "tests/test_registry_not_definable.py",
+        "line": 31,
+        "testName": "test_btc_daily_close_declares_three_reasoned_not_definable_assets",
+        "exitCode": 0
+      },
+      "note": "Reads daily_close.not_definable off the parsed IndicatorDefinition returned by load_registry().root, not off raw YAML text; asserts assets tuple and non-empty reason."
+    },
+    {
+      "criterionId": "US-504-C2",
+      "met": true,
+      "evidence": {
+        "file": "tests/test_registry_not_definable.py",
+        "line": 42,
+        "testName": "test_not_definable_requires_a_non_empty_reason",
+        "exitCode": 0
+      },
+      "note": "Parametrized over missing/empty/whitespace-only reason; NotDefinableDefinition.reason is a required NonEmptyString (registry.py:53), so all three raise ValidationError matching 'reason'."
+    },
+    {
+      "criterionId": "US-504-C3",
+      "met": true,
+      "evidence": {
+        "file": "web/src/board.test.ts",
+        "line": 51,
+        "testName": "declared daily close gaps are NOT_DEFINABLE and carry the registry reason unchanged",
+        "exitCode": 0
+      },
+      "note": "Asserts cell.state.detail equals the registry's own not_definable.reason string for all three excluded assets, not a hardcoded string in the test."
+    },
+    {
+      "criterionId": "US-504-C4",
+      "met": true,
+      "evidence": {
+        "file": "web/src/board.test.ts",
+        "line": 81,
+        "testName": "without the declaration all three daily close gaps return to NOT_FETCHED",
+        "exitCode": 0
+      },
+      "note": "Strips not_definable from the registry entries and re-runs buildBoard, proving the declaration (not some other code path) is what turns the gap settled."
+    },
+    {
+      "criterionId": "US-504-C5",
+      "met": true,
+      "evidence": {
+        "file": "tests/test_registry_not_definable.py",
+        "line": 53,
+        "testName": "test_asset_cannot_be_both_definable_and_not_definable",
+        "exitCode": 0
+      },
+      "note": "reject_contradictory_asset_declarations is a model_validator(mode='after') on IndicatorDefinition (registry.py:88-98), so the overlap check runs at load/parse time and raises ValidationError, not at render time via two independent code paths."
+    },
+    {
+      "criterionId": "US-504-C6",
+      "met": true,
+      "evidence": {
+        "file": "tests/test_registry_not_definable.py",
+        "line": 64,
+        "testName": "test_registry_coverage_still_passes_for_all_45_entries",
+        "exitCode": 0
+      },
+      "note": "Calls assert_registry_coverage (the PRD-002 coverage invariant) against the real registry with real golden files and RESPONSE_MODELS, confirming the new not_definable field didn't break the existing 45-entry coverage check."
+    },
+    {
+      "criterionId": "US-504-C7",
+      "met": true,
+      "evidence": {
+        "file": null,
+        "line": null,
+        "testName": null,
+        "exitCode": 0
+      },
+      "note": "Declared gate US-504-C7 (uv run pytest -q --no-header) reported exit 0."
+    },
+    {
+      "criterionId": "US-504-C8",
+      "met": true,
+      "evidence": {
+        "file": null,
+        "line": null,
+        "testName": null,
+        "exitCode": 0
+      },
+      "note": "Declared gate US-504-C8 (npm --prefix web test) reported exit 0."
+    }
+  ],
+  "tripwires": [],
+  "note": "All eight criteria are backed by concrete, assertion-heavy tests that exercise real code paths (Python model_validator running at load time, and the pure buildBoard model reading the parsed registry, not a hardcoded string). No comment-only or assertion-free tests found; SESSION.md/.uf churn is routine handoff bookkeeping, not padding.",
+  "at": "2026-09-14T06:27:58.522Z"
+}

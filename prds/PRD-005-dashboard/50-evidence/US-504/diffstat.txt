@@ -1,0 +1,8 @@
+.uf/events.ndjson                    |  3 ++
+ SESSION.md                           | 11 +++++-
+ ingest/registry.py                   | 22 +++++++++++
+ ingest/registry.yaml                 |  3 ++
+ tests/test_registry_not_definable.py | 75 ++++++++++++++++++++++++++++++++++++
+ web/src/board.test.ts                | 52 ++++++++++++++++++-------
+ web/src/board.ts                     | 37 +++++++++++++++---
+ 7 files changed, 182 insertions(+), 21 deletions(-)
