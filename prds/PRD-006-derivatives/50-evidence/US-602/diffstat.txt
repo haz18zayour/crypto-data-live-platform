@@ -1,12 +1,19 @@
-.uf/events.ndjson                            |   3 +
- SESSION.md                                   |  17 ++-
- ingest/canary.py                             |   3 +-
- ingest/pipeline.py                           |  93 +++++++++++++---
- ingest/registry.yaml                         |  56 ++++++++++
- tests/fixtures/okx_funding_rate_history.json |  26 +++++
- tests/test_assets.py                         |  58 ++++++++--
- tests/test_coverage.py                       |  10 +-
- tests/test_persist_board.py                  | 152 +++++++++++++++++++++++----
- tests/test_registry.py                       |  31 +++++-
- tests/test_registry_not_definable.py         |   9 +-
- 11 files changed, 397 insertions(+), 61 deletions(-)
+.uf/events.ndjson                                  |   6 +
+ SESSION.md                                         |  20 +--
+ ingest/canary.py                                   |   3 +-
+ ingest/pipeline.py                                 |  93 ++++++++++---
+ ingest/registry.yaml                               |  56 ++++++++
+ .../50-evidence/US-602/diffstat.txt                |  12 ++
+ .../50-evidence/US-602/gates.json                  |  20 +++
+ .../50-evidence/US-602/verdict.json                |  49 +++++++
+ tests/fixtures/okx_funding_rate_history.json       |  26 ++++
+ tests/test_assets.py                               |  58 ++++++--
+ tests/test_coverage.py                             |  10 +-
+ tests/test_persist_board.py                        | 152 ++++++++++++++++++---
+ tests/test_registry.py                             |  31 ++++-
+ tests/test_registry_not_definable.py               |   9 +-
+ web/src/BoardMatrix.test.tsx                       |  20 +--
+ web/src/CoverageHeadline.test.tsx                  |   6 +-
+ web/src/board.test.ts                              |   6 +-
+ web/src/fixtures/mixedBoard.test.ts                |   4 +-
+ 18 files changed, 502 insertions(+), 79 deletions(-)

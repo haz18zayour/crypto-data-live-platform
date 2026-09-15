@@ -3,47 +3,47 @@
   "passes": false,
   "verifier": {
     "agent": "claude",
-    "sandbox": "not-run"
+    "sandbox": "restricted:read-only"
   },
   "implementer": "codex",
   "results": [
     {
       "criterionId": "US-602-C1",
       "met": false,
-      "note": "not judged — a cheaper layer already failed"
+      "note": "verifier produced no parseable verdict"
     },
     {
       "criterionId": "US-602-C2",
       "met": false,
-      "note": "not judged — a cheaper layer already failed"
+      "note": "verifier produced no parseable verdict"
     },
     {
       "criterionId": "US-602-C3",
       "met": false,
-      "note": "not judged — a cheaper layer already failed"
+      "note": "verifier produced no parseable verdict"
     },
     {
       "criterionId": "US-602-C4",
       "met": false,
-      "note": "not judged — a cheaper layer already failed"
+      "note": "verifier produced no parseable verdict"
     },
     {
       "criterionId": "US-602-C5",
       "met": false,
-      "note": "not judged — a cheaper layer already failed"
+      "note": "verifier produced no parseable verdict"
     },
     {
       "criterionId": "US-602-C6",
       "met": false,
-      "note": "not judged — a cheaper layer already failed"
+      "note": "verifier produced no parseable verdict"
     },
     {
       "criterionId": "US-602-C7",
       "met": false,
-      "note": "not judged — a cheaper layer already failed"
+      "note": "verifier produced no parseable verdict"
     }
   ],
   "tripwires": [],
-  "note": "gates failed: test",
-  "at": "2026-09-15T09:07:51.278Z"
+  "note": "verifier returned no usable JSON (exit 1)",
+  "at": "2026-09-15T09:25:14.298Z"
 }
