@@ -1,0 +1,7 @@
+.uf/events.ndjson           |  2 ++
+ ingest/heartbeat.py         |  5 -----
+ ingest/pipeline.py          |  8 ++++---
+ tests/test_assets.py        |  4 ++--
+ tests/test_heartbeat.py     | 50 ++++++++++++++++++++++++++++++++++++++++++--
+ tests/test_persist_board.py | 51 +++++++++++++++++++++++++++++++++++++++++----
+ 6 files changed, 104 insertions(+), 16 deletions(-)
