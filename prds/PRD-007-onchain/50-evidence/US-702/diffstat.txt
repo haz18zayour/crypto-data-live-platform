@@ -1,0 +1,13 @@
+.uf/events.ndjson                             |   3 +
+ SESSION.md                                    |  17 ++--
+ ingest/canary.py                              |   2 +
+ ingest/fetchers/coinmetrics.py                |  47 +++++++++--
+ ingest/pipeline.py                            |  29 ++++++-
+ ingest/registry.yaml                          |  51 ++++++++++++
+ tests/fixtures/coinmetrics_asset_metrics.json |   9 ++
+ tests/test_assets.py                          |  17 ++++
+ tests/test_coverage.py                        |   2 +-
+ tests/test_persist_board.py                   | 113 ++++++++++++++++++++++++--
+ tests/test_registry.py                        |  44 +++++++++-
+ tests/test_registry_not_definable.py          |   4 +-
+ 12 files changed, 313 insertions(+), 25 deletions(-)
