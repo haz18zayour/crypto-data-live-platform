@@ -1,0 +1,143 @@
+# GATE G1 — scope lock.
+#
+# Produced by /pre-prd-research interrogating you, then confirmed by you. The research
+# agent commits to a hypothesis for every question so you are correcting a draft rather
+# than answering a blank form: skim, override what is wrong, confirm the out-of-scope list.
+#
+# Anything you do NOT answer becomes an `assumptions:` row below — an explicit assumption
+# with a tripwire, never a silent guess. That is the whole point of this file.
+
+decisions:
+  - q: >
+      Does Coin Metrics' free Community tier actually cover BNB for MVRV, active
+      addresses, and exchange flows, the way 05_Product_Roadmap.md asserts?
+    hypothesis: >
+      SETTLED, not a hypothesis — the research doc flagged this as still unconfirmed
+      after its own pass, so it was live-probed directly against
+      community-api.coinmetrics.io during this gate (2026-09-15), the same
+      one-metric-at-a-time method R2 used for SOL. Result: CapMVRVCur (MVRV) FREE,
+      AdrActCnt (active addresses) FREE, SplyCur (supply) FREE, TxCnt FREE,
+      PriceUSD FREE, CapMrktCurUSD FREE — matching the roadmap's claim exactly.
+      But FlowInExNtv and FlowOutExNtv (exchange flows) both return
+      bad_parameter — NO-METRIC for BNB, not merely unconfirmed. The roadmap never
+      called this out. BNB's exchange-flow cell renders NOT_DEFINABLE, same
+      treatment as SOL's for that one metric only — MVRV/addresses/supply/tx-count
+      are genuinely free and ship normally.
+    answer:
+
+  - q: >
+      Should SOL network activity use Helius or QuickNode as the RPC provider?
+    hypothesis: >
+      Helius. Its rate-limit docs are explicit and current (1M credits/mo, 10 req/s
+      overall, with tighter per-method sub-caps: 1 sendTransaction/s, 2 DAS/s,
+      5 getProgramAccounts/s) and this project's read-only daily batch
+      (getBlock/getSignaturesForAddress) fits comfortably under the 10 req/s
+      ceiling if paced. QuickNode's free-tier numbers were only found via a
+      secondary aggregator page in this research pass, not QuickNode's own docs.
+    answer:
+
+  - q: >
+      Is Solana vote-transaction filtering an RPC-level parameter, or does it
+      require client-side classification?
+    hypothesis: >
+      CORRECTED, not merely answered — this is the single most important finding
+      in this PRD's research. There is no RPC-level vote filter and there never
+      has been: getBlock's only params are commitment/encoding/transactionDetails/
+      maxSupportedTransactionVersion/rewards. A 2022 feature request to add a
+      votes:bool parameter was explicitly closed "not planned," and that repo is
+      now archived. Any story written as "confirm the RPC-level filter works as
+      documented" would be testing something that was never documented to exist
+      and would burn an attempt for certain. Stories must specify client-side
+      classification (inspecting each transaction's top-level instructions for the
+      vote program address) instead — and even that technique is this research
+      pass's own unverified recall, not a cited source, so the story implementing
+      it needs its own confirmation against Solana's program docs before being
+      written into an acceptance criterion as settled fact.
+    answer:
+
+# The one field with no default.
+out_of_scope:
+  - No SOL realized cap / MVRV. No vendor sells it for SOL at any price (Coin
+    Metrics confirmed NO-METRIC, Santiment confirmed absent, Glassnode/CryptoQuant
+    unconfirmed-leaning-absent). Solana is account-based with no UTXO to anchor a
+    cost-basis methodology to, and no open-source implementation exists anywhere.
+    Renders NOT_DEFINABLE permanently, not a gap to revisit by building it.
+  - No SOL exchange flows. Solana's exchange-wallet labeling ecosystem is
+    materially less mature than Ethereum's; even mature vendors with a decade of
+    BTC/ETH labeling publicly disagree with each other on the same flow events. A
+    self-curated Solana label set would produce a confidently-wrong number, not a
+    lesser one. NOT_DEFINABLE.
+  - No BNB exchange flows either, for a different, now-confirmed reason: the
+    metric does not exist on Coin Metrics' free tier for BNB at all (NO-METRIC,
+    live-probed). NOT_DEFINABLE with that specific reason, not the SOL reasoning.
+  - No NUPL, MVRV Z-score, realized price, or any other MVRV-derived metric. This
+    is the exact "algebraically-derived value double-counted as an independent
+    signal" trap the prior system fell into (NUPL = 1 - 1/MVRV presented as a
+    second signal). If MVRV is on the board, its derivatives are not.
+  - No exchange-flow vendor beyond Coin Metrics' free tier (Nansen, Arkham,
+    CryptoQuant) — unverified pricing, four-figure-a-year territory per research;
+    out of scope for a $0-budget dashboard unless the owner opts in at a future G1.
+  - No client-side "vote filter" treated as if it were an RPC parameter — see the
+    corrected decision above. Any implementation must classify votes from fetched
+    block data, never assume a request-time filter exists.
+  - No new panel layout or UI work — PRD-005's board model and PRD-006 both proved
+    it generalizes; this PRD adds registry entries and fetchers, not new UI.
+  - No composite score, signal, or cross-indicator judgement — permanent,
+    project-wide.
+
+assumptions:
+  - claim: >
+      Coin Metrics' Community API rate limit (10 requests / 6-second sliding
+      window per IP, ~1.6 req/s, no key required) is sufficient for a daily batch
+      of BTC/ETH/BNB x up to 4 metrics if calls are serialized with backoff.
+    tripwire: >
+      Any 429 response must surface as FETCH_FAILED, never a silent retry that
+      drops the row. A naive concurrent implementation at the start of a batch job
+      will 429 — this is a per-IP limit, not per-key, so it cannot be monitored via
+      a dashboard between runs.
+    acceptedBy: default
+
+  - claim: >
+      Validators.app's mandatory account + API token is provisioned before any
+      SOL-staking story starts, not discovered as a missing-credential failure
+      mid-story.
+    tripwire: >
+      "Confirmed genuinely free" undersold real friction: a verified account and
+      token must exist and be stored as a repo secret first. A story that fails on
+      missing Validators.app credentials is a provisioning gap, not a code defect
+      — check this before assuming the story itself is broken.
+    acceptedBy: default
+
+  - claim: >
+      Helius's per-method sub-caps (5/s getProgramAccounts, 2/s DAS calls) will
+      not be hit by this project's read-only daily batch, which only needs
+      getBlock/getSignaturesForAddress at a sampled cadence.
+    tripwire: >
+      If a future story needs getProgramAccounts (e.g. cross-checking stake
+      accounts against Validators.app), that path is throttled tighter than the
+      headline 10 req/s number — budget for it explicitly rather than assuming
+      the general rate limit covers every method.
+    acceptedBy: default
+
+# Options the research agent surfaced, and which you picked.
+chosen_approach:
+  option: >
+    Coin Metrics Community API (direct httpx) for BTC/ETH/BNB; Helius free tier
+    for SOL network activity; Validators.app for SOL staking
+  because: >
+    Every claimed "free" limit in this combination now has a live-fetched number
+    attached to it (rate limit, credit cap, or req/5min cap) rather than a vendor
+    marketing page — Coin Metrics' own client library is built on the same public
+    endpoints this PRD would call directly, and BNB's actual per-metric coverage
+    was live-probed rather than assumed from the roadmap's prose.
+  rejected:
+    - option: QuickNode as the SOL RPC provider
+      because: >
+        Its free-tier numbers were only found via a secondary aggregator page in
+        this research pass, not QuickNode's own documentation. Helius's rate-limit
+        docs are explicit, current, and directly cited.
+    - option: Treating Solana's vote filtering as an RPC-level parameter
+      because: >
+        It does not exist. getBlock has never supported vote exclusion and a 2022
+        feature request for one was explicitly closed "not planned." Any story
+        assuming otherwise would fail against a nonexistent API surface.

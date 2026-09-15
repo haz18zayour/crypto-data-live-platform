@@ -111,8 +111,10 @@ substituting the free-tier `CapMVRVCur` in its place.
 ## Phase checklist
 
 - [x] `00-brief.md`
-- [ ] `10-research.md` — `uf research PRD-007-onchain`
-- [ ] `20-decisions.yaml` — **GATE G1**
+- [x] `10-research.md` — `uf research PRD-007-onchain`, 13 sources, $0.91
+- [x] `20-decisions.yaml` — **GATE G1** — drafted; BNB coverage live-probed directly
+      (research flagged it as still unconfirmed after its own pass) — MVRV/addresses/
+      supply/tx-count FREE, exchange flows NO-METRIC, confirmed 2026-09-15
 - [ ] `30-spec.md`
 - [ ] `40-stories/*.md`
 - [ ] `uf compile PRD-007-onchain`
