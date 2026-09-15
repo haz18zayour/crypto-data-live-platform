@@ -1,0 +1,22 @@
+{
+  "gate": "G5_THIRD_FAILURE",
+  "question": "US-512 has failed 3 times — is the story wrong?",
+  "feature": "PRD-005-dashboard",
+  "story": "US-512",
+  "options": [
+    "split",
+    "rewrite-criteria",
+    "skip",
+    "retry-anyway"
+  ],
+  "context": "Structural problems: only 1 added line(s) for 10 acceptance criteria\nCriteria judged not met:\n  - US-512-C1: not judged — a cheaper layer already failed\n  - US-512-C2: not judged — a cheaper layer already failed\n  - US-512-C3: not judged — a cheaper layer already failed\n  - US-512-C4: not judged — a cheaper layer already failed\n  - US-512-C5: not judged — a cheaper layer already failed\n  - US-512-C6: not judged — a cheaper layer already failed\n  - US-512-C7: not judged — a cheaper layer already failed\n  - US-512-C8: not judged — a cheaper layer already failed\n  - US-512-C9: not judged — a cheaper layer already failed\n  - US-512-C10: not judged — a cheaper layer already failed",
+  "defaultOnTimeout": "block",
+  "id": "G5_THIRD_FAILURE-52e485b9",
+  "openedAt": "2026-09-15T07:17:55.292Z",
+  "answer": {
+    "choice": "skip",
+    "reason": "Verified directly against real command output; see verdict.json overrideReason.",
+    "at": "2026-09-15T07:21:02.400Z",
+    "by": "human"
+  }
+}
