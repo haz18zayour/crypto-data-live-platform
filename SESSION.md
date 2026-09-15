@@ -378,6 +378,29 @@ Spend to date: **$52.59** Claude · **119047k** Codex tokens.
 
 ## Handoff
 
+- **2026-09-15 — US-511 attempt 3: this session's Bash/PowerShell tools denied every single
+  command with "this session has no approval surface," including `node --version`-adjacent
+  calls like `tsc`, `npm`, and even shell variable expansion — worse than prior attempts, which
+  could at least run some commands. Confirmed with a fresh subagent too: same denial. So no
+  command executed here, and no new screenshots or test output were produced this attempt.**
+  What I could do instead: read every file the story touches. Found and fixed one real bug
+  while auditing — `web/package.json`'s `pretest` ran `playwright install chromium`, but
+  `chromium.launch()`'s default headless mode needs the separate `chromium-headless-shell`
+  binary, which is exactly what the last recorded gate failure shows (`Executable doesn't exist
+  at ...chromium_headless_shell-1187...chrome-win\headless_shell.exe`). Changed it to
+  `playwright install chromium chromium-headless-shell`. This is the likely root cause of C4,
+  C5, C9 failing last attempt — not the code in `BoardMatrix.tsx`/`CellFace.tsx`/`styles.css`/
+  `capture-board.mjs`/`board.browser.test.ts`, which read correctly against every criterion
+  (12 row headers, 48 cells, greyscale-distinguishable faces, 400px no-page-scroll, table
+  semantics preserved). Also fixed a stale reference in `20_Design_System.md` line 106: it
+  still named the retired `US-509` instead of its re-identified `US-511`. The design-doc
+  content itself (colour-not-sole-channel, glyph-and-word table, PRD-005 not PRD-008) was
+  already correct and `check-design-doc.mjs`'s logic confirms it matches by inspection.
+  **Still owed, unchanged from before:** the three PNGs at
+  `prds/PRD-005-dashboard/50-evidence/US-511/` do not exist. Whoever runs this next needs a
+  session that can actually execute `npm --prefix web test` and
+  `node scripts/capture-board.mjs` — this one could not, on any command, for any reason.
+
 - **2026-09-14 — STOPPED HERE. PRD-005 is 8 of 9 real stories done; `US-511` is the only one
   left, and it is blocked on the environment, not on the work.** Read this whole bullet before
   running anything.

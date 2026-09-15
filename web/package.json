@@ -7,7 +7,7 @@
     "dev": "vite",
     "build": "tsc -b && vite build --configLoader runner",
     "typecheck": "tsc -b --pretty false",
-    "pretest": "playwright install chromium",
+    "pretest": "playwright install chromium chromium-headless-shell",
     "test": "vitest run --configLoader runner"
   },
   "dependencies": {

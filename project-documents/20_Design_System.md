@@ -103,6 +103,6 @@ tokens; `design-review` for the audit pass.
   the matrix scrolls inside its own container; the page body never scrolls sideways.
 
 **Implementation note:** every design skill listed above is Claude-only, so the design-led
-stories of PRD-005 (US-507, US-509) set `agent: claude` in front-matter. Codex then verifies,
+stories of PRD-005 (US-507, US-511) set `agent: claude` in front-matter. Codex then verifies,
 preserving the different-vendor rule. `scripts/capture-board.mjs` photographs the board in
 headless Chromium and checks its table semantics and axe-core contrast.
