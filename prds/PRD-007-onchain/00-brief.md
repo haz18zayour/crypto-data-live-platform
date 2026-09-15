@@ -115,8 +115,8 @@ substituting the free-tier `CapMVRVCur` in its place.
 - [x] `20-decisions.yaml` — **GATE G1** — drafted; BNB coverage live-probed directly
       (research flagged it as still unconfirmed after its own pass) — MVRV/addresses/
       supply/tx-count FREE, exchange flows NO-METRIC, confirmed 2026-09-15
-- [ ] `30-spec.md`
-- [ ] `40-stories/*.md`
+- [x] `30-spec.md`
+- [ ] `40-stories/*.md` — 8 stories
 - [ ] `uf compile PRD-007-onchain`
 - [ ] **GATE G2** — approve the estimate
 - [ ] `uf run`
