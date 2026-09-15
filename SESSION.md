@@ -19,7 +19,7 @@ Owner: **You.** This one cannot be delegated.
 open prds/PRD-005-dashboard/20-decisions.yaml
 ```
 
-**Last handoff note:** 2026-09-14 — US-508 implementation is in the worktree: seven criterion-named CellFace tests pass, and web typecheck/build pass. Exact npm --prefix web test reaches 48 passed / 1 failed; only the pre-existing live Supabase BoardMatrix integration fails because fetch cannot reach board_read in this sandbox. Leave it fail-loud for external verification; do not mark the story complete.
+**Last handoff note:** **2026-09-15 — US-511 attempt 4 (this session): identical blocker, reconfirmed independently.**
 
 ## Where this stands
 
@@ -31,7 +31,7 @@ open prds/PRD-005-dashboard/20-decisions.yaml
 | PRD-004-indicators | 11 | 11 | **all green** |
 | PRD-005-dashboard | 9 | 8 | 8/9 |
 
-Spend to date: **$52.59** Claude · **119047k** Codex tokens.
+Spend to date: **$54.38** Claude · **119063k** Codex tokens.
 
 ## What happened
 
@@ -373,6 +373,17 @@ Spend to date: **$52.59** Claude · **119047k** Codex tokens.
 - 11:17  US-511 started, attempt 2 (claude)
 - 11:19  US-511 — codex finished `facc59c1` · $0.96 · 5k tok
 - 11:23  US-511 **rejected** — 0/10 criteria, judged by codex
+- 11:23  US-511 started, attempt 3 (claude)
+- 11:24  US-511 — codex finished `48229d54` · $0.76 · 4k tok
+- 21:02  US-511 failed — interrupted while verifying — the process stopped before a verdict
+- 21:02  US-511 started, attempt 3 (claude)
+
+### 2026-09-15
+
+- 05:36  US-511 failed — interrupted while running — the process stopped before a verdict
+- 05:36  US-511 started, attempt 3 (claude)
+- 05:40  US-511 — codex finished `6c865dca` · $1.03 · 12k tok
+- 05:41  US-511 **rejected** — 0/10 criteria, judged by claude
 
 <!-- uf:generated:end -->
 

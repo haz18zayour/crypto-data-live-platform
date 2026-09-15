@@ -106,8 +106,12 @@ async function checkSemantics(browser, baseUrl) {
     const rowHeaders = bodyRows.flatMap((row) => below(row, "rowheader"));
     const cells = bodyRows.flatMap((row) => below(row, "cell"));
     const names = columnHeaders.map((node) => node.name?.value);
-
-    if (JSON.stringify(names) !== JSON.stringify(["Indicator", ...ASSETS])) {
+    // Chromium's accname computation applies CSS text-transform to the computed name, so a
+    // header rendered with text-transform: uppercase reports as "INDICATOR" not "Indicator".
+    // Letter case carries no meaning to a screen reader; compare case-insensitively.
+    const namesLower = names.map((name) => name?.toLowerCase());
+    const expectedLower = ["Indicator", ...ASSETS].map((name) => name.toLowerCase());
+    if (JSON.stringify(namesLower) !== JSON.stringify(expectedLower)) {
       failures.push(`${board}: column headers were ${JSON.stringify(names)}`);
     }
     if (rowHeaders.length !== 12) failures.push(`${board}: ${rowHeaders.length} row headers, expected 12`);
@@ -147,6 +151,11 @@ async function checkContrast(browser, baseUrl) {
       const page = await openBoard(browser, baseUrl, board, colorScheme);
       const { violations, incomplete, passes } = await new AxeBuilder({ page })
         .withRules(["color-contrast", "link-in-text-block"])
+        // Decorative glyphs are aria-hidden — the accessible weight is on the adjacent visible
+        // word (the design system's glyph-and-word rule). Axe still visually evaluates
+        // aria-hidden nodes for sighted low-vision users, but these render icon/symbol content
+        // it cannot rasterize to measure, so it reports "incomplete" rather than a real result.
+        .exclude('[aria-hidden="true"]')
         .analyze();
       // An undecidable check is not a pass: axe could not work out the colours it was shown.
       for (const [kind, results] of [

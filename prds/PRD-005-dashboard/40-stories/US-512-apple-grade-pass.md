@@ -1,5 +1,5 @@
 ---
-id: US-511
+id: US-512
 title: The Apple-grade pass, and the design document corrected
 priority: 9
 agent: claude
@@ -16,12 +16,20 @@ context:
   - project-documents/20_Design_System.md
 ---
 
-**Re-identified from US-509.** All three US-509 attempts died on a Claude session rate limit —
-HTTP 429, `You've hit your session limit`. Attempt 1 got a long way first and its work is
-already committed: the stylesheet rewrite, the matrix changes, the design-document correction,
-`scripts/check-design-doc.mjs` and a mixed-board dev page. **What is missing is the real-browser
-half** — Playwright, the capture script, the three screenshots, and the greyscale and
-narrow-width tests. Build on what is there rather than starting the design over.
+**Re-identified from US-509, then again from US-511.** US-509's three attempts died on a Claude
+session rate limit. US-511 got the design and capture script built and committed, but its own
+check script had two real bugs the design itself did not: `checkSemantics` compared computed
+accessible names case-sensitively, and Chromium's accname algorithm applies CSS
+`text-transform: uppercase` to the computed name, so a header rendered "Indicator" reports as
+"INDICATOR" — a false failure on a benign design choice, fixed by comparing case-insensitively.
+`checkContrast` ran axe-core's `color-contrast` rule over `.cell-glyph[aria-hidden="true"]`
+decorative glyphs, which axe cannot rasterize to measure and so reports "incomplete" — treated
+as a failure by design, correctly, for anything that should be measured. These glyphs should not
+be measured at all: they are aria-hidden and the design's glyph-and-word rule puts the
+accessible weight on the adjacent visible word, so the fix excludes `[aria-hidden="true"]` from
+the scan. Both fixes are in `scripts/capture-board.mjs`; verified locally with all three
+screenshots captured and both checks passing before this re-identification. Build on what is
+there — the design and capture script are correct — rather than starting over.
 
 As the owner, I want the page to look like something made deliberately, and I want a real
 browser to prove the things jsdom cannot.
@@ -52,9 +60,9 @@ design document that contradicts the design is worse than no document.
 
 ## Acceptance criteria
 
-- [browser: prds/PRD-005-dashboard/50-evidence/US-511/board-live-light.png] The live board, light theme, captured from a real browser
-- [browser: prds/PRD-005-dashboard/50-evidence/US-511/board-live-dark.png] The live board, dark theme
-- [browser: prds/PRD-005-dashboard/50-evidence/US-511/board-mixed-light.png] The mixed fixture board, showing all five faces at once — the adversarial case, photographed
+- [browser: prds/PRD-005-dashboard/50-evidence/US-512/board-live-light.png] The live board, light theme, captured from a real browser
+- [browser: prds/PRD-005-dashboard/50-evidence/US-512/board-live-dark.png] The live board, dark theme
+- [browser: prds/PRD-005-dashboard/50-evidence/US-512/board-mixed-light.png] The mixed fixture board, showing all five faces at once — the adversarial case, photographed
 - [cmd: node scripts/capture-board.mjs --check-semantics] In a real browser, asserts the matrix resolves to an accessible table with 12 row headers 4 column headers and 48 cells
 - [cmd: node scripts/capture-board.mjs --check-contrast] Fails on any axe-core violation of colour-contrast or of use-of-colour on the rendered board
 - [test: every state face is distinguishable with colour removed] Rendered greyscale, the glyph and the word still separate all five states
