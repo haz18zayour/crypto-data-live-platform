@@ -1,59 +1,113 @@
 {
   "storyId": "US-604",
-  "passes": false,
+  "passes": true,
   "verifier": {
     "agent": "claude",
-    "sandbox": "not-run"
+    "sandbox": "restricted:read-only"
   },
   "implementer": "codex",
   "results": [
     {
       "criterionId": "US-604-C1",
-      "met": false,
-      "note": "not judged — a cheaper layer already failed"
+      "met": true,
+      "evidence": {
+        "file": "ingest/fetchers/okx_derivatives.py",
+        "line": 270,
+        "testName": "test_long_short_ratio_requests_asset_currency_and_returns_newest_row",
+        "exitCode": 0
+      },
+      "note": "fetch_long_short_ratio picks the newest row by timestamp (max by int(row[0])) and returns its raw ratio cast to float — no averaging/smoothing. The named test feeds two rows (1.11, 1.42) and asserts the returned value is exactly 1.42, the newest one, not a blend."
     },
     {
       "criterionId": "US-604-C2",
-      "met": false,
-      "note": "not judged — a cheaper layer already failed"
+      "met": true,
+      "evidence": {
+        "file": "ingest/schemas.py",
+        "line": 87,
+        "testName": "test_long_short_ratio_response_model_rejects_malformed_payload",
+        "exitCode": 0
+      },
+      "note": "OkxLongShortRatioResponse carries model_config = ConfigDict(extra=\"forbid\", frozen=True) (schemas.py:90-91, class at line 87). The named test asserts ValidationError match=\"extra_forbidden\" on an extra top-level field and on a reshaped data row."
     },
     {
       "criterionId": "US-604-C3",
-      "met": false,
-      "note": "not judged — a cheaper layer already failed"
+      "met": true,
+      "evidence": {
+        "file": "tests/test_okx_derivatives_fetcher.py",
+        "line": 397,
+        "testName": "test_long_short_ratio_http_error_returns_error_with_status_code_and_no_value",
+        "exitCode": 0
+      },
+      "note": "Mirrors the existing fetch_open_interest/fetch_btc_funding_rate_history pattern: HTTPStatusError -> Error(FETCH_FAILED, detail contains status code), RequestError -> Error(FETCH_FAILED); .value on the Error raises AttributeError per the named test."
     },
     {
       "criterionId": "US-604-C4",
-      "met": false,
-      "note": "not judged — a cheaper layer already failed"
+      "met": true,
+      "evidence": {
+        "file": "ingest/fetchers/okx_derivatives.py",
+        "line": 280,
+        "testName": "test_long_short_ratio_source_timestamp_must_be_strictly_past",
+        "exitCode": 0
+      },
+      "note": "`if source_timestamp >= current_time: return Error(...)` — same F11 strictly-past rule as US-601/602/603. Named test asserts a present-timestamp row yields Error(FETCH_FAILED) with 'future' in detail and no .value, and a genuinely past row succeeds."
     },
     {
       "criterionId": "US-604-C5",
-      "met": false,
-      "note": "not judged — a cheaper layer already failed"
+      "met": true,
+      "evidence": {
+        "file": "tests/test_registry.py",
+        "line": 153,
+        "testName": "test_long_short_ratio_is_registered_once_per_asset_without_talib",
+        "exitCode": 0
+      },
+      "note": "All four registry.yaml long_short_ratio entries (lines 69-82, 303-316, 537-550, 771-784) carry the identical uncorroborated.note used by US-602/US-603 ('No second venue's derivatives public endpoints were confirmed...'). The named test asserts exactly one entry per asset, no talib_function, uncorroborated is not None, and response_model == 'okx_long_short_ratio' for all four."
     },
     {
       "criterionId": "US-604-C6",
-      "met": false,
-      "note": "not judged — a cheaper layer already failed"
+      "met": true,
+      "evidence": {
+        "file": "ingest/registry.yaml",
+        "line": 75,
+        "testName": "test_every_registry_entry_has_a_golden_required_bars_and_response_model",
+        "exitCode": 0
+      },
+      "note": "Each of the four new entries declares golden: fixtures/okx_long_short_ratio.json, response_model: okx_long_short_ratio, required_bars: 1, parameters: (empty). tests/fixtures/okx_long_short_ratio.json exists and validates against the new schema. test_coverage.py:62 raises the expected count to 57 (53+4) and assert_registry_coverage checks golden/required_bars/response_model/parameters presence for every entry including these."
     },
     {
       "criterionId": "US-604-C7",
-      "met": false,
-      "note": "not judged — a cheaper layer already failed"
+      "met": true,
+      "evidence": {
+        "file": "tests/test_persist_board.py",
+        "line": 389,
+        "testName": "test_full_run_persists_one_long_short_ratio_datapoint_per_asset",
+        "exitCode": 0
+      },
+      "note": "Drives run_pipeline(...) with the real run_all_assets wiring (injected fetch_long_short_ratio) and asserts persist_datapoint is called exactly once per asset for all four *_long_short_ratio keys with status OK, a non-null value, and the expected source_timestamp — full metric path from fetch through pipeline to persistence."
     },
     {
       "criterionId": "US-604-C8",
-      "met": false,
-      "note": "not judged — a cheaper layer already failed"
+      "met": true,
+      "evidence": {
+        "file": "tests/test_persist_board.py",
+        "line": 604,
+        "testName": "test_live_full_board_run_persists_registry_row_count",
+        "exitCode": 0
+      },
+      "note": "This test drives the assembled system through run_all_assets()->run_pipeline() against real venues and a real Postgres, and asserts 4 persisted rows whose key ends with '_long_short_ratio' (line 633). Complemented by tests/test_okx_derivatives_fetcher.py:470 (@pytest.mark.integration, parametrized BTC/ETH/SOL/BNB) which calls fetch_long_short_ratio(asset) with no mock client against the real OKX endpoint. The reported deterministic gate 'US-604-C9: exit 0 [uv run pytest -q --no-header -o addopts=]' clears the default '-m not integration' filter, so these live tests are confirmed to have passed in this run."
     },
     {
       "criterionId": "US-604-C9",
-      "met": false,
-      "note": "not judged — a cheaper layer already failed"
+      "met": true,
+      "evidence": {
+        "file": null,
+        "line": null,
+        "testName": null,
+        "exitCode": 0
+      },
+      "note": "Reported deterministic gates for the current state: typecheck exit 0, test exit 0 (offline suite), and US-604-C9 'uv run pytest -q --no-header -o addopts=' exit 0 (offline+integration suite together) — all green for the committed code at HEAD, superseding the earlier attempt-1 rejected gates.json embedded in the diff (which recorded frontend cell-count test failures now resolved)."
     }
   ],
   "tripwires": [],
-  "note": "gates failed: test",
-  "at": "2026-09-15T12:05:04.072Z"
+  "note": "All 9 criteria are backed by named tests present in the repo that match the story's acceptance criteria, plus code (schemas.py:87, okx_derivatives.py fetch_long_short_ratio, registry.yaml x4 entries, pipeline.py wiring) that structurally implements newest-row-only reading, extra=\\\"forbid\\\" schema, and the F11 past-timestamp defence. The diff itself contains an embedded rejected verdict.json/gates.json from attempt 1 (frontend BoardMatrix/CoverageHeadline/mixedBoard tests failing on cell-count 56 vs 60) which is stale evidence superseded by attempt 2 (commit efb8384) and the top-level deterministic gate results (typecheck/test/US-604-C9 all exit 0) supplied for this judgement — I trusted the latter as the authoritative current-state signal since it is what I was told to use, and independently confirmed via source-code grep/read that the long/short-ratio fetcher, schema, registry entries, and named tests all exist and are wired together (run_all_assets accepts fetch_long_short_ratio, persist_board recognizes LongShortRatioOk). One residual concern worth flagging to a human: the .uf/events.ndjson log itself shows the codex agent's attempt-2 process exited with code 1 (not a clean success) and no verdict.json was ever written for that attempt — the green gates I'm citing are the ones explicitly handed to me as already-executed for this judgement, not a verdict this agent run produced on its own.</note>\n</invoke>\n",
+  "at": "2026-09-15T12:19:40.484Z"
 }
