@@ -23,7 +23,11 @@ type FixtureRegistryEntry = BoardRegistryEntry & {
 const registry = parse(registryYaml) as FixtureRegistryEntry[];
 const SOURCE_TIMESTAMP = "2026-09-13T00:00:00Z";
 
-const rows = registry.map((definition, index): Datapoint => {
+const rows = registry.flatMap((definition, index): Datapoint[] => {
+  if (definition.key === "bnb_rsi") {
+    return [];
+  }
+
   const asset = definition.definable_for[0];
   const provenance = {
     indicatorKey: definition.key,
@@ -37,20 +41,22 @@ const rows = registry.map((definition, index): Datapoint => {
   } satisfies Provenance;
 
   if (definition.key === "btc_daily_close") {
-    return { ...provenance, status: "STALE", value: 11111.11 };
+    return [{ ...provenance, status: "STALE", value: 11111.11 }];
   }
   if (definition.key === "eth_rsi") {
-    return {
-      ...provenance,
-      status: "ERROR",
-      reason: "FETCH_FAILED",
-      detail: "Synthetic upstream timeout",
-    };
+    return [
+      {
+        ...provenance,
+        status: "ERROR",
+        reason: "FETCH_FAILED",
+        detail: "Synthetic upstream timeout",
+      },
+    ];
   }
   if (definition.key === "sol_atr") {
-    return { ...provenance, status: "UNAVAILABLE", reason: "PAYWALLED" };
+    return [{ ...provenance, status: "UNAVAILABLE", reason: "PAYWALLED" }];
   }
-  return { ...provenance, status: "OK", value: index + 1.11 };
+  return [{ ...provenance, status: "OK", value: index + 1.11 }];
 });
 
 export const mixedBoard = buildBoard(registry, rows, BOARD_ASSETS);
