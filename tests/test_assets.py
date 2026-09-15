@@ -89,6 +89,11 @@ def synthetic_taker_ratio(asset: str) -> TakerRatioResult:
     )
 
 
+def synthetic_mvrv(asset: str) -> Ok:
+    offset = {"BTC": 1.0, "ETH": 2.0, "BNB": 3.0}[asset]
+    return Ok(value=offset + 1.5, source_timestamp=SOURCE_TIMESTAMP)
+
+
 def test_registry_declares_measured_history_availability_per_asset_per_venue() -> (
     None
 ):
@@ -137,6 +142,7 @@ def test_asset_with_fewer_available_bars_than_required_is_declared_uncorroborate
         fetch_open_interest=synthetic_open_interest,
         fetch_long_short_ratio=synthetic_long_short_ratio,
         fetch_taker_ratio=synthetic_taker_ratio,
+        fetch_mvrv=synthetic_mvrv,
     )
     assessment = run.history[("BNB", "coinbase")]
 
@@ -194,6 +200,7 @@ def test_all_four_assets_produce_an_indicator_value_or_explicit_status() -> None
         fetch_open_interest=synthetic_open_interest,
         fetch_long_short_ratio=synthetic_long_short_ratio,
         fetch_taker_ratio=synthetic_taker_ratio,
+        fetch_mvrv=synthetic_mvrv,
     )
     technical_definitions = tuple(
         definition
@@ -220,6 +227,11 @@ def test_all_four_assets_produce_an_indicator_value_or_explicit_status() -> None
         for definition in load_registry().root
         if definition.response_model == "okx_taker_volume"
     )
+    mvrv_definitions = tuple(
+        definition
+        for definition in load_registry().root
+        if definition.response_model == "coinmetrics_asset_metrics"
+    )
 
     assert set(run.indicators) == {
         definition.key
@@ -229,6 +241,7 @@ def test_all_four_assets_produce_an_indicator_value_or_explicit_status() -> None
             *open_interest_definitions,
             *long_short_definitions,
             *taker_ratio_definitions,
+            *mvrv_definitions,
         )
     }
     assert Counter(
@@ -246,6 +259,9 @@ def test_all_four_assets_produce_an_indicator_value_or_explicit_status() -> None
     assert Counter(
         definition.definable_for[0] for definition in taker_ratio_definitions
     ) == Counter({asset: 1 for asset in ASSETS})
+    assert Counter(
+        definition.definable_for[0] for definition in mvrv_definitions
+    ) == Counter({"BTC": 1, "ETH": 1, "BNB": 1})
     assert all(
         result.status in {"OK", "STALE", "UNAVAILABLE", "ERROR"}
         for result in run.indicators.values()
@@ -342,6 +358,7 @@ def test_full_run_routes_each_asset_to_its_actual_pair_at_both_venues(
         fetch_open_interest=synthetic_open_interest,
         fetch_long_short_ratio=synthetic_long_short_ratio,
         fetch_taker_ratio=synthetic_taker_ratio,
+        fetch_mvrv=synthetic_mvrv,
     )
 
     assert requested_pairs == {

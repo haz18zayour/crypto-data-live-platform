@@ -53,6 +53,23 @@
   freshness_stale_seconds: 57600
   uncorroborated:
     note: No second venue's derivatives public endpoints were confirmed to exist or be reachable; Binance's futures API returns HTTP 451 to US IPs on public endpoints.
+- key: btc_mvrv
+  vendor: coinmetrics
+  endpoint: https://community-api.coinmetrics.io/v4/timeseries/asset-metrics?assets=btc&metrics=CapMVRVCur&limit_per_asset=1&page_size=1
+  source_field: data[].CapMVRVCur
+  definable_for: [BTC]
+  not_definable:
+    assets: [SOL]
+    reason: No vendor researched (Coin Metrics, Glassnode, CryptoQuant, Messari, Santiment) sells genuine SOL realized-cap or MVRV at any price; Solana is account-based with no UTXO to anchor a realized-cap methodology.
+  golden: fixtures/coinmetrics_asset_metrics.json
+  response_model: coinmetrics_asset_metrics
+  required_bars: 1
+  parameters:
+  expected_update_interval_seconds: 86400
+  freshness_warn_seconds: 108000
+  freshness_stale_seconds: 172800
+  uncorroborated:
+    note: Coin Metrics is the only researched source for CapMVRVCur in this PRD, so this MVRV value has no independent corroborating venue.
 - key: btc_open_interest
   vendor: okx
   endpoint: https://www.okx.com/api/v5/public/open-interest?instType=SWAP&instId=BTC-USDT-SWAP
@@ -301,6 +318,23 @@
   freshness_stale_seconds: 57600
   uncorroborated:
     note: No second venue's derivatives public endpoints were confirmed to exist or be reachable; Binance's futures API returns HTTP 451 to US IPs on public endpoints.
+- key: eth_mvrv
+  vendor: coinmetrics
+  endpoint: https://community-api.coinmetrics.io/v4/timeseries/asset-metrics?assets=eth&metrics=CapMVRVCur&limit_per_asset=1&page_size=1
+  source_field: data[].CapMVRVCur
+  definable_for: [ETH]
+  not_definable:
+    assets: [SOL]
+    reason: No vendor researched (Coin Metrics, Glassnode, CryptoQuant, Messari, Santiment) sells genuine SOL realized-cap or MVRV at any price; Solana is account-based with no UTXO to anchor a realized-cap methodology.
+  golden: fixtures/coinmetrics_asset_metrics.json
+  response_model: coinmetrics_asset_metrics
+  required_bars: 1
+  parameters:
+  expected_update_interval_seconds: 86400
+  freshness_warn_seconds: 108000
+  freshness_stale_seconds: 172800
+  uncorroborated:
+    note: Coin Metrics is the only researched source for CapMVRVCur in this PRD, so this MVRV value has no independent corroborating venue.
 - key: eth_open_interest
   vendor: okx
   endpoint: https://www.okx.com/api/v5/public/open-interest?instType=SWAP&instId=ETH-USDT-SWAP
@@ -797,6 +831,23 @@
   freshness_stale_seconds: 57600
   uncorroborated:
     note: No second venue's derivatives public endpoints were confirmed to exist or be reachable; Binance's futures API returns HTTP 451 to US IPs on public endpoints.
+- key: bnb_mvrv
+  vendor: coinmetrics
+  endpoint: https://community-api.coinmetrics.io/v4/timeseries/asset-metrics?assets=bnb&metrics=CapMVRVCur&limit_per_asset=1&page_size=1
+  source_field: data[].CapMVRVCur
+  definable_for: [BNB]
+  not_definable:
+    assets: [SOL]
+    reason: No vendor researched (Coin Metrics, Glassnode, CryptoQuant, Messari, Santiment) sells genuine SOL realized-cap or MVRV at any price; Solana is account-based with no UTXO to anchor a realized-cap methodology.
+  golden: fixtures/coinmetrics_asset_metrics.json
+  response_model: coinmetrics_asset_metrics
+  required_bars: 1
+  parameters:
+  expected_update_interval_seconds: 86400
+  freshness_warn_seconds: 108000
+  freshness_stale_seconds: 172800
+  uncorroborated:
+    note: Coin Metrics is the only researched source for CapMVRVCur in this PRD, so this MVRV value has no independent corroborating venue.
 - key: bnb_open_interest
   vendor: okx
   endpoint: https://www.okx.com/api/v5/public/open-interest?instType=SWAP&instId=BNB-USDT-SWAP

@@ -88,14 +88,16 @@ def _parse_coinmetrics_time(value: str) -> datetime:
     return datetime.fromisoformat(normalized).replace(tzinfo=UTC)
 
 
-def _fetch_btc_metric(
+def _fetch_asset_metric(
+    asset: str,
     metric: str,
     client: httpx.Client | None = None,
     now: datetime | None = None,
     rate_limiter: CoinMetricsRateLimiter | None = None,
 ) -> Result:
+    asset_parameter = asset.casefold()
     params = {
-        "assets": "btc",
+        "assets": asset_parameter,
         "metrics": metric,
         "limit_per_asset": "1",
         "page_size": "1",
@@ -151,10 +153,13 @@ def _fetch_btc_metric(
                 detail="Coin Metrics returned an unexpected number of MVRV entries",
             )
         row = rows[0]
-        if row.asset != "btc":
+        if row.asset != asset_parameter:
             return Error(
                 reason=Reason.FETCH_FAILED,
-                detail=f"Coin Metrics returned asset {row.asset}, expected btc",
+                detail=(
+                    f"Coin Metrics returned asset {row.asset}, "
+                    f"expected {asset_parameter}"
+                ),
             )
         source_timestamp = _parse_coinmetrics_time(row.time)
         current_time = datetime.now(UTC) if now is None else now
@@ -171,6 +176,21 @@ def _fetch_btc_metric(
         )
 
 
+def _fetch_btc_metric(
+    metric: str,
+    client: httpx.Client | None = None,
+    now: datetime | None = None,
+    rate_limiter: CoinMetricsRateLimiter | None = None,
+) -> Result:
+    return _fetch_asset_metric(
+        "BTC",
+        metric,
+        client=client,
+        now=now,
+        rate_limiter=rate_limiter,
+    )
+
+
 def fetch_btc_mvrv(
     client: httpx.Client | None = None,
     now: datetime | None = None,
@@ -178,7 +198,24 @@ def fetch_btc_mvrv(
 ) -> Result:
     """Return BTC's latest Coin Metrics MVRV, or an explicit absence result."""
 
-    return _fetch_btc_metric(
+    return fetch_mvrv(
+        "BTC",
+        client=client,
+        now=now,
+        rate_limiter=rate_limiter,
+    )
+
+
+def fetch_mvrv(
+    asset: str,
+    client: httpx.Client | None = None,
+    now: datetime | None = None,
+    rate_limiter: CoinMetricsRateLimiter | None = None,
+) -> Result:
+    """Return an asset's latest Coin Metrics MVRV, or explicit absence."""
+
+    return _fetch_asset_metric(
+        asset,
         "CapMVRVCur",
         client=client,
         now=now,

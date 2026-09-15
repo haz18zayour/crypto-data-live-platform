@@ -12,7 +12,7 @@ import httpx
 import psycopg
 
 from ingest.compute import compute_indicator, daily_close
-from ingest.fetchers import coinbase, okx
+from ingest.fetchers import coinbase, coinmetrics, okx
 from ingest.fetchers.okx import INDICATOR_KEY, MEASURED_ON, fetch_btc_daily_close
 from ingest.fetchers.okx_derivatives import (
     FundingRateOk,
@@ -41,6 +41,7 @@ type FundingRateFetcher = Callable[[str], FundingRateResult]
 type OpenInterestFetcher = Callable[[str], OpenInterestResult]
 type LongShortRatioFetcher = Callable[[str], LongShortRatioResult]
 type TakerRatioFetcher = Callable[[str], TakerRatioResult]
+type MvrvFetcher = Callable[[str], Result]
 type BoardResult = (
     Result | FundingRateOk | OpenInterestOk | LongShortRatioOk | TakerRatioOk
 )
@@ -257,6 +258,13 @@ def _fetch_asset_taker_ratio(asset: str) -> TakerRatioResult:
     return fetch_taker_ratio(asset)
 
 
+def _fetch_asset_mvrv(
+    asset: str,
+    rate_limiter: coinmetrics.CoinMetricsRateLimiter | None = None,
+) -> Result:
+    return coinmetrics.fetch_mvrv(asset, rate_limiter=rate_limiter)
+
+
 def _calculate(definition: IndicatorDefinition, bars: Sequence[Bar]) -> float:
     parameters = definition.parameters or {}
     if definition.key == INDICATOR_KEY:
@@ -307,6 +315,7 @@ def run_all_assets(
     fetch_open_interest: OpenInterestFetcher | None = None,
     fetch_long_short_ratio: LongShortRatioFetcher | None = None,
     fetch_taker_ratio: TakerRatioFetcher | None = None,
+    fetch_mvrv: MvrvFetcher | None = None,
 ) -> FullAssetRun:
     """Fetch both venues and compute every registered board cell."""
 
@@ -335,6 +344,11 @@ def run_all_assets(
         definition
         for definition in registered
         if definition.response_model == "okx_taker_volume"
+    )
+    mvrv_definitions = tuple(
+        definition
+        for definition in registered
+        if definition.response_model == "coinmetrics_asset_metrics"
     )
     by_asset = {
         asset: tuple(
@@ -366,6 +380,14 @@ def run_all_assets(
     fetch_taker = (
         _fetch_asset_taker_ratio if fetch_taker_ratio is None else fetch_taker_ratio
     )
+    if fetch_mvrv is None:
+        mvrv_rate_limiter = coinmetrics.CoinMetricsRateLimiter()
+        fetch_coinmetrics_mvrv = partial(
+            _fetch_asset_mvrv,
+            rate_limiter=mvrv_rate_limiter,
+        )
+    else:
+        fetch_coinmetrics_mvrv = fetch_mvrv
     history: dict[tuple[str, Venue], HistoryAssessment] = {}
     indicators: dict[str, BoardResult] = {}
 
@@ -436,6 +458,11 @@ def run_all_assets(
 
     for definition in taker_ratio_definitions:
         indicators[definition.key] = fetch_taker(definition.definable_for[0])
+
+    for definition in mvrv_definitions:
+        indicators[definition.key] = fetch_coinmetrics_mvrv(
+            definition.definable_for[0]
+        )
 
     return FullAssetRun(indicators=indicators, history=history)
 

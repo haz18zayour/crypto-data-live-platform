@@ -13,6 +13,7 @@ from pydantic import BaseModel, ValidationError
 from ingest.heartbeat import _ping
 from ingest.registry import IndicatorDefinition, load_registry
 from ingest.schemas import (
+    CoinMetricsAssetMetricsResponse,
     OkxCandleResponse,
     OkxFundingRateHistoryResponse,
     OkxLongShortRatioResponse,
@@ -27,6 +28,7 @@ RESPONSE_MODEL_TYPES: dict[str, type[BaseModel]] = {
     "okx_open_interest": OkxOpenInterestResponse,
     "okx_long_short_ratio": OkxLongShortRatioResponse,
     "okx_taker_volume": OkxTakerVolumeResponse,
+    "coinmetrics_asset_metrics": CoinMetricsAssetMetricsResponse,
 }
 RESPONSE_MODELS: dict[str, type[BaseModel]] = {
     definition.key: RESPONSE_MODEL_TYPES[definition.response_model]

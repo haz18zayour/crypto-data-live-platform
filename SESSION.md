@@ -9,19 +9,15 @@ Do not hand-edit it — it is regenerated. The hand-written sections below it su
 
 ## ▶ Resume here
 
-**2 uncommitted file(s) — the runner will not start**
+**PRD-005-dashboard — GATE G1, scope lock**
 
-A previous session edited source and did not commit. uf refuses to run on a dirty tree rather than auto-committing someone else's half-finished work.
+The research asked you questions and each carries the agent's own hypothesis. Anything you leave blank becomes an explicit assumption with a tripwire. The out-of-scope list is the one field with no default.
 
 Owner: **You.** This one cannot be delegated.
 
 ```
-review the diff, then: git add -A && git commit
+open prds/PRD-005-dashboard/20-decisions.yaml
 ```
-
-**Left in flight by the previous session:**
-
-- 2 uncommitted file(s): prds/PRD-007-onchain/30-spec.md, prds/PRD-007-onchain/40-stories/US-704-sol-active-addresses.md
 
 **Last handoff note:** **2026-09-15 — STOPPED HERE. PRD-007 is fully specced and compiled (8 stories, 62 criteria,
 
@@ -35,9 +31,9 @@ review the diff, then: git add -A && git commit
 | PRD-004-indicators | 11 | 11 | **all green** |
 | PRD-005-dashboard | 9 | 9 | **all green** |
 | PRD-006-derivatives | 7 | 7 | **all green** |
-| PRD-007-onchain | 8 | 0 | 0/8 |
+| PRD-007-onchain | 8 | 1 | 1/8 |
 
-Spend to date: **$70.68** Claude · **143304k** Codex tokens.
+Spend to date: **$71.52** Claude · **144298k** Codex tokens.
 
 ## What happened
 
@@ -467,6 +463,9 @@ Spend to date: **$70.68** Claude · **143304k** Codex tokens.
 - 16:13  researched PRD-007-onchain — 13 sources · $0.91
 - 16:22  **PRD-007-onchain** compiled — 8 stories
 - 20:34  **PRD-007-onchain** compiled — 8 stories
+- 20:38  US-701 started, attempt 1 (codex)
+- 20:42  US-701 — codex finished `38817e92` · 994k tok
+- 20:49  US-701 **PASSED** — 9/9 criteria, judged by claude · $0.83
 
 <!-- uf:generated:end -->
 

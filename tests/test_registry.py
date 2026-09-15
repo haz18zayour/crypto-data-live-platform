@@ -94,7 +94,7 @@ def test_definable_for_requires_a_nonempty_asset_list(
 def test_shipped_registry_definitions_cover_four_assets_at_scale() -> None:
     registry = load_registry()
 
-    assert len(registry.root) == 61
+    assert len(registry.root) == 64
     assert {asset for entry in registry.root for asset in entry.definable_for} == {
         "BTC",
         "ETH",
@@ -116,6 +116,48 @@ def test_funding_rate_is_registered_once_per_asset_without_talib() -> None:
         "BNB",
     }
     assert all(entry.talib_function is None for entry in entries)
+
+
+def test_mvrv_is_registered_for_btc_eth_bnb_without_talib() -> None:
+    entries = tuple(entry for entry in load_registry().root if entry.key.endswith("_mvrv"))
+
+    assert {entry.definable_for[0] for entry in entries} == {
+        "BTC",
+        "ETH",
+        "BNB",
+    }
+    assert len(entries) == 3
+    assert all(entry.vendor == "coinmetrics" for entry in entries)
+    assert all(entry.talib_function is None for entry in entries)
+    assert all(entry.parameters == {} for entry in entries)
+    assert all(entry.response_model == "coinmetrics_asset_metrics" for entry in entries)
+
+
+def test_mvrv_entries_declare_sol_not_definable_with_researched_reason() -> None:
+    entries = tuple(entry for entry in load_registry().root if entry.key.endswith("_mvrv"))
+
+    assert len(entries) == 3
+    for entry in entries:
+        assert entry.not_definable is not None
+        assert entry.not_definable.assets == ("SOL",)
+        reason = entry.not_definable.reason
+        assert "account-based" in reason
+        assert "no UTXO" in reason
+        assert "No vendor researched" in reason
+        assert "Coin Metrics, Glassnode, CryptoQuant, Messari, Santiment" in reason
+
+
+def test_mvrv_entries_declare_uncorroborated_coinmetrics_source() -> None:
+    entries = tuple(entry for entry in load_registry().root if entry.key.endswith("_mvrv"))
+
+    assert len(entries) == 3
+    for entry in entries:
+        assert entry.uncorroborated is not None
+        assert entry.corroboration is None
+        assert entry.uncorroborated.note == (
+            "Coin Metrics is the only researched source for CapMVRVCur in this "
+            "PRD, so this MVRV value has no independent corroborating venue."
+        )
 
 
 def test_funding_rate_entries_declare_g1_uncorroborated_reason() -> None:
