@@ -21,7 +21,7 @@ review the diff, then: git add -A && git commit
 
 **Left in flight by the previous session:**
 
-- 3 uncommitted file(s): prds/PRD-007-onchain/00-brief.md, prds/PRD-007-onchain/10-research.md, prds/PRD-007-onchain/20-decisions.yaml
+- 3 uncommitted file(s): prds/PRD-007-onchain/00-brief.md, prds/PRD-007-onchain/30-spec.md, prds/PRD-007-onchain/40-stories/
 
 **Last handoff note:** **2026-09-15 — PRD-006 complete, merged to `main` at `713d9f3`, CI green (verify, ingest,
 
@@ -35,7 +35,7 @@ review the diff, then: git add -A && git commit
 | PRD-004-indicators | 11 | 11 | **all green** |
 | PRD-005-dashboard | 9 | 9 | **all green** |
 | PRD-006-derivatives | 7 | 7 | **all green** |
-| PRD-007-onchain | — | 0 | not compiled |
+| PRD-007-onchain | 8 | 0 | 0/8 |
 
 Spend to date: **$70.68** Claude · **143304k** Codex tokens.
 
@@ -465,6 +465,7 @@ Spend to date: **$70.68** Claude · **143304k** Codex tokens.
 - 15:34  👤 you judged US-607 **met** — Owner confirmed on the live page: BTC funding rate Details panel shows interval_seconds=28800 derived from consecutive fundingTime deltas. Independently cross-checked against OKX live funding-rate-history before asking: real settlement times 16:00/00:00/08:00 UTC, exactly 8h apart, value matches the persisted row exactly. A manual ingest dispatch (run 34987415923) also refreshed the 12 fast-cadence derivatives cells that had gone stale purely from time passing, confirming the freshness logic is honest in both directions.
 - 15:50  researched PRD-007-onchain — 0 sources (REJECTED) · $0.17
 - 16:13  researched PRD-007-onchain — 13 sources · $0.91
+- 16:22  **PRD-007-onchain** compiled — 8 stories
 
 <!-- uf:generated:end -->
 

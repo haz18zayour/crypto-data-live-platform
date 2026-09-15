@@ -2,26 +2,14 @@
 title: On-chain panel — and honest absence
 branch: feat/prd-007-onchain
 assumptions:
-  - claim: Coin Metrics' Community API rate limit (~1.6 req/s per IP, no key) is
-      sufficient for a daily batch of BTC/ETH/BNB across up to 3 metrics if calls
-      are serialized with backoff.
-    tripwire: Any 429 must surface as FETCH_FAILED, never a silent retry that drops
-      the row. This is a per-IP limit, not per-key, so it cannot be monitored via a
-      dashboard between runs — a naive concurrent implementation at batch start
-      will 429.
+  - claim: Coin Metrics' Community API rate limit (~1.6 req/s per IP, no key) is sufficient for a daily batch of BTC/ETH/BNB across up to 3 metrics if calls are serialized with backoff.
+    tripwire: Any 429 must surface as FETCH_FAILED, never a silent retry that drops the row. This is a per-IP limit, not per-key, so it cannot be monitored via a dashboard between runs — a naive concurrent implementation at batch start will 429.
     acceptedBy: default
-  - claim: Validators.app's mandatory account + API token is provisioned before any
-      SOL-staking story starts.
-    tripwire: A story failing on missing Validators.app credentials is a
-      provisioning gap, not a code defect — check this first, don't assume the
-      story itself is broken.
+  - claim: Validators.app's mandatory account and API token is provisioned before any SOL-staking story starts.
+    tripwire: A story failing on missing Validators.app credentials is a provisioning gap, not a code defect — check this first, don't assume the story itself is broken.
     acceptedBy: default
-  - claim: Solana vote-transaction classification must be done client-side, against
-      each fetched block's transaction data — there is no RPC-level filter.
-    tripwire: Any code or test that passes a "votes" parameter to getBlock, or
-      assumes one exists, is testing a nonexistent API surface (confirmed: no such
-      parameter has ever existed, and a 2022 feature request for one was closed
-      "not planned").
+  - claim: Solana vote-transaction classification must be done client-side, against each fetched block's transaction data — there is no RPC-level filter.
+    tripwire: Any code or test that passes a votes parameter to getBlock, or assumes one exists, is testing a nonexistent API surface. No such parameter has ever existed, and a 2022 feature request for one was closed not planned.
     acceptedBy: default
 ---
 

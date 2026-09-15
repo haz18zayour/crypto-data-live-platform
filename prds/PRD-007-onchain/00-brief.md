@@ -116,8 +116,8 @@ substituting the free-tier `CapMVRVCur` in its place.
       (research flagged it as still unconfirmed after its own pass) — MVRV/addresses/
       supply/tx-count FREE, exchange flows NO-METRIC, confirmed 2026-09-15
 - [x] `30-spec.md`
-- [ ] `40-stories/*.md` — 8 stories
-- [ ] `uf compile PRD-007-onchain`
+- [x] `40-stories/*.md` — 8 stories
+- [x] `uf compile PRD-007-onchain` — 62 criteria, digest `6d083edf76bb8fd5`
 - [ ] **GATE G2** — approve the estimate
 - [ ] `uf run`
 - [ ] merge to `main`
