@@ -2,6 +2,7 @@
 id: US-605
 title: Taker buy/sell ratio — fetcher and registry entries for four assets
 priority: 5
+agent: claude
 touches:
   - ingest/fetchers/okx_derivatives.py
   - ingest/schemas.py

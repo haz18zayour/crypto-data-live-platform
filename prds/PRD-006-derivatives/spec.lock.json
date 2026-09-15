@@ -4,8 +4,8 @@
   "title": "Derivatives panel — funding, open interest, long/short and taker ratio",
   "product": "crypto-data-live-platform",
   "branch": "feat/prd-006-derivatives",
-  "inputDigest": "628dc36176019ec5",
-  "compiledAt": "2026-09-15T12:06:09.161Z",
+  "inputDigest": "974482ea2c1e1a01",
+  "compiledAt": "2026-09-15T13:23:56.891Z",
   "stories": [
     {
       "id": "US-601",
@@ -564,7 +564,8 @@
           "ref": "kb:30-realtime-and-collaboration/README.md (auto-routed: is realtime)",
           "body": "# Real-time & Collaboration\r\n\r\n> Real-time and collaboration is the layer that makes a web app feel *live and multiplayer*: data that updates the instant something changes (chat, notifications, dashboards, order/price tickers, presence), and shared documents/canvases that multiple people, and increasingly **AI agents**, edit at the same time without clobbering each other. It spans the *transport* (how bytes flow between client and server: WebSockets, SSE, WebRTC), the *coordination pattern* (pub/sub fan-out vs. conflict-free replicated data types), and the *experience primitives* (presence, live cursors, comments, collaborative rich text). In the AI era this layer also carries **token streaming** from LLMs, agent presence/activity feeds, and human-in-the-loop multiplayer editing, so picking infra with clean SDKs, predictable scaling, and honest connection/message pricing \n\n[…excerpt — full text at kb:30-realtime-and-collaboration/README.md]"
         }
-      ]
+      ],
+      "agent": "claude"
     },
     {
       "id": "US-606",

@@ -9,15 +9,19 @@ Do not hand-edit it — it is regenerated. The hand-written sections below it su
 
 ## ▶ Resume here
 
-**PRD-005-dashboard — GATE G1, scope lock**
+**1 uncommitted file(s) — the runner will not start**
 
-The research asked you questions and each carries the agent's own hypothesis. Anything you leave blank becomes an explicit assumption with a tripwire. The out-of-scope list is the one field with no default.
+A previous session edited source and did not commit. uf refuses to run on a dirty tree rather than auto-committing someone else's half-finished work.
 
 Owner: **You.** This one cannot be delegated.
 
 ```
-open prds/PRD-005-dashboard/20-decisions.yaml
+review the diff, then: git add -A && git commit
 ```
+
+**Left in flight by the previous session:**
+
+- 1 uncommitted file(s): prds/PRD-006-derivatives/40-stories/US-605-taker-ratio.md
 
 **Last handoff note:** **2026-09-15 — PRD-005 complete, merged to `main` at `4e84d4a`, CI green. Fresh machine
 
@@ -434,6 +438,12 @@ Spend to date: **$62.49** Claude · **138193k** Codex tokens.
 - 12:19  US-605 started, attempt 1 (codex)
 - 12:19  US-605 — codex finished `2b56da89`
 - 12:27  US-605 **rejected** — 0/9 criteria, judged by claude
+- 12:27  US-605 started, attempt 2 (codex)
+- 12:27  US-605 — codex finished `0824672c`
+- 12:28  paused
+- 12:34  US-605 **rejected** — 0/9 criteria, judged by claude
+- 13:23  **PRD-006-derivatives** compiled — 7 stories
+- 13:24  resumed
 
 <!-- uf:generated:end -->
 
