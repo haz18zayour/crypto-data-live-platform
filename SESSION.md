@@ -9,17 +9,21 @@ Do not hand-edit it — it is regenerated. The hand-written sections below it su
 
 ## ▶ Resume here
 
-**PRD-005-dashboard — GATE G1, scope lock**
+**2 uncommitted file(s) — the runner will not start**
 
-The research asked you questions and each carries the agent's own hypothesis. Anything you leave blank becomes an explicit assumption with a tripwire. The out-of-scope list is the one field with no default.
+A previous session edited source and did not commit. uf refuses to run on a dirty tree rather than auto-committing someone else's half-finished work.
 
 Owner: **You.** This one cannot be delegated.
 
 ```
-open prds/PRD-005-dashboard/20-decisions.yaml
+review the diff, then: git add -A && git commit
 ```
 
-**Last handoff note:** **2026-09-15 — PRD-006 complete, merged to `main` at `713d9f3`, CI green (verify, ingest,
+**Left in flight by the previous session:**
+
+- 2 uncommitted file(s): prds/PRD-007-onchain/30-spec.md, prds/PRD-007-onchain/40-stories/US-704-sol-active-addresses.md
+
+**Last handoff note:** **2026-09-15 — STOPPED HERE. PRD-007 is fully specced and compiled (8 stories, 62 criteria,
 
 ## Where this stands
 
@@ -462,6 +466,7 @@ Spend to date: **$70.68** Claude · **143304k** Codex tokens.
 - 15:50  researched PRD-007-onchain — 0 sources (REJECTED) · $0.17
 - 16:13  researched PRD-007-onchain — 13 sources · $0.91
 - 16:22  **PRD-007-onchain** compiled — 8 stories
+- 20:34  **PRD-007-onchain** compiled — 8 stories
 
 <!-- uf:generated:end -->
 

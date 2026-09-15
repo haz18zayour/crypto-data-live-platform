@@ -4,8 +4,8 @@
   "title": "On-chain panel — and honest absence",
   "product": "crypto-data-live-platform",
   "branch": "feat/prd-007-onchain",
-  "inputDigest": "6d083edf76bb8fd5",
-  "compiledAt": "2026-09-15T16:22:16.664Z",
+  "inputDigest": "035bc69a43b6f23e",
+  "compiledAt": "2026-09-15T20:34:40.565Z",
   "stories": [
     {
       "id": "US-701",
@@ -324,7 +324,7 @@
       "id": "US-704",
       "title": "SOL active addresses — built from Helius RPC, vote transactions classified client-side",
       "source": "prds/PRD-007-onchain/40-stories/US-704-sol-active-addresses.md",
-      "description": "As the owner, I want SOL's active-addresses cell built from the public Solana RPC rather than\nrendered as a permanent absence, because research (R8) found this specific metric class is\ncheap and genuinely feasible — unlike SOL's MVRV and exchange flows, which are not.\n\nThis is the hardest story in this PRD, and the research gate corrected a real mistake in this\nPRD's own framing before any code was written: **there is no RPC-level parameter to filter vote\ntransactions, and there never has been.** `getBlock`'s only parameters are `commitment`,\n`encoding`, `transactionDetails`, `maxSupportedTransactionVersion`, and `rewards`. A 2022 feature\nrequest to add a `votes: bool` parameter was explicitly closed \"not planned,\" and that\nrepository is now archived. Vote/non-vote classification must inspect each transaction's\ntop-level instructions for the vote program address, client-side, against the full block data\nthis fetcher pulls anyway.",
+      "description": "As the owner, I want SOL's active-addresses cell built from the public Solana RPC rather than\nrendered as a permanent absence, because research (R8) found this specific metric class is\ncheap and genuinely feasible — unlike SOL's MVRV and exchange flows, which are not.\n\nThis is the hardest story in this PRD, and the research gate corrected a real mistake in this\nPRD's own framing before any code was written: **there is no RPC-level parameter to filter vote\ntransactions, and there never has been.** `getBlock`'s only parameters are `commitment`,\n`encoding`, `transactionDetails`, `maxSupportedTransactionVersion`, and `rewards`. A 2022 feature\nrequest to add a `votes: bool` parameter was explicitly closed \"not planned,\" and that\nrepository is now archived. Vote/non-vote classification must inspect each transaction's\ntop-level instructions for the vote program address, client-side, against the full block data\nthis fetcher pulls anyway.\n\n**A second correction, found by budgeting the naive design before writing any code:** fetching a\nfull day's blocks costs roughly 200,000 Helius credits (one per `getBlock` call, ~200k blocks/day\nat Solana's ~400ms block time) — six times the 1M/month free tier if run daily. This story\ntherefore fetches **one fixed UTC hour, exactly**, not a sampled or extrapolated estimate of the\nfull day — an honest, exact measurement of a smaller window rather than a falsely-precise guess\nat a bigger one. At ~9,000 blocks/hour this costs ~270k credits/month, comfortably inside budget\nwith headroom for the staking cell (US-706) and retries. **This is a genuinely different\nmethodology from BTC/ETH/BNB's Coin Metrics-sourced `active_addresses` cells**, which are true\n24-hour counts — the difference must be disclosed on the cell's own face (`source_field`), not\nburied, so nothing downstream (a person reading the board, or a future analysis) can mistake an\nhour's exact count for a day's.",
       "criteria": [
         {
           "id": "US-704-C1",
@@ -352,14 +352,22 @@
         },
         {
           "id": "US-704-C4",
-          "text": "The actual metric definition, stated as a test so it cannot drift silently",
+          "text": "The actual metric definition, stated as a test so it cannot drift silently — no averaging, no scaling a partial count up to a \"daily\" figure",
           "method": {
             "kind": "test",
-            "name": "the daily active-addresses value is the count of distinct non-vote fee-payer signers across the day's fetched blocks"
+            "name": "the active-addresses value is the count of distinct non-vote fee-payer signers across exactly one fixed UTC hour's fetched blocks, never a sampled or extrapolated estimate of a full day"
           }
         },
         {
           "id": "US-704-C5",
+          "text": "The disclosure this design depends on to stay honest — must be readable on the cell's own face, not just in code comments",
+          "method": {
+            "kind": "test",
+            "name": "source_field states the exact hour window measured and that it is not a 24-hour count"
+          }
+        },
+        {
+          "id": "US-704-C6",
           "text": "Same discipline as every fetcher in this project",
           "method": {
             "kind": "test",
@@ -367,7 +375,7 @@
           }
         },
         {
-          "id": "US-704-C6",
+          "id": "US-704-C7",
           "text": "`extra=\"forbid\"` on the new response model — an added, renamed, or retyped field fails loud",
           "method": {
             "kind": "test",
@@ -375,23 +383,23 @@
           }
         },
         {
-          "id": "US-704-C7",
+          "id": "US-704-C8",
           "text": "The F11 defence",
           "method": {
             "kind": "test",
-            "name": "source_timestamp is the block's own timestamp for the day's boundary and is strictly in the past"
-          }
-        },
-        {
-          "id": "US-704-C8",
-          "text": "Hits the real endpoint; this is what actually proves the vote-program-address classification technique works, since research flagged it as the fetcher's own unverified recall, not a cited source",
-          "method": {
-            "kind": "integration",
-            "name": "a live Helius request fetches a real day's SOL blocks and returns a non-zero active-addresses count"
+            "name": "source_timestamp is the measured hour's own boundary and is strictly in the past"
           }
         },
         {
           "id": "US-704-C9",
+          "text": "Hits the real endpoint; this is what actually proves the vote-program-address classification technique works, since research flagged it as the fetcher's own unverified recall, not a cited source",
+          "method": {
+            "kind": "integration",
+            "name": "a live Helius request fetches a real hour of SOL blocks and returns a non-zero active-addresses count within the credit budget"
+          }
+        },
+        {
+          "id": "US-704-C10",
           "text": "Strict typing holds for the new module",
           "method": {
             "kind": "cmd",

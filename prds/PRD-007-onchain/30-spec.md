@@ -54,11 +54,18 @@ or `forbidden`/`bad_parameter` response maps to `Error(FETCH_FAILED)` or the app
 `Unavailable` reason (`PAYWALLED` for a credential-gated metric like `CapRealUSD`,
 `NOT_DEFINABLE` for one the asset genuinely doesn't have), never a default. `ingest/fetchers/
 solana_rpc.py` calls Helius's free-tier JSON-RPC (`getBlock`, chosen over QuickNode because its
-rate-limit documentation was directly cited and current, not found via a secondary aggregator),
-fetches a day's blocks, and classifies vote vs. non-vote transactions client-side per the
-corrected finding above — counting non-vote transactions and unique fee-payer signers as SOL's
-built "active addresses" analog. `ingest/fetchers/validators_app.py` calls Validators.app's
-token-gated REST API for SOL validator/stake data.
+rate-limit documentation was directly cited and current, not found via a secondary aggregator)
+and classifies vote vs. non-vote transactions client-side per the corrected finding above,
+counting non-vote transactions and unique fee-payer signers as SOL's built "active addresses"
+analog. **A full day's blocks costs ~200,000 Helius credits — six times the 1M/month free tier
+if run daily — budgeted before any code was written, not discovered by running out mid-PRD.**
+The fetcher measures exactly one fixed UTC hour instead: an honest, exact count of a smaller
+window rather than a sampled or extrapolated guess at the full day, costing ~270k credits/month
+with real headroom left. This is a genuinely different methodology from BTC/ETH/BNB's Coin
+Metrics-sourced `active_addresses` cells (true 24-hour counts), and the difference is disclosed
+on the cell's own face via `source_field`, not buried — so nothing that reads this board, now or
+in a future analysis, mistakes an hour's exact count for a day's. `ingest/fetchers/
+validators_app.py` calls Validators.app's token-gated REST API for SOL validator/stake data.
 
 **Registry entries, by family, all following `btc_daily_close`'s established `not_definable`
 precedent** (a deliberate board-scope reason, not literally "impossible in the universe" — the
