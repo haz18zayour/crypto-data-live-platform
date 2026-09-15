@@ -1,7 +1,7 @@
-.uf/events.ndjson                                  |  5 ++++
- SESSION.md                                         |  8 +++++-
- .../50-evidence/US-512/diffstat.txt                | 16 ++++--------
+.uf/events.ndjson                                  |  8 ++++++
+ SESSION.md                                         | 11 +++++++-
+ .../50-evidence/US-512/diffstat.txt                | 18 +++++--------
  .../50-evidence/US-512/gates.json                  | 28 ++++++++++----------
  .../50-evidence/US-512/verdict.json                | 30 ++++++++++------------
  scripts/capture-board.mjs                          |  2 +-
- 6 files changed, 46 insertions(+), 43 deletions(-)
+ 6 files changed, 54 insertions(+), 43 deletions(-)
