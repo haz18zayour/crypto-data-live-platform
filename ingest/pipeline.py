@@ -17,7 +17,10 @@ from ingest.fetchers.okx import INDICATOR_KEY, MEASURED_ON, fetch_btc_daily_clos
 from ingest.fetchers.okx_derivatives import (
     FundingRateOk,
     FundingRateResult,
+    OpenInterestOk,
+    OpenInterestResult,
     fetch_btc_funding_rate_history,
+    fetch_open_interest,
 )
 from ingest.indicators import atr, bollinger_bands, ema, macd, obv, rsi, stochrsi
 from ingest.persist import persist_datapoint
@@ -29,7 +32,8 @@ type HistoryStatus = Literal["AVAILABLE", "UNCORROBORATED"]
 type Bar = Mapping[str, float]
 type BarFetcher = Callable[[Venue, str, int], "FetchedBars | Error"]
 type FundingRateFetcher = Callable[[str], FundingRateResult]
-type BoardResult = Result | FundingRateOk
+type OpenInterestFetcher = Callable[[str], OpenInterestResult]
+type BoardResult = Result | FundingRateOk | OpenInterestOk
 
 _HISTORY_NOTE = re.compile(
     r"^History availability measured (?P<date>\d{4}-\d{2}-\d{2}): "
@@ -231,6 +235,10 @@ def _fetch_asset_funding_rate(asset: str) -> FundingRateResult:
     return fetch_btc_funding_rate_history(client=client)
 
 
+def _fetch_asset_open_interest(asset: str) -> OpenInterestResult:
+    return fetch_open_interest(asset)
+
+
 def _calculate(definition: IndicatorDefinition, bars: Sequence[Bar]) -> float:
     parameters = definition.parameters or {}
     if definition.talib_function == "RSI":
@@ -276,6 +284,7 @@ def run_all_assets(
     *,
     fetch_bars: BarFetcher | None = None,
     fetch_funding_rate: FundingRateFetcher | None = None,
+    fetch_open_interest: OpenInterestFetcher | None = None,
 ) -> FullAssetRun:
     """Fetch both venues and compute every registered technical cell."""
 
@@ -289,6 +298,11 @@ def run_all_assets(
         definition
         for definition in registered
         if definition.response_model == "okx_funding_rate_history"
+    )
+    open_interest_definitions = tuple(
+        definition
+        for definition in registered
+        if definition.response_model == "okx_open_interest"
     )
     by_asset = {
         asset: tuple(
@@ -306,6 +320,11 @@ def run_all_assets(
         _fetch_asset_funding_rate
         if fetch_funding_rate is None
         else fetch_funding_rate
+    )
+    fetch_interest = (
+        _fetch_asset_open_interest
+        if fetch_open_interest is None
+        else fetch_open_interest
     )
     history: dict[tuple[str, Venue], HistoryAssessment] = {}
     indicators: dict[str, BoardResult] = {}
@@ -369,6 +388,9 @@ def run_all_assets(
     for definition in funding_definitions:
         indicators[definition.key] = fetch_funding(definition.definable_for[0])
 
+    for definition in open_interest_definitions:
+        indicators[definition.key] = fetch_interest(definition.definable_for[0])
+
     return FullAssetRun(indicators=indicators, history=history)
 
 
@@ -394,6 +416,8 @@ def persist_board(
             persisted_definition = definition.model_copy(
                 update={"source_field": result.source_field}
             )
+            persisted_result = Ok(result.value, result.source_timestamp)
+        elif isinstance(result, OpenInterestOk):
             persisted_result = Ok(result.value, result.source_timestamp)
         else:
             persisted_result = result

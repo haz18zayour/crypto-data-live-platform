@@ -58,6 +58,29 @@ class OkxFundingRateHistoryResponse(BaseModel):
     data: tuple[OkxFundingRateHistoryEntry, ...]
 
 
+class OkxOpenInterestEntry(BaseModel):
+    """One row from OKX's public open-interest endpoint."""
+
+    model_config = ConfigDict(extra="forbid", frozen=True)
+
+    inst_id: StrictStr = Field(alias="instId")
+    inst_type: StrictStr = Field(alias="instType")
+    oi: StrictStr
+    oi_ccy: StrictStr = Field(alias="oiCcy")
+    oi_usd: StrictStr = Field(alias="oiUsd")
+    ts: StrictStr
+
+
+class OkxOpenInterestResponse(BaseModel):
+    """The response contract for OKX's public open-interest endpoint."""
+
+    model_config = ConfigDict(extra="forbid", frozen=True)
+
+    code: StrictStr
+    msg: StrictStr
+    data: tuple[OkxOpenInterestEntry, ...]
+
+
 class CoinbaseCandle(BaseModel):
     """A Coinbase candle named in the venue's documented field order."""
 

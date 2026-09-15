@@ -53,6 +53,20 @@
   freshness_stale_seconds: 57600
   uncorroborated:
     note: No second venue's derivatives public endpoints were confirmed to exist or be reachable; Binance's futures API returns HTTP 451 to US IPs on public endpoints.
+- key: btc_open_interest
+  vendor: okx
+  endpoint: https://www.okx.com/api/v5/public/open-interest?instType=SWAP&instId=BTC-USDT-SWAP
+  source_field: 'OKX public/open-interest oiUsd for BTC-USDT-SWAP linear USDT-margined perpetual; ts'
+  definable_for: [BTC]
+  golden: fixtures/okx_open_interest.json
+  response_model: okx_open_interest
+  required_bars: 1
+  parameters:
+  expected_update_interval_seconds: 300
+  freshness_warn_seconds: 450
+  freshness_stale_seconds: 600
+  uncorroborated:
+    note: No second venue's derivatives public endpoints were confirmed to exist or be reachable; Binance's futures API returns HTTP 451 to US IPs on public endpoints.
 - key: btc_ema_20
   vendor: okx
   endpoint: https://www.okx.com/api/v5/market/candles?instId=BTC-USDT&bar=1Dutc
@@ -257,6 +271,20 @@
   expected_update_interval_seconds: 28800
   freshness_warn_seconds: 43200
   freshness_stale_seconds: 57600
+  uncorroborated:
+    note: No second venue's derivatives public endpoints were confirmed to exist or be reachable; Binance's futures API returns HTTP 451 to US IPs on public endpoints.
+- key: eth_open_interest
+  vendor: okx
+  endpoint: https://www.okx.com/api/v5/public/open-interest?instType=SWAP&instId=ETH-USDT-SWAP
+  source_field: 'OKX public/open-interest oiUsd for ETH-USDT-SWAP linear USDT-margined perpetual; ts'
+  definable_for: [ETH]
+  golden: fixtures/okx_open_interest.json
+  response_model: okx_open_interest
+  required_bars: 1
+  parameters:
+  expected_update_interval_seconds: 300
+  freshness_warn_seconds: 450
+  freshness_stale_seconds: 600
   uncorroborated:
     note: No second venue's derivatives public endpoints were confirmed to exist or be reachable; Binance's futures API returns HTTP 451 to US IPs on public endpoints.
 - key: eth_ema_20
@@ -465,6 +493,20 @@
   freshness_stale_seconds: 57600
   uncorroborated:
     note: No second venue's derivatives public endpoints were confirmed to exist or be reachable; Binance's futures API returns HTTP 451 to US IPs on public endpoints.
+- key: sol_open_interest
+  vendor: okx
+  endpoint: https://www.okx.com/api/v5/public/open-interest?instType=SWAP&instId=SOL-USDT-SWAP
+  source_field: 'OKX public/open-interest oiUsd for SOL-USDT-SWAP linear USDT-margined perpetual; ts'
+  definable_for: [SOL]
+  golden: fixtures/okx_open_interest.json
+  response_model: okx_open_interest
+  required_bars: 1
+  parameters:
+  expected_update_interval_seconds: 300
+  freshness_warn_seconds: 450
+  freshness_stale_seconds: 600
+  uncorroborated:
+    note: No second venue's derivatives public endpoints were confirmed to exist or be reachable; Binance's futures API returns HTTP 451 to US IPs on public endpoints.
 - key: sol_ema_20
   vendor: okx
   endpoint: https://www.okx.com/api/v5/market/candles?instId=SOL-USDT&bar=1Dutc
@@ -669,6 +711,20 @@
   expected_update_interval_seconds: 28800
   freshness_warn_seconds: 43200
   freshness_stale_seconds: 57600
+  uncorroborated:
+    note: No second venue's derivatives public endpoints were confirmed to exist or be reachable; Binance's futures API returns HTTP 451 to US IPs on public endpoints.
+- key: bnb_open_interest
+  vendor: okx
+  endpoint: https://www.okx.com/api/v5/public/open-interest?instType=SWAP&instId=BNB-USDT-SWAP
+  source_field: 'OKX public/open-interest oiUsd for BNB-USDT-SWAP linear USDT-margined perpetual; ts'
+  definable_for: [BNB]
+  golden: fixtures/okx_open_interest.json
+  response_model: okx_open_interest
+  required_bars: 1
+  parameters:
+  expected_update_interval_seconds: 300
+  freshness_warn_seconds: 450
+  freshness_stale_seconds: 600
   uncorroborated:
     note: No second venue's derivatives public endpoints were confirmed to exist or be reachable; Binance's futures API returns HTTP 451 to US IPs on public endpoints.
 - key: bnb_ema_20

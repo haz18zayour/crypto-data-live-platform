@@ -7,12 +7,13 @@ from typing import Literal
 
 import httpx
 
-from ingest.schemas import OkxFundingRateHistoryResponse
+from ingest.schemas import OkxFundingRateHistoryResponse, OkxOpenInterestResponse
 from ingest.status import Error, Reason
 
 BTC_FUNDING_RATE_HISTORY_ENDPOINT = (
     "https://www.okx.com/api/v5/public/funding-rate-history"
 )
+OKX_OPEN_INTEREST_ENDPOINT = "https://www.okx.com/api/v5/public/open-interest"
 BTC_USDT_SWAP_INST_ID = "BTC-USDT-SWAP"
 REQUEST_TIMEOUT_SECONDS = 10
 
@@ -34,6 +35,22 @@ class FundingRateOk:
 
 
 type FundingRateResult = FundingRateOk | Error
+
+
+@dataclass(frozen=True, slots=True)
+class OpenInterestOk:
+    """A USDT-margined open-interest value reported by OKX."""
+
+    value: float
+    source_timestamp: datetime
+    status: Literal["OK"] = field(default="OK", init=False)
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.source_timestamp, datetime):
+            raise TypeError("source_timestamp must be a datetime")
+
+
+type OpenInterestResult = OpenInterestOk | Error
 
 
 def _interval_source_field(interval_seconds: int) -> str:
@@ -122,4 +139,64 @@ def fetch_btc_funding_rate_history(
         return Error(
             reason=Reason.FETCH_FAILED,
             detail=f"Invalid OKX funding-rate-history response: {error}",
+        )
+
+
+def fetch_open_interest(
+    asset: str,
+    client: httpx.Client | None = None,
+    now: datetime | None = None,
+) -> OpenInterestResult:
+    """Return OKX open interest for one linear USDT-margined perpetual."""
+
+    inst_id = f"{asset}-USDT-SWAP"
+    params = {"instType": "SWAP", "instId": inst_id}
+    try:
+        response = (
+            httpx.get(
+                OKX_OPEN_INTEREST_ENDPOINT,
+                params=params,
+                timeout=REQUEST_TIMEOUT_SECONDS,
+            )
+            if client is None
+            else client.get(
+                OKX_OPEN_INTEREST_ENDPOINT,
+                params=params,
+                timeout=REQUEST_TIMEOUT_SECONDS,
+            )
+        )
+        response.raise_for_status()
+    except httpx.HTTPStatusError as error:
+        return Error(
+            reason=Reason.FETCH_FAILED,
+            detail=f"OKX returned HTTP {error.response.status_code}",
+        )
+    except httpx.RequestError as error:
+        return Error(reason=Reason.FETCH_FAILED, detail=f"OKX request failed: {error}")
+
+    try:
+        rows = OkxOpenInterestResponse.model_validate(response.json()).data
+        if len(rows) != 1:
+            return Error(
+                reason=Reason.FETCH_FAILED,
+                detail="OKX returned an unexpected number of open-interest entries",
+            )
+
+        row = rows[0]
+        source_timestamp = datetime.fromtimestamp(int(row.ts) / 1000, tz=UTC)
+        current_time = datetime.now(UTC) if now is None else now
+        if source_timestamp >= current_time:
+            return Error(
+                reason=Reason.FETCH_FAILED,
+                detail="OKX source timestamp is in the future or present",
+            )
+
+        return OpenInterestOk(
+            value=float(row.oi_usd),
+            source_timestamp=source_timestamp,
+        )
+    except (TypeError, ValueError, OverflowError) as error:
+        return Error(
+            reason=Reason.FETCH_FAILED,
+            detail=f"Invalid OKX open-interest response: {error}",
         )

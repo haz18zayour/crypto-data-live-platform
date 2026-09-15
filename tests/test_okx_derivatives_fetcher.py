@@ -9,9 +9,12 @@ from ingest.fetchers.okx_derivatives import (
     BTC_FUNDING_RATE_HISTORY_ENDPOINT,
     BTC_USDT_SWAP_INST_ID,
     FundingRateOk,
+    OKX_OPEN_INTEREST_ENDPOINT,
+    OpenInterestOk,
     fetch_btc_funding_rate_history,
+    fetch_open_interest,
 )
-from ingest.schemas import OkxFundingRateHistoryResponse
+from ingest.schemas import OkxFundingRateHistoryResponse, OkxOpenInterestResponse
 from ingest.status import Error, Reason
 
 NOW = datetime(2026, 9, 15, 12, tzinfo=UTC)
@@ -38,7 +41,36 @@ def funding_row(
     }
 
 
+def open_interest_row(
+    asset: str,
+    timestamp: datetime,
+    *,
+    oi_usd: str = "1350000000.12",
+) -> dict[str, str]:
+    return {
+        "instId": f"{asset}-USDT-SWAP",
+        "instType": "SWAP",
+        "oi": "119718.23",
+        "oiCcy": "11971.823",
+        "oiUsd": oi_usd,
+        "ts": milliseconds(timestamp),
+    }
+
+
 def client_returning(
+    rows: list[dict[str, str]], status_code: int = 200
+) -> httpx.Client:
+    def handler(request: httpx.Request) -> httpx.Response:
+        return httpx.Response(
+            status_code,
+            json={"code": "0", "msg": "", "data": rows},
+            request=request,
+        )
+
+    return httpx.Client(transport=httpx.MockTransport(handler))
+
+
+def open_interest_client_returning(
     rows: list[dict[str, str]], status_code: int = 200
 ) -> httpx.Client:
     def handler(request: httpx.Request) -> httpx.Response:
@@ -213,6 +245,85 @@ def test_source_timestamp_is_newest_funding_time_and_must_be_past() -> None:
         _ = future_result.value  # type: ignore[attr-defined]
 
 
+def test_open_interest_requests_usdt_margined_swap_only() -> None:
+    requested_urls: list[str] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        requested_urls.append(str(request.url))
+        return httpx.Response(
+            200,
+            json={
+                "code": "0",
+                "msg": "",
+                "data": [open_interest_row("SOL", NOW - timedelta(minutes=1))],
+            },
+            request=request,
+        )
+
+    with httpx.Client(transport=httpx.MockTransport(handler)) as client:
+        result = fetch_open_interest("SOL", client=client, now=NOW)
+
+    assert isinstance(result, OpenInterestOk)
+    assert requested_urls == [
+        f"{OKX_OPEN_INTEREST_ENDPOINT}?instType=SWAP&instId=SOL-USDT-SWAP"
+    ]
+    assert all("-USD-SWAP" not in url for url in requested_urls)
+
+
+def test_open_interest_response_model_rejects_malformed_payload() -> None:
+    payload = {
+        "code": "0",
+        "msg": "",
+        "data": [open_interest_row("BTC", NOW - timedelta(minutes=1))],
+        "unexpected": "vendor reshape",
+    }
+
+    with pytest.raises(ValidationError, match="extra_forbidden"):
+        OkxOpenInterestResponse.model_validate(payload)
+
+    renamed = open_interest_row("BTC", NOW - timedelta(minutes=1))
+    renamed["timestamp"] = renamed.pop("ts")
+    with pytest.raises(ValidationError, match="ts"):
+        OkxOpenInterestResponse.model_validate(
+            {"code": "0", "msg": "", "data": [renamed]}
+        )
+
+
+def test_open_interest_http_error_returns_error_with_status_code_and_no_value() -> (
+    None
+):
+    with open_interest_client_returning([], status_code=429) as client:
+        result = fetch_open_interest("BTC", client=client, now=NOW)
+
+    assert isinstance(result, Error)
+    assert result.reason is Reason.FETCH_FAILED
+    assert "429" in result.detail
+    with pytest.raises(AttributeError):
+        _ = result.value  # type: ignore[attr-defined]
+
+
+def test_open_interest_source_timestamp_is_response_ts_and_must_be_past() -> None:
+    timestamp = NOW - timedelta(minutes=1)
+    with open_interest_client_returning(
+        [open_interest_row("ETH", timestamp, oi_usd="123.45")]
+    ) as client:
+        result = fetch_open_interest("ETH", client=client, now=NOW)
+
+    assert isinstance(result, OpenInterestOk)
+    assert result.value == 123.45
+    assert result.source_timestamp == timestamp
+    assert result.source_timestamp < NOW
+
+    with open_interest_client_returning([open_interest_row("ETH", NOW)]) as client:
+        future_result = fetch_open_interest("ETH", client=client, now=NOW)
+
+    assert isinstance(future_result, Error)
+    assert future_result.reason is Reason.FETCH_FAILED
+    assert "future" in future_result.detail.lower()
+    with pytest.raises(AttributeError):
+        _ = future_result.value  # type: ignore[attr-defined]
+
+
 @pytest.mark.integration
 def test_live_okx_request_returns_btc_settled_funding_history_with_derived_interval() -> (
     None
@@ -238,3 +349,15 @@ def test_live_okx_request_returns_btc_settled_funding_history_with_derived_inter
     assert result.value == float(rows[0].realized_rate)
     assert result.source_timestamp == datetime.fromtimestamp(newest / 1000, tz=UTC)
     assert f"interval_seconds={interval_seconds}" in result.source_field
+
+
+@pytest.mark.integration
+@pytest.mark.parametrize("asset", ("BTC", "ETH", "SOL", "BNB"))
+def test_live_okx_request_returns_open_interest_for_usdt_margined_swap(
+    asset: str,
+) -> None:
+    result = fetch_open_interest(asset)
+
+    assert isinstance(result, OpenInterestOk), result
+    assert result.source_timestamp < datetime.now(UTC)
+    assert result.value > 0

@@ -8,10 +8,11 @@ import httpx
 import pytest
 
 from ingest import pipeline
-from ingest.fetchers.okx_derivatives import FundingRateOk
+from ingest.fetchers.okx_derivatives import FundingRateOk, OpenInterestOk
 from ingest.pipeline import (
     FetchedBars,
     FundingRateResult,
+    OpenInterestResult,
     HistoryAvailability,
     Venue,
     assess_history,
@@ -54,6 +55,14 @@ def synthetic_funding_rate(asset: str) -> FundingRateResult:
             "OKX funding-rate-history realizedRate; interval_seconds=28800 "
             "derived from the two newest consecutive fundingTime deltas"
         ),
+    )
+
+
+def synthetic_open_interest(asset: str) -> OpenInterestResult:
+    offset = {"BTC": 1.0, "ETH": 2.0, "SOL": 3.0, "BNB": 4.0}[asset]
+    return OpenInterestOk(
+        value=offset * 1_000_000,
+        source_timestamp=SOURCE_TIMESTAMP,
     )
 
 
@@ -102,6 +111,7 @@ def test_asset_with_fewer_available_bars_than_required_is_declared_uncorroborate
     run = run_all_assets(
         fetch_bars=fetch_bars,
         fetch_funding_rate=synthetic_funding_rate,
+        fetch_open_interest=synthetic_open_interest,
     )
     assessment = run.history[("BNB", "coinbase")]
 
@@ -111,7 +121,7 @@ def test_asset_with_fewer_available_bars_than_required_is_declared_uncorroborate
     )
     assert ("coinbase", "BNB", 250) not in calls
     assert all(
-        isinstance(result, (Ok, FundingRateOk))
+        isinstance(result, (Ok, FundingRateOk, OpenInterestOk))
         for key, result in run.indicators.items()
         if key.startswith("bnb_")
     )
@@ -153,6 +163,7 @@ def test_all_four_assets_produce_an_indicator_value_or_explicit_status() -> None
     run = run_all_assets(
         fetch_bars=fetch_bars,
         fetch_funding_rate=synthetic_funding_rate,
+        fetch_open_interest=synthetic_open_interest,
     )
     technical_definitions = tuple(
         definition
@@ -164,10 +175,19 @@ def test_all_four_assets_produce_an_indicator_value_or_explicit_status() -> None
         for definition in load_registry().root
         if definition.response_model == "okx_funding_rate_history"
     )
+    open_interest_definitions = tuple(
+        definition
+        for definition in load_registry().root
+        if definition.response_model == "okx_open_interest"
+    )
 
     assert set(run.indicators) == {
         definition.key
-        for definition in (*technical_definitions, *funding_definitions)
+        for definition in (
+            *technical_definitions,
+            *funding_definitions,
+            *open_interest_definitions,
+        )
     }
     assert Counter(
         definition.definable_for[0] for definition in technical_definitions
@@ -175,18 +195,21 @@ def test_all_four_assets_produce_an_indicator_value_or_explicit_status() -> None
     assert Counter(
         definition.definable_for[0] for definition in funding_definitions
     ) == Counter({asset: 1 for asset in ASSETS})
+    assert Counter(
+        definition.definable_for[0] for definition in open_interest_definitions
+    ) == Counter({asset: 1 for asset in ASSETS})
     assert all(
         result.status in {"OK", "STALE", "UNAVAILABLE", "ERROR"}
         for result in run.indicators.values()
     )
     assert all(
-        isinstance(result, (Ok, FundingRateOk))
+        isinstance(result, (Ok, FundingRateOk, OpenInterestOk))
         for result in run.indicators.values()
     )
     assert all(
         math.isfinite(result.value)
         for result in run.indicators.values()
-        if isinstance(result, (Ok, FundingRateOk))
+        if isinstance(result, (Ok, FundingRateOk, OpenInterestOk))
     )
     assert set(calls) == {
         (venue, asset, 250) for asset in ASSETS for venue in VENUES
@@ -260,7 +283,10 @@ def test_full_run_routes_each_asset_to_its_actual_pair_at_both_venues(
 
     monkeypatch.setattr(pipeline.httpx, "get", fake_get)
 
-    run = run_all_assets(fetch_funding_rate=synthetic_funding_rate)
+    run = run_all_assets(
+        fetch_funding_rate=synthetic_funding_rate,
+        fetch_open_interest=synthetic_open_interest,
+    )
 
     assert requested_pairs == {
         *(("okx", f"{asset}-USDT") for asset in ASSETS),
@@ -268,7 +294,7 @@ def test_full_run_routes_each_asset_to_its_actual_pair_at_both_venues(
     }
     assert all(item.status == "AVAILABLE" for item in run.history.values())
     assert all(
-        isinstance(result, (Ok, FundingRateOk))
+        isinstance(result, (Ok, FundingRateOk, OpenInterestOk))
         for result in run.indicators.values()
     )
 
@@ -284,11 +310,11 @@ def test_full_run_computes_indicators_for_btc_eth_sol_bnb_against_live_venues() 
     assert all(item.status == "AVAILABLE" for item in run.history.values())
     assert all(item.fetched_bars == 250 for item in run.history.values())
     assert all(
-        isinstance(result, (Ok, FundingRateOk))
+        isinstance(result, (Ok, FundingRateOk, OpenInterestOk))
         for result in run.indicators.values()
     )
     assert all(
         math.isfinite(result.value)
         for result in run.indicators.values()
-        if isinstance(result, (Ok, FundingRateOk))
+        if isinstance(result, (Ok, FundingRateOk, OpenInterestOk))
     )
