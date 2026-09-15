@@ -1,9 +1,9 @@
-.uf/events.ndjson                                  |   6 +
- SESSION.md                                         |  20 +--
+.uf/events.ndjson                                  |   9 ++
+ SESSION.md                                         |  23 ++--
  ingest/canary.py                                   |   3 +-
  ingest/pipeline.py                                 |  93 ++++++++++---
  ingest/registry.yaml                               |  56 ++++++++
- .../50-evidence/US-602/diffstat.txt                |  12 ++
+ .../50-evidence/US-602/diffstat.txt                |  19 +++
  .../50-evidence/US-602/gates.json                  |  20 +++
  .../50-evidence/US-602/verdict.json                |  49 +++++++
  tests/fixtures/okx_funding_rate_history.json       |  26 ++++
@@ -16,4 +16,4 @@
  web/src/CoverageHeadline.test.tsx                  |   6 +-
  web/src/board.test.ts                              |   6 +-
  web/src/fixtures/mixedBoard.test.ts                |   4 +-
- 18 files changed, 502 insertions(+), 79 deletions(-)
+ 18 files changed, 515 insertions(+), 79 deletions(-)
