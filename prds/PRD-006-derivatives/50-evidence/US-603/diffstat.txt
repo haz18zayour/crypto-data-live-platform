@@ -1,0 +1,14 @@
+.uf/events.ndjson                     |   2 +
+ ingest/canary.py                      |   7 +-
+ ingest/fetchers/okx_derivatives.py    |  79 ++++++++++++++++++++-
+ ingest/pipeline.py                    |  26 ++++++-
+ ingest/registry.yaml                  |  56 +++++++++++++++
+ ingest/schemas.py                     |  23 +++++++
+ tests/fixtures/okx_open_interest.json |  14 ++++
+ tests/test_assets.py                  |  44 +++++++++---
+ tests/test_coverage.py                |   2 +-
+ tests/test_okx_derivatives_fetcher.py | 125 +++++++++++++++++++++++++++++++++-
+ tests/test_persist_board.py           |  92 ++++++++++++++++++++-----
+ tests/test_registry.py                |  19 +++++-
+ tests/test_registry_not_definable.py  |   4 +-
+ 13 files changed, 460 insertions(+), 33 deletions(-)
