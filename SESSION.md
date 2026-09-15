@@ -31,7 +31,7 @@ open prds/PRD-005-dashboard/20-decisions.yaml
 | PRD-004-indicators | 11 | 11 | **all green** |
 | PRD-005-dashboard | 9 | 8 | 8/9 |
 
-Spend to date: **$54.38** Claude · **119063k** Codex tokens.
+Spend to date: **$55.29** Claude · **119075k** Codex tokens.
 
 ## What happened
 
@@ -384,6 +384,12 @@ Spend to date: **$54.38** Claude · **119063k** Codex tokens.
 - 05:36  US-511 started, attempt 3 (claude)
 - 05:40  US-511 — codex finished `6c865dca` · $1.03 · 12k tok
 - 05:41  US-511 **rejected** — 0/10 criteria, judged by claude
+- 05:41  ⏸ **gate opened** — US-511 has failed 3 times — is the story wrong?
+- 05:56  **PRD-005-dashboard** compiled — 9 stories
+- 06:56  ▶ gate answered **rewrite-criteria** — US-511 re-identified as US-512; both failures were check-script bugs, fixed and verified locally
+- 06:57  US-512 started, attempt 1 (claude)
+- 06:59  US-512 — codex finished `3e602de6` · $0.92 · 13k tok
+- 07:03  US-512 **rejected** — 0/10 criteria, judged by claude
 
 <!-- uf:generated:end -->
 
