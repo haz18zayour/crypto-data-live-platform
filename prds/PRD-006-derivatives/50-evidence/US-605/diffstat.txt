@@ -1,6 +1,24 @@
-.uf/events.ndjson                                  |  7 +++
- SESSION.md                                         | 11 +++-
- .../50-evidence/US-605/diffstat.txt                |  3 ++
- .../50-evidence/US-605/gates.json                  | 20 +++++++
- .../50-evidence/US-605/verdict.json                | 61 ++++++++++++++++++++++
- 5 files changed, 100 insertions(+), 2 deletions(-)
+.uf/events.ndjson                                  |  12 +++
+ SESSION.md                                         |  27 ++++-
+ ingest/canary.py                                   |   2 +
+ ingest/fetchers/okx_derivatives.py                 |  89 +++++++++++++++++
+ ingest/pipeline.py                                 |  26 ++++-
+ ingest/registry.yaml                               |  56 +++++++++++
+ ingest/schemas.py                                  |  13 +++
+ .../40-stories/US-605-taker-ratio.md               |   1 +
+ .../50-evidence/US-605/diffstat.txt                |   6 ++
+ .../50-evidence/US-605/gates.json                  |  20 ++++
+ .../50-evidence/US-605/verdict.json                |  59 +++++++++++
+ prds/PRD-006-derivatives/spec.lock.json            |   7 +-
+ tests/fixtures/okx_taker_volume.json               |  11 ++
+ tests/test_assets.py                               |  52 ++++++++--
+ tests/test_coverage.py                             |   2 +-
+ tests/test_okx_derivatives_fetcher.py              | 111 +++++++++++++++++++++
+ tests/test_persist_board.py                        |  86 ++++++++++++++--
+ tests/test_registry.py                             |  19 +++-
+ tests/test_registry_not_definable.py               |   4 +-
+ web/src/BoardMatrix.test.tsx                       |  20 ++--
+ web/src/CoverageHeadline.test.tsx                  |   6 +-
+ web/src/board.test.ts                              |   6 +-
+ web/src/fixtures/mixedBoard.test.ts                |   4 +-
+ 23 files changed, 595 insertions(+), 44 deletions(-)
