@@ -71,21 +71,21 @@ describe("completeness matrix", () => {
         .getAllByRole("rowheader")
         .map((header) => header.textContent),
     ).toEqual(mixedBoard.families.map((family) => family.replaceAll("_", " ")));
-    expect(mixedBoard.families).toHaveLength(17);
+    expect(mixedBoard.families).toHaveLength(18);
 
     const bodyRows = within(table).getAllByRole("row").slice(1);
-    expect(bodyRows).toHaveLength(17);
+    expect(bodyRows).toHaveLength(18);
     for (const row of bodyRows) {
       expect(within(row).getAllByRole("rowheader")).toHaveLength(1);
       expect(within(row).getAllByRole("cell")).toHaveLength(BOARD_ASSETS.length);
     }
   });
 
-  test("68 data cells render and every one has non-empty text content", () => {
+  test("72 data cells render and every one has non-empty text content", () => {
     for (const board of [mixedBoard, emptyResponseBoard]) {
       const cells = renderMatrix(board);
 
-      expect(cells).toHaveLength(68);
+      expect(cells).toHaveLength(72);
       for (const cell of cells) {
         expect(cell.textContent?.trim()).not.toBe("");
       }
@@ -97,7 +97,7 @@ describe("completeness matrix", () => {
     for (const board of [mixedBoard, emptyResponseBoard]) {
       const cells = renderMatrix(board);
 
-      expect(cells).toHaveLength(68);
+      expect(cells).toHaveLength(72);
       for (const cell of cells) {
         expect(faceClass(cell)).toBeDefined();
         expect(part(cell, "glyph")).not.toBe("");
@@ -184,7 +184,7 @@ describe("completeness matrix", () => {
 
     renderPage();
 
-    await waitFor(() => expect(screen.getAllByRole("cell")).toHaveLength(68));
+    await waitFor(() => expect(screen.getAllByRole("cell")).toHaveLength(72));
     await screen.findByLabelText("Not corroborated value");
 
     const urls = fetchMock.mock.calls.map(([input]) => new URL(String(input)));
@@ -206,7 +206,7 @@ describe("completeness matrix", () => {
     ).toHaveLength(definitions.length);
   });
 
-  test("rendering the mixed fixture produces all five faces at once", () => {
+  test("rendering the mixed fixture produces all six faces at once", () => {
     const cells = renderMatrix(mixedBoard);
     const faces = new Set(cells.map(faceClass));
 
@@ -214,6 +214,7 @@ describe("completeness matrix", () => {
       new Set([
         "cell--ok",
         "cell--stale",
+        "cell--not-fetched",
         "cell--not-definable",
         "cell--paywalled",
         "cell--fetch-failed",
@@ -238,7 +239,7 @@ describe("completeness matrix", () => {
 });
 
 describe("integration: the assembled page against live Supabase", () => {
-  test("the assembled page loads 68 cells from the live board_read endpoint", async () => {
+  test("the assembled page loads 72 cells from the live board_read endpoint", async () => {
     // Real URL, real anon key, real fetch. Missing configuration fails here; it never skips.
     expect(import.meta.env.VITE_SUPABASE_URL).toBeTruthy();
     expect(import.meta.env.VITE_SUPABASE_ANON_KEY).toBeTruthy();
@@ -247,14 +248,14 @@ describe("integration: the assembled page against live Supabase", () => {
     renderPage();
 
     await waitFor(
-      () => expect(screen.getAllByRole("cell")).toHaveLength(68),
+      () => expect(screen.getAllByRole("cell")).toHaveLength(72),
       { timeout: 20_000 },
     );
     const cells = screen.getAllByRole("cell");
     for (const cell of cells) {
       expect(cell.textContent?.trim()).not.toBe("");
     }
-    expect(screen.getByRole("status")).toHaveTextContent(/of 68 indicators OK/);
+    expect(screen.getByRole("status")).toHaveTextContent(/of 72 indicators OK/);
 
     const boardRequests = liveFetch.mock.calls.filter(
       ([input]) => new URL(String(input)).pathname === "/rest/v1/board_read",
@@ -281,6 +282,6 @@ describe("integration: the assembled page against live Supabase", () => {
     ).length;
     expect(
       cells.filter((cell) => faceClass(cell) === "cell--not-fetched"),
-    ).toHaveLength(68 - declaredNotDefinable - registeredRows.length);
+    ).toHaveLength(72 - declaredNotDefinable - registeredRows.length);
   }, 30_000);
 });

@@ -43,10 +43,10 @@ describe("coverage headline", () => {
 
   test("the mixed fixture reports every state separately", () => {
     expect(countCoverage(mixedBoard)).toEqual({
-      total: 68,
-      ok: 61,
+      total: 72,
+      ok: 64,
       stale: 1,
-      unavailable: 0,
+      unavailable: 1,
       notDefinable: 4,
       paywalled: 1,
       fetchFailed: 1,
@@ -94,7 +94,7 @@ describe("coverage headline", () => {
     expect(statuses).toHaveLength(1);
     expect(statuses[0]).toHaveAttribute("aria-atomic", "true");
     expect(statuses[0]).toHaveTextContent(
-      "61 of 68 indicators OK · 1 stale · 0 unavailable 4 not definable · 1 paywalled · 1 fetch failed",
+      "64 of 72 indicators OK · 1 stale · 1 unavailable 4 not definable · 1 paywalled · 1 fetch failed",
     );
     expect(statuses[0]).toHaveStyle({ fontVariantNumeric: "tabular-nums" });
   });
