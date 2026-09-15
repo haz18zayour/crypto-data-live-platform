@@ -86,8 +86,8 @@ summed with a USD-denominated one.
 ## Phase checklist
 
 - [x] `00-brief.md`
-- [ ] `10-research.md` — `uf research PRD-006-derivatives`
-- [ ] `20-decisions.yaml` — **GATE G1**
+- [x] `10-research.md` — `uf research PRD-006-derivatives`, 11 sources, $0.99
+- [ ] `20-decisions.yaml` — **GATE G1** — drafted, awaiting owner review
 - [ ] `30-spec.md`
 - [ ] `40-stories/*.md`
 - [ ] `uf compile PRD-006-derivatives`

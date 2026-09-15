@@ -1,0 +1,122 @@
+# GATE G1 — scope lock.
+#
+# Produced by /pre-prd-research interrogating you, then confirmed by you. The research
+# agent commits to a hypothesis for every question so you are correcting a draft rather
+# than answering a blank form: skim, override what is wrong, confirm the out-of-scope list.
+#
+# Anything you do NOT answer becomes an `assumptions:` row below — an explicit assumption
+# with a tripwire, never a silent guess. That is the whole point of this file.
+
+decisions:
+  - q: >
+      Does OKX's rubik/stat family (open-interest-volume, taker-volume, long-short-ratio)
+      have a documented retention ceiling, or is it genuinely unbounded?
+    hypothesis: >
+      UNVERIFIED. It likely mirrors funding-rate-history's pattern of a hard record-count
+      cap (that endpoint is confirmed capped at 400 records, ~1 year at 8h cadence) rather
+      than being unbounded. Must be confirmed empirically against the live endpoint before
+      backfill design is finalized.
+    answer:
+
+  - q: >
+      Should the board standardize on USDT-margined (linear) perpetuals for all four
+      assets, rather than mixing linear and inverse contracts?
+    hypothesis: >
+      Yes. USDT-margined for BTC/ETH/SOL/BNB uniformly — it's the more liquid, more
+      uniformly-available product line across all four assets, and avoids the
+      coin-vs-USD unit-mixing trap by construction rather than by validation.
+    answer:
+
+  - q: >
+      Is a second venue for derivatives corroboration reachable at all from the target
+      compute, or does this whole data category ship declared-uncorroborated (legal per
+      PRD-003/US-306) for v1?
+    hypothesis: >
+      Declared-uncorroborated for v1 (Approach A below). No second venue's derivatives
+      public endpoints were confirmed to exist, let alone be reachable, in this research
+      pass. Binance's futures API (fapi.binance.com) returns HTTP 451 to US IPs even for
+      public, no-auth endpoints — the same reachability wall PRD-001's spike already
+      found for spot, now confirmed to extend to derivatives specifically. Coinbase and
+      Kraken's derivatives products were not verified to expose these fields publicly at
+      all.
+    answer:
+
+# The one field with no default.
+out_of_scope:
+  - No liquidation data. Research finding: liquidation feeds are modeled, not measured
+    (Binance: 1-order/second snapshot only; OKX: partially-reported 7-day window;
+    Coinglass's heatmap: an explicit model of assumed leverage distributions). This
+    product's rule is that a modeled estimate never gets to look like a measured value —
+    liquidations need their own PRD, with "this is estimated" built in from story one.
+  - No options data (skew, IV, DVOL) — Deribit-only, thin SOL liquidity per prior
+    research, a materially different vendor integration.
+  - No basis / term structure — requires combining spot + quarterly futures; not
+    blocking for a first derivatives cut.
+  - No new panel layout or UI work. PRD-005's board model, coverage headline and
+    completeness matrix already generalize to more rows; this PRD adds registry entries
+    and fetchers, not new UI.
+  - No composite score, signal, or cross-indicator judgement — permanent, project-wide.
+  - The live/predicted funding-rate field is never fetched for display, only the
+    settled/realized history endpoint. (This is a correctness rule, not really
+    "scope" — listed here so a later story can't quietly reintroduce it as a
+    convenience shortcut.)
+
+assumptions:
+  - claim: >
+      OKX's rubik/stat endpoints (OI-volume, long-short-ratio, taker-volume) return
+      per-instrument-type data without silently blending linear and inverse contracts
+      under one instType=SWAP aggregate.
+    tripwire: >
+      Any story finding a rubik/stat response that cannot be cleanly attributed to one
+      margin type reopens this — the unit-mixing trap this PRD exists to prevent could
+      reappear one layer up, inside an OKX-computed ratio the fetcher never gets to
+      inspect or split.
+    acceptedBy: default
+
+  - claim: >
+      The funding-interval field must be re-derived from live fundingTime deltas on
+      every ingest, never set once at onboarding and trusted thereafter.
+    tripwire: >
+      OKX's escalation ladder (8h to 4h to 2h to 1h and back) reverts after a 12-hour
+      lookback of stable settlements — a fixed-at-onboarding interval field will drift
+      stale silently, looking plausible rather than obviously wrong. Any story that
+      persists an interval without a per-fetch re-derivation step reopens this.
+    acceptedBy: default
+
+  - claim: >
+      Four assets x four metrics on OKX's rubik/stat family will not exceed rate limits
+      on the existing GitHub Actions cron cadence.
+    tripwire: >
+      A 429 response must be surfaced as FETCH_FAILED, never silently retried into a
+      dropped row — a throttling failure here would look like intermittently missing
+      cells, exactly the failure mode PRD-005's completeness matrix exists to catch, but
+      only if the fetcher reports it rather than swallowing it.
+    acceptedBy: default
+
+# Options the research agent surfaced, and which you picked.
+chosen_approach:
+  option: >
+    A — OKX-only, single-venue, declared uncorroborated per US-306
+  because: >
+    Every source found in this research pass (the reference SDKs, OKX's own docs, a
+    practitioner backtesting guide) treats OKX's derivatives surface as complete and
+    self-consistent for BTC/ETH/SOL/BNB perpetuals. No second venue's derivatives
+    endpoints were confirmed reachable or even existent. PRD-003/US-306 already makes
+    "declared uncorroborated" a legal, structurally-supported state rather than a gap
+    papered over — this PRD can add a second source later as an additive registry
+    change if one becomes available, without redesigning anything.
+  rejected:
+    - option: B — OKX primary + Coinglass as a corroboration-only second source
+      because: >
+        Coinglass's own numbers for this exact category (OI, long/short) are partly
+        derived/modeled per this project's own prior liquidation-data finding — using
+        it even just for corroboration risks importing the same "modeled passing as
+        measured" problem this PRD exists to refuse. Its free-tier API terms and
+        availability were also unverified in this research pass.
+    - option: C — Two-venue direct (OKX + Coinbase/Kraken derivatives)
+      because: >
+        Coinbase and Kraken's derivatives products and public API surface for
+        funding/OI/long-short were not verified to exist in this research pass — this
+        project's existing architecture doc only measured their spot OHLCV
+        reachability. Real, unresolved risk that a second venue simply doesn't expose
+        these fields publicly at all.
