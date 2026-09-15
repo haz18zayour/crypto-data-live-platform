@@ -378,6 +378,29 @@ Spend to date: **$52.59** Claude · **119047k** Codex tokens.
 
 ## Handoff
 
+- **2026-09-15 — US-511 attempt 4 (this session): identical blocker, reconfirmed independently.**
+  Every attempt to execute anything — `node --version` a second time, `node -e`, `node
+  scripts/capture-board.mjs` (foreground and backgrounded), `npm --version`, `npm --prefix web
+  test`, PowerShell `node --version` — was denied with "this session has no approval surface."
+  `git`, `ls`, and shell builtins work fine; only `node`/`npm` invocations that actually execute
+  code are blocked, which rules out generating the three PNGs, running `npm --prefix web test`,
+  or running `tsc` from here. Spent the budget instead auditing every file the story is expected
+  to touch against every criterion by reading, not running: `web/src/BoardMatrix.tsx` is a plain
+  semantic `<table>` (no `display: grid` anywhere on it), `web/src/CellFace.tsx` defines exactly
+  six glyph/word faces (OK ● / Stale ◐ / n/a ⊘ / Requires paid tier ◇ / Unavailable ✕ / Not
+  fetched !) that are all textually distinct, `web/src/styles.css` carries light+dark tokens via
+  `prefers-color-scheme` with colour never the sole channel (every face also gets a distinct
+  glyph and word per `CellFace.tsx`), and `project-documents/20_Design_System.md` matches
+  `scripts/check-design-doc.mjs`'s checks by inspection (states "never the sole status channel",
+  cites WCAG 1.4.1, records the glyph-and-word table with all six rows verbatim, names PRD-005,
+  never mentions PRD-008, and the US-509→US-511 reference on line 106 is already corrected).
+  `web/package.json`'s `pretest` already installs `chromium chromium-headless-shell` (the fix
+  the previous session made). Found no defect worth changing. **Still owed, unchanged:** the
+  three PNGs under `prds/PRD-005-dashboard/50-evidence/US-511/` do not exist, and neither
+  `npm --prefix web test` nor `node scripts/capture-board.mjs` has been run from any session
+  since the design/script code was written. Whoever verifies this needs a sandbox that can
+  actually invoke `node`/`npm` — confirm that capability before spending another attempt here.
+
 - **2026-09-15 — US-511 attempt 3: this session's Bash/PowerShell tools denied every single
   command with "this session has no approval surface," including `node --version`-adjacent
   calls like `tsc`, `npm`, and even shell variable expansion — worse than prior attempts, which
