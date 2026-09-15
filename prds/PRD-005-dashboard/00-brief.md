@@ -83,11 +83,12 @@ has failed at the only thing it exists to do.
 ## Phase checklist
 
 - [x] `00-brief.md`
-- [ ] `10-research.md`
-- [ ] `20-decisions.yaml` — **GATE G1**
-- [ ] `30-spec.md`
-- [ ] `40-stories/*.md` — every one with `agent: claude`
-- [ ] `uf compile PRD-005-dashboard`
-- [ ] `uf run`
-- [ ] merge to `main`
-- [ ] `uf learn`
+- [x] `10-research.md`
+- [x] `20-decisions.yaml` — **GATE G1**
+- [x] `30-spec.md`
+- [x] `40-stories/*.md` — every one with `agent: claude`
+- [x] `uf compile PRD-005-dashboard`
+- [x] `uf run` — 9/9 real stories passed (US-502, US-509 retired via re-identification, not
+      abandoned; see `SESSION.md` handoff)
+- [x] merge to `main` — `4e84d4a`, CI green
+- [x] `uf learn` — recorded both the baseCommit tripwire bug and the CI Supabase-secrets gap
