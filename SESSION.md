@@ -9,19 +9,15 @@ Do not hand-edit it — it is regenerated. The hand-written sections below it su
 
 ## ▶ Resume here
 
-**3 uncommitted file(s) — the runner will not start**
+**PRD-005-dashboard — GATE G1, scope lock**
 
-A previous session edited source and did not commit. uf refuses to run on a dirty tree rather than auto-committing someone else's half-finished work.
+The research asked you questions and each carries the agent's own hypothesis. Anything you leave blank becomes an explicit assumption with a tripwire. The out-of-scope list is the one field with no default.
 
 Owner: **You.** This one cannot be delegated.
 
 ```
-review the diff, then: git add -A && git commit
+open prds/PRD-005-dashboard/20-decisions.yaml
 ```
-
-**Left in flight by the previous session:**
-
-- 3 uncommitted file(s): prds/PRD-007-onchain/00-brief.md, prds/PRD-007-onchain/30-spec.md, prds/PRD-007-onchain/40-stories/
 
 **Last handoff note:** **2026-09-15 — PRD-006 complete, merged to `main` at `713d9f3`, CI green (verify, ingest,
 
@@ -470,6 +466,55 @@ Spend to date: **$70.68** Claude · **143304k** Codex tokens.
 <!-- uf:generated:end -->
 
 ## Handoff
+
+- **2026-09-15 — STOPPED HERE. PRD-007 is fully specced and compiled (8 stories, 62 criteria,
+  digest `6d083edf76bb8fd5`) but `uf run` has NOT been started.** It is blocked on two
+  credentials that exist nowhere — not as a GitHub Actions secret, not in `.env.local`, and not
+  in `crypto-investing-signals` either (checked directly: no `.env`/`.env.local` file there, only
+  a template `.env.example` that doesn't mention either service, and no code in that repo
+  references Helius or Validators.app at all — the prior system apparently never built real
+  Solana on-chain collection).
+
+  **Owner needs to do this part personally before the run can start — I cannot create either
+  account:**
+  1. **Helius** ([helius.dev](https://helius.dev)) — free signup, no card required (1M
+     credits/mo free tier). Generate an API key from the dashboard. Needed by **US-704** (SOL
+     active addresses, built from `getBlock` + client-side vote classification).
+  2. **Validators.app** ([validators.app](https://validators.app)) — free signup, verify the
+     account, generate an API token from account settings. Needed by **US-706** (SOL staking).
+     Confirmed via a live `ping.json` call that the service itself is up; the actual
+     validator-data endpoints need the token, which was not fetched live during research —
+     confirm the exact response shape once the token exists, per US-706's own notes.
+
+  **Once both tokens exist, wire them in exactly like the Supabase keys were done for PRD-005's
+  CI fix**: fetch the repo's Actions public key
+  (`GET /repos/.../actions/secrets/public-key`), encrypt each value with `libsodium-wrappers`'
+  `crypto_box_seal` (plain Node `crypto` has no sealed-box primitive — a scratch dir with
+  `npm install libsodium-wrappers --no-save` works, see the commit history around
+  `docs(ci): wire VITE_SUPABASE_URL/ANON_KEY` for the exact script shape), then `PUT
+  /repos/.../actions/secrets/<NAME>` with the encrypted value and key_id. Name them
+  `HELIUS_API_KEY` and `VALIDATORS_APP_API_TOKEN` to match what US-704/US-706's own notes
+  already assume. **Watch for the same MSYS/Git-Bash path-translation trap** hit during that
+  earlier session: a Node `-e` script with an embedded POSIX-style path string
+  (`/tmp/seal/pubkey.json`) resolves wrong under Windows because MSYS only translates
+  command-line *arguments*, not strings inside `-e` code — use `pwd -W` to get the real Windows
+  path first, or write files the script reads via `readFileSync(new URL(...))` instead.
+
+  **Everything else about PRD-007 is ready to go the moment those two secrets exist**: `git
+  status` is clean, `main` is at `ff905d1`, `uf compile` already ran successfully (spec.lock.json
+  committed), and `uf gates`/`uf status` both confirm nothing else is pending. Just
+  `nohup uf run > /tmp/uf_run_prd007.log 2>&1 &` (with `uv` on PATH — see the fresh-machine
+  provisioning notes further down this file if `uv`/`gh` aren't already linked in a new session)
+  and watch `.uf/events.ndjson` grow, same pattern as every PRD this session.
+
+  **One live, confirmed finding worth remembering when US-704 is actually implemented**: there
+  is no RPC-level Solana vote-transaction filter and there never has been — `getBlock`'s only
+  parameters are `commitment`/`encoding`/`transactionDetails`/`maxSupportedTransactionVersion`/
+  `rewards`, and a 2022 feature request for a `votes: bool` param was explicitly closed "not
+  planned" (that repo is now archived). If a future session forgets this and writes a story or
+  test assuming such a parameter exists, it will burn an attempt against an API surface that was
+  never built — this is exactly the "story tripwire fires identically every attempt" failure
+  mode already `uf learn`-recorded from PRD-006, just for a different underlying cause.
 
 - **2026-09-15 — PRD-006 complete, merged to `main` at `713d9f3`, CI green (verify, ingest,
   contract-canary all pass on the merge commit).** Derivatives panel: funding rate (settled,
