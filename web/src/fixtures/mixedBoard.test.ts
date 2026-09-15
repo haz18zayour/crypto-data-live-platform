@@ -69,12 +69,12 @@ describe("mixed board fixture", () => {
     ).toBe(true);
   });
 
-  test("the fixture has the same 48-cell shape the live board model produces", () => {
+  test("the fixture has the same 52-cell shape the live board model produces", () => {
     const liveShape = buildBoard(registry, [], BOARD_ASSETS);
 
     expect(mixedBoard.assets).toEqual(liveShape.assets);
     expect(mixedBoard.families).toEqual(liveShape.families);
-    expect(mixedBoard.cells).toHaveLength(48);
+    expect(mixedBoard.cells).toHaveLength(52);
     expect(mixedBoard.cells.map(({ family, asset }) => ({ family, asset }))).toEqual(
       liveShape.cells.map(({ family, asset }) => ({ family, asset })),
     );
