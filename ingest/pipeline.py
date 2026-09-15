@@ -42,6 +42,7 @@ type OpenInterestFetcher = Callable[[str], OpenInterestResult]
 type LongShortRatioFetcher = Callable[[str], LongShortRatioResult]
 type TakerRatioFetcher = Callable[[str], TakerRatioResult]
 type MvrvFetcher = Callable[[str], Result]
+type ActiveAddressesFetcher = Callable[[str], Result]
 type BoardResult = (
     Result | FundingRateOk | OpenInterestOk | LongShortRatioOk | TakerRatioOk
 )
@@ -265,6 +266,13 @@ def _fetch_asset_mvrv(
     return coinmetrics.fetch_mvrv(asset, rate_limiter=rate_limiter)
 
 
+def _fetch_asset_active_addresses(
+    asset: str,
+    rate_limiter: coinmetrics.CoinMetricsRateLimiter | None = None,
+) -> Result:
+    return coinmetrics.fetch_active_addresses(asset, rate_limiter=rate_limiter)
+
+
 def _calculate(definition: IndicatorDefinition, bars: Sequence[Bar]) -> float:
     parameters = definition.parameters or {}
     if definition.key == INDICATOR_KEY:
@@ -316,6 +324,7 @@ def run_all_assets(
     fetch_long_short_ratio: LongShortRatioFetcher | None = None,
     fetch_taker_ratio: TakerRatioFetcher | None = None,
     fetch_mvrv: MvrvFetcher | None = None,
+    fetch_active_addresses: ActiveAddressesFetcher | None = None,
 ) -> FullAssetRun:
     """Fetch both venues and compute every registered board cell."""
 
@@ -346,9 +355,12 @@ def run_all_assets(
         if definition.response_model == "okx_taker_volume"
     )
     mvrv_definitions = tuple(
+        definition for definition in registered if definition.key.endswith("_mvrv")
+    )
+    active_address_definitions = tuple(
         definition
         for definition in registered
-        if definition.response_model == "coinmetrics_asset_metrics"
+        if definition.key.endswith("_active_addresses")
     )
     by_asset = {
         asset: tuple(
@@ -382,6 +394,11 @@ def run_all_assets(
     )
     fetch_coinmetrics_mvrv: MvrvFetcher = (
         _fetch_asset_mvrv if fetch_mvrv is None else fetch_mvrv
+    )
+    fetch_coinmetrics_active_addresses: ActiveAddressesFetcher = (
+        _fetch_asset_active_addresses
+        if fetch_active_addresses is None
+        else fetch_active_addresses
     )
     history: dict[tuple[str, Venue], HistoryAssessment] = {}
     indicators: dict[str, BoardResult] = {}
@@ -456,6 +473,11 @@ def run_all_assets(
 
     for definition in mvrv_definitions:
         indicators[definition.key] = fetch_coinmetrics_mvrv(
+            definition.definable_for[0]
+        )
+
+    for definition in active_address_definitions:
+        indicators[definition.key] = fetch_coinmetrics_active_addresses(
             definition.definable_for[0]
         )
 

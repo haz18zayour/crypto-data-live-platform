@@ -8,6 +8,7 @@ from ingest.fetchers.coinmetrics import (
     COINMETRICS_ASSET_METRICS_ENDPOINT,
     CoinMetricsRateLimiter,
     _fetch_btc_metric,
+    fetch_active_addresses,
     fetch_btc_mvrv,
 )
 from ingest.schemas import CoinMetricsAssetMetricsResponse
@@ -27,6 +28,23 @@ def coinmetrics_payload(
                 "asset": "btc",
                 "time": source_timestamp.isoformat().replace("+00:00", "Z"),
                 "CapMVRVCur": value,
+            }
+        ]
+    }
+
+
+def active_addresses_payload(
+    source_timestamp: datetime,
+    *,
+    asset: str = "btc",
+    value: str = "123456",
+) -> dict[str, list[dict[str, str]]]:
+    return {
+        "data": [
+            {
+                "asset": asset,
+                "time": source_timestamp.isoformat().replace("+00:00", "Z"),
+                "AdrActCnt": value,
             }
         ]
     }
@@ -52,6 +70,32 @@ def test_fetcher_calls_asset_metrics_for_btc_mvrv_without_api_key() -> None:
     assert str(request.url).startswith(COINMETRICS_ASSET_METRICS_ENDPOINT)
     assert request.url.params["assets"] == "btc"
     assert request.url.params["metrics"] == "CapMVRVCur"
+    assert "api_key" not in request.url.params
+    assert "apikey" not in request.url.params
+    assert "authorization" not in {key.lower() for key in request.headers}
+    assert "x-cm-api-key" not in {key.lower() for key in request.headers}
+
+
+def test_fetcher_calls_asset_metrics_for_active_addresses_without_api_key() -> None:
+    requested: list[httpx.Request] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        requested.append(request)
+        return httpx.Response(
+            200,
+            json=active_addresses_payload(NOW - timedelta(days=1), asset="eth"),
+            request=request,
+        )
+
+    with httpx.Client(transport=httpx.MockTransport(handler)) as client:
+        result = fetch_active_addresses("ETH", client=client, now=NOW)
+
+    assert isinstance(result, Ok)
+    assert result.value == 123456.0
+    request = requested[0]
+    assert str(request.url).startswith(COINMETRICS_ASSET_METRICS_ENDPOINT)
+    assert request.url.params["assets"] == "eth"
+    assert request.url.params["metrics"] == "AdrActCnt"
     assert "api_key" not in request.url.params
     assert "apikey" not in request.url.params
     assert "authorization" not in {key.lower() for key in request.headers}

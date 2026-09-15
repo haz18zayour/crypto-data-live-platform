@@ -94,6 +94,11 @@ def synthetic_mvrv(asset: str) -> Ok:
     return Ok(value=offset + 1.5, source_timestamp=SOURCE_TIMESTAMP)
 
 
+def synthetic_active_addresses(asset: str) -> Ok:
+    offset = {"BTC": 1_000.0, "ETH": 2_000.0, "BNB": 3_000.0}[asset]
+    return Ok(value=offset, source_timestamp=SOURCE_TIMESTAMP)
+
+
 def test_registry_declares_measured_history_availability_per_asset_per_venue() -> (
     None
 ):
@@ -143,6 +148,7 @@ def test_asset_with_fewer_available_bars_than_required_is_declared_uncorroborate
         fetch_long_short_ratio=synthetic_long_short_ratio,
         fetch_taker_ratio=synthetic_taker_ratio,
         fetch_mvrv=synthetic_mvrv,
+        fetch_active_addresses=synthetic_active_addresses,
     )
     assessment = run.history[("BNB", "coinbase")]
 
@@ -201,6 +207,7 @@ def test_all_four_assets_produce_an_indicator_value_or_explicit_status() -> None
         fetch_long_short_ratio=synthetic_long_short_ratio,
         fetch_taker_ratio=synthetic_taker_ratio,
         fetch_mvrv=synthetic_mvrv,
+        fetch_active_addresses=synthetic_active_addresses,
     )
     technical_definitions = tuple(
         definition
@@ -227,10 +234,20 @@ def test_all_four_assets_produce_an_indicator_value_or_explicit_status() -> None
         for definition in load_registry().root
         if definition.response_model == "okx_taker_volume"
     )
-    mvrv_definitions = tuple(
+    coinmetrics_definitions = tuple(
         definition
         for definition in load_registry().root
         if definition.response_model == "coinmetrics_asset_metrics"
+    )
+    mvrv_definitions = tuple(
+        definition
+        for definition in coinmetrics_definitions
+        if definition.key.endswith("_mvrv")
+    )
+    active_address_definitions = tuple(
+        definition
+        for definition in coinmetrics_definitions
+        if definition.key.endswith("_active_addresses")
     )
 
     assert set(run.indicators) == {
@@ -241,7 +258,7 @@ def test_all_four_assets_produce_an_indicator_value_or_explicit_status() -> None
             *open_interest_definitions,
             *long_short_definitions,
             *taker_ratio_definitions,
-            *mvrv_definitions,
+            *coinmetrics_definitions,
         )
     }
     assert Counter(
@@ -261,6 +278,9 @@ def test_all_four_assets_produce_an_indicator_value_or_explicit_status() -> None
     ) == Counter({asset: 1 for asset in ASSETS})
     assert Counter(
         definition.definable_for[0] for definition in mvrv_definitions
+    ) == Counter({"BTC": 1, "ETH": 1, "BNB": 1})
+    assert Counter(
+        definition.definable_for[0] for definition in active_address_definitions
     ) == Counter({"BTC": 1, "ETH": 1, "BNB": 1})
     assert all(
         result.status in {"OK", "STALE", "UNAVAILABLE", "ERROR"}
@@ -359,6 +379,7 @@ def test_full_run_routes_each_asset_to_its_actual_pair_at_both_venues(
         fetch_long_short_ratio=synthetic_long_short_ratio,
         fetch_taker_ratio=synthetic_taker_ratio,
         fetch_mvrv=synthetic_mvrv,
+        fetch_active_addresses=synthetic_active_addresses,
     )
 
     assert requested_pairs == {

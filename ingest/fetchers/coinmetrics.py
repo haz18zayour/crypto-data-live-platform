@@ -156,7 +156,9 @@ def _fetch_asset_metric(
         if len(rows) != 1:
             return Error(
                 reason=Reason.FETCH_FAILED,
-                detail="Coin Metrics returned an unexpected number of MVRV entries",
+                detail=(
+                    f"Coin Metrics returned an unexpected number of {metric} entries"
+                ),
             )
         row = rows[0]
         if row.asset != asset_parameter:
@@ -174,7 +176,13 @@ def _fetch_asset_metric(
                 reason=Reason.FETCH_FAILED,
                 detail="Coin Metrics source timestamp is in the future or present",
             )
-        return Ok(value=float(row.CapMVRVCur), source_timestamp=source_timestamp)
+        raw_value = getattr(row, metric, None)
+        if raw_value is None:
+            return Error(
+                reason=Reason.FETCH_FAILED,
+                detail=f"Coin Metrics response omitted {metric}",
+            )
+        return Ok(value=float(raw_value), source_timestamp=source_timestamp)
     except (TypeError, ValueError, OverflowError) as error:
         return Error(
             reason=Reason.FETCH_FAILED,
@@ -223,6 +231,23 @@ def fetch_mvrv(
     return _fetch_asset_metric(
         asset,
         "CapMVRVCur",
+        client=client,
+        now=now,
+        rate_limiter=rate_limiter,
+    )
+
+
+def fetch_active_addresses(
+    asset: str,
+    client: httpx.Client | None = None,
+    now: datetime | None = None,
+    rate_limiter: CoinMetricsRateLimiter | None = None,
+) -> Result:
+    """Return an asset's latest Coin Metrics active-address count, or absence."""
+
+    return _fetch_asset_metric(
+        asset,
+        "AdrActCnt",
         client=client,
         now=now,
         rate_limiter=rate_limiter,

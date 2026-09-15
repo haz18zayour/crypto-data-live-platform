@@ -142,17 +142,18 @@ class CoinbaseCandleResponse(RootModel[tuple[CoinbaseCandle, ...]]):
 
 
 class CoinMetricsAssetMetricsEntry(BaseModel):
-    """One BTC MVRV row from Coin Metrics' asset-metrics endpoint."""
+    """One row from Coin Metrics' asset-metrics endpoint."""
 
     model_config = ConfigDict(extra="forbid", frozen=True)
 
     asset: StrictStr
     time: StrictStr
-    CapMVRVCur: StrictStr
+    CapMVRVCur: StrictStr | None = None
+    AdrActCnt: StrictStr | None = None
 
 
 class CoinMetricsAssetMetricsResponse(BaseModel):
-    """The response contract for Coin Metrics' BTC MVRV endpoint."""
+    """The response contract for Coin Metrics' asset-metrics endpoint."""
 
     model_config = ConfigDict(extra="forbid", frozen=True)
 

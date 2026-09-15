@@ -70,6 +70,20 @@
   freshness_stale_seconds: 172800
   uncorroborated:
     note: Coin Metrics is the only researched source for CapMVRVCur in this PRD, so this MVRV value has no independent corroborating venue.
+- key: btc_active_addresses
+  vendor: coinmetrics
+  endpoint: https://community-api.coinmetrics.io/v4/timeseries/asset-metrics?assets=btc&metrics=AdrActCnt&limit_per_asset=1&page_size=1
+  source_field: data[].AdrActCnt
+  definable_for: [BTC]
+  golden: fixtures/coinmetrics_asset_metrics.json
+  response_model: coinmetrics_asset_metrics
+  required_bars: 1
+  parameters:
+  expected_update_interval_seconds: 86400
+  freshness_warn_seconds: 108000
+  freshness_stale_seconds: 172800
+  uncorroborated:
+    note: Coin Metrics is the only researched source for AdrActCnt in this PRD, so this active-addresses value has no independent corroborating venue.
 - key: btc_open_interest
   vendor: okx
   endpoint: https://www.okx.com/api/v5/public/open-interest?instType=SWAP&instId=BTC-USDT-SWAP
@@ -335,6 +349,20 @@
   freshness_stale_seconds: 172800
   uncorroborated:
     note: Coin Metrics is the only researched source for CapMVRVCur in this PRD, so this MVRV value has no independent corroborating venue.
+- key: eth_active_addresses
+  vendor: coinmetrics
+  endpoint: https://community-api.coinmetrics.io/v4/timeseries/asset-metrics?assets=eth&metrics=AdrActCnt&limit_per_asset=1&page_size=1
+  source_field: data[].AdrActCnt
+  definable_for: [ETH]
+  golden: fixtures/coinmetrics_asset_metrics.json
+  response_model: coinmetrics_asset_metrics
+  required_bars: 1
+  parameters:
+  expected_update_interval_seconds: 86400
+  freshness_warn_seconds: 108000
+  freshness_stale_seconds: 172800
+  uncorroborated:
+    note: Coin Metrics is the only researched source for AdrActCnt in this PRD, so this active-addresses value has no independent corroborating venue.
 - key: eth_open_interest
   vendor: okx
   endpoint: https://www.okx.com/api/v5/public/open-interest?instType=SWAP&instId=ETH-USDT-SWAP
@@ -848,6 +876,20 @@
   freshness_stale_seconds: 172800
   uncorroborated:
     note: Coin Metrics is the only researched source for CapMVRVCur in this PRD, so this MVRV value has no independent corroborating venue.
+- key: bnb_active_addresses
+  vendor: coinmetrics
+  endpoint: https://community-api.coinmetrics.io/v4/timeseries/asset-metrics?assets=bnb&metrics=AdrActCnt&limit_per_asset=1&page_size=1
+  source_field: data[].AdrActCnt
+  definable_for: [BNB]
+  golden: fixtures/coinmetrics_asset_metrics.json
+  response_model: coinmetrics_asset_metrics
+  required_bars: 1
+  parameters:
+  expected_update_interval_seconds: 86400
+  freshness_warn_seconds: 108000
+  freshness_stale_seconds: 172800
+  uncorroborated:
+    note: Coin Metrics is the only researched source for AdrActCnt in this PRD, so this active-addresses value has no independent corroborating venue.
 - key: bnb_open_interest
   vendor: okx
   endpoint: https://www.okx.com/api/v5/public/open-interest?instType=SWAP&instId=BNB-USDT-SWAP
