@@ -198,7 +198,7 @@ def test_all_four_assets_produce_an_indicator_value_or_explicit_status() -> None
     technical_definitions = tuple(
         definition
         for definition in load_registry().root
-        if definition.talib_function is not None
+        if definition.response_model == "okx_candle"
     )
     funding_definitions = tuple(
         definition
@@ -233,7 +233,7 @@ def test_all_four_assets_produce_an_indicator_value_or_explicit_status() -> None
     }
     assert Counter(
         definition.definable_for[0] for definition in technical_definitions
-    ) == Counter({asset: 11 for asset in ASSETS})
+    ) == Counter({"BTC": 12, "ETH": 11, "SOL": 11, "BNB": 11})
     assert Counter(
         definition.definable_for[0] for definition in funding_definitions
     ) == Counter({asset: 1 for asset in ASSETS})

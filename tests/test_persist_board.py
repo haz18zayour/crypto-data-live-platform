@@ -179,7 +179,7 @@ def _board_definitions() -> tuple[IndicatorDefinition, ...]:
     return tuple(
         definition
         for definition in load_registry().root
-        if definition.talib_function is not None
+        if definition.response_model == "okx_candle"
         or definition.response_model == "okx_funding_rate_history"
         or definition.response_model == "okx_open_interest"
         or definition.response_model == "okx_long_short_ratio"
@@ -215,7 +215,7 @@ def test_full_run_writes_one_datapoint_row_per_computed_indicator(
     row_ids = run_pipeline(object(), fetcher=_full_board)  # type: ignore[arg-type]
 
     definitions = _board_definitions()
-    assert len(definitions) == 60
+    assert len(definitions) == 61
     assert len(row_ids) == len(definitions)
     assert len(persisted) == len(definitions)
     assert {row["indicator_key"] for row in persisted} == {
@@ -308,7 +308,50 @@ def test_non_ok_computed_result_is_persisted_with_status_and_reason_and_peers_co
         reason=Reason.FETCH_FAILED,
         detail="btc_rsi computation failed: forced computation failure",
     )
-    assert sum(isinstance(result, Ok) for result in persisted.values()) == 59
+    assert sum(isinstance(result, Ok) for result in persisted.values()) == 60
+
+
+def test_one_derivatives_fetch_failure_persists_error_and_other_cells_continue(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    persisted: dict[str, Result] = {}
+
+    def fetch_long_short_ratio(asset: str) -> LongShortRatioResult:
+        if asset == "SOL":
+            return Error(
+                reason=Reason.FETCH_FAILED,
+                detail="forced long/short failure",
+            )
+        return _fetch_long_short_ratio(asset)
+
+    def record_datapoint(
+        connection: object,
+        *,
+        definition: IndicatorDefinition,
+        asset: str,
+        measured_on: str,
+        result: Result,
+    ) -> int:
+        persisted[definition.key] = result
+        return len(persisted)
+
+    monkeypatch.setattr(pipeline, "persist_datapoint", record_datapoint)
+    run = run_all_assets(
+        fetch_bars=_fetch_bars,
+        fetch_funding_rate=_fetch_funding_rate,
+        fetch_open_interest=_fetch_open_interest,
+        fetch_long_short_ratio=fetch_long_short_ratio,
+        fetch_taker_ratio=_fetch_taker_ratio,
+    )
+
+    run_pipeline(object(), fetcher=lambda: run)  # type: ignore[arg-type]
+
+    assert len(persisted) == len(_board_definitions())
+    assert persisted["sol_long_short_ratio"] == Error(
+        reason=Reason.FETCH_FAILED,
+        detail="forced long/short failure",
+    )
+    assert sum(isinstance(result, Ok) for result in persisted.values()) == 60
 
 
 def test_full_run_persists_one_funding_rate_datapoint_per_asset_with_runtime_source_field(
@@ -688,7 +731,7 @@ def test_live_full_board_run_persists_registry_row_count(
         (list(row_ids),),
     ).fetchall()
 
-    assert len(definitions) == 60
+    assert len(definitions) == 61
     assert all(item.status == "AVAILABLE" for item in run.history.values())
     assert all(item.fetched_bars == 250 for item in run.history.values())
     assert all(

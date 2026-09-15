@@ -56,11 +56,6 @@ def run_ingestion(
                 fetch_result.indicators
             ):
                 raise RuntimeError("ingestion did not persist the full board")
-            if any(
-                result.status not in ("OK", "STALE")
-                for result in fetch_result.indicators.values()
-            ):
-                raise RuntimeError("ingestion persisted a board with failed cells")
         elif fetch_result is None or fetch_result.status not in ("OK", "STALE"):
             raise RuntimeError("ingestion did not fetch a value")
     except Exception:

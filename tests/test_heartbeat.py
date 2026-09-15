@@ -6,7 +6,8 @@ import httpx
 import pytest
 
 from ingest import heartbeat
-from ingest.status import Ok, Reason, Result, Unavailable
+from ingest.pipeline import FullAssetRun
+from ingest.status import Error, Ok, Reason, Result, Unavailable
 
 DATABASE_URL = "postgresql://example.test/app"
 HEARTBEAT_URL = "https://hc-ping.com/check-id"
@@ -23,7 +24,9 @@ class FakeConnection:
 
 def install_ingestion_fakes(
     monkeypatch: pytest.MonkeyPatch,
-    pipeline: Callable[[object, Callable[[], Result]], int],
+    pipeline: Callable[
+        [object, Callable[[], Result | FullAssetRun]], int | tuple[int, ...]
+    ],
 ) -> None:
     monkeypatch.setattr(heartbeat.psycopg, "connect", lambda _: FakeConnection())
     monkeypatch.setattr(heartbeat, "run_pipeline", pipeline)
@@ -104,6 +107,49 @@ def test_failed_run_pings_the_failure_endpoint_rather_than_staying_silent(
         )
 
     assert requested_urls == [f"{HEARTBEAT_URL}/fail"]
+
+
+def test_board_cell_failure_still_pings_success_after_completed_persist(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    requested_urls: list[str] = []
+    board = FullAssetRun(
+        indicators={
+            "btc_rsi": Error(
+                reason=Reason.FETCH_FAILED,
+                detail="forced cell failure",
+            ),
+            "eth_rsi": Ok(value=42.5, source_timestamp=SOURCE_TIMESTAMP),
+        },
+        history={},
+    )
+
+    def persisted_pipeline(
+        connection: object, fetcher: Callable[[], Result | FullAssetRun]
+    ) -> tuple[int, ...]:
+        assert isinstance(connection, FakeConnection)
+        assert fetcher() == board
+        return (1, 2)
+
+    install_ingestion_fakes(monkeypatch, persisted_pipeline)
+    client = httpx.Client(
+        transport=httpx.MockTransport(
+            lambda request: (
+                requested_urls.append(str(request.url))
+                or httpx.Response(200, request=request)
+            )
+        )
+    )
+
+    row_ids = heartbeat.run_ingestion(
+        DATABASE_URL,
+        HEARTBEAT_URL,
+        fetcher=lambda: board,
+        heartbeat_client=client,
+    )
+
+    assert row_ids == (1, 2)
+    assert requested_urls == [HEARTBEAT_URL]
 
 
 def test_heartbeat_failure_does_not_fail_the_run(

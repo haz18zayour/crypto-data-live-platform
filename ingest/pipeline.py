@@ -11,7 +11,7 @@ from typing import Literal, cast
 import httpx
 import psycopg
 
-from ingest.compute import compute_indicator
+from ingest.compute import compute_indicator, daily_close
 from ingest.fetchers import coinbase, okx
 from ingest.fetchers.okx import INDICATOR_KEY, MEASURED_ON, fetch_btc_daily_close
 from ingest.fetchers.okx_derivatives import (
@@ -259,6 +259,8 @@ def _fetch_asset_taker_ratio(asset: str) -> TakerRatioResult:
 
 def _calculate(definition: IndicatorDefinition, bars: Sequence[Bar]) -> float:
     parameters = definition.parameters or {}
+    if definition.key == INDICATOR_KEY:
+        return daily_close(bars)
     if definition.talib_function == "RSI":
         return rsi(bars, period=int(parameters["timeperiod"]))
     if definition.talib_function == "EMA":
@@ -306,13 +308,13 @@ def run_all_assets(
     fetch_long_short_ratio: LongShortRatioFetcher | None = None,
     fetch_taker_ratio: TakerRatioFetcher | None = None,
 ) -> FullAssetRun:
-    """Fetch both venues and compute every registered technical cell."""
+    """Fetch both venues and compute every registered board cell."""
 
     registered = load_registry().root
     definitions = tuple(
         definition
         for definition in registered
-        if definition.talib_function is not None
+        if definition.talib_function is not None or definition.key == INDICATOR_KEY
     )
     funding_definitions = tuple(
         definition
