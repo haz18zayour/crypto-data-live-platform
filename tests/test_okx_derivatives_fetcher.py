@@ -1,3 +1,4 @@
+import math
 from datetime import UTC, datetime, timedelta
 from inspect import getsource
 
@@ -5,6 +6,7 @@ import httpx
 import pytest
 from pydantic import ValidationError
 
+from ingest import pipeline
 from ingest.fetchers.okx_derivatives import (
     BTC_FUNDING_RATE_HISTORY_ENDPOINT,
     BTC_USDT_SWAP_INST_ID,
@@ -20,13 +22,14 @@ from ingest.fetchers.okx_derivatives import (
     fetch_open_interest,
     fetch_taker_ratio,
 )
+from ingest.pipeline import FetchedBars, Venue, run_all_assets
 from ingest.schemas import (
     OkxFundingRateHistoryResponse,
     OkxLongShortRatioResponse,
     OkxOpenInterestResponse,
     OkxTakerVolumeResponse,
 )
-from ingest.status import Error, Reason
+from ingest.status import Error, Ok, Reason, Result
 
 NOW = datetime(2026, 9, 15, 12, tzinfo=UTC)
 
@@ -50,6 +53,22 @@ def funding_row(
         "method": "current_period",
         "realizedRate": realized_rate,
     }
+
+
+def synthetic_bars(asset: str, required_bars: int) -> FetchedBars:
+    offset = {"BTC": 40_000.0, "ETH": 2_000.0, "SOL": 100.0, "BNB": 500.0}[
+        asset
+    ]
+    bars = tuple(
+        {
+            "high": offset + index * 0.2 + math.sin(index / 3) * 5 + 2,
+            "low": offset + index * 0.2 + math.sin(index / 3) * 5 - 2,
+            "close": offset + index * 0.2 + math.sin(index / 3) * 5,
+            "volume": 1_000.0 + index,
+        }
+        for index in range(required_bars)
+    )
+    return FetchedBars(bars, NOW - timedelta(minutes=1))
 
 
 def open_interest_row(
@@ -189,6 +208,126 @@ def test_source_field_records_runtime_interval_derivation() -> None:
     assert result.source_field != "realizedRate"
     assert "realizedRate" in result.source_field
     assert "interval_seconds=3600" in result.source_field
+
+
+def test_adversarial_funding_interval_change_uses_newest_gap_not_old_history() -> (
+    None
+):
+    rows = [
+        funding_row(NOW - timedelta(hours=1), realized_rate="0.000300"),
+        funding_row(NOW - timedelta(hours=2), realized_rate="0.000200"),
+        funding_row(NOW - timedelta(hours=10), realized_rate="0.000100"),
+        funding_row(NOW - timedelta(hours=18), realized_rate="0.000090"),
+        funding_row(NOW - timedelta(hours=26), realized_rate="0.000080"),
+    ]
+
+    with client_returning(rows) as client:
+        result = fetch_btc_funding_rate_history(client=client, now=NOW)
+
+    assert isinstance(result, FundingRateOk)
+    assert result.value == 0.000300
+    assert result.source_timestamp == NOW - timedelta(hours=1)
+    assert "interval_seconds=3600" in result.source_field
+    assert "interval_seconds=28800" not in result.source_field
+    assert "average" not in result.source_field.lower()
+
+
+def test_two_assets_in_one_run_can_persist_different_derived_funding_intervals() -> (
+    None
+):
+    funding_histories = {
+        "BTC": [
+            funding_row(NOW - timedelta(hours=1), realized_rate="0.000300"),
+            funding_row(NOW - timedelta(hours=2), realized_rate="0.000200"),
+            funding_row(NOW - timedelta(hours=10), realized_rate="0.000100"),
+        ],
+        "ETH": [
+            funding_row(NOW - timedelta(hours=8), realized_rate="0.000030"),
+            funding_row(NOW - timedelta(hours=16), realized_rate="0.000020"),
+            funding_row(NOW - timedelta(hours=24), realized_rate="0.000010"),
+        ],
+    }
+
+    def fetch_bars(venue: Venue, asset: str, required_bars: int) -> FetchedBars:
+        return synthetic_bars(asset, required_bars)
+
+    def fetch_funding_rate(asset: str) -> FundingRateOk:
+        rows = funding_histories.get(
+            asset,
+            [
+                funding_row(NOW - timedelta(hours=4), realized_rate="0.000040"),
+                funding_row(NOW - timedelta(hours=8), realized_rate="0.000020"),
+            ],
+        )
+        with client_returning(rows) as client:
+            result = fetch_btc_funding_rate_history(client=client, now=NOW)
+        assert isinstance(result, FundingRateOk)
+        return result
+
+    run = run_all_assets(
+        fetch_bars=fetch_bars,
+        fetch_funding_rate=fetch_funding_rate,
+        fetch_open_interest=lambda asset: OpenInterestOk(
+            value=1_000_000.0,
+            source_timestamp=NOW - timedelta(minutes=1),
+        ),
+        fetch_long_short_ratio=lambda asset: LongShortRatioOk(
+            value=1.1,
+            source_timestamp=NOW - timedelta(minutes=1),
+        ),
+        fetch_taker_ratio=lambda asset: TakerRatioOk(
+            value=1.2,
+            source_timestamp=NOW - timedelta(minutes=1),
+        ),
+    )
+
+    btc = run.indicators["btc_funding_rate"]
+    eth = run.indicators["eth_funding_rate"]
+
+    assert isinstance(btc, FundingRateOk)
+    assert isinstance(eth, FundingRateOk)
+    assert "interval_seconds=3600" in btc.source_field
+    assert "interval_seconds=28800" in eth.source_field
+    assert btc.source_field != eth.source_field
+
+
+def test_persisted_funding_datapoint_source_field_names_derived_interval(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    rows = [
+        funding_row(NOW - timedelta(hours=1), realized_rate="0.000300"),
+        funding_row(NOW - timedelta(hours=2), realized_rate="0.000200"),
+        funding_row(NOW - timedelta(hours=10), realized_rate="0.000100"),
+    ]
+    with client_returning(rows) as client:
+        result = fetch_btc_funding_rate_history(client=client, now=NOW)
+    assert isinstance(result, FundingRateOk)
+
+    persisted: dict[str, str] = {}
+
+    def record_datapoint(
+        connection: object,
+        *,
+        definition,
+        asset: str,
+        measured_on: str,
+        result: Result,
+    ) -> int:
+        assert isinstance(result, Ok)
+        persisted[definition.key] = definition.source_field
+        return len(persisted)
+
+    monkeypatch.setattr(pipeline, "persist_datapoint", record_datapoint)
+    pipeline.persist_board(
+        object(),  # type: ignore[arg-type]
+        pipeline.FullAssetRun(indicators={"btc_funding_rate": result}, history={}),
+    )
+
+    assert persisted["btc_funding_rate"] == result.source_field
+    assert "interval_seconds=3600" in persisted["btc_funding_rate"]
+    assert "derived from the two newest consecutive fundingTime deltas" in persisted[
+        "btc_funding_rate"
+    ]
 
 
 def test_fewer_than_two_settled_entries_is_fetch_failed_error() -> None:
