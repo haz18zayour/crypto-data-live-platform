@@ -22,7 +22,6 @@ from ingest.fetchers.okx_derivatives import (
 )
 from ingest.pipeline import (
     FetchedBars,
-    FullAssetRun,
     FundingRateResult,
     LongShortRatioResult,
     OpenInterestResult,
@@ -36,6 +35,8 @@ from ingest.status import Error, Ok, Reason, Result
 
 MIGRATIONS = Path(__file__).resolve().parents[1] / "supabase" / "migrations"
 ENV_FILE = MIGRATIONS.parents[1] / ".env.local"
+DATABASE_URL = "postgresql://example.test/app"
+HEARTBEAT_URL = "https://hc-ping.com/check-id"
 SOURCE_TIMESTAMP = datetime(2026, 9, 10, tzinfo=UTC)
 
 
@@ -666,17 +667,12 @@ def test_database_holds_complete_board_with_failure_and_idempotent_identity(
     )
 
 
-def test_scheduled_ingestion_routes_the_full_board_through_run_pipeline(
+def test_scheduled_entry_point_persists_the_full_board_and_pings_once(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    board = FullAssetRun(
-        indicators={
-            definition.key: Ok(1.0, SOURCE_TIMESTAMP)
-            for definition in _board_definitions()
-        },
-        history={},
-    )
-    observed: list[FullAssetRun] = []
+    persisted: list[dict[str, object]] = []
+    connected_to: list[str] = []
+    pinged: list[str] = []
 
     class FakeConnection:
         def __enter__(self) -> Self:
@@ -685,32 +681,77 @@ def test_scheduled_ingestion_routes_the_full_board_through_run_pipeline(
         def __exit__(self, *args: object) -> None:
             return None
 
-    def persist_pipeline(
+    def connect(database_url: str) -> FakeConnection:
+        connected_to.append(database_url)
+        return FakeConnection()
+
+    def record_datapoint(
         connection: object,
-        fetcher: Any,
-    ) -> tuple[int, ...]:
+        *,
+        definition: IndicatorDefinition,
+        asset: str,
+        measured_on: str,
+        result: Result,
+    ) -> int:
         assert isinstance(connection, FakeConnection)
-        result = fetcher()
-        observed.append(result)
-        return tuple(range(1, len(_board_definitions()) + 1))
-
-    monkeypatch.setattr(heartbeat.psycopg, "connect", lambda _: FakeConnection())
-    monkeypatch.setattr(heartbeat, "run_all_assets", lambda: board)
-    monkeypatch.setattr(heartbeat, "run_pipeline", persist_pipeline)
-    client = httpx.Client(
-        transport=httpx.MockTransport(
-            lambda request: httpx.Response(200, request=request)
+        persisted.append(
+            {
+                "indicator_key": definition.key,
+                "asset": asset,
+                "measured_on": measured_on,
+                "status": result.status,
+            }
         )
-    )
+        return len(persisted)
 
-    row_ids = heartbeat.run_ingestion(
-        "postgresql://example.test/app",
-        "https://hc-ping.com/check-id",
-        heartbeat_client=client,
-    )
+    def record_ping(url: str, *, timeout: int) -> httpx.Response:
+        pinged.append(url)
+        request = httpx.Request("GET", url)
+        return httpx.Response(200, request=request)
 
-    assert observed == [board]
-    assert row_ids == tuple(range(1, len(_board_definitions()) + 1))
+    monkeypatch.setenv("DATABASE_URL", DATABASE_URL)
+    monkeypatch.setenv("HEALTHCHECKS_PING_URL", HEARTBEAT_URL)
+    monkeypatch.setattr(heartbeat.psycopg, "connect", connect)
+    monkeypatch.setattr(heartbeat.httpx, "get", record_ping)
+    monkeypatch.setattr(pipeline, "_fetch_asset_bars", _fetch_bars)
+    monkeypatch.setattr(pipeline, "_fetch_asset_funding_rate", _fetch_funding_rate)
+    monkeypatch.setattr(pipeline, "_fetch_asset_open_interest", _fetch_open_interest)
+    monkeypatch.setattr(
+        pipeline, "_fetch_asset_long_short_ratio", _fetch_long_short_ratio
+    )
+    monkeypatch.setattr(pipeline, "_fetch_asset_taker_ratio", _fetch_taker_ratio)
+    monkeypatch.setattr(pipeline, "persist_datapoint", record_datapoint)
+
+    heartbeat.main()
+
+    definitions = _board_definitions()
+    assert connected_to == [DATABASE_URL]
+    assert pinged == [HEARTBEAT_URL]
+    assert len(definitions) == 61
+    assert len(persisted) == len(definitions)
+    assert {row["indicator_key"] for row in persisted} == {
+        definition.key for definition in definitions
+    }
+    assert (
+        sum(str(row["indicator_key"]).endswith("_funding_rate") for row in persisted)
+        == 4
+    )
+    assert (
+        sum(str(row["indicator_key"]).endswith("_open_interest") for row in persisted)
+        == 4
+    )
+    assert (
+        sum(
+            str(row["indicator_key"]).endswith("_long_short_ratio")
+            for row in persisted
+        )
+        == 4
+    )
+    assert (
+        sum(str(row["indicator_key"]).endswith("_taker_ratio") for row in persisted)
+        == 4
+    )
+    assert all(row["asset"] == row["measured_on"] for row in persisted)
 
 
 @pytest.mark.integration

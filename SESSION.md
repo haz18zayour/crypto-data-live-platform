@@ -32,7 +32,7 @@ open prds/PRD-005-dashboard/20-decisions.yaml
 | PRD-005-dashboard | 9 | 9 | **all green** |
 | PRD-006-derivatives | 7 | 5 | 5/7 |
 
-Spend to date: **$67.78** Claude · **138244k** Codex tokens.
+Spend to date: **$68.68** Claude · **141194k** Codex tokens.
 
 ## What happened
 
@@ -446,6 +446,9 @@ Spend to date: **$67.78** Claude · **138244k** Codex tokens.
 - 13:45  ⏸ **gate opened** — US-605 has failed 3 times — is the story wrong?
 - 13:51  US-605 **PASSED** — 9/9 criteria, judged by human
 - 13:51  ▶ gate answered **skip** — Codex hit its own account usage quota (confirmed via direct codex exec test); verified directly against real command output (full suite 245/245 including live integration tests). See verdict.json overrideReason.
+- 13:52  US-606 started, attempt 1 (codex)
+- 13:57  US-606 — codex finished `9fbf62f9` · 2950k tok
+- 14:07  US-606 **rejected** — 6/7 criteria, judged by claude · $0.90
 
 <!-- uf:generated:end -->
 
