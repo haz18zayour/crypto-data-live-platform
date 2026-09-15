@@ -91,7 +91,7 @@ summed with a USD-denominated one.
 - [x] `30-spec.md`
 - [x] `40-stories/*.md` — 7 stories
 - [x] `uf compile PRD-006-derivatives` — 54 criteria, digest `957ef9189731ef20`
-- [ ] **GATE G2** — approve the estimate
-- [ ] `uf run`
-- [ ] merge to `main`
-- [ ] `uf learn`
+- [x] **GATE G2** — approved, est. $5-15, actual ~$18 (two infrastructure incidents: verifier crash, codex quota)
+- [x] `uf run` — 7/7 stories passed
+- [x] merge to `main` — CI green on all three jobs
+- [x] `uf learn` — recorded the codex-quota and verifier-flip lessons

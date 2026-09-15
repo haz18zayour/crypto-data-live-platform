@@ -9,15 +9,19 @@ Do not hand-edit it — it is regenerated. The hand-written sections below it su
 
 ## ▶ Resume here
 
-**PRD-005-dashboard — GATE G1, scope lock**
+**2 uncommitted file(s) — the runner will not start**
 
-The research asked you questions and each carries the agent's own hypothesis. Anything you leave blank becomes an explicit assumption with a tripwire. The out-of-scope list is the one field with no default.
+A previous session edited source and did not commit. uf refuses to run on a dirty tree rather than auto-committing someone else's half-finished work.
 
 Owner: **You.** This one cannot be delegated.
 
 ```
-open prds/PRD-005-dashboard/20-decisions.yaml
+review the diff, then: git add -A && git commit
 ```
+
+**Left in flight by the previous session:**
+
+- 2 uncommitted file(s): prds/PRD-006-derivatives/00-brief.md, project-documents/05_Product_Roadmap.md
 
 **Last handoff note:** **2026-09-15 — PRD-005 complete, merged to `main` at `4e84d4a`, CI green. Fresh machine
 
@@ -462,6 +466,82 @@ Spend to date: **$69.61** Claude · **143304k** Codex tokens.
 <!-- uf:generated:end -->
 
 ## Handoff
+
+- **2026-09-15 — PRD-006 complete, merged to `main` at `713d9f3`, CI green (verify, ingest,
+  contract-canary all pass on the merge commit).** Derivatives panel: funding rate (settled,
+  never the live `funding-rate` field), open interest (USDT-margined only, by construction),
+  long/short account ratio, and taker buy/sell ratio — 16 new registry entries, one new fetcher
+  module (`ingest/fetchers/okx_derivatives.py`, mirroring `okx.py`'s failure discipline), zero
+  new UI. **No schema migration** — the funding interval is derived fresh from consecutive
+  `fundingTime` deltas on every fetch (OKX's settlement ladder can change an instrument's
+  interval within weeks) and travels as prose in the existing `source_field` column, same
+  precedent as `btc_daily_close`. All 16 entries declare `uncorroborated` per US-306: no second
+  venue's derivatives endpoints were confirmed to exist or be reachable, and Binance's futures
+  API returns HTTP 451 to US IPs even on public endpoints — the same reachability wall PRD-001's
+  spike found for spot, now confirmed for derivatives too.
+
+  **Two infrastructure incidents hit mid-PRD, both resolved by direct owner verification against
+  real command output — not by the automated pipeline, and both `uf learn`-recorded:**
+
+  1. **The LLM verifier crashed twice in a row** on US-602 ("verifier returned no usable JSON
+     (exit 1)"), each time immediately *after* the implementer's own deterministic gates
+     (typecheck, test) had already exited 0. Traced it: attempt 1 did the real registry/pipeline
+     work but missed updating four pre-existing `web/src/*.test.tsx` files' hardcoded board
+     cell-count assertions (a new indicator family grows the completeness matrix — 48→52→56→60,
+     one jump per new family added this PRD — and those tests hardcode the total rather than
+     deriving it from the registry); attempt 2 fixed exactly that gap, and every gate has passed
+     cleanly since, but the verifier subprocess itself failed twice regardless. Verified directly
+     instead: read every criterion's own named test, then ran the full suite fresh — 215/215
+     including live integration tests, real Postgres, real OKX. **This same web-test-hardcoding
+     gap cost US-603 an extra attempt too** (52→56) before I proactively patched US-604 and
+     US-605's story notes/`touches:` in advance — which worked for US-605 (built into its first
+     commit) but not US-604 (I recompiled ~1 minute after its attempt 2 had already started
+     reading the *old* compiled spec, so it needed its own extra attempt anyway). **If a future
+     story in this PRD family adds another indicator family, expect this exact gap again** unless
+     someone finally makes those four web tests derive their expected counts from the registry
+     instead of hardcoding them.
+  2. **Codex (the configured implementer) hit its own account usage quota** on US-605, confirmed
+     directly by running `codex exec "say hello"` outside `uf` entirely — it printed *"You've hit
+     your usage limit... try again at 4:45 PM"* in plain text. Two attempts had failed instantly
+     (0 tokens, exit 1, tripwire "the story changed no files at all") before I thought to test the
+     CLI directly rather than assume a story defect. **Paused the run** (`uf pause`) after attempt
+     2 rather than burn the last attempt on a guaranteed third repeat. With owner approval,
+     overrode just that one story to `agent: claude` — which, as `uf learn` now records,
+     predictably flipped *verification* to codex per the framework's cross-vendor rule (only two
+     agents configured; whenever the implementer matches the configured verifier it switches to
+     the other), so attempt 3's implementer succeeded ($5.28, real 472-line diff, proactively
+     included the web-test fix) but its verification hit the identical quota wall. Verified that
+     one directly too (245/245 full suite). **Once 4:45 PM actually passed, `codex exec` worked
+     normally again** — the remaining two stories (US-606, US-607) ran through the ordinary
+     pipeline with no further intervention, one needing a legitimate second attempt (US-606: the
+     first attempt's integration test mocked `run_pipeline`/`run_all_assets` directly rather than
+     driving the real entry point end-to-end — a genuine gap, not infrastructure).
+
+  **The adversarial case (US-607) has both a synthetic and a live component**, per
+  `25_PRD_Acceptance_Protocol.md`: three tests construct a funding-rate-history payload with a
+  genuine interval change (newest 1h gap after older 8h gaps) and assert the derived interval
+  reflects the newest gap, never a hardcoded 8h or an average — the exact mistake research found
+  a 2026-published practitioner guide making in print. Separately, the owner confirmed live:
+  `btc_funding_rate`'s persisted `source_field` read `interval_seconds=28800`, independently
+  cross-checked against OKX's own live `funding-rate-history` endpoint before asking (real
+  settlement boundaries 16:00/00:00/08:00 UTC, exactly 8h apart, value matching the persisted row
+  to the last digit).
+
+  **The board briefly showed "12 stale" after all this** — not a bug. Open interest, long/short
+  ratio and taker ratio all have a genuinely fast 5-minute expected-update cadence
+  (`freshness_stale_seconds: 600`) because that's how often OKX actually refreshes them; they'd
+  only been persisted once, during story-verification runs hours earlier, and the scheduled
+  `ingest` cron (every 6h) hadn't run again since. Triggered it manually via
+  `workflow_dispatch` on the feature branch (GitHub Actions API, `ref` param) rather than wait —
+  went to "0 stale" immediately. This is the freshness system correctly refusing to present old
+  fast-moving data as current; it would have been the real defect if it hadn't flagged them.
+
+  **Also (unrelated, mid-session): the dev server needs restarting after heavy git churn.**
+  Twice this session a long-running `npm run dev` process (survived many branch checkouts,
+  merges, and commits without restart) either served a stale bundle or lost its Supabase env
+  config entirely ("Board unavailable — Supabase browser configuration is missing"), even though
+  `.env.local` was present and correct the whole time. Vite reads env at server *start*, not per
+  request; kill and restart (`npm run dev` fresh) rather than debug the running process.
 
 - **2026-09-15 — PRD-005 complete, merged to `main` at `4e84d4a`, CI green. Fresh machine
   provisioned from scratch this session** (`uv`, `gh`, Playwright chromium +
