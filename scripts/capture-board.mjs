@@ -20,7 +20,7 @@ const { createServer } = await import(
   pathToFileURL(resolve(web, "node_modules/vite/dist/node/index.js")).href
 );
 
-const evidence = resolve(root, "prds/PRD-005-dashboard/50-evidence/US-511");
+const evidence = resolve(root, "prds/PRD-005-dashboard/50-evidence/US-512");
 const ASSETS = ["BTC", "ETH", "SOL", "BNB"];
 const FACES = ["ok", "stale", "not-definable", "paywalled", "fetch-failed"];
 const BOARDS = { live: "/", mixed: "/mixed-board.html" };
