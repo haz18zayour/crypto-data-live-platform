@@ -1,0 +1,58 @@
+{
+  "storyId": "US-607",
+  "passes": false,
+  "verifier": {
+    "agent": "claude",
+    "sandbox": "restricted:read-only"
+  },
+  "implementer": "codex",
+  "results": [
+    {
+      "criterionId": "US-607-C1",
+      "met": true,
+      "evidence": {
+        "file": "tests/test_okx_derivatives_fetcher.py",
+        "line": 213,
+        "testName": "test_adversarial_funding_interval_change_uses_newest_gap_not_old_history",
+        "exitCode": 0
+      },
+      "note": "Builds exactly the scenario the story spec (US-607-adversarial-case.md:26) and research doc (10-research.md:38, OKX's 8h->4h->2h->1h escalation ladder) call for: newest funding-rate-history rows show a 1h gap (NOW-1h to NOW-2h) after three older 8h-spaced gaps. Asserts the derived value/timestamp come from the newest row, source_field contains interval_seconds=3600, and excludes interval_seconds=28800 (the old/hardcoded 8h value) and the word 'average'. Verified against okx_derivatives.py:154-161, which derives interval_seconds strictly from timestamps[0]-timestamps[1] (the two newest rows only), so a true average of the five gaps (22500s) would not equal 3600 — the numeric assertion is a real proof, not just a string check."
+    },
+    {
+      "criterionId": "US-607-C2",
+      "met": true,
+      "evidence": {
+        "file": "tests/test_okx_derivatives_fetcher.py",
+        "line": 235,
+        "testName": "test_two_assets_in_one_run_can_persist_different_derived_funding_intervals",
+        "exitCode": 0
+      },
+      "note": "Runs run_all_assets with BTC's synthetic funding history producing a 1h gap and ETH's producing an 8h gap in the same run; asserts run.indicators['btc_funding_rate'].source_field contains interval_seconds=3600 while run.indicators['eth_funding_rate'].source_field contains interval_seconds=28800, and that the two source_fields differ. Confirmed against pipeline.py:461-464 (persist_board copies definition.source_field per-definition inside the per-instrument loop, not once globally), so this is a real per-instrument code path, not an artifact of the test's mocking."
+    },
+    {
+      "criterionId": "US-607-C3",
+      "met": true,
+      "evidence": {
+        "file": "tests/test_okx_derivatives_fetcher.py",
+        "line": 294,
+        "testName": "test_persisted_funding_datapoint_source_field_names_derived_interval",
+        "exitCode": 0
+      },
+      "note": "Monkeypatches pipeline.persist_datapoint (the DB-write boundary, same leaf-mocking pattern used and accepted in the prior US-606 verdict) and drives it through the real pipeline.persist_board, asserting the definition object reaching the write call carries source_field text 'interval_seconds=3600 derived from the two newest consecutive fundingTime deltas' — i.e. provenance is on the persisted row's own field, not something a reader must trust the code to have computed correctly."
+    },
+    {
+      "criterionId": "US-607-C4",
+      "met": false,
+      "evidence": {
+        "file": null,
+        "line": null,
+        "testName": null,
+        "exitCode": null
+      },
+      "note": "Method is human; the story text and PRD-006 research doc explicitly flag this as 'the one this framework will not let any agent judge' (US-607-adversarial-case.md:41). No AI verifier can satisfy it — needs a person to read a live persisted funding datapoint's provenance detail and confirm it against OKX's actual current settlement cadence."
+    }
+  ],
+  "tripwires": [],
+  "note": "C1-C3 are backed by real, assertion-bearing tests that exercise actual derivation/persistence code paths (not comments or no-op assertions); the numeric interval_seconds checks make the 'not an average' claim provable rather than just string-matched. C4 is a human criterion and correctly cannot be marked met by this review. No unrelated churn or faked evidence found — the diff is scoped to the declared files plus routine session-log bookkeeping (SESSION.md, .uf/events.ndjson).",
+  "at": "2026-09-15T14:27:56.859Z"
+}

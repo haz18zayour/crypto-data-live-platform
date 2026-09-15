@@ -1,0 +1,26 @@
+{
+  "payload": {
+    "code": "0",
+    "msg": "",
+    "data": [
+      {
+        "formulaType": "withRate",
+        "fundingRate": "0.000100",
+        "fundingTime": "1799996400000",
+        "instId": "BTC-USDT-SWAP",
+        "instType": "SWAP",
+        "method": "current_period",
+        "realizedRate": "0.000100"
+      },
+      {
+        "formulaType": "withRate",
+        "fundingRate": "0.000090",
+        "fundingTime": "1799967600000",
+        "instId": "BTC-USDT-SWAP",
+        "instType": "SWAP",
+        "method": "current_period",
+        "realizedRate": "0.000090"
+      }
+    ]
+  }
+}

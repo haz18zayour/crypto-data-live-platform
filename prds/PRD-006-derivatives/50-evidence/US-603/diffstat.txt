@@ -1,0 +1,24 @@
+.uf/events.ndjson                                  |   5 +
+ SESSION.md                                         |  10 +-
+ ingest/canary.py                                   |   7 +-
+ ingest/fetchers/okx_derivatives.py                 |  85 +++++++++++++-
+ ingest/pipeline.py                                 |  26 ++++-
+ ingest/registry.yaml                               |  56 +++++++++
+ ingest/schemas.py                                  |  23 ++++
+ .../40-stories/US-604-long-short-ratio.md          |  11 ++
+ .../40-stories/US-605-taker-ratio.md               |  11 ++
+ .../50-evidence/US-603/diffstat.txt                |  14 +++
+ .../50-evidence/US-603/gates.json                  |  20 ++++
+ .../50-evidence/US-603/verdict.json                | 113 +++++++++++++++++++
+ tests/fixtures/okx_open_interest.json              |  14 +++
+ tests/test_assets.py                               |  44 ++++++--
+ tests/test_coverage.py                             |   2 +-
+ tests/test_okx_derivatives_fetcher.py              | 125 ++++++++++++++++++++-
+ tests/test_persist_board.py                        |  92 ++++++++++++---
+ tests/test_registry.py                             |  19 +++-
+ tests/test_registry_not_definable.py               |   4 +-
+ web/src/BoardMatrix.test.tsx                       |  20 ++--
+ web/src/CoverageHeadline.test.tsx                  |   6 +-
+ web/src/board.test.ts                              |   6 +-
+ web/src/fixtures/mixedBoard.test.ts                |   4 +-
+ 23 files changed, 664 insertions(+), 53 deletions(-)

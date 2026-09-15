@@ -1,0 +1,11 @@
+.uf/events.ndjson                                  |   5 +
+ SESSION.md                                         |   5 +-
+ ingest/heartbeat.py                                |   5 -
+ ingest/pipeline.py                                 |   8 +-
+ .../50-evidence/US-606/diffstat.txt                |   7 +
+ .../50-evidence/US-606/gates.json                  |  20 +++
+ .../50-evidence/US-606/verdict.json                |  91 ++++++++++++
+ tests/test_assets.py                               |   4 +-
+ tests/test_heartbeat.py                            |  50 ++++++-
+ tests/test_persist_board.py                        | 152 ++++++++++++++++-----
+ 10 files changed, 300 insertions(+), 47 deletions(-)

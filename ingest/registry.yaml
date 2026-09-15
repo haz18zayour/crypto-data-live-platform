@@ -39,6 +39,62 @@
   freshness_stale_seconds: 172800
   uncorroborated:
     note: The derived output is not cross-venue corroborated; its OKX input bars are corroborated against Coinbase.
+- key: btc_funding_rate
+  vendor: okx
+  endpoint: https://www.okx.com/api/v5/public/funding-rate-history?instId=BTC-USDT-SWAP&limit=2
+  source_field: 'OKX funding-rate-history realizedRate; interval derived from consecutive fundingTime deltas at fetch time'
+  definable_for: [BTC]
+  golden: fixtures/okx_funding_rate_history.json
+  response_model: okx_funding_rate_history
+  required_bars: 2
+  parameters:
+  expected_update_interval_seconds: 28800
+  freshness_warn_seconds: 43200
+  freshness_stale_seconds: 57600
+  uncorroborated:
+    note: No second venue's derivatives public endpoints were confirmed to exist or be reachable; Binance's futures API returns HTTP 451 to US IPs on public endpoints.
+- key: btc_open_interest
+  vendor: okx
+  endpoint: https://www.okx.com/api/v5/public/open-interest?instType=SWAP&instId=BTC-USDT-SWAP
+  source_field: 'OKX public/open-interest oiUsd for BTC-USDT-SWAP linear USDT-margined perpetual; ts'
+  definable_for: [BTC]
+  golden: fixtures/okx_open_interest.json
+  response_model: okx_open_interest
+  required_bars: 1
+  parameters:
+  expected_update_interval_seconds: 300
+  freshness_warn_seconds: 450
+  freshness_stale_seconds: 600
+  uncorroborated:
+    note: No second venue's derivatives public endpoints were confirmed to exist or be reachable; Binance's futures API returns HTTP 451 to US IPs on public endpoints.
+- key: btc_long_short_ratio
+  vendor: okx
+  endpoint: https://www.okx.com/api/v5/rubik/stat/contracts/long-short-account-ratio?ccy=BTC&period=5m
+  source_field: 'OKX rubik/stat/contracts/long-short-account-ratio data newest [timestamp, longShortRatio] for BTC'
+  definable_for: [BTC]
+  golden: fixtures/okx_long_short_ratio.json
+  response_model: okx_long_short_ratio
+  required_bars: 1
+  parameters:
+  expected_update_interval_seconds: 300
+  freshness_warn_seconds: 450
+  freshness_stale_seconds: 600
+  uncorroborated:
+    note: No second venue's derivatives public endpoints were confirmed to exist or be reachable; Binance's futures API returns HTTP 451 to US IPs on public endpoints.
+- key: btc_taker_ratio
+  vendor: okx
+  endpoint: https://www.okx.com/api/v5/rubik/stat/taker-volume?ccy=BTC&instType=CONTRACTS&period=5m
+  source_field: 'OKX rubik/stat/taker-volume data newest [timestamp, sellVol, buyVol] for BTC; ratio = buyVol / sellVol'
+  definable_for: [BTC]
+  golden: fixtures/okx_taker_volume.json
+  response_model: okx_taker_volume
+  required_bars: 1
+  parameters:
+  expected_update_interval_seconds: 300
+  freshness_warn_seconds: 450
+  freshness_stale_seconds: 600
+  uncorroborated:
+    note: No second venue's derivatives public endpoints were confirmed to exist or be reachable; Binance's futures API returns HTTP 451 to US IPs on public endpoints.
 - key: btc_ema_20
   vendor: okx
   endpoint: https://www.okx.com/api/v5/market/candles?instId=BTC-USDT&bar=1Dutc
@@ -231,6 +287,62 @@
   freshness_stale_seconds: 172800
   uncorroborated:
     note: The derived output is not cross-venue corroborated; its OKX input bars are corroborated against Coinbase.
+- key: eth_funding_rate
+  vendor: okx
+  endpoint: https://www.okx.com/api/v5/public/funding-rate-history?instId=ETH-USDT-SWAP&limit=2
+  source_field: 'OKX funding-rate-history realizedRate; interval derived from consecutive fundingTime deltas at fetch time'
+  definable_for: [ETH]
+  golden: fixtures/okx_funding_rate_history.json
+  response_model: okx_funding_rate_history
+  required_bars: 2
+  parameters:
+  expected_update_interval_seconds: 28800
+  freshness_warn_seconds: 43200
+  freshness_stale_seconds: 57600
+  uncorroborated:
+    note: No second venue's derivatives public endpoints were confirmed to exist or be reachable; Binance's futures API returns HTTP 451 to US IPs on public endpoints.
+- key: eth_open_interest
+  vendor: okx
+  endpoint: https://www.okx.com/api/v5/public/open-interest?instType=SWAP&instId=ETH-USDT-SWAP
+  source_field: 'OKX public/open-interest oiUsd for ETH-USDT-SWAP linear USDT-margined perpetual; ts'
+  definable_for: [ETH]
+  golden: fixtures/okx_open_interest.json
+  response_model: okx_open_interest
+  required_bars: 1
+  parameters:
+  expected_update_interval_seconds: 300
+  freshness_warn_seconds: 450
+  freshness_stale_seconds: 600
+  uncorroborated:
+    note: No second venue's derivatives public endpoints were confirmed to exist or be reachable; Binance's futures API returns HTTP 451 to US IPs on public endpoints.
+- key: eth_long_short_ratio
+  vendor: okx
+  endpoint: https://www.okx.com/api/v5/rubik/stat/contracts/long-short-account-ratio?ccy=ETH&period=5m
+  source_field: 'OKX rubik/stat/contracts/long-short-account-ratio data newest [timestamp, longShortRatio] for ETH'
+  definable_for: [ETH]
+  golden: fixtures/okx_long_short_ratio.json
+  response_model: okx_long_short_ratio
+  required_bars: 1
+  parameters:
+  expected_update_interval_seconds: 300
+  freshness_warn_seconds: 450
+  freshness_stale_seconds: 600
+  uncorroborated:
+    note: No second venue's derivatives public endpoints were confirmed to exist or be reachable; Binance's futures API returns HTTP 451 to US IPs on public endpoints.
+- key: eth_taker_ratio
+  vendor: okx
+  endpoint: https://www.okx.com/api/v5/rubik/stat/taker-volume?ccy=ETH&instType=CONTRACTS&period=5m
+  source_field: 'OKX rubik/stat/taker-volume data newest [timestamp, sellVol, buyVol] for ETH; ratio = buyVol / sellVol'
+  definable_for: [ETH]
+  golden: fixtures/okx_taker_volume.json
+  response_model: okx_taker_volume
+  required_bars: 1
+  parameters:
+  expected_update_interval_seconds: 300
+  freshness_warn_seconds: 450
+  freshness_stale_seconds: 600
+  uncorroborated:
+    note: No second venue's derivatives public endpoints were confirmed to exist or be reachable; Binance's futures API returns HTTP 451 to US IPs on public endpoints.
 - key: eth_ema_20
   vendor: okx
   endpoint: https://www.okx.com/api/v5/market/candles?instId=ETH-USDT&bar=1Dutc
@@ -423,6 +535,62 @@
   freshness_stale_seconds: 172800
   uncorroborated:
     note: The derived output is not cross-venue corroborated; its OKX input bars are corroborated against Coinbase.
+- key: sol_funding_rate
+  vendor: okx
+  endpoint: https://www.okx.com/api/v5/public/funding-rate-history?instId=SOL-USDT-SWAP&limit=2
+  source_field: 'OKX funding-rate-history realizedRate; interval derived from consecutive fundingTime deltas at fetch time'
+  definable_for: [SOL]
+  golden: fixtures/okx_funding_rate_history.json
+  response_model: okx_funding_rate_history
+  required_bars: 2
+  parameters:
+  expected_update_interval_seconds: 28800
+  freshness_warn_seconds: 43200
+  freshness_stale_seconds: 57600
+  uncorroborated:
+    note: No second venue's derivatives public endpoints were confirmed to exist or be reachable; Binance's futures API returns HTTP 451 to US IPs on public endpoints.
+- key: sol_open_interest
+  vendor: okx
+  endpoint: https://www.okx.com/api/v5/public/open-interest?instType=SWAP&instId=SOL-USDT-SWAP
+  source_field: 'OKX public/open-interest oiUsd for SOL-USDT-SWAP linear USDT-margined perpetual; ts'
+  definable_for: [SOL]
+  golden: fixtures/okx_open_interest.json
+  response_model: okx_open_interest
+  required_bars: 1
+  parameters:
+  expected_update_interval_seconds: 300
+  freshness_warn_seconds: 450
+  freshness_stale_seconds: 600
+  uncorroborated:
+    note: No second venue's derivatives public endpoints were confirmed to exist or be reachable; Binance's futures API returns HTTP 451 to US IPs on public endpoints.
+- key: sol_long_short_ratio
+  vendor: okx
+  endpoint: https://www.okx.com/api/v5/rubik/stat/contracts/long-short-account-ratio?ccy=SOL&period=5m
+  source_field: 'OKX rubik/stat/contracts/long-short-account-ratio data newest [timestamp, longShortRatio] for SOL'
+  definable_for: [SOL]
+  golden: fixtures/okx_long_short_ratio.json
+  response_model: okx_long_short_ratio
+  required_bars: 1
+  parameters:
+  expected_update_interval_seconds: 300
+  freshness_warn_seconds: 450
+  freshness_stale_seconds: 600
+  uncorroborated:
+    note: No second venue's derivatives public endpoints were confirmed to exist or be reachable; Binance's futures API returns HTTP 451 to US IPs on public endpoints.
+- key: sol_taker_ratio
+  vendor: okx
+  endpoint: https://www.okx.com/api/v5/rubik/stat/taker-volume?ccy=SOL&instType=CONTRACTS&period=5m
+  source_field: 'OKX rubik/stat/taker-volume data newest [timestamp, sellVol, buyVol] for SOL; ratio = buyVol / sellVol'
+  definable_for: [SOL]
+  golden: fixtures/okx_taker_volume.json
+  response_model: okx_taker_volume
+  required_bars: 1
+  parameters:
+  expected_update_interval_seconds: 300
+  freshness_warn_seconds: 450
+  freshness_stale_seconds: 600
+  uncorroborated:
+    note: No second venue's derivatives public endpoints were confirmed to exist or be reachable; Binance's futures API returns HTTP 451 to US IPs on public endpoints.
 - key: sol_ema_20
   vendor: okx
   endpoint: https://www.okx.com/api/v5/market/candles?instId=SOL-USDT&bar=1Dutc
@@ -615,6 +783,62 @@
   freshness_stale_seconds: 172800
   uncorroborated:
     note: The derived output is not cross-venue corroborated; its OKX input bars are corroborated against Coinbase.
+- key: bnb_funding_rate
+  vendor: okx
+  endpoint: https://www.okx.com/api/v5/public/funding-rate-history?instId=BNB-USDT-SWAP&limit=2
+  source_field: 'OKX funding-rate-history realizedRate; interval derived from consecutive fundingTime deltas at fetch time'
+  definable_for: [BNB]
+  golden: fixtures/okx_funding_rate_history.json
+  response_model: okx_funding_rate_history
+  required_bars: 2
+  parameters:
+  expected_update_interval_seconds: 28800
+  freshness_warn_seconds: 43200
+  freshness_stale_seconds: 57600
+  uncorroborated:
+    note: No second venue's derivatives public endpoints were confirmed to exist or be reachable; Binance's futures API returns HTTP 451 to US IPs on public endpoints.
+- key: bnb_open_interest
+  vendor: okx
+  endpoint: https://www.okx.com/api/v5/public/open-interest?instType=SWAP&instId=BNB-USDT-SWAP
+  source_field: 'OKX public/open-interest oiUsd for BNB-USDT-SWAP linear USDT-margined perpetual; ts'
+  definable_for: [BNB]
+  golden: fixtures/okx_open_interest.json
+  response_model: okx_open_interest
+  required_bars: 1
+  parameters:
+  expected_update_interval_seconds: 300
+  freshness_warn_seconds: 450
+  freshness_stale_seconds: 600
+  uncorroborated:
+    note: No second venue's derivatives public endpoints were confirmed to exist or be reachable; Binance's futures API returns HTTP 451 to US IPs on public endpoints.
+- key: bnb_long_short_ratio
+  vendor: okx
+  endpoint: https://www.okx.com/api/v5/rubik/stat/contracts/long-short-account-ratio?ccy=BNB&period=5m
+  source_field: 'OKX rubik/stat/contracts/long-short-account-ratio data newest [timestamp, longShortRatio] for BNB'
+  definable_for: [BNB]
+  golden: fixtures/okx_long_short_ratio.json
+  response_model: okx_long_short_ratio
+  required_bars: 1
+  parameters:
+  expected_update_interval_seconds: 300
+  freshness_warn_seconds: 450
+  freshness_stale_seconds: 600
+  uncorroborated:
+    note: No second venue's derivatives public endpoints were confirmed to exist or be reachable; Binance's futures API returns HTTP 451 to US IPs on public endpoints.
+- key: bnb_taker_ratio
+  vendor: okx
+  endpoint: https://www.okx.com/api/v5/rubik/stat/taker-volume?ccy=BNB&instType=CONTRACTS&period=5m
+  source_field: 'OKX rubik/stat/taker-volume data newest [timestamp, sellVol, buyVol] for BNB; ratio = buyVol / sellVol'
+  definable_for: [BNB]
+  golden: fixtures/okx_taker_volume.json
+  response_model: okx_taker_volume
+  required_bars: 1
+  parameters:
+  expected_update_interval_seconds: 300
+  freshness_warn_seconds: 450
+  freshness_stale_seconds: 600
+  uncorroborated:
+    note: No second venue's derivatives public endpoints were confirmed to exist or be reachable; Binance's futures API returns HTTP 451 to US IPs on public endpoints.
 - key: bnb_ema_20
   vendor: okx
   endpoint: https://www.okx.com/api/v5/market/candles?instId=BNB-USDT&bar=1Dutc

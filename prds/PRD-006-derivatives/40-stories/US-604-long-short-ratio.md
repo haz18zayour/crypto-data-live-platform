@@ -8,6 +8,10 @@ touches:
   - ingest/registry.yaml
   - tests/test_okx_derivatives_fetcher.py
   - tests/test_registry.py
+  - web/src/BoardMatrix.test.tsx
+  - web/src/CoverageHeadline.test.tsx
+  - web/src/board.test.ts
+  - web/src/fixtures/mixedBoard.test.ts
 context:
   - AGENTS.md
   - prds/PRD-006-derivatives/10-research.md
@@ -32,6 +36,13 @@ discipline.
 
 ## Notes for the implementer
 
+- **Adding these four registry entries grows the completeness matrix by one more indicator
+  family.** Both US-602 and US-603 hit the same gap on their first attempt: `web/src/`'s test
+  suite (`BoardMatrix.test.tsx`, `CoverageHeadline.test.tsx`, `board.test.ts`,
+  `fixtures/mixedBoard.test.ts`) hardcodes the current total cell count and per-status counts
+  rather than deriving them from the registry, so every prior story that adds a new family had
+  to update those same four files' expected numbers in the same commit. Do it in this story's
+  first attempt rather than discovering it via a failed `test` gate a second time.
 - Endpoint: OKX's `rubik/stat` family exposes both an **account-ratio** and a **top-trader
   position-ratio** variant (per `tiagosiebler/okx-api`'s `getLongShortRatio()` and
   `getLongShortContractRatio()`). This story is the **account** ratio, matching the roadmap's

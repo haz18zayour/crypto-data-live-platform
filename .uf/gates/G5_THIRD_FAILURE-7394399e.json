@@ -1,0 +1,16 @@
+{
+  "gate": "G5_THIRD_FAILURE",
+  "question": "US-602 has failed 3 times — is the story wrong?",
+  "feature": "PRD-006-derivatives",
+  "story": "US-602",
+  "options": [
+    "split",
+    "rewrite-criteria",
+    "skip",
+    "retry-anyway"
+  ],
+  "context": "Criteria judged not met:\n  - US-602-C1: verifier produced no parseable verdict\n  - US-602-C2: verifier produced no parseable verdict\n  - US-602-C3: verifier produced no parseable verdict\n  - US-602-C4: verifier produced no parseable verdict\n  - US-602-C5: verifier produced no parseable verdict\n  - US-602-C6: verifier produced no parseable verdict\n  - US-602-C7: verifier produced no parseable verdict",
+  "defaultOnTimeout": "block",
+  "id": "G5_THIRD_FAILURE-7394399e",
+  "openedAt": "2026-09-15T09:34:53.970Z"
+}

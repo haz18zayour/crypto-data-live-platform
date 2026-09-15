@@ -11,9 +11,23 @@ from typing import Literal, cast
 import httpx
 import psycopg
 
-from ingest.compute import compute_indicator
+from ingest.compute import compute_indicator, daily_close
 from ingest.fetchers import coinbase, okx
 from ingest.fetchers.okx import INDICATOR_KEY, MEASURED_ON, fetch_btc_daily_close
+from ingest.fetchers.okx_derivatives import (
+    FundingRateOk,
+    FundingRateResult,
+    LongShortRatioOk,
+    LongShortRatioResult,
+    OpenInterestOk,
+    OpenInterestResult,
+    TakerRatioOk,
+    TakerRatioResult,
+    fetch_btc_funding_rate_history,
+    fetch_long_short_ratio,
+    fetch_open_interest,
+    fetch_taker_ratio,
+)
 from ingest.indicators import atr, bollinger_bands, ema, macd, obv, rsi, stochrsi
 from ingest.persist import persist_datapoint
 from ingest.registry import IndicatorDefinition, load_registry
@@ -23,6 +37,13 @@ type Venue = Literal["okx", "coinbase"]
 type HistoryStatus = Literal["AVAILABLE", "UNCORROBORATED"]
 type Bar = Mapping[str, float]
 type BarFetcher = Callable[[Venue, str, int], "FetchedBars | Error"]
+type FundingRateFetcher = Callable[[str], FundingRateResult]
+type OpenInterestFetcher = Callable[[str], OpenInterestResult]
+type LongShortRatioFetcher = Callable[[str], LongShortRatioResult]
+type TakerRatioFetcher = Callable[[str], TakerRatioResult]
+type BoardResult = (
+    Result | FundingRateOk | OpenInterestOk | LongShortRatioOk | TakerRatioOk
+)
 
 _HISTORY_NOTE = re.compile(
     r"^History availability measured (?P<date>\d{4}-\d{2}-\d{2}): "
@@ -70,7 +91,7 @@ class FetchedBars:
 class FullAssetRun:
     """Every technical cell plus each venue's explicit history assessment."""
 
-    indicators: dict[str, Result]
+    indicators: dict[str, BoardResult]
     history: dict[tuple[str, Venue], HistoryAssessment]
 
 
@@ -162,6 +183,24 @@ class _AssetClient:
         return httpx.get(url, params=request_params, timeout=timeout)
 
 
+class _FundingAssetClient:
+    """Retarget the verified BTC funding fetcher to another swap instrument."""
+
+    def __init__(self, asset: str) -> None:
+        self.asset = asset
+
+    def get(
+        self,
+        url: str,
+        *,
+        params: Mapping[str, str] | None = None,
+        timeout: int,
+    ) -> httpx.Response:
+        request_params = dict(params or {})
+        request_params["instId"] = f"{self.asset}-USDT-SWAP"
+        return httpx.get(url, params=request_params, timeout=timeout)
+
+
 def _fetch_asset_bars(
     venue: Venue, asset: str, required_bars: int
 ) -> FetchedBars | Error:
@@ -201,8 +240,27 @@ def _fetch_asset_bars(
     return FetchedBars(bars=bars, source_timestamp=newest_open + timedelta(days=1))
 
 
+def _fetch_asset_funding_rate(asset: str) -> FundingRateResult:
+    client = cast(httpx.Client, _FundingAssetClient(asset))
+    return fetch_btc_funding_rate_history(client=client)
+
+
+def _fetch_asset_open_interest(asset: str) -> OpenInterestResult:
+    return fetch_open_interest(asset)
+
+
+def _fetch_asset_long_short_ratio(asset: str) -> LongShortRatioResult:
+    return fetch_long_short_ratio(asset)
+
+
+def _fetch_asset_taker_ratio(asset: str) -> TakerRatioResult:
+    return fetch_taker_ratio(asset)
+
+
 def _calculate(definition: IndicatorDefinition, bars: Sequence[Bar]) -> float:
     parameters = definition.parameters or {}
+    if definition.key == INDICATOR_KEY:
+        return daily_close(bars)
     if definition.talib_function == "RSI":
         return rsi(bars, period=int(parameters["timeperiod"]))
     if definition.talib_function == "EMA":
@@ -242,13 +300,41 @@ def _calculate(definition: IndicatorDefinition, bars: Sequence[Bar]) -> float:
     raise ValueError(f"{definition.key} has no registered calculation")
 
 
-def run_all_assets(*, fetch_bars: BarFetcher | None = None) -> FullAssetRun:
-    """Fetch both venues and compute every registered technical cell."""
+def run_all_assets(
+    *,
+    fetch_bars: BarFetcher | None = None,
+    fetch_funding_rate: FundingRateFetcher | None = None,
+    fetch_open_interest: OpenInterestFetcher | None = None,
+    fetch_long_short_ratio: LongShortRatioFetcher | None = None,
+    fetch_taker_ratio: TakerRatioFetcher | None = None,
+) -> FullAssetRun:
+    """Fetch both venues and compute every registered board cell."""
 
+    registered = load_registry().root
     definitions = tuple(
         definition
-        for definition in load_registry().root
-        if definition.talib_function is not None
+        for definition in registered
+        if definition.talib_function is not None or definition.key == INDICATOR_KEY
+    )
+    funding_definitions = tuple(
+        definition
+        for definition in registered
+        if definition.response_model == "okx_funding_rate_history"
+    )
+    open_interest_definitions = tuple(
+        definition
+        for definition in registered
+        if definition.response_model == "okx_open_interest"
+    )
+    long_short_definitions = tuple(
+        definition
+        for definition in registered
+        if definition.response_model == "okx_long_short_ratio"
+    )
+    taker_ratio_definitions = tuple(
+        definition
+        for definition in registered
+        if definition.response_model == "okx_taker_volume"
     )
     by_asset = {
         asset: tuple(
@@ -262,8 +348,26 @@ def run_all_assets(*, fetch_bars: BarFetcher | None = None) -> FullAssetRun:
         (item.asset, item.venue): item for item in load_history_availability()
     }
     fetch = _fetch_asset_bars if fetch_bars is None else fetch_bars
+    fetch_funding = (
+        _fetch_asset_funding_rate
+        if fetch_funding_rate is None
+        else fetch_funding_rate
+    )
+    fetch_interest = (
+        _fetch_asset_open_interest
+        if fetch_open_interest is None
+        else fetch_open_interest
+    )
+    fetch_long_short = (
+        _fetch_asset_long_short_ratio
+        if fetch_long_short_ratio is None
+        else fetch_long_short_ratio
+    )
+    fetch_taker = (
+        _fetch_asset_taker_ratio if fetch_taker_ratio is None else fetch_taker_ratio
+    )
     history: dict[tuple[str, Venue], HistoryAssessment] = {}
-    indicators: dict[str, Result] = {}
+    indicators: dict[str, BoardResult] = {}
 
     for asset, asset_definitions in by_asset.items():
         required_bars = max(
@@ -321,6 +425,18 @@ def run_all_assets(*, fetch_bars: BarFetcher | None = None) -> FullAssetRun:
                     detail=f"{definition.key} computation failed: {error}",
                 )
 
+    for definition in funding_definitions:
+        indicators[definition.key] = fetch_funding(definition.definable_for[0])
+
+    for definition in open_interest_definitions:
+        indicators[definition.key] = fetch_interest(definition.definable_for[0])
+
+    for definition in long_short_definitions:
+        indicators[definition.key] = fetch_long_short(definition.definable_for[0])
+
+    for definition in taker_ratio_definitions:
+        indicators[definition.key] = fetch_taker(definition.definable_for[0])
+
     return FullAssetRun(indicators=indicators, history=history)
 
 
@@ -328,25 +444,40 @@ def persist_board(
     connection: psycopg.Connection[tuple[object, ...]],
     run: FullAssetRun,
 ) -> tuple[int, ...]:
-    """Persist one visible datapoint for every registered technical cell."""
+    """Persist one visible datapoint for every result in a full board run."""
 
     definitions = tuple(
         definition
         for definition in load_registry().root
-        if definition.talib_function is not None
+        if definition.key in run.indicators
     )
-    return tuple(
-        persist_datapoint(
-            connection,
-            definition=definition,
-            asset=definition.definable_for[0],
-            measured_on=definition.definable_for[0],
-            result=run.indicators.get(
-                definition.key, Unavailable(reason=Reason.NOT_FETCHED)
+    row_ids: list[int] = []
+    for definition in definitions:
+        result = run.indicators.get(
+            definition.key, Unavailable(reason=Reason.NOT_FETCHED)
+        )
+        persisted_definition = definition
+        persisted_result: Result
+        if isinstance(result, FundingRateOk):
+            persisted_definition = definition.model_copy(
+                update={"source_field": result.source_field}
+            )
+            persisted_result = Ok(result.value, result.source_timestamp)
+        elif isinstance(result, (OpenInterestOk, LongShortRatioOk, TakerRatioOk)):
+            persisted_result = Ok(result.value, result.source_timestamp)
+        else:
+            persisted_result = result
+
+        row_ids.append(
+            persist_datapoint(
+                connection,
+                definition=persisted_definition,
+                asset=definition.definable_for[0],
+                measured_on=definition.definable_for[0],
+                result=persisted_result,
             ),
         )
-        for definition in definitions
-    )
+    return tuple(row_ids)
 
 
 def run_pipeline(

@@ -9,19 +9,15 @@ Do not hand-edit it — it is regenerated. The hand-written sections below it su
 
 ## ▶ Resume here
 
-**2 uncommitted file(s) — the runner will not start**
+**PRD-005-dashboard — GATE G1, scope lock**
 
-A previous session edited source and did not commit. uf refuses to run on a dirty tree rather than auto-committing someone else's half-finished work.
+The research asked you questions and each carries the agent's own hypothesis. Anything you leave blank becomes an explicit assumption with a tripwire. The out-of-scope list is the one field with no default.
 
 Owner: **You.** This one cannot be delegated.
 
 ```
-review the diff, then: git add -A && git commit
+open prds/PRD-005-dashboard/20-decisions.yaml
 ```
-
-**Left in flight by the previous session:**
-
-- 2 uncommitted file(s): prds/PRD-006-derivatives/00-brief.md, prds/PRD-006-derivatives/40-stories/
 
 **Last handoff note:** **2026-09-15 — PRD-005 complete, merged to `main` at `4e84d4a`, CI green. Fresh machine
 
@@ -34,9 +30,9 @@ review the diff, then: git add -A && git commit
 | PRD-003-corroboration | 7 | 7 | **all green** |
 | PRD-004-indicators | 11 | 11 | **all green** |
 | PRD-005-dashboard | 9 | 9 | **all green** |
-| PRD-006-derivatives | 7 | 0 | 0/7 |
+| PRD-006-derivatives | 7 | 7 | **all green** |
 
-Spend to date: **$59.65** Claude · **119111k** Codex tokens.
+Spend to date: **$69.61** Claude · **143304k** Codex tokens.
 
 ## What happened
 
@@ -407,6 +403,61 @@ Spend to date: **$59.65** Claude · **119111k** Codex tokens.
 - 07:55  researched PRD-006-derivatives — 11 sources · $0.99
 - 07:55  researched PRD-006-derivatives — 7 sources (REJECTED) · $1.39
 - 08:43  **PRD-006-derivatives** compiled — 7 stories
+- 08:45  US-601 started, attempt 1 (codex)
+- 08:48  US-601 — codex finished `21d9bec5` · 687k tok
+- 08:52  US-601 **PASSED** — 9/9 criteria, judged by claude · $0.72
+- 08:52  US-602 started, attempt 1 (codex)
+- 09:01  US-602 — codex finished `98cf4dba` · 5083k tok
+- 09:07  US-602 **rejected** — 0/7 criteria, judged by claude
+- 09:07  US-602 started, attempt 2 (codex)
+- 09:18  US-602 — codex finished `eeb3b7d0` · 1463k tok
+- 09:25  US-602 **rejected** — 0/7 criteria, judged by claude · $0.41
+- 09:25  US-602 started, attempt 3 (codex)
+- 09:28  US-602 — codex finished `e797c682` · 1599k tok
+- 09:34  US-602 **rejected** — 0/7 criteria, judged by claude
+- 09:34  ⏸ **gate opened** — US-602 has failed 3 times — is the story wrong?
+- 11:20  US-602 **PASSED** — 7/7 criteria, judged by human
+- 11:20  ▶ gate answered **skip** — Verified directly against real command output (full suite 215/215 including live integration tests); see verdict.json overrideReason. The verifier crashed twice on infrastructure grounds after the implementer had already fixed the actual defect.
+- 11:21  US-603 started, attempt 1 (codex)
+- 11:27  US-603 — codex finished `cf6c6df7` · 2976k tok
+- 11:34  US-603 **rejected** — 0/9 criteria, judged by claude
+- 11:34  US-603 started, attempt 2 (codex)
+- 11:41  US-603 — codex finished `11abc370` · 3150k tok
+- 11:51  US-603 **PASSED** — 9/9 criteria, judged by claude · $0.97
+- 11:51  US-604 started, attempt 1 (codex)
+- 11:57  US-604 — codex finished `749545a7` · 4124k tok
+- 12:05  US-604 **rejected** — 0/9 criteria, judged by claude
+- 12:05  US-604 started, attempt 2 (codex)
+- 12:06  **PRD-006-derivatives** compiled — 7 stories
+- 12:09  US-604 — codex finished `efb83847`
+- 12:19  US-604 **PASSED** — 9/9 criteria, judged by claude · $0.73
+- 12:19  US-605 started, attempt 1 (codex)
+- 12:19  US-605 — codex finished `2b56da89`
+- 12:27  US-605 **rejected** — 0/9 criteria, judged by claude
+- 12:27  US-605 started, attempt 2 (codex)
+- 12:27  US-605 — codex finished `0824672c`
+- 12:28  paused
+- 12:34  US-605 **rejected** — 0/9 criteria, judged by claude
+- 13:23  **PRD-006-derivatives** compiled — 7 stories
+- 13:24  resumed
+- 13:24  US-605 started, attempt 3 (claude)
+- 13:37  US-605 — codex finished `ef5e4393` · $5.28 · 51k tok
+- 13:45  US-605 **rejected** — 0/9 criteria, judged by codex
+- 13:45  ⏸ **gate opened** — US-605 has failed 3 times — is the story wrong?
+- 13:51  US-605 **PASSED** — 9/9 criteria, judged by human
+- 13:51  ▶ gate answered **skip** — Codex hit its own account usage quota (confirmed via direct codex exec test); verified directly against real command output (full suite 245/245 including live integration tests). See verdict.json overrideReason.
+- 13:52  US-606 started, attempt 1 (codex)
+- 13:57  US-606 — codex finished `9fbf62f9` · 2950k tok
+- 14:07  US-606 **rejected** — 6/7 criteria, judged by claude · $0.90
+- 14:07  US-606 started, attempt 2 (codex)
+- 14:11  US-606 — codex finished `2d813216` · 1248k tok
+- 14:21  US-606 **PASSED** — 7/7 criteria, judged by claude · $0.57
+- 14:21  US-607 started, attempt 1 (codex)
+- 14:23  US-607 — codex finished `51adc604` · 862k tok
+- 14:27  US-607 **awaiting your judgement** — 3/4 criteria, judged by claude · $0.36
+- 14:27  ⏸ **gate opened** — US-607: The demonstration item the acceptance protocol calls for, not a machine check
+- 15:34  ▶ gate answered **met** — Owner confirmed on the live page: BTC funding rate Details panel shows interval_seconds=28800 derived from consecutive fundingTime deltas. Independently cross-checked against OKX live funding-rate-history before asking: real settlement times 16:00/00:00/08:00 UTC, exactly 8h apart, value matches the persisted row exactly. A manual ingest dispatch (run 34987415923) also refreshed the 12 fast-cadence derivatives cells that had gone stale purely from time passing, confirming the freshness logic is honest in both directions.
+- 15:34  👤 you judged US-607 **met** — Owner confirmed on the live page: BTC funding rate Details panel shows interval_seconds=28800 derived from consecutive fundingTime deltas. Independently cross-checked against OKX live funding-rate-history before asking: real settlement times 16:00/00:00/08:00 UTC, exactly 8h apart, value matches the persisted row exactly. A manual ingest dispatch (run 34987415923) also refreshed the 12 fast-cadence derivatives cells that had gone stale purely from time passing, confirming the freshness logic is honest in both directions.
 
 <!-- uf:generated:end -->
 

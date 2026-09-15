@@ -12,11 +12,21 @@ from pydantic import BaseModel, ValidationError
 
 from ingest.heartbeat import _ping
 from ingest.registry import IndicatorDefinition, load_registry
-from ingest.schemas import OkxCandleResponse
+from ingest.schemas import (
+    OkxCandleResponse,
+    OkxFundingRateHistoryResponse,
+    OkxLongShortRatioResponse,
+    OkxOpenInterestResponse,
+    OkxTakerVolumeResponse,
+)
 
 REQUEST_TIMEOUT_SECONDS = 10
 RESPONSE_MODEL_TYPES: dict[str, type[BaseModel]] = {
     "okx_candle": OkxCandleResponse,
+    "okx_funding_rate_history": OkxFundingRateHistoryResponse,
+    "okx_open_interest": OkxOpenInterestResponse,
+    "okx_long_short_ratio": OkxLongShortRatioResponse,
+    "okx_taker_volume": OkxTakerVolumeResponse,
 }
 RESPONSE_MODELS: dict[str, type[BaseModel]] = {
     definition.key: RESPONSE_MODEL_TYPES[definition.response_model]

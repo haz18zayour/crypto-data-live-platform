@@ -1,0 +1,5 @@
+.uf/events.ndjson                     |   2 +
+ ingest/fetchers/okx_derivatives.py    | 125 ++++++++++++++++++
+ ingest/schemas.py                     |  25 ++++
+ tests/test_okx_derivatives_fetcher.py | 240 ++++++++++++++++++++++++++++++++++
+ 4 files changed, 392 insertions(+)

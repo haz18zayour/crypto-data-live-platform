@@ -11,13 +11,19 @@ from ingest.registry import (
 )
 
 GOLDEN_DIRECTORY = Path(__file__).with_name("goldens")
+FIXTURE_DIRECTORY = Path(__file__).with_name("fixtures")
 
 
 def golden_keys() -> set[str]:
-    return {
+    keys = {
         path.relative_to(GOLDEN_DIRECTORY).as_posix()
         for path in GOLDEN_DIRECTORY.rglob("*.json")
     }
+    keys.update(
+        f"fixtures/{path.relative_to(FIXTURE_DIRECTORY).as_posix()}"
+        for path in FIXTURE_DIRECTORY.rglob("*.json")
+    )
+    return keys
 
 
 def definition(
@@ -53,7 +59,7 @@ def test_every_registry_entry_has_a_golden_required_bars_and_response_model() ->
 ):
     registry = load_registry()
 
-    assert len(registry.root) == 45
+    assert len(registry.root) == 61
     assert_registry_coverage(
         registry,
         golden_keys=golden_keys(),

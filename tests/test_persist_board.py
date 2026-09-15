@@ -14,9 +14,18 @@ import pytest
 from psycopg import sql
 
 from ingest import heartbeat, pipeline
+from ingest.fetchers.okx_derivatives import (
+    FundingRateOk,
+    LongShortRatioOk,
+    OpenInterestOk,
+    TakerRatioOk,
+)
 from ingest.pipeline import (
     FetchedBars,
-    FullAssetRun,
+    FundingRateResult,
+    LongShortRatioResult,
+    OpenInterestResult,
+    TakerRatioResult,
     Venue,
     run_all_assets,
     run_pipeline,
@@ -26,6 +35,8 @@ from ingest.status import Error, Ok, Reason, Result
 
 MIGRATIONS = Path(__file__).resolve().parents[1] / "supabase" / "migrations"
 ENV_FILE = MIGRATIONS.parents[1] / ".env.local"
+DATABASE_URL = "postgresql://example.test/app"
+HEARTBEAT_URL = "https://hc-ping.com/check-id"
 SOURCE_TIMESTAMP = datetime(2026, 9, 10, tzinfo=UTC)
 
 
@@ -119,15 +130,61 @@ def _fetch_bars(venue: Venue, asset: str, required_bars: int) -> FetchedBars:
     return _synthetic_bars(asset, required_bars)
 
 
+def _fetch_funding_rate(asset: str) -> FundingRateResult:
+    offset = {"BTC": 1.0, "ETH": 2.0, "SOL": 3.0, "BNB": 4.0}[asset]
+    return FundingRateOk(
+        value=offset / 100_000,
+        source_timestamp=SOURCE_TIMESTAMP,
+        source_field=(
+            "OKX funding-rate-history realizedRate; interval_seconds=28800 "
+            "derived from the two newest consecutive fundingTime deltas"
+        ),
+    )
+
+
+def _fetch_open_interest(asset: str) -> OpenInterestResult:
+    offset = {"BTC": 1.0, "ETH": 2.0, "SOL": 3.0, "BNB": 4.0}[asset]
+    return OpenInterestOk(
+        value=offset * 1_000_000,
+        source_timestamp=SOURCE_TIMESTAMP,
+    )
+
+
+def _fetch_long_short_ratio(asset: str) -> LongShortRatioResult:
+    offset = {"BTC": 1.0, "ETH": 2.0, "SOL": 3.0, "BNB": 4.0}[asset]
+    return LongShortRatioOk(
+        value=1.0 + offset / 10,
+        source_timestamp=SOURCE_TIMESTAMP,
+    )
+
+
+def _fetch_taker_ratio(asset: str) -> TakerRatioResult:
+    offset = {"BTC": 1.0, "ETH": 2.0, "SOL": 3.0, "BNB": 4.0}[asset]
+    return TakerRatioOk(
+        value=1.0 + offset / 10,
+        source_timestamp=SOURCE_TIMESTAMP,
+    )
+
+
 def _full_board() -> pipeline.FullAssetRun:
-    return run_all_assets(fetch_bars=_fetch_bars)
+    return run_all_assets(
+        fetch_bars=_fetch_bars,
+        fetch_funding_rate=_fetch_funding_rate,
+        fetch_open_interest=_fetch_open_interest,
+        fetch_long_short_ratio=_fetch_long_short_ratio,
+        fetch_taker_ratio=_fetch_taker_ratio,
+    )
 
 
-def _technical_definitions() -> tuple[IndicatorDefinition, ...]:
+def _board_definitions() -> tuple[IndicatorDefinition, ...]:
     return tuple(
         definition
         for definition in load_registry().root
-        if definition.talib_function is not None
+        if definition.response_model == "okx_candle"
+        or definition.response_model == "okx_funding_rate_history"
+        or definition.response_model == "okx_open_interest"
+        or definition.response_model == "okx_long_short_ratio"
+        or definition.response_model == "okx_taker_volume"
     )
 
 
@@ -158,10 +215,10 @@ def test_full_run_writes_one_datapoint_row_per_computed_indicator(
 
     row_ids = run_pipeline(object(), fetcher=_full_board)  # type: ignore[arg-type]
 
-    definitions = _technical_definitions()
-    assert len(definitions) == 44
-    assert len(row_ids) == 44
-    assert len(persisted) == 44
+    definitions = _board_definitions()
+    assert len(definitions) == 61
+    assert len(row_ids) == len(definitions)
+    assert len(persisted) == len(definitions)
     assert {row["indicator_key"] for row in persisted} == {
         definition.key for definition in definitions
     }
@@ -186,7 +243,18 @@ def test_each_persisted_board_row_carries_schema_provenance(
                 "endpoint": definition.endpoint,
                 "source_field": definition.source_field,
                 "source_timestamp": (
-                    result.source_timestamp if isinstance(result, Ok) else None
+                    result.source_timestamp
+                    if isinstance(
+                        result,
+                        (
+                            Ok,
+                            FundingRateOk,
+                            OpenInterestOk,
+                            LongShortRatioOk,
+                            TakerRatioOk,
+                        ),
+                    )
+                    else None
                 ),
                 "measured_on": measured_on,
                 "asset": asset,
@@ -198,7 +266,7 @@ def test_each_persisted_board_row_carries_schema_provenance(
 
     run_pipeline(object(), fetcher=_full_board)  # type: ignore[arg-type]
 
-    assert len(persisted) == 44
+    assert len(persisted) == len(_board_definitions())
     assert all(row["source_vendor"] == "okx" for row in persisted)
     assert all(row["endpoint"] for row in persisted)
     assert all(row["source_field"] for row in persisted)
@@ -236,12 +304,288 @@ def test_non_ok_computed_result_is_persisted_with_status_and_reason_and_peers_co
 
     run_pipeline(object(), fetcher=_full_board)  # type: ignore[arg-type]
 
-    assert len(persisted) == 44
+    assert len(persisted) == len(_board_definitions())
     assert persisted[failed_key] == Error(
         reason=Reason.FETCH_FAILED,
         detail="btc_rsi computation failed: forced computation failure",
     )
-    assert sum(isinstance(result, Ok) for result in persisted.values()) == 43
+    assert sum(isinstance(result, Ok) for result in persisted.values()) == 60
+
+
+def test_one_derivatives_fetch_failure_persists_error_and_other_cells_continue(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    persisted: dict[str, Result] = {}
+
+    def fetch_long_short_ratio(asset: str) -> LongShortRatioResult:
+        if asset == "SOL":
+            return Error(
+                reason=Reason.FETCH_FAILED,
+                detail="forced long/short failure",
+            )
+        return _fetch_long_short_ratio(asset)
+
+    def record_datapoint(
+        connection: object,
+        *,
+        definition: IndicatorDefinition,
+        asset: str,
+        measured_on: str,
+        result: Result,
+    ) -> int:
+        persisted[definition.key] = result
+        return len(persisted)
+
+    monkeypatch.setattr(pipeline, "persist_datapoint", record_datapoint)
+    run = run_all_assets(
+        fetch_bars=_fetch_bars,
+        fetch_funding_rate=_fetch_funding_rate,
+        fetch_open_interest=_fetch_open_interest,
+        fetch_long_short_ratio=fetch_long_short_ratio,
+        fetch_taker_ratio=_fetch_taker_ratio,
+    )
+
+    run_pipeline(object(), fetcher=lambda: run)  # type: ignore[arg-type]
+
+    assert len(persisted) == len(_board_definitions())
+    assert persisted["sol_long_short_ratio"] == Error(
+        reason=Reason.FETCH_FAILED,
+        detail="forced long/short failure",
+    )
+    assert sum(isinstance(result, Ok) for result in persisted.values()) == 60
+
+
+def test_full_run_persists_one_funding_rate_datapoint_per_asset_with_runtime_source_field(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    persisted: dict[str, dict[str, object]] = {}
+
+    def record_datapoint(
+        connection: object,
+        *,
+        definition: IndicatorDefinition,
+        asset: str,
+        measured_on: str,
+        result: Result,
+    ) -> int:
+        if definition.key.endswith("_funding_rate"):
+            persisted[definition.key] = {
+                "asset": asset,
+                "status": result.status,
+                "value": result.value if isinstance(result, Ok) else None,
+                "source_field": definition.source_field,
+            }
+        return len(persisted)
+
+    monkeypatch.setattr(pipeline, "persist_datapoint", record_datapoint)
+
+    run_pipeline(object(), fetcher=_full_board)  # type: ignore[arg-type]
+
+    assert set(persisted) == {
+        "btc_funding_rate",
+        "eth_funding_rate",
+        "sol_funding_rate",
+        "bnb_funding_rate",
+    }
+    assert {row["asset"] for row in persisted.values()} == {
+        "BTC",
+        "ETH",
+        "SOL",
+        "BNB",
+    }
+    assert all(row["status"] == "OK" for row in persisted.values())
+    assert all(
+        "interval_seconds=28800" in str(row["source_field"])
+        for row in persisted.values()
+    )
+
+
+def test_full_run_persists_one_open_interest_datapoint_per_asset(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    persisted: dict[str, dict[str, object]] = {}
+
+    def record_datapoint(
+        connection: object,
+        *,
+        definition: IndicatorDefinition,
+        asset: str,
+        measured_on: str,
+        result: Result,
+    ) -> int:
+        if definition.key.endswith("_open_interest"):
+            persisted[definition.key] = {
+                "asset": asset,
+                "status": result.status,
+                "value": result.value if isinstance(result, Ok) else None,
+                "source_timestamp": (
+                    result.source_timestamp if isinstance(result, Ok) else None
+                ),
+            }
+        return len(persisted)
+
+    monkeypatch.setattr(pipeline, "persist_datapoint", record_datapoint)
+
+    run_pipeline(object(), fetcher=_full_board)  # type: ignore[arg-type]
+
+    assert set(persisted) == {
+        "btc_open_interest",
+        "eth_open_interest",
+        "sol_open_interest",
+        "bnb_open_interest",
+    }
+    assert {row["asset"] for row in persisted.values()} == {
+        "BTC",
+        "ETH",
+        "SOL",
+        "BNB",
+    }
+    assert all(row["status"] == "OK" for row in persisted.values())
+    assert all(row["value"] is not None for row in persisted.values())
+    assert all(
+        row["source_timestamp"] == SOURCE_TIMESTAMP
+        for row in persisted.values()
+    )
+
+
+def test_full_run_persists_one_long_short_ratio_datapoint_per_asset(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    persisted: dict[str, dict[str, object]] = {}
+
+    def record_datapoint(
+        connection: object,
+        *,
+        definition: IndicatorDefinition,
+        asset: str,
+        measured_on: str,
+        result: Result,
+    ) -> int:
+        if definition.key.endswith("_long_short_ratio"):
+            persisted[definition.key] = {
+                "asset": asset,
+                "status": result.status,
+                "value": result.value if isinstance(result, Ok) else None,
+                "source_timestamp": (
+                    result.source_timestamp if isinstance(result, Ok) else None
+                ),
+            }
+        return len(persisted)
+
+    monkeypatch.setattr(pipeline, "persist_datapoint", record_datapoint)
+
+    run_pipeline(object(), fetcher=_full_board)  # type: ignore[arg-type]
+
+    assert set(persisted) == {
+        "btc_long_short_ratio",
+        "eth_long_short_ratio",
+        "sol_long_short_ratio",
+        "bnb_long_short_ratio",
+    }
+    assert {row["asset"] for row in persisted.values()} == {
+        "BTC",
+        "ETH",
+        "SOL",
+        "BNB",
+    }
+    assert all(row["status"] == "OK" for row in persisted.values())
+    assert all(row["value"] is not None for row in persisted.values())
+    assert all(
+        row["source_timestamp"] == SOURCE_TIMESTAMP
+        for row in persisted.values()
+    )
+
+
+def test_full_run_persists_one_taker_ratio_datapoint_per_asset(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    persisted: dict[str, dict[str, object]] = {}
+
+    def record_datapoint(
+        connection: object,
+        *,
+        definition: IndicatorDefinition,
+        asset: str,
+        measured_on: str,
+        result: Result,
+    ) -> int:
+        if definition.key.endswith("_taker_ratio"):
+            persisted[definition.key] = {
+                "asset": asset,
+                "status": result.status,
+                "value": result.value if isinstance(result, Ok) else None,
+                "source_timestamp": (
+                    result.source_timestamp if isinstance(result, Ok) else None
+                ),
+            }
+        return len(persisted)
+
+    monkeypatch.setattr(pipeline, "persist_datapoint", record_datapoint)
+
+    run_pipeline(object(), fetcher=_full_board)  # type: ignore[arg-type]
+
+    assert set(persisted) == {
+        "btc_taker_ratio",
+        "eth_taker_ratio",
+        "sol_taker_ratio",
+        "bnb_taker_ratio",
+    }
+    assert {row["asset"] for row in persisted.values()} == {
+        "BTC",
+        "ETH",
+        "SOL",
+        "BNB",
+    }
+    assert all(row["status"] == "OK" for row in persisted.values())
+    assert all(row["value"] is not None for row in persisted.values())
+    assert all(
+        row["source_timestamp"] == SOURCE_TIMESTAMP
+        for row in persisted.values()
+    )
+
+
+def test_one_funding_history_failure_persists_error_and_other_assets_continue(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    persisted: dict[str, Result] = {}
+
+    def fetch_funding_rate(asset: str) -> FundingRateResult:
+        if asset == "SOL":
+            return Error(reason=Reason.FETCH_FAILED, detail="forced funding failure")
+        return _fetch_funding_rate(asset)
+
+    def record_datapoint(
+        connection: object,
+        *,
+        definition: IndicatorDefinition,
+        asset: str,
+        measured_on: str,
+        result: Result,
+    ) -> int:
+        if definition.key.endswith("_funding_rate"):
+            persisted[definition.key] = result
+        return len(persisted)
+
+    monkeypatch.setattr(pipeline, "persist_datapoint", record_datapoint)
+    run = run_all_assets(
+        fetch_bars=_fetch_bars,
+        fetch_funding_rate=fetch_funding_rate,
+        fetch_open_interest=_fetch_open_interest,
+        fetch_long_short_ratio=_fetch_long_short_ratio,
+        fetch_taker_ratio=_fetch_taker_ratio,
+    )
+
+    run_pipeline(object(), fetcher=lambda: run)  # type: ignore[arg-type]
+
+    assert persisted["sol_funding_rate"] == Error(
+        reason=Reason.FETCH_FAILED,
+        detail="forced funding failure",
+    )
+    assert {
+        key
+        for key, result in persisted.items()
+        if isinstance(result, Ok)
+    } == {"btc_funding_rate", "eth_funding_rate", "bnb_funding_rate"}
 
 
 def test_board_persistence_is_idempotent_per_registered_identity(
@@ -258,7 +602,12 @@ def test_board_persistence_is_idempotent_per_registered_identity(
         result: Result,
     ) -> int:
         source_timestamp = (
-            result.source_timestamp if isinstance(result, Ok) else None
+            result.source_timestamp
+            if isinstance(
+                result,
+                (Ok, FundingRateOk, OpenInterestOk, LongShortRatioOk, TakerRatioOk),
+            )
+            else None
         )
         identity = (
             definition.key,
@@ -273,7 +622,7 @@ def test_board_persistence_is_idempotent_per_registered_identity(
     first_ids = run_pipeline(object(), fetcher=_full_board)  # type: ignore[arg-type]
     second_ids = run_pipeline(object(), fetcher=_full_board)  # type: ignore[arg-type]
 
-    assert len(rows) == 44
+    assert len(rows) == len(_board_definitions())
     assert first_ids == second_ids
 
 
@@ -306,11 +655,11 @@ def test_database_holds_complete_board_with_failure_and_idempotent_identity(
     ).fetchall()
 
     assert first_ids == second_ids
-    assert len(rows) == 44
+    assert len(rows) == len(_board_definitions())
     failed = next(row for row in rows if row[0] == failed_key)
     assert failed[3:6] == (None, "ERROR", "FETCH_FAILED")
     assert failed[10] is None
-    assert sum(row[4] == "OK" for row in rows) == 43
+    assert sum(row[4] == "OK" for row in rows) == len(_board_definitions()) - 1
     assert all(row[1] == row[2] for row in rows)
     assert all(row[6] and row[7] and row[8] and row[9] for row in rows)
     assert all(
@@ -318,17 +667,12 @@ def test_database_holds_complete_board_with_failure_and_idempotent_identity(
     )
 
 
-def test_scheduled_ingestion_routes_the_full_board_through_run_pipeline(
+def test_scheduled_entry_point_persists_the_full_board_and_pings_once(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    board = FullAssetRun(
-        indicators={
-            definition.key: Ok(1.0, SOURCE_TIMESTAMP)
-            for definition in _technical_definitions()
-        },
-        history={},
-    )
-    observed: list[FullAssetRun] = []
+    persisted: list[dict[str, object]] = []
+    connected_to: list[str] = []
+    pinged: list[str] = []
 
     class FakeConnection:
         def __enter__(self) -> Self:
@@ -337,32 +681,77 @@ def test_scheduled_ingestion_routes_the_full_board_through_run_pipeline(
         def __exit__(self, *args: object) -> None:
             return None
 
-    def persist_pipeline(
+    def connect(database_url: str) -> FakeConnection:
+        connected_to.append(database_url)
+        return FakeConnection()
+
+    def record_datapoint(
         connection: object,
-        fetcher: Any,
-    ) -> tuple[int, ...]:
+        *,
+        definition: IndicatorDefinition,
+        asset: str,
+        measured_on: str,
+        result: Result,
+    ) -> int:
         assert isinstance(connection, FakeConnection)
-        result = fetcher()
-        observed.append(result)
-        return tuple(range(1, 45))
-
-    monkeypatch.setattr(heartbeat.psycopg, "connect", lambda _: FakeConnection())
-    monkeypatch.setattr(heartbeat, "run_all_assets", lambda: board)
-    monkeypatch.setattr(heartbeat, "run_pipeline", persist_pipeline)
-    client = httpx.Client(
-        transport=httpx.MockTransport(
-            lambda request: httpx.Response(200, request=request)
+        persisted.append(
+            {
+                "indicator_key": definition.key,
+                "asset": asset,
+                "measured_on": measured_on,
+                "status": result.status,
+            }
         )
-    )
+        return len(persisted)
 
-    row_ids = heartbeat.run_ingestion(
-        "postgresql://example.test/app",
-        "https://hc-ping.com/check-id",
-        heartbeat_client=client,
-    )
+    def record_ping(url: str, *, timeout: int) -> httpx.Response:
+        pinged.append(url)
+        request = httpx.Request("GET", url)
+        return httpx.Response(200, request=request)
 
-    assert observed == [board]
-    assert row_ids == tuple(range(1, 45))
+    monkeypatch.setenv("DATABASE_URL", DATABASE_URL)
+    monkeypatch.setenv("HEALTHCHECKS_PING_URL", HEARTBEAT_URL)
+    monkeypatch.setattr(heartbeat.psycopg, "connect", connect)
+    monkeypatch.setattr(heartbeat.httpx, "get", record_ping)
+    monkeypatch.setattr(pipeline, "_fetch_asset_bars", _fetch_bars)
+    monkeypatch.setattr(pipeline, "_fetch_asset_funding_rate", _fetch_funding_rate)
+    monkeypatch.setattr(pipeline, "_fetch_asset_open_interest", _fetch_open_interest)
+    monkeypatch.setattr(
+        pipeline, "_fetch_asset_long_short_ratio", _fetch_long_short_ratio
+    )
+    monkeypatch.setattr(pipeline, "_fetch_asset_taker_ratio", _fetch_taker_ratio)
+    monkeypatch.setattr(pipeline, "persist_datapoint", record_datapoint)
+
+    heartbeat.main()
+
+    definitions = _board_definitions()
+    assert connected_to == [DATABASE_URL]
+    assert pinged == [HEARTBEAT_URL]
+    assert len(definitions) == 61
+    assert len(persisted) == len(definitions)
+    assert {row["indicator_key"] for row in persisted} == {
+        definition.key for definition in definitions
+    }
+    assert (
+        sum(str(row["indicator_key"]).endswith("_funding_rate") for row in persisted)
+        == 4
+    )
+    assert (
+        sum(str(row["indicator_key"]).endswith("_open_interest") for row in persisted)
+        == 4
+    )
+    assert (
+        sum(
+            str(row["indicator_key"]).endswith("_long_short_ratio")
+            for row in persisted
+        )
+        == 4
+    )
+    assert (
+        sum(str(row["indicator_key"]).endswith("_taker_ratio") for row in persisted)
+        == 4
+    )
+    assert all(row["asset"] == row["measured_on"] for row in persisted)
 
 
 @pytest.mark.integration
@@ -371,7 +760,7 @@ def test_live_full_board_run_persists_registry_row_count(
 ) -> None:
     run = run_all_assets()
     row_ids = run_pipeline(postgres, fetcher=lambda: run)
-    definitions = _technical_definitions()
+    definitions = _board_definitions()
 
     rows = postgres.execute(
         """
@@ -383,13 +772,23 @@ def test_live_full_board_run_persists_registry_row_count(
         (list(row_ids),),
     ).fetchall()
 
-    assert len(definitions) == 44
+    assert len(definitions) == 61
     assert all(item.status == "AVAILABLE" for item in run.history.values())
     assert all(item.fetched_bars == 250 for item in run.history.values())
-    assert all(isinstance(result, Ok) for result in run.indicators.values())
+    assert all(
+        isinstance(
+            result,
+            (Ok, FundingRateOk, OpenInterestOk, LongShortRatioOk, TakerRatioOk),
+        )
+        for result in run.indicators.values()
+    )
     assert len(row_ids) == len(definitions)
     assert len(rows) == len(definitions)
     assert {row[0] for row in rows} == {definition.key for definition in definitions}
+    assert sum(str(row[0]).endswith("_funding_rate") for row in rows) == 4
+    assert sum(str(row[0]).endswith("_open_interest") for row in rows) == 4
+    assert sum(str(row[0]).endswith("_long_short_ratio") for row in rows) == 4
+    assert sum(str(row[0]).endswith("_taker_ratio") for row in rows) == 4
     assert all(row[1] == row[2] for row in rows)
     assert all(row[6] and row[7] and row[8] and row[9] for row in rows)
     assert all(row[3] is not None and row[4:6] == ("OK", None) for row in rows)

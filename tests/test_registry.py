@@ -94,7 +94,7 @@ def test_definable_for_requires_a_nonempty_asset_list(
 def test_shipped_registry_definitions_cover_four_assets_at_scale() -> None:
     registry = load_registry()
 
-    assert len(registry.root) == 45
+    assert len(registry.root) == 61
     assert {asset for entry in registry.root for asset in entry.definable_for} == {
         "BTC",
         "ETH",
@@ -102,3 +102,87 @@ def test_shipped_registry_definitions_cover_four_assets_at_scale() -> None:
         "BNB",
     }
     assert all(len(entry.definable_for) == 1 for entry in registry.root)
+
+
+def test_funding_rate_is_registered_once_per_asset_without_talib() -> None:
+    entries = tuple(
+        entry for entry in load_registry().root if entry.key.endswith("_funding_rate")
+    )
+
+    assert {entry.definable_for[0] for entry in entries} == {
+        "BTC",
+        "ETH",
+        "SOL",
+        "BNB",
+    }
+    assert all(entry.talib_function is None for entry in entries)
+
+
+def test_funding_rate_entries_declare_g1_uncorroborated_reason() -> None:
+    entries = tuple(
+        entry for entry in load_registry().root if entry.key.endswith("_funding_rate")
+    )
+
+    assert len(entries) == 4
+    for entry in entries:
+        assert entry.uncorroborated is not None
+        assert entry.uncorroborated.note == (
+            "No second venue's derivatives public endpoints were confirmed to "
+            "exist or be reachable; Binance's futures API returns HTTP 451 to "
+            "US IPs on public endpoints."
+        )
+
+
+def test_open_interest_is_registered_once_per_asset_without_talib() -> None:
+    entries = tuple(
+        entry for entry in load_registry().root if entry.key.endswith("_open_interest")
+    )
+
+    assert {entry.definable_for[0] for entry in entries} == {
+        "BTC",
+        "ETH",
+        "SOL",
+        "BNB",
+    }
+    assert all(entry.talib_function is None for entry in entries)
+    assert all(entry.uncorroborated is not None for entry in entries)
+    assert all("USDT-SWAP" in entry.endpoint for entry in entries)
+    assert all("-USD-SWAP" not in entry.endpoint for entry in entries)
+
+
+def test_long_short_ratio_is_registered_once_per_asset_without_talib() -> None:
+    entries = tuple(
+        entry
+        for entry in load_registry().root
+        if entry.key.endswith("_long_short_ratio")
+    )
+
+    assert {entry.definable_for[0] for entry in entries} == {
+        "BTC",
+        "ETH",
+        "SOL",
+        "BNB",
+    }
+    assert len(entries) == 4
+    assert all(entry.talib_function is None for entry in entries)
+    assert all(entry.uncorroborated is not None for entry in entries)
+    assert all(
+        entry.response_model == "okx_long_short_ratio" for entry in entries
+    )
+
+
+def test_taker_ratio_is_registered_once_per_asset_without_talib() -> None:
+    entries = tuple(
+        entry for entry in load_registry().root if entry.key.endswith("_taker_ratio")
+    )
+
+    assert {entry.definable_for[0] for entry in entries} == {
+        "BTC",
+        "ETH",
+        "SOL",
+        "BNB",
+    }
+    assert len(entries) == 4
+    assert all(entry.talib_function is None for entry in entries)
+    assert all(entry.uncorroborated is not None for entry in entries)
+    assert all(entry.response_model == "okx_taker_volume" for entry in entries)
