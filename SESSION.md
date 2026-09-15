@@ -431,6 +431,9 @@ Spend to date: **$62.49** Claude · **138193k** Codex tokens.
 - 12:06  **PRD-006-derivatives** compiled — 7 stories
 - 12:09  US-604 — codex finished `efb83847`
 - 12:19  US-604 **PASSED** — 9/9 criteria, judged by claude · $0.73
+- 12:19  US-605 started, attempt 1 (codex)
+- 12:19  US-605 — codex finished `2b56da89`
+- 12:27  US-605 **rejected** — 0/9 criteria, judged by claude
 
 <!-- uf:generated:end -->
 
