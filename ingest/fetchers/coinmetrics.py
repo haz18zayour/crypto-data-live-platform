@@ -42,6 +42,9 @@ class CoinMetricsRateLimiter:
         self._last_request_at = now
 
 
+_DEFAULT_RATE_LIMITER = CoinMetricsRateLimiter()
+
+
 def _coinmetrics_error_message(payload: object) -> str | None:
     if not isinstance(payload, dict):
         return None
@@ -103,8 +106,11 @@ def _fetch_asset_metric(
         "page_size": "1",
     }
     try:
-        if rate_limiter is not None:
-            rate_limiter.wait()
+        limiter = rate_limiter
+        if limiter is None and client is None:
+            limiter = _DEFAULT_RATE_LIMITER
+        if limiter is not None:
+            limiter.wait()
         response = (
             httpx.get(
                 COINMETRICS_ASSET_METRICS_ENDPOINT,

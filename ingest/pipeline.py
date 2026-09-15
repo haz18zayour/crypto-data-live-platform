@@ -380,14 +380,9 @@ def run_all_assets(
     fetch_taker = (
         _fetch_asset_taker_ratio if fetch_taker_ratio is None else fetch_taker_ratio
     )
-    if fetch_mvrv is None:
-        mvrv_rate_limiter = coinmetrics.CoinMetricsRateLimiter()
-        fetch_coinmetrics_mvrv = partial(
-            _fetch_asset_mvrv,
-            rate_limiter=mvrv_rate_limiter,
-        )
-    else:
-        fetch_coinmetrics_mvrv = fetch_mvrv
+    fetch_coinmetrics_mvrv: MvrvFetcher = (
+        _fetch_asset_mvrv if fetch_mvrv is None else fetch_mvrv
+    )
     history: dict[tuple[str, Venue], HistoryAssessment] = {}
     indicators: dict[str, BoardResult] = {}
 

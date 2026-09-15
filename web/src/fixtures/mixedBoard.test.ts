@@ -43,7 +43,7 @@ describe("mixed board fixture", () => {
         cell.state.status === "UNAVAILABLE" &&
         cell.state.reason === "NOT_DEFINABLE",
     );
-    expect(notDefinableCells).toHaveLength(3);
+    expect(notDefinableCells).toHaveLength(4);
     for (const cell of notDefinableCells) {
       expect(cell.state).toHaveProperty("detail");
       expect("detail" in cell.state && cell.state.detail.trim()).toBeTruthy();
@@ -69,12 +69,12 @@ describe("mixed board fixture", () => {
     ).toBe(true);
   });
 
-  test("the fixture has the same 64-cell shape the live board model produces", () => {
+  test("the fixture has the same 68-cell shape the live board model produces", () => {
     const liveShape = buildBoard(registry, [], BOARD_ASSETS);
 
     expect(mixedBoard.assets).toEqual(liveShape.assets);
     expect(mixedBoard.families).toEqual(liveShape.families);
-    expect(mixedBoard.cells).toHaveLength(64);
+    expect(mixedBoard.cells).toHaveLength(68);
     expect(mixedBoard.cells.map(({ family, asset }) => ({ family, asset }))).toEqual(
       liveShape.cells.map(({ family, asset }) => ({ family, asset })),
     );
