@@ -8,6 +8,10 @@ touches:
   - ingest/registry.yaml
   - tests/test_okx_derivatives_fetcher.py
   - tests/test_registry.py
+  - web/src/BoardMatrix.test.tsx
+  - web/src/CoverageHeadline.test.tsx
+  - web/src/board.test.ts
+  - web/src/fixtures/mixedBoard.test.ts
 context:
   - AGENTS.md
   - prds/PRD-006-derivatives/10-research.md
@@ -31,6 +35,13 @@ completing the four metrics this PRD scopes.
 
 ## Notes for the implementer
 
+- **Adding these four registry entries grows the completeness matrix by one more indicator
+  family.** US-602, US-603 and US-604 all hit the same gap on their first attempt: `web/src/`'s
+  test suite (`BoardMatrix.test.tsx`, `CoverageHeadline.test.tsx`, `board.test.ts`,
+  `fixtures/mixedBoard.test.ts`) hardcodes the current total cell count and per-status counts
+  rather than deriving them from the registry, so every prior story that adds a new family had
+  to update those same four files' expected numbers in the same commit. Do it in this story's
+  first attempt rather than discovering it via a failed `test` gate a second time.
 - Endpoint: OKX's `rubik/stat/taker-volume` (currency-level, per `python-okx`'s constants) —
   confirm whether it returns a ratio directly or separate buy/sell volumes that this fetcher must
   divide. If it is the latter, compute the ratio here rather than persisting two raw volumes as

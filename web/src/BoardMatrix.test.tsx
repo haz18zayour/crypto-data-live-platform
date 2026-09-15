@@ -71,21 +71,21 @@ describe("completeness matrix", () => {
         .getAllByRole("rowheader")
         .map((header) => header.textContent),
     ).toEqual(mixedBoard.families.map((family) => family.replaceAll("_", " ")));
-    expect(mixedBoard.families).toHaveLength(13);
+    expect(mixedBoard.families).toHaveLength(14);
 
     const bodyRows = within(table).getAllByRole("row").slice(1);
-    expect(bodyRows).toHaveLength(13);
+    expect(bodyRows).toHaveLength(14);
     for (const row of bodyRows) {
       expect(within(row).getAllByRole("rowheader")).toHaveLength(1);
       expect(within(row).getAllByRole("cell")).toHaveLength(BOARD_ASSETS.length);
     }
   });
 
-  test("52 data cells render and every one has non-empty text content", () => {
+  test("56 data cells render and every one has non-empty text content", () => {
     for (const board of [mixedBoard, emptyResponseBoard]) {
       const cells = renderMatrix(board);
 
-      expect(cells).toHaveLength(52);
+      expect(cells).toHaveLength(56);
       for (const cell of cells) {
         expect(cell.textContent?.trim()).not.toBe("");
       }
@@ -97,7 +97,7 @@ describe("completeness matrix", () => {
     for (const board of [mixedBoard, emptyResponseBoard]) {
       const cells = renderMatrix(board);
 
-      expect(cells).toHaveLength(52);
+      expect(cells).toHaveLength(56);
       for (const cell of cells) {
         expect(faceClass(cell)).toBeDefined();
         expect(part(cell, "glyph")).not.toBe("");
@@ -184,7 +184,7 @@ describe("completeness matrix", () => {
 
     renderPage();
 
-    await waitFor(() => expect(screen.getAllByRole("cell")).toHaveLength(52));
+    await waitFor(() => expect(screen.getAllByRole("cell")).toHaveLength(56));
     await screen.findByLabelText("Not corroborated value");
 
     const urls = fetchMock.mock.calls.map(([input]) => new URL(String(input)));
@@ -238,7 +238,7 @@ describe("completeness matrix", () => {
 });
 
 describe("integration: the assembled page against live Supabase", () => {
-  test("the assembled page loads 52 cells from the live board_read endpoint", async () => {
+  test("the assembled page loads 56 cells from the live board_read endpoint", async () => {
     // Real URL, real anon key, real fetch. Missing configuration fails here; it never skips.
     expect(import.meta.env.VITE_SUPABASE_URL).toBeTruthy();
     expect(import.meta.env.VITE_SUPABASE_ANON_KEY).toBeTruthy();
@@ -247,14 +247,14 @@ describe("integration: the assembled page against live Supabase", () => {
     renderPage();
 
     await waitFor(
-      () => expect(screen.getAllByRole("cell")).toHaveLength(52),
+      () => expect(screen.getAllByRole("cell")).toHaveLength(56),
       { timeout: 20_000 },
     );
     const cells = screen.getAllByRole("cell");
     for (const cell of cells) {
       expect(cell.textContent?.trim()).not.toBe("");
     }
-    expect(screen.getByRole("status")).toHaveTextContent(/of 52 indicators OK/);
+    expect(screen.getByRole("status")).toHaveTextContent(/of 56 indicators OK/);
 
     const boardRequests = liveFetch.mock.calls.filter(
       ([input]) => new URL(String(input)).pathname === "/rest/v1/board_read",
@@ -281,6 +281,6 @@ describe("integration: the assembled page against live Supabase", () => {
     ).length;
     expect(
       cells.filter((cell) => faceClass(cell) === "cell--not-fetched"),
-    ).toHaveLength(52 - declaredNotDefinable - registeredRows.length);
+    ).toHaveLength(56 - declaredNotDefinable - registeredRows.length);
   }, 30_000);
 });

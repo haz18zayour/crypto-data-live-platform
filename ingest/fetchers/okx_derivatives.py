@@ -3,6 +3,7 @@
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from itertools import pairwise
+from time import sleep
 from typing import Literal
 
 import httpx
@@ -16,6 +17,7 @@ BTC_FUNDING_RATE_HISTORY_ENDPOINT = (
 OKX_OPEN_INTEREST_ENDPOINT = "https://www.okx.com/api/v5/public/open-interest"
 BTC_USDT_SWAP_INST_ID = "BTC-USDT-SWAP"
 REQUEST_TIMEOUT_SECONDS = 10
+LIVE_SOURCE_CLOCK_WAIT_SECONDS = 5
 
 
 @dataclass(frozen=True, slots=True)
@@ -185,6 +187,10 @@ def fetch_open_interest(
         row = rows[0]
         source_timestamp = datetime.fromtimestamp(int(row.ts) / 1000, tz=UTC)
         current_time = datetime.now(UTC) if now is None else now
+        wait_seconds = (source_timestamp - current_time).total_seconds()
+        if now is None and 0 <= wait_seconds <= LIVE_SOURCE_CLOCK_WAIT_SECONDS:
+            sleep(wait_seconds + 0.001)
+            current_time = datetime.now(UTC)
         if source_timestamp >= current_time:
             return Error(
                 reason=Reason.FETCH_FAILED,

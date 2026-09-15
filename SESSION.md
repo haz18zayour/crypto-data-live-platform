@@ -30,9 +30,9 @@ open prds/PRD-005-dashboard/20-decisions.yaml
 | PRD-003-corroboration | 7 | 7 | **all green** |
 | PRD-004-indicators | 11 | 11 | **all green** |
 | PRD-005-dashboard | 9 | 9 | **all green** |
-| PRD-006-derivatives | 7 | 1 | 1/7 |
+| PRD-006-derivatives | 7 | 2 | 2/7 |
 
-Spend to date: **$60.79** Claude · **127942k** Codex tokens.
+Spend to date: **$60.79** Claude · **130919k** Codex tokens.
 
 ## What happened
 
@@ -415,6 +415,12 @@ Spend to date: **$60.79** Claude · **127942k** Codex tokens.
 - 09:25  US-602 started, attempt 3 (codex)
 - 09:28  US-602 — codex finished `e797c682` · 1599k tok
 - 09:34  US-602 **rejected** — 0/7 criteria, judged by claude
+- 09:34  ⏸ **gate opened** — US-602 has failed 3 times — is the story wrong?
+- 11:20  US-602 **PASSED** — 7/7 criteria, judged by human
+- 11:20  ▶ gate answered **skip** — Verified directly against real command output (full suite 215/215 including live integration tests); see verdict.json overrideReason. The verifier crashed twice on infrastructure grounds after the implementer had already fixed the actual defect.
+- 11:21  US-603 started, attempt 1 (codex)
+- 11:27  US-603 — codex finished `cf6c6df7` · 2976k tok
+- 11:34  US-603 **rejected** — 0/9 criteria, judged by claude
 
 <!-- uf:generated:end -->
 

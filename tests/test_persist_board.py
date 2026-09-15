@@ -189,8 +189,8 @@ def test_full_run_writes_one_datapoint_row_per_computed_indicator(
 
     definitions = _board_definitions()
     assert len(definitions) == 52
-    assert len(row_ids) == 52
-    assert len(persisted) == 52
+    assert len(row_ids) == len(definitions)
+    assert len(persisted) == len(definitions)
     assert {row["indicator_key"] for row in persisted} == {
         definition.key for definition in definitions
     }
@@ -229,7 +229,7 @@ def test_each_persisted_board_row_carries_schema_provenance(
 
     run_pipeline(object(), fetcher=_full_board)  # type: ignore[arg-type]
 
-    assert len(persisted) == 52
+    assert len(persisted) == len(_board_definitions())
     assert all(row["source_vendor"] == "okx" for row in persisted)
     assert all(row["endpoint"] for row in persisted)
     assert all(row["source_field"] for row in persisted)
@@ -267,7 +267,7 @@ def test_non_ok_computed_result_is_persisted_with_status_and_reason_and_peers_co
 
     run_pipeline(object(), fetcher=_full_board)  # type: ignore[arg-type]
 
-    assert len(persisted) == 52
+    assert len(persisted) == len(_board_definitions())
     assert persisted[failed_key] == Error(
         reason=Reason.FETCH_FAILED,
         detail="btc_rsi computation failed: forced computation failure",
@@ -440,7 +440,7 @@ def test_board_persistence_is_idempotent_per_registered_identity(
     first_ids = run_pipeline(object(), fetcher=_full_board)  # type: ignore[arg-type]
     second_ids = run_pipeline(object(), fetcher=_full_board)  # type: ignore[arg-type]
 
-    assert len(rows) == 52
+    assert len(rows) == len(_board_definitions())
     assert first_ids == second_ids
 
 
@@ -473,11 +473,11 @@ def test_database_holds_complete_board_with_failure_and_idempotent_identity(
     ).fetchall()
 
     assert first_ids == second_ids
-    assert len(rows) == 52
+    assert len(rows) == len(_board_definitions())
     failed = next(row for row in rows if row[0] == failed_key)
     assert failed[3:6] == (None, "ERROR", "FETCH_FAILED")
     assert failed[10] is None
-    assert sum(row[4] == "OK" for row in rows) == 51
+    assert sum(row[4] == "OK" for row in rows) == len(_board_definitions()) - 1
     assert all(row[1] == row[2] for row in rows)
     assert all(row[6] and row[7] and row[8] and row[9] for row in rows)
     assert all(
@@ -511,7 +511,7 @@ def test_scheduled_ingestion_routes_the_full_board_through_run_pipeline(
         assert isinstance(connection, FakeConnection)
         result = fetcher()
         observed.append(result)
-        return tuple(range(1, 53))
+        return tuple(range(1, len(_board_definitions()) + 1))
 
     monkeypatch.setattr(heartbeat.psycopg, "connect", lambda _: FakeConnection())
     monkeypatch.setattr(heartbeat, "run_all_assets", lambda: board)
@@ -529,7 +529,7 @@ def test_scheduled_ingestion_routes_the_full_board_through_run_pipeline(
     )
 
     assert observed == [board]
-    assert row_ids == tuple(range(1, 53))
+    assert row_ids == tuple(range(1, len(_board_definitions()) + 1))
 
 
 @pytest.mark.integration
