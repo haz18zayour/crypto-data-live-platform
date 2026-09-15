@@ -30,9 +30,9 @@ open prds/PRD-005-dashboard/20-decisions.yaml
 | PRD-003-corroboration | 7 | 7 | **all green** |
 | PRD-004-indicators | 11 | 11 | **all green** |
 | PRD-005-dashboard | 9 | 9 | **all green** |
-| PRD-006-derivatives | 7 | 6 | 6/7 |
+| PRD-006-derivatives | 7 | 7 | **all green** |
 
-Spend to date: **$69.25** Claude · **142441k** Codex tokens.
+Spend to date: **$69.61** Claude · **143304k** Codex tokens.
 
 ## What happened
 
@@ -452,6 +452,12 @@ Spend to date: **$69.25** Claude · **142441k** Codex tokens.
 - 14:07  US-606 started, attempt 2 (codex)
 - 14:11  US-606 — codex finished `2d813216` · 1248k tok
 - 14:21  US-606 **PASSED** — 7/7 criteria, judged by claude · $0.57
+- 14:21  US-607 started, attempt 1 (codex)
+- 14:23  US-607 — codex finished `51adc604` · 862k tok
+- 14:27  US-607 **awaiting your judgement** — 3/4 criteria, judged by claude · $0.36
+- 14:27  ⏸ **gate opened** — US-607: The demonstration item the acceptance protocol calls for, not a machine check
+- 15:34  ▶ gate answered **met** — Owner confirmed on the live page: BTC funding rate Details panel shows interval_seconds=28800 derived from consecutive fundingTime deltas. Independently cross-checked against OKX live funding-rate-history before asking: real settlement times 16:00/00:00/08:00 UTC, exactly 8h apart, value matches the persisted row exactly. A manual ingest dispatch (run 34987415923) also refreshed the 12 fast-cadence derivatives cells that had gone stale purely from time passing, confirming the freshness logic is honest in both directions.
+- 15:34  👤 you judged US-607 **met** — Owner confirmed on the live page: BTC funding rate Details panel shows interval_seconds=28800 derived from consecutive fundingTime deltas. Independently cross-checked against OKX live funding-rate-history before asking: real settlement times 16:00/00:00/08:00 UTC, exactly 8h apart, value matches the persisted row exactly. A manual ingest dispatch (run 34987415923) also refreshed the 12 fast-cadence derivatives cells that had gone stale purely from time passing, confirming the freshness logic is honest in both directions.
 
 <!-- uf:generated:end -->
 
