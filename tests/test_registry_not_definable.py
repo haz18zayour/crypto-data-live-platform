@@ -11,6 +11,7 @@ from ingest.registry import (
 )
 
 GOLDEN_DIRECTORY = Path(__file__).with_name("goldens")
+FIXTURE_DIRECTORY = Path(__file__).with_name("fixtures")
 
 
 def definition_data() -> dict[str, object]:
@@ -61,15 +62,19 @@ def test_asset_cannot_be_both_definable_and_not_definable() -> None:
         IndicatorDefinition.model_validate(data)
 
 
-def test_registry_coverage_still_passes_for_all_45_entries() -> None:
+def test_registry_coverage_still_passes_for_all_49_entries() -> None:
     registry = load_registry()
 
-    assert len(registry.root) == 45
+    assert len(registry.root) == 49
     assert_registry_coverage(
         registry,
         golden_keys={
             path.relative_to(GOLDEN_DIRECTORY).as_posix()
             for path in GOLDEN_DIRECTORY.rglob("*.json")
+        }
+        | {
+            f"fixtures/{path.relative_to(FIXTURE_DIRECTORY).as_posix()}"
+            for path in FIXTURE_DIRECTORY.rglob("*.json")
         },
         response_models=RESPONSE_MODELS,
     )
