@@ -1,0 +1,41 @@
+{
+  "jsonrpc": "2.0",
+  "result": {
+    "blockHeight": 123,
+    "blockTime": 1789430400,
+    "blockhash": "BlockHash1111111111111111111111111111111111",
+    "parentSlot": 42,
+    "previousBlockhash": "PrevHash11111111111111111111111111111111111",
+    "transactions": [
+      {
+        "meta": null,
+        "transaction": {
+          "message": {
+            "accountKeys": [
+              {
+                "pubkey": "FeePayer111111111111111111111111111111111",
+                "signer": true,
+                "source": "transaction",
+                "writable": true
+              }
+            ],
+            "instructions": [
+              {
+                "accounts": [],
+                "data": "3Bxs",
+                "programId": "11111111111111111111111111111111",
+                "stackHeight": null
+              }
+            ],
+            "recentBlockhash": "RecentHash111111111111111111111111111111111"
+          },
+          "signatures": [
+            "Signature111111111111111111111111111111111111111111111111111111111111111"
+          ]
+        },
+        "version": "legacy"
+      }
+    ]
+  },
+  "id": 42
+}

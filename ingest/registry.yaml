@@ -611,6 +611,20 @@
   freshness_stale_seconds: 57600
   uncorroborated:
     note: No second venue's derivatives public endpoints were confirmed to exist or be reachable; Binance's futures API returns HTTP 451 to US IPs on public endpoints.
+- key: sol_active_addresses
+  vendor: helius
+  endpoint: https://mainnet.helius-rpc.com/?api-key=<HELIUS_API_KEY>
+  source_field: 'Solana getBlock jsonParsed full transactions; distinct fee-payer signers from non-vote transactions across exactly the fixed 00:00-01:00 UTC hour, not a 24-hour count'
+  definable_for: [SOL]
+  golden: fixtures/solana_get_block.json
+  response_model: solana_get_block
+  required_bars: 1
+  parameters:
+  expected_update_interval_seconds: 86400
+  freshness_warn_seconds: 108000
+  freshness_stale_seconds: 172800
+  uncorroborated:
+    note: Helius Solana RPC is the only researched source used for this built SOL active-addresses cell, and its one-hour method is not directly comparable to Coin Metrics' 24-hour AdrActCnt.
 - key: sol_open_interest
   vendor: okx
   endpoint: https://www.okx.com/api/v5/public/open-interest?instType=SWAP&instId=SOL-USDT-SWAP

@@ -158,3 +158,79 @@ class CoinMetricsAssetMetricsResponse(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True)
 
     data: tuple[CoinMetricsAssetMetricsEntry, ...]
+
+
+class SolanaAccountKey(BaseModel):
+    """One account key from a jsonParsed Solana transaction message."""
+
+    model_config = ConfigDict(extra="forbid", frozen=True)
+
+    pubkey: StrictStr
+    signer: bool
+    source: StrictStr | None = None
+    writable: bool
+
+
+class SolanaInstruction(BaseModel):
+    """One top-level Solana instruction, parsed or partially decoded."""
+
+    model_config = ConfigDict(extra="forbid", frozen=True)
+
+    accounts: tuple[StrictStr, ...] | None = None
+    data: StrictStr | None = None
+    parsed: object | None = None
+    program: StrictStr | None = None
+    program_id: StrictStr = Field(alias="programId")
+    stack_height: StrictInt | None = Field(default=None, alias="stackHeight")
+
+
+class SolanaMessage(BaseModel):
+    """The transaction message fields needed to classify and count activity."""
+
+    model_config = ConfigDict(extra="forbid", frozen=True)
+
+    account_keys: tuple[SolanaAccountKey, ...] = Field(alias="accountKeys")
+    instructions: tuple[SolanaInstruction, ...]
+    recent_blockhash: StrictStr = Field(alias="recentBlockhash")
+
+
+class SolanaTransactionPayload(BaseModel):
+    """The parsed transaction payload inside a block transaction row."""
+
+    model_config = ConfigDict(extra="forbid", frozen=True)
+
+    message: SolanaMessage
+    signatures: tuple[StrictStr, ...]
+
+
+class SolanaBlockTransaction(BaseModel):
+    """One transaction row from getBlock(transactionDetails=full)."""
+
+    model_config = ConfigDict(extra="forbid", frozen=True)
+
+    meta: object | None
+    transaction: SolanaTransactionPayload
+    version: StrictStr | StrictInt | None = None
+
+
+class SolanaBlock(BaseModel):
+    """The getBlock result fields this fetcher consumes."""
+
+    model_config = ConfigDict(extra="forbid", frozen=True)
+
+    block_height: StrictInt | None = Field(default=None, alias="blockHeight")
+    block_time: StrictInt | None = Field(alias="blockTime")
+    blockhash: StrictStr
+    parent_slot: StrictInt = Field(alias="parentSlot")
+    previous_blockhash: StrictStr = Field(alias="previousBlockhash")
+    transactions: tuple[SolanaBlockTransaction, ...]
+
+
+class SolanaGetBlockResponse(BaseModel):
+    """The JSON-RPC success shape for a Solana getBlock call."""
+
+    model_config = ConfigDict(extra="forbid", frozen=True)
+
+    jsonrpc: StrictStr
+    result: SolanaBlock | None
+    id: StrictInt | StrictStr

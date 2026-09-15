@@ -95,7 +95,9 @@ def synthetic_mvrv(asset: str) -> Ok:
 
 
 def synthetic_active_addresses(asset: str) -> Ok:
-    offset = {"BTC": 1_000.0, "ETH": 2_000.0, "BNB": 3_000.0}[asset]
+    offset = {"BTC": 1_000.0, "ETH": 2_000.0, "BNB": 3_000.0, "SOL": 4_000.0}[
+        asset
+    ]
     return Ok(value=offset, source_timestamp=SOURCE_TIMESTAMP)
 
 
@@ -234,19 +236,20 @@ def test_all_four_assets_produce_an_indicator_value_or_explicit_status() -> None
         for definition in load_registry().root
         if definition.response_model == "okx_taker_volume"
     )
-    coinmetrics_definitions = tuple(
+    onchain_definitions = tuple(
         definition
         for definition in load_registry().root
-        if definition.response_model == "coinmetrics_asset_metrics"
+        if definition.response_model
+        in {"coinmetrics_asset_metrics", "solana_get_block"}
     )
     mvrv_definitions = tuple(
         definition
-        for definition in coinmetrics_definitions
+        for definition in onchain_definitions
         if definition.key.endswith("_mvrv")
     )
     active_address_definitions = tuple(
         definition
-        for definition in coinmetrics_definitions
+        for definition in onchain_definitions
         if definition.key.endswith("_active_addresses")
     )
 
@@ -258,7 +261,7 @@ def test_all_four_assets_produce_an_indicator_value_or_explicit_status() -> None
             *open_interest_definitions,
             *long_short_definitions,
             *taker_ratio_definitions,
-            *coinmetrics_definitions,
+            *onchain_definitions,
         )
     }
     assert Counter(
@@ -281,7 +284,7 @@ def test_all_four_assets_produce_an_indicator_value_or_explicit_status() -> None
     ) == Counter({"BTC": 1, "ETH": 1, "BNB": 1})
     assert Counter(
         definition.definable_for[0] for definition in active_address_definitions
-    ) == Counter({"BTC": 1, "ETH": 1, "BNB": 1})
+    ) == Counter({"BTC": 1, "ETH": 1, "BNB": 1, "SOL": 1})
     assert all(
         result.status in {"OK", "STALE", "UNAVAILABLE", "ERROR"}
         for result in run.indicators.values()

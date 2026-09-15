@@ -12,7 +12,7 @@ import httpx
 import psycopg
 
 from ingest.compute import compute_indicator, daily_close
-from ingest.fetchers import coinbase, coinmetrics, okx
+from ingest.fetchers import coinbase, coinmetrics, okx, solana_rpc
 from ingest.fetchers.okx import INDICATOR_KEY, MEASURED_ON, fetch_btc_daily_close
 from ingest.fetchers.okx_derivatives import (
     FundingRateOk,
@@ -270,6 +270,8 @@ def _fetch_asset_active_addresses(
     asset: str,
     rate_limiter: coinmetrics.CoinMetricsRateLimiter | None = None,
 ) -> Result:
+    if asset == "SOL":
+        return solana_rpc.fetch_sol_active_addresses()
     return coinmetrics.fetch_active_addresses(asset, rate_limiter=rate_limiter)
 
 

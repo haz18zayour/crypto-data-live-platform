@@ -19,6 +19,7 @@ from ingest.schemas import (
     OkxLongShortRatioResponse,
     OkxOpenInterestResponse,
     OkxTakerVolumeResponse,
+    SolanaGetBlockResponse,
 )
 
 REQUEST_TIMEOUT_SECONDS = 10
@@ -29,6 +30,7 @@ RESPONSE_MODEL_TYPES: dict[str, type[BaseModel]] = {
     "okx_long_short_ratio": OkxLongShortRatioResponse,
     "okx_taker_volume": OkxTakerVolumeResponse,
     "coinmetrics_asset_metrics": CoinMetricsAssetMetricsResponse,
+    "solana_get_block": SolanaGetBlockResponse,
 }
 RESPONSE_MODELS: dict[str, type[BaseModel]] = {
     definition.key: RESPONSE_MODEL_TYPES[definition.response_model]

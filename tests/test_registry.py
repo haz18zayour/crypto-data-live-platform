@@ -94,7 +94,7 @@ def test_definable_for_requires_a_nonempty_asset_list(
 def test_shipped_registry_definitions_cover_four_assets_at_scale() -> None:
     registry = load_registry()
 
-    assert len(registry.root) == 67
+    assert len(registry.root) == 68
     assert {asset for entry in registry.root for asset in entry.definable_for} == {
         "BTC",
         "ETH",
@@ -177,14 +177,25 @@ def test_active_addresses_is_registered_for_btc_eth_bnb_without_talib() -> None:
         "BTC",
         "ETH",
         "BNB",
+        "SOL",
     }
-    assert len(entries) == 3
-    assert all(entry.vendor == "coinmetrics" for entry in entries)
+    assert len(entries) == 4
+    coinmetrics_entries = tuple(
+        entry for entry in entries if entry.definable_for[0] != "SOL"
+    )
+    sol_entry = next(entry for entry in entries if entry.definable_for[0] == "SOL")
+    assert all(entry.vendor == "coinmetrics" for entry in coinmetrics_entries)
+    assert sol_entry.vendor == "helius"
     assert all(entry.talib_function is None for entry in entries)
     assert all(entry.parameters == {} for entry in entries)
-    assert all(entry.response_model == "coinmetrics_asset_metrics" for entry in entries)
-    assert all(entry.source_field == "data[].AdrActCnt" for entry in entries)
-    assert all("metrics=AdrActCnt" in entry.endpoint for entry in entries)
+    assert all(
+        entry.response_model == "coinmetrics_asset_metrics"
+        for entry in coinmetrics_entries
+    )
+    assert sol_entry.response_model == "solana_get_block"
+    assert all(entry.source_field == "data[].AdrActCnt" for entry in coinmetrics_entries)
+    assert "not a 24-hour count" in sol_entry.source_field
+    assert all("metrics=AdrActCnt" in entry.endpoint for entry in coinmetrics_entries)
 
 
 def test_active_addresses_entries_declare_uncorroborated_coinmetrics_source() -> None:
@@ -194,10 +205,14 @@ def test_active_addresses_entries_declare_uncorroborated_coinmetrics_source() ->
         if entry.key.endswith("_active_addresses")
     )
 
-    assert len(entries) == 3
+    assert len(entries) == 4
     for entry in entries:
         assert entry.uncorroborated is not None
         assert entry.corroboration is None
+    for entry in entries:
+        if entry.definable_for[0] == "SOL":
+            assert "one-hour method" in entry.uncorroborated.note
+            continue
         assert entry.uncorroborated.note == (
             "Coin Metrics is the only researched source for AdrActCnt in this "
             "PRD, so this active-addresses value has no independent corroborating "
