@@ -1,0 +1,22 @@
+{
+  "gate": "G5_THIRD_FAILURE",
+  "question": "US-605 has failed 3 times — is the story wrong?",
+  "feature": "PRD-006-derivatives",
+  "story": "US-605",
+  "options": [
+    "split",
+    "rewrite-criteria",
+    "skip",
+    "retry-anyway"
+  ],
+  "context": "Criteria judged not met:\n  - US-605-C1: verifier produced no parseable verdict\n  - US-605-C2: verifier produced no parseable verdict\n  - US-605-C3: verifier produced no parseable verdict\n  - US-605-C4: verifier produced no parseable verdict\n  - US-605-C5: verifier produced no parseable verdict\n  - US-605-C6: verifier produced no parseable verdict\n  - US-605-C7: verifier produced no parseable verdict\n  - US-605-C8: verifier produced no parseable verdict\n  - US-605-C9: verifier produced no parseable verdict",
+  "defaultOnTimeout": "block",
+  "id": "G5_THIRD_FAILURE-32db658e",
+  "openedAt": "2026-09-15T13:45:14.328Z",
+  "answer": {
+    "choice": "skip",
+    "reason": "Codex quota exhaustion, verified directly.",
+    "at": "2026-09-15T13:51:49.463Z",
+    "by": "human"
+  }
+}
