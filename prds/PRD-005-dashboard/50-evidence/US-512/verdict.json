@@ -1,5 +1,5 @@
 {
-  "storyId": "US-511",
+  "storyId": "US-512",
   "passes": false,
   "verifier": {
     "agent": "claude",
@@ -8,61 +8,59 @@
   "implementer": "claude",
   "results": [
     {
-      "criterionId": "US-511-C1",
+      "criterionId": "US-512-C1",
       "met": false,
       "note": "not judged — a cheaper layer already failed"
     },
     {
-      "criterionId": "US-511-C2",
+      "criterionId": "US-512-C2",
       "met": false,
       "note": "not judged — a cheaper layer already failed"
     },
     {
-      "criterionId": "US-511-C3",
+      "criterionId": "US-512-C3",
       "met": false,
       "note": "not judged — a cheaper layer already failed"
     },
     {
-      "criterionId": "US-511-C4",
+      "criterionId": "US-512-C4",
       "met": false,
       "note": "not judged — a cheaper layer already failed"
     },
     {
-      "criterionId": "US-511-C5",
+      "criterionId": "US-512-C5",
       "met": false,
       "note": "not judged — a cheaper layer already failed"
     },
     {
-      "criterionId": "US-511-C6",
+      "criterionId": "US-512-C6",
       "met": false,
       "note": "not judged — a cheaper layer already failed"
     },
     {
-      "criterionId": "US-511-C7",
+      "criterionId": "US-512-C7",
       "met": false,
       "note": "not judged — a cheaper layer already failed"
     },
     {
-      "criterionId": "US-511-C8",
+      "criterionId": "US-512-C8",
       "met": false,
       "note": "not judged — a cheaper layer already failed"
     },
     {
-      "criterionId": "US-511-C9",
+      "criterionId": "US-512-C9",
       "met": false,
       "note": "not judged — a cheaper layer already failed"
     },
     {
-      "criterionId": "US-511-C10",
+      "criterionId": "US-512-C10",
       "met": false,
       "note": "not judged — a cheaper layer already failed"
     }
   ],
   "tripwires": [
-    "criterion US-511-C1 requires a screenshot at prds/PRD-005-dashboard/50-evidence/US-511/board-live-light.png — it does not exist",
-    "criterion US-511-C2 requires a screenshot at prds/PRD-005-dashboard/50-evidence/US-511/board-live-dark.png — it does not exist",
-    "criterion US-511-C3 requires a screenshot at prds/PRD-005-dashboard/50-evidence/US-511/board-mixed-light.png — it does not exist"
+    "only 1 added line(s) for 10 acceptance criteria"
   ],
-  "note": "gates failed: typecheck, test, US-511-C4, US-511-C5 | tripwires: criterion US-511-C1 requires a screenshot at prds/PRD-005-dashboard/50-evidence/US-511/board-live-light.png — it does not exist; criterion US-511-C2 requires a screenshot at prds/PRD-005-dashboard/50-evidence/US-511/board-live-dark.png — it does not exist; criterion US-511-C3 requires a screenshot at prds/PRD-005-dashboard/50-evidence/US-511/board-mixed-light.png — it does not exist",
-  "at": "2026-09-15T05:41:12.369Z"
+  "note": "tripwires: only 1 added line(s) for 10 acceptance criteria",
+  "at": "2026-09-15T07:03:17.405Z"
 }
