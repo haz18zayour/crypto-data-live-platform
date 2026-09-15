@@ -1,0 +1,113 @@
+{
+  "storyId": "US-601",
+  "passes": true,
+  "verifier": {
+    "agent": "claude",
+    "sandbox": "restricted:read-only"
+  },
+  "implementer": "codex",
+  "results": [
+    {
+      "criterionId": "US-601-C1",
+      "met": true,
+      "evidence": {
+        "file": "tests/test_okx_derivatives_fetcher.py",
+        "line": 37,
+        "testName": "test_fetcher_uses_history_endpoint_and_settled_realized_rate",
+        "exitCode": 0
+      },
+      "note": "Test asserts every requested URL contains 'funding-rate-history' and none match 'public/funding-rate?'; module (ingest/fetchers/okx_derivatives.py) defines only the -history endpoint constant, and value is taken from realizedRate not fundingRate."
+    },
+    {
+      "criterionId": "US-601-C2",
+      "met": true,
+      "evidence": {
+        "file": "tests/test_okx_derivatives_fetcher.py",
+        "line": 56,
+        "testName": "test_interval_is_derived_from_two_newest_funding_time_values",
+        "exitCode": 0
+      },
+      "note": "Test asserts '28800' absent from getsource() of the fetch function; grep of ingest/fetchers/okx_derivatives.py confirms no hardcoded 8h/28800 literal anywhere in the file. interval_seconds is computed as timestamps[0]-timestamps[1] at runtime."
+    },
+    {
+      "criterionId": "US-601-C3",
+      "met": true,
+      "evidence": {
+        "file": "tests/test_okx_derivatives_fetcher.py",
+        "line": 71,
+        "testName": "test_source_field_records_runtime_interval_derivation",
+        "exitCode": 0
+      },
+      "note": "source_field embeds the per-call derived interval_seconds and 'fundingTime' provenance (okx_derivatives.py _interval_source_field), and the test shows this value differs across datasets (10800 vs 3600), proving it isn't a static description."
+    },
+    {
+      "criterionId": "US-601-C4",
+      "met": true,
+      "evidence": {
+        "file": "tests/test_okx_derivatives_fetcher.py",
+        "line": 84,
+        "testName": "test_fewer_than_two_settled_entries_is_fetch_failed_error",
+        "exitCode": 0
+      },
+      "note": "Fetcher returns Error(FETCH_FAILED) when len(rows) < 2 (okx_derivatives.py, 'fewer than two settled funding-rate entries'); test confirms no .value is accessible on the result."
+    },
+    {
+      "criterionId": "US-601-C5",
+      "met": true,
+      "evidence": {
+        "file": "tests/test_okx_derivatives_fetcher.py",
+        "line": 95,
+        "testName": "test_http_error_returns_error_with_status_code_and_no_value",
+        "exitCode": 0
+      },
+      "note": "httpx.HTTPStatusError/RequestError are caught in the fetcher and turned into Error(FETCH_FAILED, detail with status code); malformed-response test also shows a pydantic ValidationError (subclass of ValueError) is caught by the except (TypeError, ValueError, OverflowError) clause, mirroring okx.py's pattern."
+    },
+    {
+      "criterionId": "US-601-C6",
+      "met": true,
+      "evidence": {
+        "file": "ingest/schemas.py",
+        "line": 52,
+        "testName": "test_response_model_rejects_added_renamed_or_retyped_fields",
+        "exitCode": 0
+      },
+      "note": "OkxFundingRateHistoryResponse has model_config = ConfigDict(extra=\"forbid\", frozen=True); test directly validates rejection of an extra field, a renamed field, and a retyped field against the model."
+    },
+    {
+      "criterionId": "US-601-C7",
+      "met": true,
+      "evidence": {
+        "file": "tests/test_okx_derivatives_fetcher.py",
+        "line": 180,
+        "testName": "test_source_timestamp_is_newest_funding_time_and_must_be_past",
+        "exitCode": 0
+      },
+      "note": "Confirms source_timestamp equals the newest fundingTime and is strictly < now; a future/present timestamp becomes Error(FETCH_FAILED) with 'future' in the detail, matching the F11 pattern already used in okx.py:200-204."
+    },
+    {
+      "criterionId": "US-601-C8",
+      "met": true,
+      "evidence": {
+        "file": "tests/test_okx_derivatives_fetcher.py",
+        "line": 225,
+        "testName": "test_live_okx_request_returns_btc_settled_funding_history_with_derived_interval",
+        "exitCode": null
+      },
+      "note": "Marked @pytest.mark.integration, calls fetch_btc_funding_rate_history() with no mock client (hits the real endpoint) and independently re-derives the interval from a second live call to compare. Deselected from the default 'test' gate by pyproject.toml's `addopts = [\"-m\", \"not integration\"]` (a pre-existing, documented project convention, not specific to this story), so no gate exit code in this run proves it executed; evidence is the test's existence and correct wiring to the public entry point, matching the story's own instruction to mark it exactly this way."
+    },
+    {
+      "criterionId": "US-601-C9",
+      "met": true,
+      "evidence": {
+        "file": "ingest/fetchers/okx_derivatives.py",
+        "line": 1,
+        "testName": null,
+        "exitCode": 0
+      },
+      "note": "Deterministic gate US-601-C9 (`uv run mypy ingest --strict`) exited 0, covering the new module directly."
+    }
+  ],
+  "tripwires": [],
+  "note": "All 9 criteria are backed by concrete, named tests or direct code citations. The one caveat is C8: its integration test is well-formed and correctly wired to the public entry point, but is excluded from the default pytest run by an existing project-wide addopts convention, so no gate output in this session directly proves it passed — that's a pre-existing project pattern (documented in pyproject.toml and mirrored by the story's own notes), not evidence of faked work.",
+  "at": "2026-09-15T08:52:37.990Z"
+}
