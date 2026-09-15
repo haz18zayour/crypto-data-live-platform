@@ -1,0 +1,12 @@
+.uf/events.ndjson                            |   3 +
+ SESSION.md                                   |  17 ++-
+ ingest/canary.py                             |   3 +-
+ ingest/pipeline.py                           |  93 +++++++++++++---
+ ingest/registry.yaml                         |  56 ++++++++++
+ tests/fixtures/okx_funding_rate_history.json |  26 +++++
+ tests/test_assets.py                         |  58 ++++++++--
+ tests/test_coverage.py                       |  10 +-
+ tests/test_persist_board.py                  | 152 +++++++++++++++++++++++----
+ tests/test_registry.py                       |  31 +++++-
+ tests/test_registry_not_definable.py         |   9 +-
+ 11 files changed, 397 insertions(+), 61 deletions(-)
