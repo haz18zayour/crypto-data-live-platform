@@ -1,54 +1,102 @@
 {
   "storyId": "US-702",
-  "passes": false,
+  "passes": true,
   "verifier": {
     "agent": "claude",
-    "sandbox": "not-run"
+    "sandbox": "restricted:read-only"
   },
   "implementer": "codex",
   "results": [
     {
       "criterionId": "US-702-C1",
-      "met": false,
-      "note": "not judged — a cheaper layer already failed"
+      "met": true,
+      "evidence": {
+        "file": "tests/test_registry.py",
+        "line": 121,
+        "testName": "test_mvrv_is_registered_for_btc_eth_bnb_without_talib",
+        "exitCode": 0
+      },
+      "note": "ingest/registry.yaml:56-72 defines btc_mvrv with the same shape as btc_daily_close (registry.yaml:6-24) and btc_funding_rate (registry.yaml:42-55): no talib_function key, empty parameters, a golden fixture, response_model, required_bars, and an uncorroborated note. Test asserts talib_function is None and parameters == {} for all 3 mvrv entries."
     },
     {
       "criterionId": "US-702-C2",
-      "met": false,
-      "note": "not judged — a cheaper layer already failed"
+      "met": true,
+      "evidence": {
+        "file": "tests/test_registry.py",
+        "line": 136,
+        "testName": "test_mvrv_entries_declare_sol_not_definable_with_researched_reason",
+        "exitCode": 0
+      },
+      "note": "registry.yaml:61-63 gives a specific, non-generic reason citing the 5 vendors researched and the account-based/no-UTXO methodology gap; the test asserts these exact substrings are present, not a stock placeholder string."
     },
     {
       "criterionId": "US-702-C3",
-      "met": false,
-      "note": "not judged — a cheaper layer already failed"
+      "met": true,
+      "evidence": {
+        "file": "tests/test_registry.py",
+        "line": 150,
+        "testName": "test_mvrv_entries_declare_uncorroborated_coinmetrics_source",
+        "exitCode": 0
+      },
+      "note": "registry.yaml:71-72 sets uncorroborated.note stating Coin Metrics is the only researched source, and entry.corroboration is asserted None (no fabricated second venue)."
     },
     {
       "criterionId": "US-702-C4",
-      "met": false,
-      "note": "not judged — a cheaper layer already failed"
+      "met": true,
+      "evidence": {
+        "file": "ingest/registry.yaml",
+        "line": 64,
+        "testName": "test_every_registry_entry_has_a_golden_required_bars_and_response_model",
+        "exitCode": 0
+      },
+      "note": "btc_mvrv/eth_mvrv/bnb_mvrv each declare golden: fixtures/coinmetrics_asset_metrics.json, response_model: coinmetrics_asset_metrics, required_bars: 1, parameters: (empty); ingest/canary.py wires coinmetrics_asset_metrics to CoinMetricsAssetMetricsResponse and tests/test_coverage.py's coverage test (now asserting 64 entries) passed under the green test gate."
     },
     {
       "criterionId": "US-702-C5",
-      "met": false,
-      "note": "not judged — a cheaper layer already failed"
+      "met": true,
+      "evidence": {
+        "file": "tests/test_persist_board.py",
+        "line": 365,
+        "testName": "test_full_run_persists_one_mvrv_datapoint_per_btc_eth_bnb",
+        "exitCode": 0
+      },
+      "note": "Drives run_pipeline (the real pipeline entry point) with run_all_assets wired to a synthetic MVRV fetcher and asserts btc_mvrv/eth_mvrv/bnb_mvrv are persisted with OK status, values, coinmetrics vendor, and source_timestamp — an end-to-end path through the pipeline specific to this metric."
     },
     {
       "criterionId": "US-702-C6",
-      "met": false,
-      "note": "not judged — a cheaper layer already failed"
+      "met": true,
+      "evidence": {
+        "file": "tests/test_persist_board.py",
+        "line": 426,
+        "testName": "test_one_mvrv_fetch_failure_persists_error_and_other_assets_continue",
+        "exitCode": 0
+      },
+      "note": "Forces ETH's MVRV fetch to fail and asserts eth_mvrv persists as Error(FETCH_FAILED) while btc_mvrv and bnb_mvrv still persist as Ok — one asset's failure does not take down the run."
     },
     {
       "criterionId": "US-702-C7",
-      "met": false,
-      "note": "not judged — a cheaper layer already failed"
+      "met": true,
+      "evidence": {
+        "file": "tests/test_persist_board.py",
+        "line": 858,
+        "testName": "test_live_full_board_run_persists_registry_row_count",
+        "exitCode": 0
+      },
+      "note": "@pytest.mark.integration test using a real psycopg.connect fixture (test_persist_board.py:63) and run_all_assets() with no fetcher overrides (so coinmetrics.fetch_mvrv makes real httpx.get calls), asserting exactly 3 rows whose indicator_key ends in '_mvrv'. Ran under the reported green US-702-C8 gate, which clears the default '-m not integration' filter via -o addopts=."
     },
     {
       "criterionId": "US-702-C8",
-      "met": false,
-      "note": "not judged — a cheaper layer already failed"
+      "met": true,
+      "evidence": {
+        "file": null,
+        "line": null,
+        "testName": null,
+        "exitCode": 0
+      },
+      "note": "Reported gate 'US-702-C8: uv run pytest -q --no-header -o addopts=' exited 0 for the current HEAD, matching the criterion's literal command and covering the full suite including integration tests."
     }
   ],
   "tripwires": [],
-  "note": "gates failed: typecheck, test, US-702-C8",
-  "at": "2026-09-15T21:05:25.901Z"
+  "note": "The diff's embedded prds/PRD-007-onchain/50-evidence/US-702/gates.json and verdict.json record attempt 1's failure (63eb538, rejected 0/8); the current HEAD (e9de273, attempt 2) is the state judged here and the three reported deterministic gates (typecheck, test, US-702-C8) all exit 0 against it, consistent with the registry, pipeline wiring, and new tests inspected directly in the working tree. All 8 criteria are met with named tests or registry lines; no assertion-free tests or comment-only fixes were found.",
+  "at": "2026-09-15T21:23:33.964Z"
 }
