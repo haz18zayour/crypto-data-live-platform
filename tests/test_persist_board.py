@@ -14,11 +14,16 @@ import pytest
 from psycopg import sql
 
 from ingest import heartbeat, pipeline
-from ingest.fetchers.okx_derivatives import FundingRateOk, OpenInterestOk
+from ingest.fetchers.okx_derivatives import (
+    FundingRateOk,
+    LongShortRatioOk,
+    OpenInterestOk,
+)
 from ingest.pipeline import (
     FetchedBars,
     FullAssetRun,
     FundingRateResult,
+    LongShortRatioResult,
     OpenInterestResult,
     Venue,
     run_all_assets,
@@ -142,11 +147,20 @@ def _fetch_open_interest(asset: str) -> OpenInterestResult:
     )
 
 
+def _fetch_long_short_ratio(asset: str) -> LongShortRatioResult:
+    offset = {"BTC": 1.0, "ETH": 2.0, "SOL": 3.0, "BNB": 4.0}[asset]
+    return LongShortRatioOk(
+        value=1.0 + offset / 10,
+        source_timestamp=SOURCE_TIMESTAMP,
+    )
+
+
 def _full_board() -> pipeline.FullAssetRun:
     return run_all_assets(
         fetch_bars=_fetch_bars,
         fetch_funding_rate=_fetch_funding_rate,
         fetch_open_interest=_fetch_open_interest,
+        fetch_long_short_ratio=_fetch_long_short_ratio,
     )
 
 
@@ -157,6 +171,7 @@ def _board_definitions() -> tuple[IndicatorDefinition, ...]:
         if definition.talib_function is not None
         or definition.response_model == "okx_funding_rate_history"
         or definition.response_model == "okx_open_interest"
+        or definition.response_model == "okx_long_short_ratio"
     )
 
 
@@ -188,7 +203,7 @@ def test_full_run_writes_one_datapoint_row_per_computed_indicator(
     row_ids = run_pipeline(object(), fetcher=_full_board)  # type: ignore[arg-type]
 
     definitions = _board_definitions()
-    assert len(definitions) == 52
+    assert len(definitions) == 56
     assert len(row_ids) == len(definitions)
     assert len(persisted) == len(definitions)
     assert {row["indicator_key"] for row in persisted} == {
@@ -216,7 +231,10 @@ def test_each_persisted_board_row_carries_schema_provenance(
                 "source_field": definition.source_field,
                 "source_timestamp": (
                     result.source_timestamp
-                    if isinstance(result, (Ok, FundingRateOk, OpenInterestOk))
+                    if isinstance(
+                        result,
+                        (Ok, FundingRateOk, OpenInterestOk, LongShortRatioOk),
+                    )
                     else None
                 ),
                 "measured_on": measured_on,
@@ -272,7 +290,7 @@ def test_non_ok_computed_result_is_persisted_with_status_and_reason_and_peers_co
         reason=Reason.FETCH_FAILED,
         detail="btc_rsi computation failed: forced computation failure",
     )
-    assert sum(isinstance(result, Ok) for result in persisted.values()) == 51
+    assert sum(isinstance(result, Ok) for result in persisted.values()) == 55
 
 
 def test_full_run_persists_one_funding_rate_datapoint_per_asset_with_runtime_source_field(
@@ -368,6 +386,54 @@ def test_full_run_persists_one_open_interest_datapoint_per_asset(
     )
 
 
+def test_full_run_persists_one_long_short_ratio_datapoint_per_asset(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    persisted: dict[str, dict[str, object]] = {}
+
+    def record_datapoint(
+        connection: object,
+        *,
+        definition: IndicatorDefinition,
+        asset: str,
+        measured_on: str,
+        result: Result,
+    ) -> int:
+        if definition.key.endswith("_long_short_ratio"):
+            persisted[definition.key] = {
+                "asset": asset,
+                "status": result.status,
+                "value": result.value if isinstance(result, Ok) else None,
+                "source_timestamp": (
+                    result.source_timestamp if isinstance(result, Ok) else None
+                ),
+            }
+        return len(persisted)
+
+    monkeypatch.setattr(pipeline, "persist_datapoint", record_datapoint)
+
+    run_pipeline(object(), fetcher=_full_board)  # type: ignore[arg-type]
+
+    assert set(persisted) == {
+        "btc_long_short_ratio",
+        "eth_long_short_ratio",
+        "sol_long_short_ratio",
+        "bnb_long_short_ratio",
+    }
+    assert {row["asset"] for row in persisted.values()} == {
+        "BTC",
+        "ETH",
+        "SOL",
+        "BNB",
+    }
+    assert all(row["status"] == "OK" for row in persisted.values())
+    assert all(row["value"] is not None for row in persisted.values())
+    assert all(
+        row["source_timestamp"] == SOURCE_TIMESTAMP
+        for row in persisted.values()
+    )
+
+
 def test_one_funding_history_failure_persists_error_and_other_assets_continue(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -394,6 +460,8 @@ def test_one_funding_history_failure_persists_error_and_other_assets_continue(
     run = run_all_assets(
         fetch_bars=_fetch_bars,
         fetch_funding_rate=fetch_funding_rate,
+        fetch_open_interest=_fetch_open_interest,
+        fetch_long_short_ratio=_fetch_long_short_ratio,
     )
 
     run_pipeline(object(), fetcher=lambda: run)  # type: ignore[arg-type]
@@ -424,7 +492,7 @@ def test_board_persistence_is_idempotent_per_registered_identity(
     ) -> int:
         source_timestamp = (
             result.source_timestamp
-            if isinstance(result, (Ok, FundingRateOk, OpenInterestOk))
+            if isinstance(result, (Ok, FundingRateOk, OpenInterestOk, LongShortRatioOk))
             else None
         )
         identity = (
@@ -550,11 +618,11 @@ def test_live_full_board_run_persists_registry_row_count(
         (list(row_ids),),
     ).fetchall()
 
-    assert len(definitions) == 52
+    assert len(definitions) == 56
     assert all(item.status == "AVAILABLE" for item in run.history.values())
     assert all(item.fetched_bars == 250 for item in run.history.values())
     assert all(
-        isinstance(result, (Ok, FundingRateOk, OpenInterestOk))
+        isinstance(result, (Ok, FundingRateOk, OpenInterestOk, LongShortRatioOk))
         for result in run.indicators.values()
     )
     assert len(row_ids) == len(definitions)
@@ -562,6 +630,7 @@ def test_live_full_board_run_persists_registry_row_count(
     assert {row[0] for row in rows} == {definition.key for definition in definitions}
     assert sum(str(row[0]).endswith("_funding_rate") for row in rows) == 4
     assert sum(str(row[0]).endswith("_open_interest") for row in rows) == 4
+    assert sum(str(row[0]).endswith("_long_short_ratio") for row in rows) == 4
     assert all(row[1] == row[2] for row in rows)
     assert all(row[6] and row[7] and row[8] and row[9] for row in rows)
     assert all(row[3] is not None and row[4:6] == ("OK", None) for row in rows)

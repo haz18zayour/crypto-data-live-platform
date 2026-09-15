@@ -62,10 +62,10 @@ def test_asset_cannot_be_both_definable_and_not_definable() -> None:
         IndicatorDefinition.model_validate(data)
 
 
-def test_registry_coverage_still_passes_for_all_53_entries() -> None:
+def test_registry_coverage_still_passes_for_all_57_entries() -> None:
     registry = load_registry()
 
-    assert len(registry.root) == 53
+    assert len(registry.root) == 57
     assert_registry_coverage(
         registry,
         golden_keys={

@@ -8,12 +8,17 @@ import httpx
 import pytest
 
 from ingest import pipeline
-from ingest.fetchers.okx_derivatives import FundingRateOk, OpenInterestOk
+from ingest.fetchers.okx_derivatives import (
+    FundingRateOk,
+    LongShortRatioOk,
+    OpenInterestOk,
+)
 from ingest.pipeline import (
     FetchedBars,
     FundingRateResult,
-    OpenInterestResult,
     HistoryAvailability,
+    LongShortRatioResult,
+    OpenInterestResult,
     Venue,
     assess_history,
     load_history_availability,
@@ -66,6 +71,14 @@ def synthetic_open_interest(asset: str) -> OpenInterestResult:
     )
 
 
+def synthetic_long_short_ratio(asset: str) -> LongShortRatioResult:
+    offset = {"BTC": 1.0, "ETH": 2.0, "SOL": 3.0, "BNB": 4.0}[asset]
+    return LongShortRatioOk(
+        value=1.0 + offset / 10,
+        source_timestamp=SOURCE_TIMESTAMP,
+    )
+
+
 def test_registry_declares_measured_history_availability_per_asset_per_venue() -> (
     None
 ):
@@ -112,6 +125,7 @@ def test_asset_with_fewer_available_bars_than_required_is_declared_uncorroborate
         fetch_bars=fetch_bars,
         fetch_funding_rate=synthetic_funding_rate,
         fetch_open_interest=synthetic_open_interest,
+        fetch_long_short_ratio=synthetic_long_short_ratio,
     )
     assessment = run.history[("BNB", "coinbase")]
 
@@ -121,7 +135,7 @@ def test_asset_with_fewer_available_bars_than_required_is_declared_uncorroborate
     )
     assert ("coinbase", "BNB", 250) not in calls
     assert all(
-        isinstance(result, (Ok, FundingRateOk, OpenInterestOk))
+        isinstance(result, (Ok, FundingRateOk, OpenInterestOk, LongShortRatioOk))
         for key, result in run.indicators.items()
         if key.startswith("bnb_")
     )
@@ -164,6 +178,7 @@ def test_all_four_assets_produce_an_indicator_value_or_explicit_status() -> None
         fetch_bars=fetch_bars,
         fetch_funding_rate=synthetic_funding_rate,
         fetch_open_interest=synthetic_open_interest,
+        fetch_long_short_ratio=synthetic_long_short_ratio,
     )
     technical_definitions = tuple(
         definition
@@ -180,6 +195,11 @@ def test_all_four_assets_produce_an_indicator_value_or_explicit_status() -> None
         for definition in load_registry().root
         if definition.response_model == "okx_open_interest"
     )
+    long_short_definitions = tuple(
+        definition
+        for definition in load_registry().root
+        if definition.response_model == "okx_long_short_ratio"
+    )
 
     assert set(run.indicators) == {
         definition.key
@@ -187,6 +207,7 @@ def test_all_four_assets_produce_an_indicator_value_or_explicit_status() -> None
             *technical_definitions,
             *funding_definitions,
             *open_interest_definitions,
+            *long_short_definitions,
         )
     }
     assert Counter(
@@ -198,18 +219,21 @@ def test_all_four_assets_produce_an_indicator_value_or_explicit_status() -> None
     assert Counter(
         definition.definable_for[0] for definition in open_interest_definitions
     ) == Counter({asset: 1 for asset in ASSETS})
+    assert Counter(
+        definition.definable_for[0] for definition in long_short_definitions
+    ) == Counter({asset: 1 for asset in ASSETS})
     assert all(
         result.status in {"OK", "STALE", "UNAVAILABLE", "ERROR"}
         for result in run.indicators.values()
     )
     assert all(
-        isinstance(result, (Ok, FundingRateOk, OpenInterestOk))
+        isinstance(result, (Ok, FundingRateOk, OpenInterestOk, LongShortRatioOk))
         for result in run.indicators.values()
     )
     assert all(
         math.isfinite(result.value)
         for result in run.indicators.values()
-        if isinstance(result, (Ok, FundingRateOk, OpenInterestOk))
+        if isinstance(result, (Ok, FundingRateOk, OpenInterestOk, LongShortRatioOk))
     )
     assert set(calls) == {
         (venue, asset, 250) for asset in ASSETS for venue in VENUES
@@ -286,6 +310,7 @@ def test_full_run_routes_each_asset_to_its_actual_pair_at_both_venues(
     run = run_all_assets(
         fetch_funding_rate=synthetic_funding_rate,
         fetch_open_interest=synthetic_open_interest,
+        fetch_long_short_ratio=synthetic_long_short_ratio,
     )
 
     assert requested_pairs == {
@@ -294,7 +319,7 @@ def test_full_run_routes_each_asset_to_its_actual_pair_at_both_venues(
     }
     assert all(item.status == "AVAILABLE" for item in run.history.values())
     assert all(
-        isinstance(result, (Ok, FundingRateOk, OpenInterestOk))
+        isinstance(result, (Ok, FundingRateOk, OpenInterestOk, LongShortRatioOk))
         for result in run.indicators.values()
     )
 
@@ -310,11 +335,11 @@ def test_full_run_computes_indicators_for_btc_eth_sol_bnb_against_live_venues() 
     assert all(item.status == "AVAILABLE" for item in run.history.values())
     assert all(item.fetched_bars == 250 for item in run.history.values())
     assert all(
-        isinstance(result, (Ok, FundingRateOk, OpenInterestOk))
+        isinstance(result, (Ok, FundingRateOk, OpenInterestOk, LongShortRatioOk))
         for result in run.indicators.values()
     )
     assert all(
         math.isfinite(result.value)
         for result in run.indicators.values()
-        if isinstance(result, (Ok, FundingRateOk, OpenInterestOk))
+        if isinstance(result, (Ok, FundingRateOk, OpenInterestOk, LongShortRatioOk))
     )

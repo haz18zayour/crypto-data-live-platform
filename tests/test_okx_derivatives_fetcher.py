@@ -8,13 +8,20 @@ from pydantic import ValidationError
 from ingest.fetchers.okx_derivatives import (
     BTC_FUNDING_RATE_HISTORY_ENDPOINT,
     BTC_USDT_SWAP_INST_ID,
-    FundingRateOk,
+    OKX_LONG_SHORT_RATIO_ENDPOINT,
     OKX_OPEN_INTEREST_ENDPOINT,
+    FundingRateOk,
+    LongShortRatioOk,
     OpenInterestOk,
     fetch_btc_funding_rate_history,
+    fetch_long_short_ratio,
     fetch_open_interest,
 )
-from ingest.schemas import OkxFundingRateHistoryResponse, OkxOpenInterestResponse
+from ingest.schemas import (
+    OkxFundingRateHistoryResponse,
+    OkxLongShortRatioResponse,
+    OkxOpenInterestResponse,
+)
 from ingest.status import Error, Reason
 
 NOW = datetime(2026, 9, 15, 12, tzinfo=UTC)
@@ -57,6 +64,10 @@ def open_interest_row(
     }
 
 
+def long_short_ratio_row(timestamp: datetime, ratio: str = "1.38") -> list[str]:
+    return [milliseconds(timestamp), ratio]
+
+
 def client_returning(
     rows: list[dict[str, str]], status_code: int = 200
 ) -> httpx.Client:
@@ -72,6 +83,19 @@ def client_returning(
 
 def open_interest_client_returning(
     rows: list[dict[str, str]], status_code: int = 200
+) -> httpx.Client:
+    def handler(request: httpx.Request) -> httpx.Response:
+        return httpx.Response(
+            status_code,
+            json={"code": "0", "msg": "", "data": rows},
+            request=request,
+        )
+
+    return httpx.Client(transport=httpx.MockTransport(handler))
+
+
+def long_short_ratio_client_returning(
+    rows: list[list[str]], status_code: int = 200
 ) -> httpx.Client:
     def handler(request: httpx.Request) -> httpx.Response:
         return httpx.Response(
@@ -324,6 +348,84 @@ def test_open_interest_source_timestamp_is_response_ts_and_must_be_past() -> Non
         _ = future_result.value  # type: ignore[attr-defined]
 
 
+def test_long_short_ratio_requests_asset_currency_and_returns_newest_row() -> None:
+    requested_urls: list[str] = []
+    older = NOW - timedelta(minutes=10)
+    newest = NOW - timedelta(minutes=5)
+    rows = [
+        long_short_ratio_row(older, "1.11"),
+        long_short_ratio_row(newest, "1.42"),
+    ]
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        requested_urls.append(str(request.url))
+        return httpx.Response(
+            200,
+            json={"code": "0", "msg": "", "data": rows},
+            request=request,
+        )
+
+    with httpx.Client(transport=httpx.MockTransport(handler)) as client:
+        result = fetch_long_short_ratio("SOL", client=client, now=NOW)
+
+    assert isinstance(result, LongShortRatioOk)
+    assert result.value == 1.42
+    assert result.source_timestamp == newest
+    assert requested_urls == [
+        f"{OKX_LONG_SHORT_RATIO_ENDPOINT}?ccy=SOL&period=5m"
+    ]
+
+
+def test_long_short_ratio_response_model_rejects_malformed_payload() -> None:
+    payload = {
+        "code": "0",
+        "msg": "",
+        "data": [long_short_ratio_row(NOW - timedelta(minutes=5))],
+        "unexpected": "vendor reshape",
+    }
+
+    with pytest.raises(ValidationError, match="extra_forbidden"):
+        OkxLongShortRatioResponse.model_validate(payload)
+
+    reshaped = [milliseconds(NOW - timedelta(minutes=5)), "1.38", "extra"]
+    with pytest.raises(ValidationError):
+        OkxLongShortRatioResponse.model_validate(
+            {"code": "0", "msg": "", "data": [reshaped]}
+        )
+
+
+def test_long_short_ratio_http_error_returns_error_with_status_code_and_no_value() -> (
+    None
+):
+    with long_short_ratio_client_returning([], status_code=429) as client:
+        result = fetch_long_short_ratio("BTC", client=client, now=NOW)
+
+    assert isinstance(result, Error)
+    assert result.reason is Reason.FETCH_FAILED
+    assert "429" in result.detail
+    with pytest.raises(AttributeError):
+        _ = result.value  # type: ignore[attr-defined]
+
+
+def test_long_short_ratio_source_timestamp_must_be_strictly_past() -> None:
+    with long_short_ratio_client_returning(
+        [long_short_ratio_row(NOW - timedelta(minutes=5), "1.23")]
+    ) as client:
+        result = fetch_long_short_ratio("ETH", client=client, now=NOW)
+
+    assert isinstance(result, LongShortRatioOk)
+    assert result.source_timestamp < NOW
+
+    with long_short_ratio_client_returning([long_short_ratio_row(NOW)]) as client:
+        future_result = fetch_long_short_ratio("ETH", client=client, now=NOW)
+
+    assert isinstance(future_result, Error)
+    assert future_result.reason is Reason.FETCH_FAILED
+    assert "future" in future_result.detail.lower()
+    with pytest.raises(AttributeError):
+        _ = future_result.value  # type: ignore[attr-defined]
+
+
 @pytest.mark.integration
 def test_live_okx_request_returns_btc_settled_funding_history_with_derived_interval() -> (
     None
@@ -359,5 +461,17 @@ def test_live_okx_request_returns_open_interest_for_usdt_margined_swap(
     result = fetch_open_interest(asset)
 
     assert isinstance(result, OpenInterestOk), result
+    assert result.source_timestamp < datetime.now(UTC)
+    assert result.value > 0
+
+
+@pytest.mark.integration
+@pytest.mark.parametrize("asset", ("BTC", "ETH", "SOL", "BNB"))
+def test_live_okx_request_returns_long_short_account_ratio_for_asset(
+    asset: str,
+) -> None:
+    result = fetch_long_short_ratio(asset)
+
+    assert isinstance(result, LongShortRatioOk), result
     assert result.source_timestamp < datetime.now(UTC)
     assert result.value > 0
