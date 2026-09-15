@@ -1,10 +1,10 @@
 # The verifier of record when `.uf/config.json` sets verification.requireCi = true.
 # An agent can be argued with. A CI conclusion cannot.
 #
-# This repo is Python (ingestion) + Node (web), and the web half does not exist until
-# US-009. Every step below is therefore guarded on the manifest actually being present —
-# `npm ci` in a repo with no package.json is ENOENT, not a skip, and `--if-present` does
-# not help because it is npm itself that cannot start.
+# This repo is Python (ingestion) + Node (web). Every step below is guarded on its manifest
+# actually being present — `npm ci` with no package.json is ENOENT, not a skip. The Node
+# manifest lives in `web/`, not at the root: until US-501 the guard looked at the root and
+# every Node step skipped green. web/src/gates.test.ts now asserts the guard on the parsed YAML.
 name: uf-verify
 
 on:
@@ -36,9 +36,9 @@ jobs:
       - name: Detect what this repo currently contains
         id: detect
         run: |
-          test -f package.json   && echo "node=true"   >> "$GITHUB_OUTPUT" || echo "node=false"   >> "$GITHUB_OUTPUT"
-          test -f pyproject.toml && echo "python=true" >> "$GITHUB_OUTPUT" || echo "python=false" >> "$GITHUB_OUTPUT"
-          test -d tests          && echo "tests=true"  >> "$GITHUB_OUTPUT" || echo "tests=false"  >> "$GITHUB_OUTPUT"
+          test -f web/package.json && echo "node=true"   >> "$GITHUB_OUTPUT" || echo "node=false"   >> "$GITHUB_OUTPUT"
+          test -f pyproject.toml   && echo "python=true" >> "$GITHUB_OUTPUT" || echo "python=false" >> "$GITHUB_OUTPUT"
+          test -d tests            && echo "tests=true"  >> "$GITHUB_OUTPUT" || echo "tests=false"  >> "$GITHUB_OUTPUT"
 
       - uses: actions/setup-node@v4
         if: steps.detect.outputs.node == 'true'
@@ -46,16 +46,23 @@ jobs:
           node-version: 22
       - name: Install node deps
         if: steps.detect.outputs.node == 'true'
+        working-directory: web
         run: npm ci || npm install
       - name: Node typecheck
         if: steps.detect.outputs.node == 'true'
-        run: npm run typecheck --if-present
+        working-directory: web
+        run: npm run typecheck
       - name: Node lint
         if: steps.detect.outputs.node == 'true'
+        working-directory: web
         run: npm run lint --if-present
       - name: Node test
         if: steps.detect.outputs.node == 'true'
-        run: npm test --if-present
+        working-directory: web
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+        run: npm test
 
       - uses: actions/setup-python@v5
         if: steps.detect.outputs.python == 'true' || steps.detect.outputs.tests == 'true'

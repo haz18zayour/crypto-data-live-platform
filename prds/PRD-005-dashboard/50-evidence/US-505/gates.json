@@ -1,0 +1,26 @@
+[
+  {
+    "name": "typecheck",
+    "run": "node -e \"const f=require('fs'),c=require('child_process');let r=0;const run=(cmd)=>{try{c.execSync(cmd,{stdio:'inherit'})}catch(e){r=1}};if(f.existsSync('web/package.json'))run('npm --prefix web run typecheck');if(f.existsSync('pyproject.toml'))run('uv run mypy ingest --strict');process.exit(r)\"",
+    "exitCode": 0,
+    "output": "\n> crypto-data-live-web@0.0.0 typecheck\n> tsc -b --pretty false\n\nSuccess: no issues found in 15 source files\r\n"
+  },
+  {
+    "name": "test",
+    "run": "node -e \"const f=require('fs'),c=require('child_process');let r=0;const run=(cmd)=>{try{c.execSync(cmd,{stdio:'inherit'})}catch(e){r=1}};if(f.existsSync('web/package.json'))run('npm --prefix web test');if(f.existsSync('tests'))run('uv run pytest -q');process.exit(r)\"",
+    "exitCode": 0,
+    "output": "\n> crypto-data-live-web@0.0.0 test\n> vitest run --configLoader runner\n\n\n RUN  v4.1.9 C:/Users/zayou/OneDrive/Desktop/Projects/crypto-data-live-platform/web\n\n\n Test Files  7 passed (7)\n      Tests  28 passed (28)\n   Start at  09:38:39\n   Duration  7.21s (transform 2.62s, setup 5.68s, import 4.74s, tests 6.59s, environment 20.05s)\n\n........................................................................ [ 37%]\r\n........................................................................ [ 75%]\r\n................................................                         [100%]\r\n192 passed, 10 deselected in 199.50s (0:03:19)\r\n"
+  },
+  {
+    "name": "US-505-C6",
+    "run": "node scripts/no-fixture-in-bundle.mjs",
+    "exitCode": 0,
+    "output": "\n> crypto-data-live-web@0.0.0 build\n> tsc -b && vite build --configLoader runner\n\n\u001b[36mvite v7.3.6 \u001b[32mbuilding client environment for production...\u001b[36m\u001b[39m\ntransforming...\n\u001b[32m✓\u001b[39m 151 modules transformed.\nrendering chunks...\ncomputing gzip size...\n\u001b[2mdist/\u001b[22m\u001b[32mindex.html                 \u001b[39m\u001b[1m\u001b[2m  0.45 kB\u001b[22m\u001b[1m\u001b[22m\u001b[2m │ gzip:   0.29 kB\u001b[22m\n\u001b[2mdist/\u001b[22m\u001b[35massets/index-v2ki28-z.css  \u001b[39m\u001b[1m\u001b[2m  8.84 kB\u001b[22m\u001b[1m\u001b[22m\u001b[2m │ gzip:   2.65 kB\u001b[22m\n\u001b[2mdist/\u001b[22m\u001b[36massets/index-3m9GnOs4.js   \u001b[39m\u001b[1m\u001b[2m359.31 kB\u001b[22m\u001b[1m\u001b[22m\u001b[2m │ gzip: 104.64 kB\u001b[22m\n\u001b[32m✓ built in 5.43s\u001b[39m\nProduction bundle contains no mixed-board fixture sentinel\n"
+  },
+  {
+    "name": "US-505-C7",
+    "run": "npm --prefix web test",
+    "exitCode": 0,
+    "output": "\n> crypto-data-live-web@0.0.0 test\n> vitest run --configLoader runner\n\n\n RUN  v4.1.9 C:/Users/zayou/OneDrive/Desktop/Projects/crypto-data-live-platform/web\n\n\n Test Files  7 passed (7)\n      Tests  28 passed (28)\n   Start at  09:42:31\n   Duration  7.39s (transform 2.84s, setup 6.53s, import 5.78s, tests 6.17s, environment 19.44s)\n\n"
+  }
+]

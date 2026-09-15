@@ -1,0 +1,6 @@
+.uf/events.ndjson                   |   3 +
+ SESSION.md                          |  10 ++-
+ scripts/no-fixture-in-bundle.mjs    |  44 ++++++++++++
+ web/src/fixtures/mixedBoard.test.ts | 133 ++++++++++++++++++++++++++++++++++++
+ web/src/fixtures/mixedBoard.ts      |  56 +++++++++++++++
+ 5 files changed, 243 insertions(+), 3 deletions(-)

@@ -17,11 +17,11 @@
     "gates": [
       {
         "name": "typecheck",
-        "run": "node -e \"const f=require('fs'),c=require('child_process');let r=0;const run=(cmd)=>{try{c.execSync(cmd,{stdio:'inherit'})}catch(e){r=1}};if(f.existsSync('package.json'))run('npm run typecheck --if-present');if(f.existsSync('pyproject.toml'))run('uv run mypy ingest --strict');process.exit(r)\""
+        "run": "node -e \"const f=require('fs'),c=require('child_process');let r=0;const run=(cmd)=>{try{c.execSync(cmd,{stdio:'inherit'})}catch(e){r=1}};if(f.existsSync('web/package.json'))run('npm --prefix web run typecheck');if(f.existsSync('pyproject.toml'))run('uv run mypy ingest --strict');process.exit(r)\""
       },
       {
         "name": "test",
-        "run": "node -e \"const f=require('fs'),c=require('child_process');let r=0;const run=(cmd)=>{try{c.execSync(cmd,{stdio:'inherit'})}catch(e){r=1}};if(f.existsSync('package.json'))run('npm test --if-present');if(f.existsSync('tests'))run('uv run pytest -q');process.exit(r)\""
+        "run": "node -e \"const f=require('fs'),c=require('child_process');let r=0;const run=(cmd)=>{try{c.execSync(cmd,{stdio:'inherit'})}catch(e){r=1}};if(f.existsSync('web/package.json'))run('npm --prefix web test');if(f.existsSync('tests'))run('uv run pytest -q');process.exit(r)\""
       }
     ],
     "requireCi": false

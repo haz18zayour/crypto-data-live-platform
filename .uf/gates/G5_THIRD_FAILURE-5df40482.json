@@ -1,0 +1,21 @@
+{
+  "gate": "G5_THIRD_FAILURE",
+  "question": "US-502 has failed 3 times — is the story wrong?",
+  "feature": "PRD-005-dashboard",
+  "story": "US-502",
+  "options": [
+    "split",
+    "rewrite-criteria",
+    "skip",
+    "retry-anyway"
+  ],
+  "context": "Structural problems: the story changed no files at all\nCriteria judged not met:\n  - US-502-C1: not judged — a cheaper layer already failed\n  - US-502-C2: not judged — a cheaper layer already failed\n  - US-502-C3: not judged — a cheaper layer already failed\n  - US-502-C4: not judged — a cheaper layer already failed\n  - US-502-C5: not judged — a cheaper layer already failed\n  - US-502-C6: not judged — a cheaper layer already failed",
+  "defaultOnTimeout": "block",
+  "id": "G5_THIRD_FAILURE-5df40482",
+  "openedAt": "2026-09-13T16:19:59.617Z",
+  "answer": {
+    "choice": "retry-anyway",
+    "at": "2026-09-13T19:38:45.783Z",
+    "by": "human"
+  }
+}

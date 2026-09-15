@@ -1,0 +1,6 @@
+.uf/events.ndjson                                  |  9 +++++
+ SESSION.md                                         | 13 +++++-
+ .../50-evidence/US-502/diffstat.txt                |  6 +++
+ .../50-evidence/US-502/gates.json                  | 26 ++++++++++++
+ .../50-evidence/US-502/verdict.json                | 46 ++++++++++++++++++++++
+ 5 files changed, 98 insertions(+), 2 deletions(-)

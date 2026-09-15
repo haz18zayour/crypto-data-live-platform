@@ -1,0 +1,20 @@
+[
+  {
+    "name": "typecheck",
+    "run": "node -e \"const f=require('fs'),c=require('child_process');let r=0;const run=(cmd)=>{try{c.execSync(cmd,{stdio:'inherit'})}catch(e){r=1}};if(f.existsSync('web/package.json'))run('npm --prefix web run typecheck');if(f.existsSync('pyproject.toml'))run('uv run mypy ingest --strict');process.exit(r)\"",
+    "exitCode": 0,
+    "output": "\n> crypto-data-live-web@0.0.0 typecheck\n> tsc -b --pretty false\n\nSuccess: no issues found in 15 source files\r\n"
+  },
+  {
+    "name": "test",
+    "run": "node -e \"const f=require('fs'),c=require('child_process');let r=0;const run=(cmd)=>{try{c.execSync(cmd,{stdio:'inherit'})}catch(e){r=1}};if(f.existsSync('web/package.json'))run('npm --prefix web test');if(f.existsSync('tests'))run('uv run pytest -q');process.exit(r)\"",
+    "exitCode": 0,
+    "output": "\n> crypto-data-live-web@0.0.0 test\n> vitest run --configLoader runner\n\n\n RUN  v4.1.9 C:/Users/zayou/OneDrive/Desktop/Projects/crypto-data-live-platform/web\n\n\n Test Files  6 passed (6)\n      Tests  22 passed (22)\n   Start at  09:05:23\n   Duration  6.10s (transform 1.27s, setup 4.31s, import 2.44s, tests 4.85s, environment 14.53s)\n\n........................................................................ [ 38%]\r\n........................................................................ [ 77%]\r\n..........................................                               [100%]\r\n186 passed, 10 deselected in 179.92s (0:02:59)\r\n"
+  },
+  {
+    "name": "US-503-C7",
+    "run": "npm --prefix web test",
+    "exitCode": 0,
+    "output": "\n> crypto-data-live-web@0.0.0 test\n> vitest run --configLoader runner\n\n\n RUN  v4.1.9 C:/Users/zayou/OneDrive/Desktop/Projects/crypto-data-live-platform/web\n\n\n Test Files  6 passed (6)\n      Tests  22 passed (22)\n   Start at  09:08:37\n   Duration  6.49s (transform 1.82s, setup 4.80s, import 3.01s, tests 4.87s, environment 15.03s)\n\n"
+  }
+]

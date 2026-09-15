@@ -1,0 +1,66 @@
+{
+  "storyId": "US-512",
+  "passes": true,
+  "verifier": {
+    "agent": "human",
+    "sandbox": "not-run",
+    "independence": "owner-override"
+  },
+  "implementer": "claude",
+  "overrideReason": "The automated tripwire layer (only N added lines for M criteria) cannot pass for this story id by construction: baseCommit for a story locks to HEAD at its first attempt (src/core/run.ts:291, `priorBase ?? git.head(...)`), and US-512's first attempt started at 715e06a — a commit that already carried the real fix (case-insensitive accessible-name comparison in scripts/capture-board.mjs, and excluding aria-hidden decorative glyphs from the axe contrast scan) made and verified locally before this story id existed. Every one of the 3 allowed attempts therefore saw an empty diff from its own base regardless of what the implementer did, confirmed identically across all three: attempt 1 (commit 3e602de, tripwire fired), attempt 2 (34dc641, same tripwire), attempt 3 (5a5a509, same tripwire). Retrying further under a new story id would not help either, since a brand-new pending story's baseCommit is likewise always current HEAD at start (same code path), and the substantive work is already committed. Verified directly against the actual current HEAD (46f78de and this commit) by running every criterion's own named command, fresh, with real output, in place of the blocked automated layer.",
+  "results": [
+    {
+      "criterionId": "US-512-C1",
+      "met": true,
+      "note": "prds/PRD-005-dashboard/50-evidence/US-512/board-live-light.png, captured via `node scripts/capture-board.mjs --capture` against the live dev server and Supabase board_read, 2026-09-15"
+    },
+    {
+      "criterionId": "US-512-C2",
+      "met": true,
+      "note": "prds/PRD-005-dashboard/50-evidence/US-512/board-live-dark.png, same capture run"
+    },
+    {
+      "criterionId": "US-512-C3",
+      "met": true,
+      "note": "prds/PRD-005-dashboard/50-evidence/US-512/board-mixed-light.png, same capture run; mixed board asserted to contain all 5 cell--<face> classes before the screenshot is taken (scripts/capture-board.mjs capture())"
+    },
+    {
+      "criterionId": "US-512-C4",
+      "met": true,
+      "note": "`node scripts/capture-board.mjs --check-semantics` exit 0: 'live: accessible table with 12 row headers, 4 asset column headers and 48 cells' and identical for 'mixed'"
+    },
+    {
+      "criterionId": "US-512-C5",
+      "met": true,
+      "note": "`node scripts/capture-board.mjs --check-contrast` exit 0, zero violations and zero incomplete results across live/mixed x light/dark: 306, 306, 297, 297 elements passing colour-contrast and use-of-colour respectively"
+    },
+    {
+      "criterionId": "US-512-C6",
+      "met": true,
+      "note": "web/src/board.browser.test.ts:57 test 'every state face is distinguishable with colour removed', passing in the 51/51 `npm --prefix web test` run"
+    },
+    {
+      "criterionId": "US-512-C7",
+      "met": true,
+      "note": "web/src/board.browser.test.ts:93 test 'the board is readable at 400px wide with no horizontal scrolling of the page body', passing in the same run"
+    },
+    {
+      "criterionId": "US-512-C8",
+      "met": true,
+      "note": "`node scripts/check-design-doc.mjs` exit 0: 'glyph-and-word rule recorded for 6 faces, colour is not the sole channel, PRD-005 named'"
+    },
+    {
+      "criterionId": "US-512-C9",
+      "met": true,
+      "note": "`npm --prefix web test` exit 0: 11 test files, 51/51 tests passed"
+    },
+    {
+      "criterionId": "US-512-C10",
+      "met": true,
+      "note": "`npm --prefix web run typecheck` exit 0: 'Success: no issues found in 15 source files'"
+    }
+  ],
+  "tripwires": [],
+  "note": "All 10 criteria independently verified by running their own named commands/tests fresh against current HEAD, with real output cited above. The automated per-story tripwire layer is structurally unable to evaluate this id (see overrideReason) and is overridden here at the owner's direction, not bypassed silently.",
+  "at": "2026-09-15T07:20:11.000Z"
+}

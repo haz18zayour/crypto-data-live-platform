@@ -1,0 +1,91 @@
+{
+  "storyId": "US-505",
+  "passes": true,
+  "verifier": {
+    "agent": "claude",
+    "sandbox": "restricted:read-only"
+  },
+  "implementer": "codex",
+  "results": [
+    {
+      "criterionId": "US-505-C1",
+      "met": true,
+      "evidence": {
+        "file": "web/src/fixtures/mixedBoard.test.ts",
+        "line": 27,
+        "testName": "the fixture contains at least one cell in each of OK STALE NOT_DEFINABLE and FETCH_FAILED",
+        "exitCode": 0
+      },
+      "note": "Asserts OK (28), STALE with concrete value (51-55), UNAVAILABLE/NOT_DEFINABLE ×3 with non-empty detail (34-50), and ERROR/FETCH_FAILED (56-62) all present simultaneously in the same mixedBoard object."
+    },
+    {
+      "criterionId": "US-505-C2",
+      "met": true,
+      "evidence": {
+        "file": "web/src/fixtures/mixedBoard.test.ts",
+        "line": 72,
+        "testName": "the fixture has the same 48-cell shape the live board model produces",
+        "exitCode": 0
+      },
+      "note": "Compares mixedBoard.assets/families/cells (family+asset pairs, 48-length) against buildBoard(registry, [], BOARD_ASSETS) run on the real parsed registry.yaml — proves the fixture is the real page's shape, not an invented one."
+    },
+    {
+      "criterionId": "US-505-C3",
+      "met": true,
+      "evidence": {
+        "file": "web/src/fixtures/mixedBoard.test.ts",
+        "line": 83,
+        "testName": "the fixture passes registry rows through the real board model",
+        "exitCode": 0
+      },
+      "note": "Spies on the real buildBoard (vi.fn wrapping actual.buildBoard, lines 13-16), inspects the actual call args/result (88-97), and asserts buildBoard(registry, fixtureDatapoints, BOARD_ASSETS) deep-equals mixedBoard (98-100) — proves mixedBoard is the model's real output, not a hand-authored object that merely looks right."
+    },
+    {
+      "criterionId": "US-505-C4",
+      "met": true,
+      "evidence": {
+        "file": "web/src/fixtures/mixedBoard.test.ts",
+        "line": 103,
+        "testName": "the fixture cells carry real provenance including vendor and source timestamp",
+        "exitCode": 0
+      },
+      "note": "For every populated cell, asserts sourceVendor/endpoint/sourceField match the real registry entry and sourceTimestamp matches an ISO-8601 pattern, ruling out empty/placeholder provenance that US-508 would need to key off."
+    },
+    {
+      "criterionId": "US-505-C5",
+      "met": true,
+      "evidence": {
+        "file": "web/src/fixtures/mixedBoard.ts",
+        "line": 13,
+        "testName": "the fixture board is reachable only when import.meta.env.DEV is true",
+        "exitCode": 0
+      },
+      "note": "mixedBoard.ts:13-15 throws at module top-level (module boundary) when !import.meta.env.DEV; test at mixedBoard.test.ts:123-132 stubs DEV=false, resets modules, and asserts the dynamic import rejects with the guard's message."
+    },
+    {
+      "criterionId": "US-505-C6",
+      "met": true,
+      "evidence": {
+        "file": "scripts/no-fixture-in-bundle.mjs",
+        "line": 25,
+        "testName": null,
+        "exitCode": 0
+      },
+      "note": "Script builds web (line 12-19) then recursively scans web/dist for the exact FIXTURE_SENTINEL string used in mixedBoard.ts:11, failing the process if found; gate US-505-C6 (node scripts/no-fixture-in-bundle.mjs) exited 0, and mixedBoard is imported by no non-test source file, so nothing pulls it into the production graph."
+    },
+    {
+      "criterionId": "US-505-C7",
+      "met": true,
+      "evidence": {
+        "file": null,
+        "line": null,
+        "testName": null,
+        "exitCode": 0
+      },
+      "note": "Declared gate US-505-C7 (npm --prefix web test) exited 0."
+    }
+  ],
+  "tripwires": [],
+  "note": "All seven criteria are backed by concrete, assertion-heavy tests. The fixture is proven to be the real buildBoard model's output (spied call args + deep-equal), not a hand-crafted mock, and the dev-only guard plus bundle scan give a genuine mechanical check that the fixture can't ship. mixedBoard is referenced only by its own test file — it is not wired into App.tsx, consistent with this story being deliberately pre-pixel/data-only. No signs of padding or assertion-free tests; SESSION.md/.uf changes are routine handoff bookkeeping.",
+  "at": "2026-09-14T06:44:12.968Z"
+}

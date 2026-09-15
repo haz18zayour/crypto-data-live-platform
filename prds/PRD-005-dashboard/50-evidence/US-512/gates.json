@@ -1,0 +1,50 @@
+[
+  {
+    "name": "typecheck",
+    "run": "npm --prefix web run typecheck",
+    "exitCode": 0,
+    "output": "\n> crypto-data-live-web@0.0.0 typecheck\n> tsc -b --pretty false\n\nSuccess: no issues found in 15 source files\n"
+  },
+  {
+    "name": "test",
+    "run": "npm --prefix web test",
+    "exitCode": 0,
+    "output": "\n> crypto-data-live-web@0.0.0 pretest\n> playwright install chromium chromium-headless-shell\n\n\n> crypto-data-live-web@0.0.0 test\n> vitest run --configLoader runner\n\n\n RUN  v4.1.9 C:/Users/user/Desktop/Projects/crypto-data-live-platform/web\n\n\n Test Files  11 passed (11)\n      Tests  51 passed (51)\n   Start at  10:18:27\n   Duration  3.25s (transform 569ms, setup 2.00s, import 1.73s, tests 5.12s, environment 5.42s)\n"
+  },
+  {
+    "name": "US-512-C4",
+    "run": "node scripts/capture-board.mjs --check-semantics",
+    "exitCode": 0,
+    "output": "live: accessible table with 12 row headers, 4 asset column headers and 48 cells\nmixed: accessible table with 12 row headers, 4 asset column headers and 48 cells\n"
+  },
+  {
+    "name": "US-512-C5",
+    "run": "node scripts/capture-board.mjs --check-contrast",
+    "exitCode": 0,
+    "output": "live/light: 306 elements pass colour-contrast and use-of-colour\nlive/dark: 306 elements pass colour-contrast and use-of-colour\nmixed/light: 297 elements pass colour-contrast and use-of-colour\nmixed/dark: 297 elements pass colour-contrast and use-of-colour\n"
+  },
+  {
+    "name": "US-512-C8",
+    "run": "node scripts/check-design-doc.mjs",
+    "exitCode": 0,
+    "output": "20_Design_System.md: glyph-and-word rule recorded for 6 faces, colour is not the sole channel, PRD-005 named\n"
+  },
+  {
+    "name": "US-512-C9",
+    "run": "npm --prefix web test",
+    "exitCode": 0,
+    "output": "\n> crypto-data-live-web@0.0.0 pretest\n> playwright install chromium chromium-headless-shell\n\n\n> crypto-data-live-web@0.0.0 test\n> vitest run --configLoader runner\n\n\n RUN  v4.1.9 C:/Users/user/Desktop/Projects/crypto-data-live-platform/web\n\n\n Test Files  11 passed (11)\n      Tests  51 passed (51)\n"
+  },
+  {
+    "name": "US-512-C10",
+    "run": "npm --prefix web run typecheck",
+    "exitCode": 0,
+    "output": "\n> crypto-data-live-web@0.0.0 typecheck\n> tsc -b --pretty false\n\nSuccess: no issues found in 15 source files\n"
+  },
+  {
+    "name": "US-512-C1-C3-capture",
+    "run": "node scripts/capture-board.mjs --capture",
+    "exitCode": 0,
+    "output": "captured prds/PRD-005-dashboard/50-evidence/US-512/board-live-light.png\ncaptured prds/PRD-005-dashboard/50-evidence/US-512/board-live-dark.png\ncaptured prds/PRD-005-dashboard/50-evidence/US-512/board-mixed-light.png\n"
+  }
+]

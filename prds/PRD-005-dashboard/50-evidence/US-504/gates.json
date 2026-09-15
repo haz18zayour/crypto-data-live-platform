@@ -1,0 +1,26 @@
+[
+  {
+    "name": "typecheck",
+    "run": "node -e \"const f=require('fs'),c=require('child_process');let r=0;const run=(cmd)=>{try{c.execSync(cmd,{stdio:'inherit'})}catch(e){r=1}};if(f.existsSync('web/package.json'))run('npm --prefix web run typecheck');if(f.existsSync('pyproject.toml'))run('uv run mypy ingest --strict');process.exit(r)\"",
+    "exitCode": 0,
+    "output": "\n> crypto-data-live-web@0.0.0 typecheck\n> tsc -b --pretty false\n\nSuccess: no issues found in 15 source files\r\n"
+  },
+  {
+    "name": "test",
+    "run": "node -e \"const f=require('fs'),c=require('child_process');let r=0;const run=(cmd)=>{try{c.execSync(cmd,{stdio:'inherit'})}catch(e){r=1}};if(f.existsSync('web/package.json'))run('npm --prefix web test');if(f.existsSync('tests'))run('uv run pytest -q');process.exit(r)\"",
+    "exitCode": 0,
+    "output": "\n> crypto-data-live-web@0.0.0 test\n> vitest run --configLoader runner\n\n\n RUN  v4.1.9 C:/Users/zayou/OneDrive/Desktop/Projects/crypto-data-live-platform/web\n\n\n Test Files  6 passed (6)\n      Tests  23 passed (23)\n   Start at  09:19:40\n   Duration  6.35s (transform 1.50s, setup 4.59s, import 2.74s, tests 5.04s, environment 14.87s)\n\n........................................................................ [ 37%]\r\n........................................................................ [ 75%]\r\n................................................                         [100%]\r\n192 passed, 10 deselected in 198.71s (0:03:18)\r\n"
+  },
+  {
+    "name": "US-504-C7",
+    "run": "uv run pytest -q --no-header",
+    "exitCode": 0,
+    "output": "........................................................................ [ 37%]\r\n........................................................................ [ 75%]\r\n................................................                         [100%]\r\n192 passed, 10 deselected in 202.79s (0:03:22)\r\n"
+  },
+  {
+    "name": "US-504-C8",
+    "run": "npm --prefix web test",
+    "exitCode": 0,
+    "output": "\n> crypto-data-live-web@0.0.0 test\n> vitest run --configLoader runner\n\n\n RUN  v4.1.9 C:/Users/zayou/OneDrive/Desktop/Projects/crypto-data-live-platform/web\n\n\n Test Files  6 passed (6)\n      Tests  23 passed (23)\n   Start at  09:26:41\n   Duration  6.17s (transform 1.50s, setup 4.64s, import 2.69s, tests 5.07s, environment 14.86s)\n\n"
+  }
+]

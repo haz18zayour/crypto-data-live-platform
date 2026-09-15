@@ -1,0 +1,32 @@
+[
+  {
+    "name": "typecheck",
+    "run": "node -e \"const f=require('fs'),c=require('child_process');let r=0;const run=(cmd)=>{try{c.execSync(cmd,{stdio:'inherit'})}catch(e){r=1}};if(f.existsSync('web/package.json'))run('npm --prefix web run typecheck');if(f.existsSync('pyproject.toml'))run('uv run mypy ingest --strict');process.exit(r)\"",
+    "exitCode": 0,
+    "output": "\n> crypto-data-live-web@0.0.0 typecheck\n> tsc -b --pretty false\n\nSuccess: no issues found in 15 source files\r\n"
+  },
+  {
+    "name": "test",
+    "run": "node -e \"const f=require('fs'),c=require('child_process');let r=0;const run=(cmd)=>{try{c.execSync(cmd,{stdio:'inherit'})}catch(e){r=1}};if(f.existsSync('web/package.json'))run('npm --prefix web test');if(f.existsSync('tests'))run('uv run pytest -q');process.exit(r)\"",
+    "exitCode": 0,
+    "output": "\n> crypto-data-live-web@0.0.0 test\n> vitest run --configLoader runner\n\n\n RUN  v4.1.9 C:/Users/zayou/OneDrive/Desktop/Projects/crypto-data-live-platform/web\n\n\n Test Files  5 passed (5)\n      Tests  16 passed (16)\n   Start at  13:13:39\n   Duration  5.86s (transform 1.22s, setup 3.59s, import 2.10s, tests 4.49s, environment 11.05s)\n\n........................................................................ [ 39%]\r\n........................................................................ [ 79%]\r\n......................................                                   [100%]\r\n182 passed, 10 deselected in 152.32s (0:02:32)\r\n"
+  },
+  {
+    "name": "US-501-C1",
+    "run": "node scripts/gates-cover-web.mjs",
+    "exitCode": 0,
+    "output": "\n=== gate: typecheck ===\n\n> crypto-data-live-web@0.0.0 typecheck\n> tsc -b --pretty false\n\nSuccess: no issues found in 15 source files\r\n\n=== gate: test ===\n\n> crypto-data-live-web@0.0.0 test\n> vitest run --configLoader runner\n\n\n RUN  v4.1.9 C:/Users/zayou/OneDrive/Desktop/Projects/crypto-data-live-platform/web\n\n\n Test Files  5 passed (5)\n      Tests  16 passed (16)\n   Start at  13:16:40\n   Duration  6.19s (transform 878ms, setup 4.22s, import 1.77s, tests 4.53s, environment 12.30s)\n\n........................................................................ [ 39%]\r\n........................................................................ [ 79%]\r\n......................................                                   [100%]\r\n182 passed, 10 deselected in 147.15s (0:02:27)\r\n\nweb typecheck and web test both ran inside the gates of C:\\Users\\zayou\\OneDrive\\Desktop\\Projects\\crypto-data-live-platform\\.uf\\config.json\n"
+  },
+  {
+    "name": "US-501-C2",
+    "run": "npm --prefix web test",
+    "exitCode": 0,
+    "output": "\n> crypto-data-live-web@0.0.0 test\n> vitest run --configLoader runner\n\n\n RUN  v4.1.9 C:/Users/zayou/OneDrive/Desktop/Projects/crypto-data-live-platform/web\n\n\n Test Files  5 passed (5)\n      Tests  16 passed (16)\n   Start at  13:19:17\n   Duration  2.73s (transform 481ms, setup 1.65s, import 797ms, tests 2.21s, environment 5.45s)\n\n"
+  },
+  {
+    "name": "US-501-C5",
+    "run": "uv run pytest -q --no-header",
+    "exitCode": 0,
+    "output": "........................................................................ [ 39%]\r\n........................................................................ [ 79%]\r\n......................................                                   [100%]\r\n182 passed, 10 deselected in 140.77s (0:02:20)\r\n"
+  }
+]

@@ -1,0 +1,22 @@
+{
+  "gate": "G5_THIRD_FAILURE",
+  "question": "US-511 has failed 3 times — is the story wrong?",
+  "feature": "PRD-005-dashboard",
+  "story": "US-511",
+  "options": [
+    "split",
+    "rewrite-criteria",
+    "skip",
+    "retry-anyway"
+  ],
+  "context": "Structural problems: criterion US-511-C1 requires a screenshot at prds/PRD-005-dashboard/50-evidence/US-511/board-live-light.png — it does not exist; criterion US-511-C2 requires a screenshot at prds/PRD-005-dashboard/50-evidence/US-511/board-live-dark.png — it does not exist; criterion US-511-C3 requires a screenshot at prds/PRD-005-dashboard/50-evidence/US-511/board-mixed-light.png — it does not exist\nCriteria judged not met:\n  - US-511-C1: not judged — a cheaper layer already failed\n  - US-511-C2: not judged — a cheaper layer already failed\n  - US-511-C3: not judged — a cheaper layer already failed\n  - US-511-C4: not judged — a cheaper layer already failed\n  - US-511-C5: not judged — a cheaper layer already failed\n  - US-511-C6: not judged — a cheaper layer already failed\n  - US-511-C7: not judged — a cheaper layer already failed\n  - US-511-C8: not judged — a cheaper layer already failed\n  - US-511-C9: not judged — a cheaper layer already failed\n  - US-511-C10: not judged — a cheaper layer already failed",
+  "defaultOnTimeout": "block",
+  "id": "G5_THIRD_FAILURE-33aafdc7",
+  "openedAt": "2026-09-15T05:41:12.566Z",
+  "answer": {
+    "choice": "rewrite-criteria",
+    "reason": "US-511 re-identified as US-512. Both real failures were bugs in scripts/capture-board.mjs, not the design: case-sensitive accessible-name comparison against a CSS text-transform, and an axe contrast scan running over aria-hidden decorative glyphs it cannot measure. Both fixed and verified locally before re-identification.",
+    "at": "2026-09-15T06:56:22.816Z",
+    "by": "human"
+  }
+}

@@ -1,0 +1,68 @@
+{
+  "storyId": "US-509",
+  "passes": false,
+  "verifier": {
+    "agent": "claude",
+    "sandbox": "not-run"
+  },
+  "implementer": "claude",
+  "results": [
+    {
+      "criterionId": "US-509-C1",
+      "met": false,
+      "note": "not judged — a cheaper layer already failed"
+    },
+    {
+      "criterionId": "US-509-C2",
+      "met": false,
+      "note": "not judged — a cheaper layer already failed"
+    },
+    {
+      "criterionId": "US-509-C3",
+      "met": false,
+      "note": "not judged — a cheaper layer already failed"
+    },
+    {
+      "criterionId": "US-509-C4",
+      "met": false,
+      "note": "not judged — a cheaper layer already failed"
+    },
+    {
+      "criterionId": "US-509-C5",
+      "met": false,
+      "note": "not judged — a cheaper layer already failed"
+    },
+    {
+      "criterionId": "US-509-C6",
+      "met": false,
+      "note": "not judged — a cheaper layer already failed"
+    },
+    {
+      "criterionId": "US-509-C7",
+      "met": false,
+      "note": "not judged — a cheaper layer already failed"
+    },
+    {
+      "criterionId": "US-509-C8",
+      "met": false,
+      "note": "not judged — a cheaper layer already failed"
+    },
+    {
+      "criterionId": "US-509-C9",
+      "met": false,
+      "note": "not judged — a cheaper layer already failed"
+    },
+    {
+      "criterionId": "US-509-C10",
+      "met": false,
+      "note": "not judged — a cheaper layer already failed"
+    }
+  ],
+  "tripwires": [
+    "criterion US-509-C1 requires a screenshot at prds/PRD-005-dashboard/50-evidence/US-509/board-live-light.png — it does not exist",
+    "criterion US-509-C2 requires a screenshot at prds/PRD-005-dashboard/50-evidence/US-509/board-live-dark.png — it does not exist",
+    "criterion US-509-C3 requires a screenshot at prds/PRD-005-dashboard/50-evidence/US-509/board-mixed-light.png — it does not exist"
+  ],
+  "note": "gates failed: US-509-C4, US-509-C5 | tripwires: criterion US-509-C1 requires a screenshot at prds/PRD-005-dashboard/50-evidence/US-509/board-live-light.png — it does not exist; criterion US-509-C2 requires a screenshot at prds/PRD-005-dashboard/50-evidence/US-509/board-live-dark.png — it does not exist; criterion US-509-C3 requires a screenshot at prds/PRD-005-dashboard/50-evidence/US-509/board-mixed-light.png — it does not exist",
+  "at": "2026-09-14T07:56:50.312Z"
+}
