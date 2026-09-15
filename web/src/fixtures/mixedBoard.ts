@@ -24,10 +24,6 @@ const registry = parse(registryYaml) as FixtureRegistryEntry[];
 const SOURCE_TIMESTAMP = "2026-09-13T00:00:00Z";
 
 const rows = registry.flatMap((definition, index): Datapoint[] => {
-  if (definition.key === "bnb_rsi") {
-    return [];
-  }
-
   const asset = definition.definable_for[0];
   const provenance = {
     indicatorKey: definition.key,
@@ -55,6 +51,9 @@ const rows = registry.flatMap((definition, index): Datapoint[] => {
   }
   if (definition.key === "sol_atr") {
     return [{ ...provenance, status: "UNAVAILABLE", reason: "PAYWALLED" }];
+  }
+  if (definition.key === "bnb_rsi") {
+    return [{ ...provenance, status: "UNAVAILABLE", reason: "NOT_FETCHED" }];
   }
   return [{ ...provenance, status: "OK", value: index + 1.11 }];
 });
