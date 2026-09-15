@@ -89,8 +89,8 @@ summed with a USD-denominated one.
 - [x] `10-research.md` — `uf research PRD-006-derivatives`, 11 sources, $0.99
 - [x] `20-decisions.yaml` — **GATE G1** — all three hypotheses accepted by the owner
 - [x] `30-spec.md`
-- [ ] `40-stories/*.md`
-- [ ] `uf compile PRD-006-derivatives`
+- [x] `40-stories/*.md` — 7 stories
+- [x] `uf compile PRD-006-derivatives` — 54 criteria, digest `957ef9189731ef20`
 - [ ] **GATE G2** — approve the estimate
 - [ ] `uf run`
 - [ ] merge to `main`
