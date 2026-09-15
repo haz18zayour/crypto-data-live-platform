@@ -94,6 +94,19 @@ class OkxLongShortRatioResponse(BaseModel):
     data: tuple[OkxLongShortRatioEntry, ...]
 
 
+type OkxTakerVolumeEntry = tuple[StrictStr, StrictStr, StrictStr]
+
+
+class OkxTakerVolumeResponse(BaseModel):
+    """The response contract for OKX's taker buy/sell volume endpoint."""
+
+    model_config = ConfigDict(extra="forbid", frozen=True)
+
+    code: StrictStr
+    msg: StrictStr
+    data: tuple[OkxTakerVolumeEntry, ...]
+
+
 class CoinbaseCandle(BaseModel):
     """A Coinbase candle named in the venue's documented field order."""
 

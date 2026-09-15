@@ -21,9 +21,12 @@ from ingest.fetchers.okx_derivatives import (
     LongShortRatioResult,
     OpenInterestOk,
     OpenInterestResult,
+    TakerRatioOk,
+    TakerRatioResult,
     fetch_btc_funding_rate_history,
     fetch_long_short_ratio,
     fetch_open_interest,
+    fetch_taker_ratio,
 )
 from ingest.indicators import atr, bollinger_bands, ema, macd, obv, rsi, stochrsi
 from ingest.persist import persist_datapoint
@@ -37,7 +40,10 @@ type BarFetcher = Callable[[Venue, str, int], "FetchedBars | Error"]
 type FundingRateFetcher = Callable[[str], FundingRateResult]
 type OpenInterestFetcher = Callable[[str], OpenInterestResult]
 type LongShortRatioFetcher = Callable[[str], LongShortRatioResult]
-type BoardResult = Result | FundingRateOk | OpenInterestOk | LongShortRatioOk
+type TakerRatioFetcher = Callable[[str], TakerRatioResult]
+type BoardResult = (
+    Result | FundingRateOk | OpenInterestOk | LongShortRatioOk | TakerRatioOk
+)
 
 _HISTORY_NOTE = re.compile(
     r"^History availability measured (?P<date>\d{4}-\d{2}-\d{2}): "
@@ -247,6 +253,10 @@ def _fetch_asset_long_short_ratio(asset: str) -> LongShortRatioResult:
     return fetch_long_short_ratio(asset)
 
 
+def _fetch_asset_taker_ratio(asset: str) -> TakerRatioResult:
+    return fetch_taker_ratio(asset)
+
+
 def _calculate(definition: IndicatorDefinition, bars: Sequence[Bar]) -> float:
     parameters = definition.parameters or {}
     if definition.talib_function == "RSI":
@@ -294,6 +304,7 @@ def run_all_assets(
     fetch_funding_rate: FundingRateFetcher | None = None,
     fetch_open_interest: OpenInterestFetcher | None = None,
     fetch_long_short_ratio: LongShortRatioFetcher | None = None,
+    fetch_taker_ratio: TakerRatioFetcher | None = None,
 ) -> FullAssetRun:
     """Fetch both venues and compute every registered technical cell."""
 
@@ -317,6 +328,11 @@ def run_all_assets(
         definition
         for definition in registered
         if definition.response_model == "okx_long_short_ratio"
+    )
+    taker_ratio_definitions = tuple(
+        definition
+        for definition in registered
+        if definition.response_model == "okx_taker_volume"
     )
     by_asset = {
         asset: tuple(
@@ -344,6 +360,9 @@ def run_all_assets(
         _fetch_asset_long_short_ratio
         if fetch_long_short_ratio is None
         else fetch_long_short_ratio
+    )
+    fetch_taker = (
+        _fetch_asset_taker_ratio if fetch_taker_ratio is None else fetch_taker_ratio
     )
     history: dict[tuple[str, Venue], HistoryAssessment] = {}
     indicators: dict[str, BoardResult] = {}
@@ -413,6 +432,9 @@ def run_all_assets(
     for definition in long_short_definitions:
         indicators[definition.key] = fetch_long_short(definition.definable_for[0])
 
+    for definition in taker_ratio_definitions:
+        indicators[definition.key] = fetch_taker(definition.definable_for[0])
+
     return FullAssetRun(indicators=indicators, history=history)
 
 
@@ -439,7 +461,7 @@ def persist_board(
                 update={"source_field": result.source_field}
             )
             persisted_result = Ok(result.value, result.source_timestamp)
-        elif isinstance(result, (OpenInterestOk, LongShortRatioOk)):
+        elif isinstance(result, (OpenInterestOk, LongShortRatioOk, TakerRatioOk)):
             persisted_result = Ok(result.value, result.source_timestamp)
         else:
             persisted_result = result

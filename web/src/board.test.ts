@@ -25,17 +25,17 @@ function provenance(indicatorKey: string, asset: string) {
 }
 
 describe("buildBoard", () => {
-  test("the board model built from the parsed registry and the four assets yields exactly 60 cells", () => {
+  test("the board model built from the parsed registry and the four assets yields exactly 64 cells", () => {
     const board = buildBoard(registry, [], BOARD_ASSETS);
 
-    expect(board.families).toHaveLength(15);
+    expect(board.families).toHaveLength(16);
     expect(board.assets).toHaveLength(4);
     expect(board.cells).toHaveLength(
       board.families.length * board.assets.length,
     );
   });
 
-  test("every one of the 60 cells carries a state and none is undefined or empty", () => {
+  test("every one of the 64 cells carries a state and none is undefined or empty", () => {
     const board = buildBoard(registry, [], BOARD_ASSETS);
 
     expect(board.cells).toHaveLength(

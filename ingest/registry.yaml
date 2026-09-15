@@ -81,6 +81,20 @@
   freshness_stale_seconds: 600
   uncorroborated:
     note: No second venue's derivatives public endpoints were confirmed to exist or be reachable; Binance's futures API returns HTTP 451 to US IPs on public endpoints.
+- key: btc_taker_ratio
+  vendor: okx
+  endpoint: https://www.okx.com/api/v5/rubik/stat/taker-volume?ccy=BTC&instType=CONTRACTS&period=5m
+  source_field: 'OKX rubik/stat/taker-volume data newest [timestamp, sellVol, buyVol] for BTC; ratio = buyVol / sellVol'
+  definable_for: [BTC]
+  golden: fixtures/okx_taker_volume.json
+  response_model: okx_taker_volume
+  required_bars: 1
+  parameters:
+  expected_update_interval_seconds: 300
+  freshness_warn_seconds: 450
+  freshness_stale_seconds: 600
+  uncorroborated:
+    note: No second venue's derivatives public endpoints were confirmed to exist or be reachable; Binance's futures API returns HTTP 451 to US IPs on public endpoints.
 - key: btc_ema_20
   vendor: okx
   endpoint: https://www.okx.com/api/v5/market/candles?instId=BTC-USDT&bar=1Dutc
@@ -308,6 +322,20 @@
   definable_for: [ETH]
   golden: fixtures/okx_long_short_ratio.json
   response_model: okx_long_short_ratio
+  required_bars: 1
+  parameters:
+  expected_update_interval_seconds: 300
+  freshness_warn_seconds: 450
+  freshness_stale_seconds: 600
+  uncorroborated:
+    note: No second venue's derivatives public endpoints were confirmed to exist or be reachable; Binance's futures API returns HTTP 451 to US IPs on public endpoints.
+- key: eth_taker_ratio
+  vendor: okx
+  endpoint: https://www.okx.com/api/v5/rubik/stat/taker-volume?ccy=ETH&instType=CONTRACTS&period=5m
+  source_field: 'OKX rubik/stat/taker-volume data newest [timestamp, sellVol, buyVol] for ETH; ratio = buyVol / sellVol'
+  definable_for: [ETH]
+  golden: fixtures/okx_taker_volume.json
+  response_model: okx_taker_volume
   required_bars: 1
   parameters:
   expected_update_interval_seconds: 300
@@ -549,6 +577,20 @@
   freshness_stale_seconds: 600
   uncorroborated:
     note: No second venue's derivatives public endpoints were confirmed to exist or be reachable; Binance's futures API returns HTTP 451 to US IPs on public endpoints.
+- key: sol_taker_ratio
+  vendor: okx
+  endpoint: https://www.okx.com/api/v5/rubik/stat/taker-volume?ccy=SOL&instType=CONTRACTS&period=5m
+  source_field: 'OKX rubik/stat/taker-volume data newest [timestamp, sellVol, buyVol] for SOL; ratio = buyVol / sellVol'
+  definable_for: [SOL]
+  golden: fixtures/okx_taker_volume.json
+  response_model: okx_taker_volume
+  required_bars: 1
+  parameters:
+  expected_update_interval_seconds: 300
+  freshness_warn_seconds: 450
+  freshness_stale_seconds: 600
+  uncorroborated:
+    note: No second venue's derivatives public endpoints were confirmed to exist or be reachable; Binance's futures API returns HTTP 451 to US IPs on public endpoints.
 - key: sol_ema_20
   vendor: okx
   endpoint: https://www.okx.com/api/v5/market/candles?instId=SOL-USDT&bar=1Dutc
@@ -776,6 +818,20 @@
   definable_for: [BNB]
   golden: fixtures/okx_long_short_ratio.json
   response_model: okx_long_short_ratio
+  required_bars: 1
+  parameters:
+  expected_update_interval_seconds: 300
+  freshness_warn_seconds: 450
+  freshness_stale_seconds: 600
+  uncorroborated:
+    note: No second venue's derivatives public endpoints were confirmed to exist or be reachable; Binance's futures API returns HTTP 451 to US IPs on public endpoints.
+- key: bnb_taker_ratio
+  vendor: okx
+  endpoint: https://www.okx.com/api/v5/rubik/stat/taker-volume?ccy=BNB&instType=CONTRACTS&period=5m
+  source_field: 'OKX rubik/stat/taker-volume data newest [timestamp, sellVol, buyVol] for BNB; ratio = buyVol / sellVol'
+  definable_for: [BNB]
+  golden: fixtures/okx_taker_volume.json
+  response_model: okx_taker_volume
   required_bars: 1
   parameters:
   expected_update_interval_seconds: 300

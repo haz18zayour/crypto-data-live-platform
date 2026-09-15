@@ -10,17 +10,21 @@ from ingest.fetchers.okx_derivatives import (
     BTC_USDT_SWAP_INST_ID,
     OKX_LONG_SHORT_RATIO_ENDPOINT,
     OKX_OPEN_INTEREST_ENDPOINT,
+    OKX_TAKER_VOLUME_ENDPOINT,
     FundingRateOk,
     LongShortRatioOk,
     OpenInterestOk,
+    TakerRatioOk,
     fetch_btc_funding_rate_history,
     fetch_long_short_ratio,
     fetch_open_interest,
+    fetch_taker_ratio,
 )
 from ingest.schemas import (
     OkxFundingRateHistoryResponse,
     OkxLongShortRatioResponse,
     OkxOpenInterestResponse,
+    OkxTakerVolumeResponse,
 )
 from ingest.status import Error, Reason
 
@@ -68,6 +72,12 @@ def long_short_ratio_row(timestamp: datetime, ratio: str = "1.38") -> list[str]:
     return [milliseconds(timestamp), ratio]
 
 
+def taker_volume_row(
+    timestamp: datetime, sell_volume: str = "100.0", buy_volume: str = "150.0"
+) -> list[str]:
+    return [milliseconds(timestamp), sell_volume, buy_volume]
+
+
 def client_returning(
     rows: list[dict[str, str]], status_code: int = 200
 ) -> httpx.Client:
@@ -95,6 +105,19 @@ def open_interest_client_returning(
 
 
 def long_short_ratio_client_returning(
+    rows: list[list[str]], status_code: int = 200
+) -> httpx.Client:
+    def handler(request: httpx.Request) -> httpx.Response:
+        return httpx.Response(
+            status_code,
+            json={"code": "0", "msg": "", "data": rows},
+            request=request,
+        )
+
+    return httpx.Client(transport=httpx.MockTransport(handler))
+
+
+def taker_volume_client_returning(
     rows: list[list[str]], status_code: int = 200
 ) -> httpx.Client:
     def handler(request: httpx.Request) -> httpx.Response:
@@ -426,6 +449,82 @@ def test_long_short_ratio_source_timestamp_must_be_strictly_past() -> None:
         _ = future_result.value  # type: ignore[attr-defined]
 
 
+def test_taker_ratio_requests_asset_currency_and_returns_newest_row_ratio() -> None:
+    requested_urls: list[str] = []
+    older = NOW - timedelta(minutes=10)
+    newest = NOW - timedelta(minutes=5)
+    rows = [
+        taker_volume_row(older, "100.0", "110.0"),
+        taker_volume_row(newest, "100.0", "150.0"),
+    ]
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        requested_urls.append(str(request.url))
+        return httpx.Response(
+            200,
+            json={"code": "0", "msg": "", "data": rows},
+            request=request,
+        )
+
+    with httpx.Client(transport=httpx.MockTransport(handler)) as client:
+        result = fetch_taker_ratio("SOL", client=client, now=NOW)
+
+    assert isinstance(result, TakerRatioOk)
+    assert result.value == 1.5
+    assert result.source_timestamp == newest
+    assert requested_urls == [
+        f"{OKX_TAKER_VOLUME_ENDPOINT}?ccy=SOL&instType=CONTRACTS&period=5m"
+    ]
+
+
+def test_taker_ratio_response_model_rejects_malformed_payload() -> None:
+    payload = {
+        "code": "0",
+        "msg": "",
+        "data": [taker_volume_row(NOW - timedelta(minutes=5))],
+        "unexpected": "vendor reshape",
+    }
+
+    with pytest.raises(ValidationError, match="extra_forbidden"):
+        OkxTakerVolumeResponse.model_validate(payload)
+
+    reshaped = [milliseconds(NOW - timedelta(minutes=5)), "100.0", "150.0", "extra"]
+    with pytest.raises(ValidationError):
+        OkxTakerVolumeResponse.model_validate(
+            {"code": "0", "msg": "", "data": [reshaped]}
+        )
+
+
+def test_taker_ratio_http_error_returns_error_with_status_code_and_no_value() -> None:
+    with taker_volume_client_returning([], status_code=429) as client:
+        result = fetch_taker_ratio("BTC", client=client, now=NOW)
+
+    assert isinstance(result, Error)
+    assert result.reason is Reason.FETCH_FAILED
+    assert "429" in result.detail
+    with pytest.raises(AttributeError):
+        _ = result.value  # type: ignore[attr-defined]
+
+
+def test_taker_ratio_source_timestamp_must_be_strictly_past() -> None:
+    with taker_volume_client_returning(
+        [taker_volume_row(NOW - timedelta(minutes=5), "100.0", "125.0")]
+    ) as client:
+        result = fetch_taker_ratio("ETH", client=client, now=NOW)
+
+    assert isinstance(result, TakerRatioOk)
+    assert result.source_timestamp < NOW
+
+    with taker_volume_client_returning([taker_volume_row(NOW)]) as client:
+        future_result = fetch_taker_ratio("ETH", client=client, now=NOW)
+
+    assert isinstance(future_result, Error)
+    assert future_result.reason is Reason.FETCH_FAILED
+    assert "future" in future_result.detail.lower()
+    with pytest.raises(AttributeError):
+        _ = future_result.value  # type: ignore[attr-defined]
+
+
 @pytest.mark.integration
 def test_live_okx_request_returns_btc_settled_funding_history_with_derived_interval() -> (
     None
@@ -473,5 +572,17 @@ def test_live_okx_request_returns_long_short_account_ratio_for_asset(
     result = fetch_long_short_ratio(asset)
 
     assert isinstance(result, LongShortRatioOk), result
+    assert result.source_timestamp < datetime.now(UTC)
+    assert result.value > 0
+
+
+@pytest.mark.integration
+@pytest.mark.parametrize("asset", ("BTC", "ETH", "SOL", "BNB"))
+def test_live_okx_request_returns_taker_buy_sell_ratio_for_asset(
+    asset: str,
+) -> None:
+    result = fetch_taker_ratio(asset)
+
+    assert isinstance(result, TakerRatioOk), result
     assert result.source_timestamp < datetime.now(UTC)
     assert result.value > 0

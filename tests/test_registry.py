@@ -94,7 +94,7 @@ def test_definable_for_requires_a_nonempty_asset_list(
 def test_shipped_registry_definitions_cover_four_assets_at_scale() -> None:
     registry = load_registry()
 
-    assert len(registry.root) == 57
+    assert len(registry.root) == 61
     assert {asset for entry in registry.root for asset in entry.definable_for} == {
         "BTC",
         "ETH",
@@ -169,3 +169,20 @@ def test_long_short_ratio_is_registered_once_per_asset_without_talib() -> None:
     assert all(
         entry.response_model == "okx_long_short_ratio" for entry in entries
     )
+
+
+def test_taker_ratio_is_registered_once_per_asset_without_talib() -> None:
+    entries = tuple(
+        entry for entry in load_registry().root if entry.key.endswith("_taker_ratio")
+    )
+
+    assert {entry.definable_for[0] for entry in entries} == {
+        "BTC",
+        "ETH",
+        "SOL",
+        "BNB",
+    }
+    assert len(entries) == 4
+    assert all(entry.talib_function is None for entry in entries)
+    assert all(entry.uncorroborated is not None for entry in entries)
+    assert all(entry.response_model == "okx_taker_volume" for entry in entries)

@@ -18,6 +18,7 @@ from ingest.fetchers.okx_derivatives import (
     FundingRateOk,
     LongShortRatioOk,
     OpenInterestOk,
+    TakerRatioOk,
 )
 from ingest.pipeline import (
     FetchedBars,
@@ -25,6 +26,7 @@ from ingest.pipeline import (
     FundingRateResult,
     LongShortRatioResult,
     OpenInterestResult,
+    TakerRatioResult,
     Venue,
     run_all_assets,
     run_pipeline,
@@ -155,12 +157,21 @@ def _fetch_long_short_ratio(asset: str) -> LongShortRatioResult:
     )
 
 
+def _fetch_taker_ratio(asset: str) -> TakerRatioResult:
+    offset = {"BTC": 1.0, "ETH": 2.0, "SOL": 3.0, "BNB": 4.0}[asset]
+    return TakerRatioOk(
+        value=1.0 + offset / 10,
+        source_timestamp=SOURCE_TIMESTAMP,
+    )
+
+
 def _full_board() -> pipeline.FullAssetRun:
     return run_all_assets(
         fetch_bars=_fetch_bars,
         fetch_funding_rate=_fetch_funding_rate,
         fetch_open_interest=_fetch_open_interest,
         fetch_long_short_ratio=_fetch_long_short_ratio,
+        fetch_taker_ratio=_fetch_taker_ratio,
     )
 
 
@@ -172,6 +183,7 @@ def _board_definitions() -> tuple[IndicatorDefinition, ...]:
         or definition.response_model == "okx_funding_rate_history"
         or definition.response_model == "okx_open_interest"
         or definition.response_model == "okx_long_short_ratio"
+        or definition.response_model == "okx_taker_volume"
     )
 
 
@@ -203,7 +215,7 @@ def test_full_run_writes_one_datapoint_row_per_computed_indicator(
     row_ids = run_pipeline(object(), fetcher=_full_board)  # type: ignore[arg-type]
 
     definitions = _board_definitions()
-    assert len(definitions) == 56
+    assert len(definitions) == 60
     assert len(row_ids) == len(definitions)
     assert len(persisted) == len(definitions)
     assert {row["indicator_key"] for row in persisted} == {
@@ -233,7 +245,13 @@ def test_each_persisted_board_row_carries_schema_provenance(
                     result.source_timestamp
                     if isinstance(
                         result,
-                        (Ok, FundingRateOk, OpenInterestOk, LongShortRatioOk),
+                        (
+                            Ok,
+                            FundingRateOk,
+                            OpenInterestOk,
+                            LongShortRatioOk,
+                            TakerRatioOk,
+                        ),
                     )
                     else None
                 ),
@@ -290,7 +308,7 @@ def test_non_ok_computed_result_is_persisted_with_status_and_reason_and_peers_co
         reason=Reason.FETCH_FAILED,
         detail="btc_rsi computation failed: forced computation failure",
     )
-    assert sum(isinstance(result, Ok) for result in persisted.values()) == 55
+    assert sum(isinstance(result, Ok) for result in persisted.values()) == 59
 
 
 def test_full_run_persists_one_funding_rate_datapoint_per_asset_with_runtime_source_field(
@@ -434,6 +452,54 @@ def test_full_run_persists_one_long_short_ratio_datapoint_per_asset(
     )
 
 
+def test_full_run_persists_one_taker_ratio_datapoint_per_asset(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    persisted: dict[str, dict[str, object]] = {}
+
+    def record_datapoint(
+        connection: object,
+        *,
+        definition: IndicatorDefinition,
+        asset: str,
+        measured_on: str,
+        result: Result,
+    ) -> int:
+        if definition.key.endswith("_taker_ratio"):
+            persisted[definition.key] = {
+                "asset": asset,
+                "status": result.status,
+                "value": result.value if isinstance(result, Ok) else None,
+                "source_timestamp": (
+                    result.source_timestamp if isinstance(result, Ok) else None
+                ),
+            }
+        return len(persisted)
+
+    monkeypatch.setattr(pipeline, "persist_datapoint", record_datapoint)
+
+    run_pipeline(object(), fetcher=_full_board)  # type: ignore[arg-type]
+
+    assert set(persisted) == {
+        "btc_taker_ratio",
+        "eth_taker_ratio",
+        "sol_taker_ratio",
+        "bnb_taker_ratio",
+    }
+    assert {row["asset"] for row in persisted.values()} == {
+        "BTC",
+        "ETH",
+        "SOL",
+        "BNB",
+    }
+    assert all(row["status"] == "OK" for row in persisted.values())
+    assert all(row["value"] is not None for row in persisted.values())
+    assert all(
+        row["source_timestamp"] == SOURCE_TIMESTAMP
+        for row in persisted.values()
+    )
+
+
 def test_one_funding_history_failure_persists_error_and_other_assets_continue(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -462,6 +528,7 @@ def test_one_funding_history_failure_persists_error_and_other_assets_continue(
         fetch_funding_rate=fetch_funding_rate,
         fetch_open_interest=_fetch_open_interest,
         fetch_long_short_ratio=_fetch_long_short_ratio,
+        fetch_taker_ratio=_fetch_taker_ratio,
     )
 
     run_pipeline(object(), fetcher=lambda: run)  # type: ignore[arg-type]
@@ -492,7 +559,10 @@ def test_board_persistence_is_idempotent_per_registered_identity(
     ) -> int:
         source_timestamp = (
             result.source_timestamp
-            if isinstance(result, (Ok, FundingRateOk, OpenInterestOk, LongShortRatioOk))
+            if isinstance(
+                result,
+                (Ok, FundingRateOk, OpenInterestOk, LongShortRatioOk, TakerRatioOk),
+            )
             else None
         )
         identity = (
@@ -618,11 +688,14 @@ def test_live_full_board_run_persists_registry_row_count(
         (list(row_ids),),
     ).fetchall()
 
-    assert len(definitions) == 56
+    assert len(definitions) == 60
     assert all(item.status == "AVAILABLE" for item in run.history.values())
     assert all(item.fetched_bars == 250 for item in run.history.values())
     assert all(
-        isinstance(result, (Ok, FundingRateOk, OpenInterestOk, LongShortRatioOk))
+        isinstance(
+            result,
+            (Ok, FundingRateOk, OpenInterestOk, LongShortRatioOk, TakerRatioOk),
+        )
         for result in run.indicators.values()
     )
     assert len(row_ids) == len(definitions)
@@ -631,6 +704,7 @@ def test_live_full_board_run_persists_registry_row_count(
     assert sum(str(row[0]).endswith("_funding_rate") for row in rows) == 4
     assert sum(str(row[0]).endswith("_open_interest") for row in rows) == 4
     assert sum(str(row[0]).endswith("_long_short_ratio") for row in rows) == 4
+    assert sum(str(row[0]).endswith("_taker_ratio") for row in rows) == 4
     assert all(row[1] == row[2] for row in rows)
     assert all(row[6] and row[7] and row[8] and row[9] for row in rows)
     assert all(row[3] is not None and row[4:6] == ("OK", None) for row in rows)
