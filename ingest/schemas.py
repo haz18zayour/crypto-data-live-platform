@@ -3,6 +3,7 @@
 from pydantic import (
     BaseModel,
     ConfigDict,
+    Field,
     RootModel,
     StrictFloat,
     StrictInt,
@@ -31,6 +32,30 @@ class OkxCandleResponse(BaseModel):
     code: StrictStr
     msg: StrictStr
     data: tuple[OkxCandle, ...]
+
+
+class OkxFundingRateHistoryEntry(BaseModel):
+    """One settled row from OKX's funding-rate-history endpoint."""
+
+    model_config = ConfigDict(extra="forbid", frozen=True)
+
+    formula_type: StrictStr = Field(alias="formulaType")
+    funding_rate: StrictStr = Field(alias="fundingRate")
+    funding_time: StrictStr = Field(alias="fundingTime")
+    inst_id: StrictStr = Field(alias="instId")
+    inst_type: StrictStr = Field(alias="instType")
+    method: StrictStr
+    realized_rate: StrictStr = Field(alias="realizedRate")
+
+
+class OkxFundingRateHistoryResponse(BaseModel):
+    """The response contract for OKX's settled funding-rate endpoint."""
+
+    model_config = ConfigDict(extra="forbid", frozen=True)
+
+    code: StrictStr
+    msg: StrictStr
+    data: tuple[OkxFundingRateHistoryEntry, ...]
 
 
 class CoinbaseCandle(BaseModel):
