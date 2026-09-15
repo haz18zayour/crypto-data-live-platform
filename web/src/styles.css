@@ -335,6 +335,34 @@ h2 {
   color: var(--failed);
 }
 
+/* A live pulse on the two faces worth watching at a glance: healthy and failed. This is a
+   breathing glow, not a stock-ticker blink — the glyph and word keep their fixed colour at
+   every frame, so contrast never dips mid-animation; only a soft glow radius moves. WCAG 2.3.1
+   caps flashing at three times a second; this cycles once every 2.4-3s, roughly a thousand
+   times slower. Colour is still never the only channel: the glyph and word underneath are
+   unchanged, so a viewer with the animation disabled reads the same state from the same glyph
+   and word. Respects prefers-reduced-motion. */
+@media (prefers-reduced-motion: no-preference) {
+  .cell--ok .cell-glyph {
+    animation: cell-pulse 3s ease-in-out infinite;
+  }
+
+  .cell--fetch-failed .cell-glyph,
+  .cell--not-fetched .cell-glyph {
+    animation: cell-pulse 2.4s ease-in-out infinite;
+  }
+}
+
+@keyframes cell-pulse {
+  0%,
+  100% {
+    text-shadow: 0 0 0 currentcolor;
+  }
+  50% {
+    text-shadow: 0 0 6px currentcolor;
+  }
+}
+
 /* The BTC corroboration panel (PRD-003). Same treatments as before, one per status: a tinted
    header for corroborated, a heavy border for diverged, a dashed border for not corroborated. */
 .corroboration,
