@@ -2,9 +2,8 @@
   "storyId": "US-511",
   "passes": false,
   "verifier": {
-    "agent": "codex",
-    "sandbox": "not-run",
-    "independence": "cross-vendor"
+    "agent": "claude",
+    "sandbox": "not-run"
   },
   "implementer": "claude",
   "results": [
@@ -64,6 +63,6 @@
     "criterion US-511-C2 requires a screenshot at prds/PRD-005-dashboard/50-evidence/US-511/board-live-dark.png — it does not exist",
     "criterion US-511-C3 requires a screenshot at prds/PRD-005-dashboard/50-evidence/US-511/board-mixed-light.png — it does not exist"
   ],
-  "note": "gates failed: test, US-511-C4, US-511-C5, US-511-C9, US-511-C10 | tripwires: criterion US-511-C1 requires a screenshot at prds/PRD-005-dashboard/50-evidence/US-511/board-live-light.png — it does not exist; criterion US-511-C2 requires a screenshot at prds/PRD-005-dashboard/50-evidence/US-511/board-live-dark.png — it does not exist; criterion US-511-C3 requires a screenshot at prds/PRD-005-dashboard/50-evidence/US-511/board-mixed-light.png — it does not exist",
-  "at": "2026-09-14T11:48:19.925Z"
+  "note": "gates failed: typecheck, test, US-511-C4, US-511-C5 | tripwires: criterion US-511-C1 requires a screenshot at prds/PRD-005-dashboard/50-evidence/US-511/board-live-light.png — it does not exist; criterion US-511-C2 requires a screenshot at prds/PRD-005-dashboard/50-evidence/US-511/board-live-dark.png — it does not exist; criterion US-511-C3 requires a screenshot at prds/PRD-005-dashboard/50-evidence/US-511/board-mixed-light.png — it does not exist",
+  "at": "2026-09-15T05:41:12.369Z"
 }
