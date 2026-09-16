@@ -6,7 +6,12 @@ from collections.abc import Callable
 import httpx
 import psycopg
 
-from ingest.pipeline import FullAssetRun, run_all_assets, run_pipeline
+from ingest.pipeline import (
+    FullAssetRun,
+    run_pipeline,
+    run_scheduled_board,
+    run_sol_active_addresses,
+)
 from ingest.status import Result
 
 HEARTBEAT_TIMEOUT_SECONDS = 10
@@ -38,10 +43,10 @@ def run_ingestion(
     fetcher: Callable[[], Result | FullAssetRun] | None = None,
     heartbeat_client: httpx.Client | None = None,
 ) -> int | tuple[int, ...]:
-    """Persist the full board, then signal success or explicit failure."""
+    """Persist the selected scheduled run, then signal success or explicit failure."""
 
     fetch_result: Result | FullAssetRun | None = None
-    selected_fetcher = run_all_assets if fetcher is None else fetcher
+    selected_fetcher = run_scheduled_board if fetcher is None else fetcher
 
     def observed_fetcher() -> Result | FullAssetRun:
         nonlocal fetch_result
@@ -72,6 +77,16 @@ def main() -> None:
     run_ingestion(
         os.environ["DATABASE_URL"],
         os.environ["HEALTHCHECKS_PING_URL"],
+    )
+
+
+def main_sol_active_addresses() -> None:
+    """Run the long SOL active-addresses ingestion using GitHub Actions secrets."""
+
+    run_ingestion(
+        os.environ["DATABASE_URL"],
+        os.environ["HEALTHCHECKS_PING_URL"],
+        fetcher=run_sol_active_addresses,
     )
 
 

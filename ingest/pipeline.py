@@ -49,6 +49,8 @@ type BoardResult = (
     Result | FundingRateOk | OpenInterestOk | LongShortRatioOk | TakerRatioOk
 )
 
+SOL_ACTIVE_ADDRESSES_KEY = "sol_active_addresses"
+
 _HISTORY_NOTE = re.compile(
     r"^History availability measured (?P<date>\d{4}-\d{2}-\d{2}): "
     r"okx (?P<okx_kind>at least|exactly) (?P<okx_bars>\d+) daily bars; "
@@ -527,6 +529,31 @@ def run_all_assets(
         )
 
     return FullAssetRun(indicators=indicators, history=history)
+
+
+def run_scheduled_board() -> FullAssetRun:
+    """Fetch the scheduled board, leaving SOL active addresses to its slow job."""
+
+    run = run_all_assets()
+    return FullAssetRun(
+        indicators={
+            key: result
+            for key, result in run.indicators.items()
+            if key != SOL_ACTIVE_ADDRESSES_KEY
+        },
+        history=run.history,
+    )
+
+
+def run_sol_active_addresses() -> FullAssetRun:
+    """Fetch only SOL active addresses for the separate long-running schedule."""
+
+    return FullAssetRun(
+        indicators={
+            SOL_ACTIVE_ADDRESSES_KEY: _fetch_asset_active_addresses("SOL"),
+        },
+        history={},
+    )
 
 
 def persist_board(

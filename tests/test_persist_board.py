@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import inspect
 import math
 import os
 from collections.abc import Iterator
@@ -29,6 +30,8 @@ from ingest.pipeline import (
     Venue,
     run_all_assets,
     run_pipeline,
+    run_scheduled_board,
+    run_sol_active_addresses,
 )
 from ingest.registry import IndicatorDefinition, load_registry
 from ingest.status import Error, Ok, Reason, Result, Stale, Unavailable
@@ -217,6 +220,14 @@ def _board_definitions() -> tuple[IndicatorDefinition, ...]:
     )
 
 
+def _scheduled_board_definitions() -> tuple[IndicatorDefinition, ...]:
+    return tuple(
+        definition
+        for definition in _board_definitions()
+        if definition.key != pipeline.SOL_ACTIVE_ADDRESSES_KEY
+    )
+
+
 def test_full_run_writes_one_datapoint_row_per_computed_indicator(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -251,6 +262,50 @@ def test_full_run_writes_one_datapoint_row_per_computed_indicator(
     assert {row["indicator_key"] for row in persisted} == {
         definition.key for definition in definitions
     }
+
+
+def test_persist_board_has_one_path_for_technical_derivatives_and_onchain(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    source = inspect.getsource(pipeline.persist_board)
+    assert "_active_addresses" not in source
+    assert "_mvrv" not in source
+    assert "_exchange_flow" not in source
+    assert "_staking" not in source
+
+    persisted: dict[str, Result] = {}
+
+    def record_datapoint(
+        connection: object,
+        *,
+        definition: IndicatorDefinition,
+        asset: str,
+        measured_on: str,
+        result: Result,
+    ) -> int:
+        persisted[definition.key] = result
+        return len(persisted)
+
+    monkeypatch.setattr(pipeline, "persist_datapoint", record_datapoint)
+
+    row_ids = pipeline.persist_board(
+        object(),  # type: ignore[arg-type]
+        pipeline.FullAssetRun(
+            indicators={
+                "btc_rsi": Ok(value=42.0, source_timestamp=SOURCE_TIMESTAMP),
+                "btc_funding_rate": FundingRateOk(
+                    value=0.0001,
+                    source_timestamp=SOURCE_TIMESTAMP,
+                    source_field="runtime funding source field",
+                ),
+                "btc_mvrv": Ok(value=2.5, source_timestamp=SOURCE_TIMESTAMP),
+            },
+            history={},
+        ),
+    )
+
+    assert row_ids == (1, 2, 3)
+    assert set(persisted) == {"btc_rsi", "btc_funding_rate", "btc_mvrv"}
 
 
 def test_each_persisted_board_row_carries_schema_provenance(
@@ -586,6 +641,53 @@ def test_one_active_addresses_fetch_failure_persists_error_and_other_assets_cont
         "bnb_active_addresses",
         "sol_active_addresses",
     }
+
+
+def test_one_onchain_fetch_failure_persists_error_and_all_other_categories_continue(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    persisted: dict[str, Result] = {}
+
+    def fetch_mvrv(asset: str) -> Result:
+        if asset == "ETH":
+            return Error(reason=Reason.FETCH_FAILED, detail="forced ETH MVRV failure")
+        return _fetch_mvrv(asset)
+
+    def record_datapoint(
+        connection: object,
+        *,
+        definition: IndicatorDefinition,
+        asset: str,
+        measured_on: str,
+        result: Result,
+    ) -> int:
+        persisted[definition.key] = result
+        return len(persisted)
+
+    monkeypatch.setattr(pipeline, "persist_datapoint", record_datapoint)
+    run = run_all_assets(
+        fetch_bars=_fetch_bars,
+        fetch_funding_rate=_fetch_funding_rate,
+        fetch_open_interest=_fetch_open_interest,
+        fetch_long_short_ratio=_fetch_long_short_ratio,
+        fetch_taker_ratio=_fetch_taker_ratio,
+        fetch_mvrv=fetch_mvrv,
+        fetch_active_addresses=_fetch_active_addresses,
+        fetch_exchange_flow=_fetch_exchange_flow,
+        fetch_staking=_fetch_staking,
+    )
+
+    run_pipeline(object(), fetcher=lambda: run)  # type: ignore[arg-type]
+
+    assert persisted["eth_mvrv"] == Error(
+        reason=Reason.FETCH_FAILED,
+        detail="forced ETH MVRV failure",
+    )
+    assert isinstance(persisted["btc_rsi"], Ok)
+    assert isinstance(persisted["btc_funding_rate"], Ok)
+    assert isinstance(persisted["btc_active_addresses"], Ok)
+    assert isinstance(persisted["sol_staking"], Ok)
+    assert len(persisted) == len(_board_definitions())
 
 
 def test_full_run_persists_one_exchange_flow_datapoint_per_btc_eth(
@@ -983,7 +1085,7 @@ def test_database_holds_complete_board_with_failure_and_idempotent_identity(
     )
 
 
-def test_scheduled_entry_point_persists_the_full_board_and_pings_once(
+def test_scheduled_entry_point_persists_board_without_sol_active_addresses_and_pings_once(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     persisted: list[dict[str, object]] = []
@@ -1046,13 +1148,17 @@ def test_scheduled_entry_point_persists_the_full_board_and_pings_once(
 
     heartbeat.main()
 
-    definitions = _board_definitions()
+    definitions = _scheduled_board_definitions()
     assert connected_to == [DATABASE_URL]
     assert pinged == [HEARTBEAT_URL]
-    assert len(definitions) == 71
+    assert len(_board_definitions()) == 71
+    assert len(definitions) == 70
     assert len(persisted) == len(definitions)
     assert {row["indicator_key"] for row in persisted} == {
         definition.key for definition in definitions
+    }
+    assert pipeline.SOL_ACTIVE_ADDRESSES_KEY not in {
+        row["indicator_key"] for row in persisted
     }
     assert (
         sum(str(row["indicator_key"]).endswith("_funding_rate") for row in persisted)
@@ -1078,7 +1184,7 @@ def test_scheduled_entry_point_persists_the_full_board_and_pings_once(
         sum(
             str(row["indicator_key"]).endswith("_active_addresses") for row in persisted
         )
-        == 4
+        == 3
     )
     assert (
         sum(str(row["indicator_key"]).endswith("_exchange_flow") for row in persisted)
@@ -1088,13 +1194,78 @@ def test_scheduled_entry_point_persists_the_full_board_and_pings_once(
     assert all(row["asset"] == row["measured_on"] for row in persisted)
 
 
+def test_sol_active_addresses_entry_point_persists_only_that_cell_and_pings_once(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    persisted: list[dict[str, object]] = []
+    connected_to: list[str] = []
+    pinged: list[str] = []
+
+    class FakeConnection:
+        def __enter__(self) -> Self:
+            return self
+
+        def __exit__(self, *args: object) -> None:
+            return None
+
+    def connect(database_url: str) -> FakeConnection:
+        connected_to.append(database_url)
+        return FakeConnection()
+
+    def record_datapoint(
+        connection: object,
+        *,
+        definition: IndicatorDefinition,
+        asset: str,
+        measured_on: str,
+        result: Result,
+    ) -> int:
+        assert isinstance(connection, FakeConnection)
+        persisted.append(
+            {
+                "indicator_key": definition.key,
+                "asset": asset,
+                "measured_on": measured_on,
+                "status": result.status,
+            }
+        )
+        return len(persisted)
+
+    def record_ping(url: str, *, timeout: int) -> httpx.Response:
+        pinged.append(url)
+        request = httpx.Request("GET", url)
+        return httpx.Response(200, request=request)
+
+    monkeypatch.setenv("DATABASE_URL", DATABASE_URL)
+    monkeypatch.setenv("HEALTHCHECKS_PING_URL", HEARTBEAT_URL)
+    monkeypatch.setattr(heartbeat.psycopg, "connect", connect)
+    monkeypatch.setattr(heartbeat.httpx, "get", record_ping)
+    monkeypatch.setattr(
+        pipeline, "_fetch_asset_active_addresses", _fetch_active_addresses
+    )
+    monkeypatch.setattr(pipeline, "persist_datapoint", record_datapoint)
+
+    heartbeat.main_sol_active_addresses()
+
+    assert connected_to == [DATABASE_URL]
+    assert pinged == [HEARTBEAT_URL]
+    assert persisted == [
+        {
+            "indicator_key": pipeline.SOL_ACTIVE_ADDRESSES_KEY,
+            "asset": "SOL",
+            "measured_on": "SOL",
+            "status": "OK",
+        }
+    ]
+
+
 @pytest.mark.integration
-def test_live_full_board_run_persists_registry_row_count(
+def test_live_scheduled_board_run_persists_registry_minus_sol_active_addresses(
     postgres: psycopg.Connection[tuple[object, ...]],
 ) -> None:
-    run = run_all_assets()
+    run = run_scheduled_board()
     row_ids = run_pipeline(postgres, fetcher=lambda: run)
-    definitions = _board_definitions()
+    definitions = _scheduled_board_definitions()
 
     rows = postgres.execute(
         """
@@ -1106,7 +1277,8 @@ def test_live_full_board_run_persists_registry_row_count(
         (list(row_ids),),
     ).fetchall()
 
-    assert len(definitions) == 71
+    assert len(_board_definitions()) == 71
+    assert len(definitions) == 70
     assert all(item.status == "AVAILABLE" for item in run.history.values())
     assert all(item.fetched_bars == 250 for item in run.history.values())
 
@@ -1131,12 +1303,13 @@ def test_live_full_board_run_persists_registry_row_count(
     assert len(row_ids) == len(definitions)
     assert len(rows) == len(definitions)
     assert {row[0] for row in rows} == {definition.key for definition in definitions}
+    assert pipeline.SOL_ACTIVE_ADDRESSES_KEY not in {row[0] for row in rows}
     assert sum(str(row[0]).endswith("_funding_rate") for row in rows) == 4
     assert sum(str(row[0]).endswith("_open_interest") for row in rows) == 4
     assert sum(str(row[0]).endswith("_long_short_ratio") for row in rows) == 4
     assert sum(str(row[0]).endswith("_taker_ratio") for row in rows) == 4
     assert sum(str(row[0]).endswith("_mvrv") for row in rows) == 3
-    assert sum(str(row[0]).endswith("_active_addresses") for row in rows) == 4
+    assert sum(str(row[0]).endswith("_active_addresses") for row in rows) == 3
     assert sum(str(row[0]).endswith("_exchange_flow") for row in rows) == 2
     assert sum(str(row[0]).endswith("_staking") for row in rows) == 1
     assert all(row[1] == row[2] for row in rows)
@@ -1147,3 +1320,34 @@ def test_live_full_board_run_persists_registry_row_count(
             assert value is not None and reason is None and source_timestamp is not None
         else:
             assert value is None and reason is not None and source_timestamp is None
+
+
+@pytest.mark.integration
+def test_live_sol_active_addresses_run_persists_that_cell_on_its_own(
+    postgres: psycopg.Connection[tuple[object, ...]],
+) -> None:
+    run = run_sol_active_addresses()
+    row_ids = run_pipeline(postgres, fetcher=lambda: run)
+
+    rows = postgres.execute(
+        """
+        select indicator_key, asset, measured_on, value, status, reason,
+               source_vendor, endpoint, source_field, fetched_at, source_timestamp
+        from datapoints
+        where id = any(%s)
+        """,
+        (list(row_ids),),
+    ).fetchall()
+
+    assert len(row_ids) == 1
+    assert len(rows) == 1
+    row = rows[0]
+    assert row[0] == pipeline.SOL_ACTIVE_ADDRESSES_KEY
+    assert row[1] == row[2] == "SOL"
+    assert row[6] == "helius"
+    assert row[7] and row[8] and row[9]
+    value, status, reason, source_timestamp = row[3], row[4], row[5], row[10]
+    if status in ("OK", "STALE"):
+        assert value is not None and reason is None and source_timestamp is not None
+    else:
+        assert value is None and reason is not None and source_timestamp is None

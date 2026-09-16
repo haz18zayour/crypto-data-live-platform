@@ -152,6 +152,52 @@ def test_board_cell_failure_still_pings_success_after_completed_persist(
     assert requested_urls == [HEARTBEAT_URL]
 
 
+def test_default_heartbeat_run_uses_the_scheduled_board_fetcher(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    events: list[str] = []
+    board = FullAssetRun(
+        indicators={"btc_rsi": Ok(value=42.5, source_timestamp=SOURCE_TIMESTAMP)},
+        history={},
+    )
+
+    def scheduled_board() -> FullAssetRun:
+        events.append("scheduled-board")
+        return board
+
+    def persisted_pipeline(
+        connection: object, fetcher: Callable[[], Result | FullAssetRun]
+    ) -> tuple[int, ...]:
+        assert isinstance(connection, FakeConnection)
+        assert fetcher() == board
+        events.append("persisted")
+        return (1,)
+
+    install_ingestion_fakes(monkeypatch, persisted_pipeline)
+    monkeypatch.setattr(heartbeat, "run_scheduled_board", scheduled_board)
+    client = httpx.Client(
+        transport=httpx.MockTransport(
+            lambda request: (
+                events.append(f"ping:{request.url}")
+                or httpx.Response(200, request=request)
+            )
+        )
+    )
+
+    row_ids = heartbeat.run_ingestion(
+        DATABASE_URL,
+        HEARTBEAT_URL,
+        heartbeat_client=client,
+    )
+
+    assert row_ids == (1,)
+    assert events == [
+        "scheduled-board",
+        "persisted",
+        f"ping:{HEARTBEAT_URL}",
+    ]
+
+
 def test_heartbeat_failure_does_not_fail_the_run(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
