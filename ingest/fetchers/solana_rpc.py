@@ -1,9 +1,10 @@
 """Fetch SOL active addresses from public Solana JSON-RPC blocks."""
 
-from collections.abc import Iterable, Sequence
-from datetime import UTC, datetime, time as time_of_day, timedelta
 import os
 import time as time_module
+from collections.abc import Iterable, Mapping, Sequence
+from datetime import UTC, datetime, timedelta
+from datetime import time as time_of_day
 
 import httpx
 from pydantic import ValidationError
@@ -43,6 +44,49 @@ class _SlotSkipped:
 
 _SLOT_SKIPPED = _SlotSkipped()
 
+RPC_MAX_ATTEMPTS = 3
+RPC_RETRY_BACKOFF_SECONDS = 2.0
+
+
+def _post_json_with_retry(
+    body: Mapping[str, object], *, client: httpx.Client | None
+) -> object:
+    """POST one JSON-RPC body and return the parsed payload, retrying transient failures only.
+
+    Fetching one UTC hour of Solana blocks is ~9,000 individual requests; a transport-level
+    disconnect or an empty/invalid response body is close to guaranteed somewhere in a sequence
+    that long, confirmed live twice (a "Server disconnected" transport error, and a
+    "Helius RPC returned invalid JSON: Expecting value: line 1 column 1" empty body) — neither
+    is a reason to discard everything already fetched. An HTTP error status is a real,
+    non-transient outcome and is never retried here.
+    """
+
+    last_error: Exception | None = None
+    for attempt in range(1, RPC_MAX_ATTEMPTS + 1):
+        try:
+            response = (
+                httpx.post(_rpc_endpoint(), json=body, timeout=REQUEST_TIMEOUT_SECONDS)
+                if client is None
+                else client.post(
+                    _rpc_endpoint(), json=body, timeout=REQUEST_TIMEOUT_SECONDS
+                )
+            )
+            payload: object = response.json()
+            response.raise_for_status()
+            return payload
+        except httpx.HTTPStatusError as error:
+            raise SolanaRpcFailure(
+                f"Helius RPC returned HTTP {error.response.status_code}"
+            ) from error
+        except (httpx.RequestError, ValueError) as error:
+            last_error = error
+            if attempt == RPC_MAX_ATTEMPTS:
+                raise SolanaRpcFailure(
+                    f"Helius RPC request failed after {RPC_MAX_ATTEMPTS} attempts: {error}"
+                ) from error
+            time_module.sleep(RPC_RETRY_BACKOFF_SECONDS)
+    raise SolanaRpcFailure(f"Helius RPC request failed: {last_error}")  # pragma: no cover
+
 
 def _post_rpc(
     method: str,
@@ -58,30 +102,7 @@ def _post_rpc(
         "method": method,
         "params": list(params),
     }
-    try:
-        response = (
-            httpx.post(
-                _rpc_endpoint(),
-                json=body,
-                timeout=REQUEST_TIMEOUT_SECONDS,
-            )
-            if client is None
-            else client.post(
-                _rpc_endpoint(),
-                json=body,
-                timeout=REQUEST_TIMEOUT_SECONDS,
-            )
-        )
-        payload: object = response.json()
-        response.raise_for_status()
-    except httpx.RequestError as error:
-        raise SolanaRpcFailure(f"Helius RPC request failed: {error}") from error
-    except httpx.HTTPStatusError as error:
-        raise SolanaRpcFailure(
-            f"Helius RPC returned HTTP {error.response.status_code}"
-        ) from error
-    except ValueError as error:
-        raise SolanaRpcFailure(f"Helius RPC returned invalid JSON: {error}") from error
+    payload = _post_json_with_retry(body, client=client)
 
     if isinstance(payload, dict) and "error" in payload:
         error_payload = payload["error"]
@@ -178,10 +199,6 @@ def _get_blocks(
     return tuple(result)
 
 
-GET_BLOCK_MAX_ATTEMPTS = 3
-GET_BLOCK_RETRY_BACKOFF_SECONDS = 2.0
-
-
 def _get_block(slot: int, *, client: httpx.Client | None) -> SolanaBlock | None:
     body = {
         "jsonrpc": "2.0",
@@ -198,68 +215,25 @@ def _get_block(slot: int, *, client: httpx.Client | None) -> SolanaBlock | None:
             },
         ],
     }
-    # Fetching one UTC hour is ~9,000 sequential calls; a single transient disconnect
-    # (confirmed live: "Server disconnected without sending a response") must not discard
-    # everything already fetched. Retried only for transport-level failures (httpx.RequestError)
-    # — an HTTP error status or a malformed response is a real failure, not a network blip, and
-    # must not be retried into a false pass.
-    last_transport_error: httpx.RequestError | None = None
-    for attempt in range(1, GET_BLOCK_MAX_ATTEMPTS + 1):
-        try:
-            response = (
-                httpx.post(
-                    _rpc_endpoint(),
-                    json=body,
-                    timeout=REQUEST_TIMEOUT_SECONDS,
-                )
-                if client is None
-                else client.post(
-                    _rpc_endpoint(),
-                    json=body,
-                    timeout=REQUEST_TIMEOUT_SECONDS,
-                )
-            )
-            break
-        except httpx.RequestError as error:
-            last_transport_error = error
-            if attempt == GET_BLOCK_MAX_ATTEMPTS:
-                raise SolanaRpcFailure(
-                    f"Helius getBlock request failed after {GET_BLOCK_MAX_ATTEMPTS} "
-                    f"attempts: {error}"
-                ) from error
-            time_module.sleep(GET_BLOCK_RETRY_BACKOFF_SECONDS)
-    else:  # pragma: no cover - loop always breaks or raises
-        raise SolanaRpcFailure(
-            f"Helius getBlock request failed: {last_transport_error}"
-        )
+    payload = _post_json_with_retry(body, client=client)
+
+    if isinstance(payload, dict) and "error" in payload:
+        error_payload = payload["error"]
+        if isinstance(error_payload, dict):
+            # -32009: "Slot N was skipped, or missing in long-term storage" — confirmed live.
+            # Not every slot produces a block (a validator can miss its turn); this is Solana's
+            # normal, documented behavior, not a fetch failure.
+            if error_payload.get("code") == _SLOT_SKIPPED_ERROR_CODE:
+                return None
+            message = error_payload.get("message")
+            if isinstance(message, str):
+                raise SolanaRpcFailure(message)
+        raise SolanaRpcFailure("Helius getBlock returned an error")
 
     try:
-        payload: object = response.json()
-        response.raise_for_status()
-        if isinstance(payload, dict) and "error" in payload:
-            error_payload = payload["error"]
-            if isinstance(error_payload, dict):
-                # -32009: "Slot N was skipped, or missing in long-term storage" — confirmed
-                # live. Not every slot produces a block (a validator can miss its turn); this
-                # is Solana's normal, documented behavior, not a fetch failure. Treated the same
-                # as the existing "no block at this slot" case, never raised.
-                if error_payload.get("code") == -32009:
-                    return None
-                message = error_payload.get("message")
-                if isinstance(message, str):
-                    raise SolanaRpcFailure(message)
-            raise SolanaRpcFailure("Helius getBlock returned an error")
         parsed = SolanaGetBlockResponse.model_validate(payload)
-    except httpx.RequestError as error:
-        raise SolanaRpcFailure(f"Helius getBlock request failed: {error}") from error
-    except httpx.HTTPStatusError as error:
-        raise SolanaRpcFailure(
-            f"Helius getBlock returned HTTP {error.response.status_code}"
-        ) from error
     except ValidationError as error:
         raise SolanaRpcFailure(f"Invalid Helius getBlock response: {error}") from error
-    except ValueError as error:
-        raise SolanaRpcFailure(f"Helius getBlock returned invalid JSON: {error}") from error
 
     return parsed.result
 

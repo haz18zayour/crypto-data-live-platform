@@ -144,7 +144,7 @@ class CoinbaseCandleResponse(RootModel[tuple[CoinbaseCandle, ...]]):
 class CoinMetricsAssetMetricsEntry(BaseModel):
     """One row from Coin Metrics' asset-metrics endpoint."""
 
-    model_config = ConfigDict(extra="forbid", frozen=True)
+    model_config = ConfigDict(extra="forbid", frozen=True, populate_by_name=True)
 
     asset: StrictStr
     time: StrictStr
@@ -152,6 +152,19 @@ class CoinMetricsAssetMetricsEntry(BaseModel):
     AdrActCnt: StrictStr | None = None
     FlowInExNtv: StrictStr | None = None
     FlowOutExNtv: StrictStr | None = None
+    # Present whenever a metric's value is still preliminary (confirmed live, 2026-09-16:
+    # "flash" on real exchange-flow data) — Coin Metrics revises flash values as more data
+    # arrives. Not yet acted on by the fetcher (accepted so extra="forbid" doesn't reject a
+    # real response), but this is a genuine data-quality signal worth disclosing later, not
+    # a field to silently discard.
+    flow_in_status: StrictStr | None = Field(default=None, alias="FlowInExNtv-status")
+    flow_in_status_time: StrictStr | None = Field(
+        default=None, alias="FlowInExNtv-status-time"
+    )
+    flow_out_status: StrictStr | None = Field(default=None, alias="FlowOutExNtv-status")
+    flow_out_status_time: StrictStr | None = Field(
+        default=None, alias="FlowOutExNtv-status-time"
+    )
 
 
 class CoinMetricsAssetMetricsResponse(BaseModel):
