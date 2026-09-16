@@ -43,7 +43,7 @@ describe("mixed board fixture", () => {
         cell.state.status === "UNAVAILABLE" &&
         cell.state.reason === "NOT_DEFINABLE",
     );
-    expect(notDefinableCells).toHaveLength(6);
+    expect(notDefinableCells).toHaveLength(9);
     for (const cell of notDefinableCells) {
       expect(cell.state).toHaveProperty("detail");
       expect("detail" in cell.state && cell.state.detail.trim()).toBeTruthy();

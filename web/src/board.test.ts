@@ -28,7 +28,7 @@ describe("buildBoard", () => {
   test("the board model built from the parsed registry and the four assets yields one cell per family and asset", () => {
     const board = buildBoard(registry, [], BOARD_ASSETS);
 
-    expect(board.families).toHaveLength(19);
+    expect(board.families).toHaveLength(20);
     expect(board.assets).toHaveLength(4);
     expect(board.cells).toHaveLength(
       board.families.length * board.assets.length,

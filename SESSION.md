@@ -31,9 +31,9 @@ open prds/PRD-005-dashboard/20-decisions.yaml
 | PRD-004-indicators | 11 | 11 | **all green** |
 | PRD-005-dashboard | 9 | 9 | **all green** |
 | PRD-006-derivatives | 7 | 7 | **all green** |
-| PRD-007-onchain | 8 | 4 | 4/8 |
+| PRD-007-onchain | 8 | 5 | 5/8 |
 
-Spend to date: **$73.63** Claude · **170060k** Codex tokens.
+Spend to date: **$73.63** Claude · **173017k** Codex tokens.
 
 ## What happened
 
@@ -502,6 +502,12 @@ Spend to date: **$73.63** Claude · **170060k** Codex tokens.
 - 04:17  US-705 started, attempt 3 (codex)
 - 04:19  US-705 — codex finished `66449520` · 880k tok
 - 04:25  US-705 **rejected** — 0/8 criteria, judged by claude
+- 04:25  ⏸ **gate opened** — US-705 has failed 3 times — is the story wrong?
+- 16:31  US-705 **PASSED** — 8/8 criteria, judged by human
+- 16:31  ▶ gate answered **skip** — Root cause was pre-existing test fragility (three tests requiring 100% simultaneous success across all 70 live indicators), not a US-705 defect. Fixed in c76e33a; fresh full suite (284 tests, real credentials, all three independent live SOL fetches) passed end to end in 8h01m44s. See verdict.json overrideReason.
+- 13:42  US-706 started, attempt 1 (codex)
+- 13:48  US-706 — codex finished `05243d36` · 2957k tok
+- 14:04  US-706 **rejected** — 0/11 criteria, judged by claude
 
 <!-- uf:generated:end -->
 
