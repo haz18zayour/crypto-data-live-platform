@@ -140,7 +140,7 @@ describe("completeness matrix", () => {
     expect(part(notDefinable, "word")).not.toBe(part(fetchFailed, "word"));
     expect(faceClass(notDefinable)).not.toBe(faceClass(fetchFailed));
     expect(part(notDefinable, "detail")).toBe(
-      "Daily close is intentionally BTC-only on this board.",
+      "Daily close is intentionally BTC-only on this board; SOL has no daily-close cell here.",
     );
     expect(part(fetchFailed, "detail")).toBe("Synthetic upstream timeout");
   });

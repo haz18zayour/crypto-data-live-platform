@@ -33,7 +33,7 @@ open prds/PRD-005-dashboard/20-decisions.yaml
 | PRD-006-derivatives | 7 | 7 | **all green** |
 | PRD-007-onchain | 8 | 7 | 7/8 |
 
-Spend to date: **$75.44** Claude · **182566k** Codex tokens.
+Spend to date: **$75.44** Claude · **184255k** Codex tokens.
 
 ## What happened
 
@@ -549,6 +549,9 @@ Spend to date: **$75.44** Claude · **182566k** Codex tokens.
 - 15:16  US-707 started, attempt 2 (codex)
 - 15:17  US-707 — codex finished `bc22a779` · 349k tok
 - 15:19  US-707 **PASSED** — 9/9 criteria, judged by claude · $0.42
+- 15:19  US-708 started, attempt 1 (codex)
+- 15:23  US-708 — codex finished `e0b05e76` · 1690k tok
+- 15:25  US-708 **rejected** — 0/3 criteria, judged by claude
 
 <!-- uf:generated:end -->
 

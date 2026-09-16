@@ -60,7 +60,7 @@
   definable_for: [BTC]
   not_definable:
     assets: [SOL]
-    reason: BTC MVRV's SOL absence is deliberate: No vendor researched (Coin Metrics, Glassnode, CryptoQuant, Messari, Santiment) sells genuine SOL realized-cap or MVRV at any price; Solana is account-based with no UTXO to anchor a realized-cap methodology.
+    reason: "BTC MVRV's SOL absence is deliberate: No vendor researched (Coin Metrics, Glassnode, CryptoQuant, Messari, Santiment) sells genuine SOL realized-cap or MVRV at any price; Solana is account-based with no UTXO to anchor a realized-cap methodology."
   golden: fixtures/coinmetrics_asset_metrics.json
   response_model: coinmetrics_asset_metrics
   required_bars: 1
@@ -356,7 +356,7 @@
   definable_for: [ETH]
   not_definable:
     assets: [SOL]
-    reason: ETH MVRV's SOL absence is deliberate: No vendor researched (Coin Metrics, Glassnode, CryptoQuant, Messari, Santiment) sells genuine SOL realized-cap or MVRV at any price; Solana is account-based with no UTXO to anchor a realized-cap methodology.
+    reason: "ETH MVRV's SOL absence is deliberate: No vendor researched (Coin Metrics, Glassnode, CryptoQuant, Messari, Santiment) sells genuine SOL realized-cap or MVRV at any price; Solana is account-based with no UTXO to anchor a realized-cap methodology."
   golden: fixtures/coinmetrics_asset_metrics.json
   response_model: coinmetrics_asset_metrics
   required_bars: 1
@@ -931,7 +931,7 @@
   definable_for: [BNB]
   not_definable:
     assets: [SOL]
-    reason: BNB MVRV's SOL absence is deliberate: No vendor researched (Coin Metrics, Glassnode, CryptoQuant, Messari, Santiment) sells genuine SOL realized-cap or MVRV at any price; Solana is account-based with no UTXO to anchor a realized-cap methodology.
+    reason: "BNB MVRV's SOL absence is deliberate: No vendor researched (Coin Metrics, Glassnode, CryptoQuant, Messari, Santiment) sells genuine SOL realized-cap or MVRV at any price; Solana is account-based with no UTXO to anchor a realized-cap methodology."
   golden: fixtures/coinmetrics_asset_metrics.json
   response_model: coinmetrics_asset_metrics
   required_bars: 1

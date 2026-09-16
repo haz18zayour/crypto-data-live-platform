@@ -11,6 +11,22 @@ import type { Datapoint } from "./datapoint";
 
 const registry = parse(registryYaml) as BoardRegistryEntry[];
 
+function declaredReason(
+  declaration: {
+    reason?: string;
+    reasons?: readonly string[];
+  },
+  asset: string,
+): string | undefined {
+  const assetPrefix = `${asset}:`;
+  return (
+    declaration.reasons
+      ?.find((candidate) => candidate.startsWith(assetPrefix))
+      ?.slice(assetPrefix.length)
+      .trim() ?? declaration.reason
+  );
+}
+
 function provenance(indicatorKey: string, asset: string) {
   return {
     indicatorKey,
@@ -63,17 +79,17 @@ describe("buildBoard", () => {
       {
         status: "UNAVAILABLE",
         reason: "NOT_DEFINABLE",
-        detail: declaration?.reason,
+        detail: declaration ? declaredReason(declaration, "ETH") : undefined,
       },
       {
         status: "UNAVAILABLE",
         reason: "NOT_DEFINABLE",
-        detail: declaration?.reason,
+        detail: declaration ? declaredReason(declaration, "SOL") : undefined,
       },
       {
         status: "UNAVAILABLE",
         reason: "NOT_DEFINABLE",
-        detail: declaration?.reason,
+        detail: declaration ? declaredReason(declaration, "BNB") : undefined,
       },
     ]);
   });
