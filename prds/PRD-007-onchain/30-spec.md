@@ -128,6 +128,21 @@ silently substituting the free-tier `CapMVRVCur` in its place.
 | US-703 | Active addresses (Coin Metrics) registered across BTC/ETH/BNB | US-701 |
 | US-704 | SOL active addresses — built from Helius RPC, vote transactions classified client-side | US-701 |
 | US-705 | Exchange flows (Coin Metrics) — BTC/ETH only; BNB and SOL each NOT_DEFINABLE with distinct, confirmed reasons | US-701 |
-| US-706 | SOL staking — Validators.app; BTC/ETH/BNB each NOT_DEFINABLE with distinct reasons | — |
-| US-707 | One ingest run persists all three data categories — pipeline and heartbeat integration | US-702, US-703, US-704, US-705, US-706 |
+| US-707 | One ingest run persists all three data categories — pipeline and heartbeat integration | US-702, US-703, US-704, US-705, US-709 |
 | US-708 | The adversarial case — the four-asset on-chain column read at a glance, plus a forced PAYWALLED cell | US-707 |
+| US-709 | SOL staking — Validators.app; BTC/ETH/BNB each NOT_DEFINABLE with distinct reasons (re-identified from US-706) | — |
+
+**Decided mid-run, superseding US-707's original draft**: `sol_active_addresses`'s live fetch
+takes ~2.5 hours (confirmed in US-704), fifteen times `ingest.yml`'s 10-minute CI timeout. The
+owner decided directly, rather than deferring to a hypothetical future PRD-012: give
+`sol_active_addresses` its own separate, less-frequent scheduled job. Every other on-chain entry
+persists on the existing schedule, unchanged. Separately, the `[cmd: uv run pytest -q --no-header
+-o addopts=]` acceptance criterion used by every prior story in this PRD is dropped going
+forward — the full suite (including three independent live SOL fetches across
+tests/test_assets.py, tests/test_persist_board.py, and tests/test_solana_rpc_fetcher.py) takes
+~8 hours, far longer than the automated pipeline's own per-attempt verification window, so this
+criterion could never pass within an automated attempt regardless of code correctness. It cost
+US-705 three exhausted attempts and a manual owner-override, then repeated on US-706, whose SOL
+staking work was re-identified as US-709 (same content, minus the dropped criterion) because
+closing a G5 gate does not restore a story's spent attempts — only a new story id gets a fresh
+attempt count, per this project's established pattern (US-511 → US-512).

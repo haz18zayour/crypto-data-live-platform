@@ -1,0 +1,113 @@
+{
+  "storyId": "US-707",
+  "passes": true,
+  "verifier": {
+    "agent": "claude",
+    "sandbox": "restricted:read-only"
+  },
+  "implementer": "codex",
+  "results": [
+    {
+      "criterionId": "US-707-C1",
+      "met": true,
+      "evidence": {
+        "file": "ingest/pipeline.py",
+        "line": 566,
+        "testName": "test_persist_board_has_one_path_for_technical_derivatives_and_onchain",
+        "exitCode": 0
+      },
+      "note": "persist_board (pipeline.py:566-602) is one generic loop over run.indicators keyed by registry entry, with no per-category branch beyond unwrapping the shared Ok-subtype pattern (FundingRateOk/OpenInterestOk/etc). Test asserts the function source contains no _active_addresses/_mvrv/_exchange_flow/_staking special-casing."
+    },
+    {
+      "criterionId": "US-707-C2",
+      "met": true,
+      "evidence": {
+        "file": "tests/test_persist_board.py",
+        "line": 1088,
+        "testName": "test_scheduled_entry_point_persists_board_without_sol_active_addresses_and_pings_once",
+        "exitCode": 0
+      },
+      "note": "Drives heartbeat.main() end to end and asserts exactly 70 of 71 registered cells (every cell but sol_active_addresses) persist in one run with exactly one success ping."
+    },
+    {
+      "criterionId": "US-707-C3",
+      "met": true,
+      "evidence": {
+        "file": "ingest/pipeline.py",
+        "line": 390,
+        "testName": "test_scheduled_entry_point_persists_board_without_sol_active_addresses_and_pings_once",
+        "exitCode": 0
+      },
+      "note": "Fixed from the prior rejected attempt: active_address_definitions (pipeline.py:390-395) is now filtered by excluded_keys BEFORE the fetch loop at pipeline.py:529-532, so run_scheduled_board() (pipeline.py:547-552, excluded_indicator_keys=(SOL_ACTIVE_ADDRESSES_KEY,)) never calls the active-addresses fetcher for SOL at all — not just discards its result. Test's fetch_scheduled_active_addresses (test_persist_board.py:1130-1134) asserts `asset != \"SOL\"` inside the monkeypatched fetcher, proving the slow fetch is never invoked on the scheduled path."
+    },
+    {
+      "criterionId": "US-707-C4",
+      "met": true,
+      "evidence": {
+        "file": "tests/test_persist_board.py",
+        "line": 646,
+        "testName": "test_one_onchain_fetch_failure_persists_error_and_all_other_categories_continue",
+        "exitCode": 0
+      },
+      "note": "Forces an ETH MVRV fetch failure and asserts it persists as an Error row while btc_rsi (technical), btc_funding_rate (derivatives), btc_active_addresses and sol_staking (on-chain) all still persist successfully in the same run."
+    },
+    {
+      "criterionId": "US-707-C5",
+      "met": true,
+      "evidence": {
+        "file": "tests/test_heartbeat.py",
+        "line": 112,
+        "testName": "test_board_cell_failure_still_pings_success_after_completed_persist",
+        "exitCode": 0
+      },
+      "note": "Pre-existing, still exercised tests: a board with one ERROR-status cell still pings success once persistence completes, while a raised exception during persist pings the /fail endpoint (test_heartbeat.py:80, test_failed_run_pings_the_failure_endpoint_rather_than_staying_silent)."
+    },
+    {
+      "criterionId": "US-707-C6",
+      "met": true,
+      "evidence": {
+        "file": "tests/test_persist_board.py",
+        "line": 1155,
+        "testName": "test_scheduled_entry_point_persists_board_without_sol_active_addresses_and_pings_once",
+        "exitCode": 0
+      },
+      "note": "Calls heartbeat.main() — the real module-level entry point matching `python -m ingest.heartbeat` in ingest.yml — which is wired through run_ingestion -> run_scheduled_board -> run_all_assets -> run_pipeline -> persist_board -> persist_datapoint; only network-touching fetchers/db/http are substituted, the production call chain itself is exercised."
+    },
+    {
+      "criterionId": "US-707-C7",
+      "met": true,
+      "evidence": {
+        "file": "tests/test_persist_board.py",
+        "line": 1203,
+        "testName": "test_sol_active_addresses_entry_point_persists_only_that_cell_and_pings_once",
+        "exitCode": 0
+      },
+      "note": "Calls heartbeat.main_sol_active_addresses() end to end (the entry point invoked by sol-active-addresses.yml) and asserts it persists exactly one sol_active_addresses row for SOL and pings once."
+    },
+    {
+      "criterionId": "US-707-C8",
+      "met": true,
+      "evidence": {
+        "file": ".github/workflows/ingest.yml",
+        "line": 25,
+        "testName": null,
+        "exitCode": null
+      },
+      "note": "ingest.yml declares timeout-minutes: 10 and runs `python -m ingest.heartbeat` (main() -> run_scheduled_board()). Unlike the rejected attempt, run_scheduled_board now genuinely excludes the SOL active-addresses fetch before it happens (see C3), so the actual scheduled job as configured no longer performs the ~2.5h fetch and fits its timeout."
+    },
+    {
+      "criterionId": "US-707-C9",
+      "met": true,
+      "evidence": {
+        "file": ".github/workflows/sol-active-addresses.yml",
+        "line": 41,
+        "testName": null,
+        "exitCode": null
+      },
+      "note": "New dedicated workflow: cron '43 3 * * 0' (weekly), timeout-minutes: 210 (comfortably above the ~2.5h fetch), runs `main_sol_active_addresses()` which fetches only sol_active_addresses — correctly isolated from the rest of the board."
+    }
+  ],
+  "tripwires": [],
+  "note": "Attempt 2 fixes the exact defect the prior verifier caught: active_address_definitions is now filtered by excluded_indicator_keys before the fetch loop runs (pipeline.py:390-395, 529-532), so run_scheduled_board() never invokes the slow SOL fetcher at all rather than discarding its result afterward. Verified by direct code reading (not just test/description trust), and a test explicitly asserts the scheduled fetcher is never called with asset=='SOL'. All 9 criteria are met with concrete, checked evidence; no faked or assertion-free tests found.",
+  "at": "2026-09-16T15:19:59.479Z"
+}

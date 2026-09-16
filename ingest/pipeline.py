@@ -2,7 +2,7 @@
 
 import math
 import re
-from collections.abc import Callable, Mapping, Sequence
+from collections.abc import Callable, Collection, Mapping, Sequence
 from dataclasses import dataclass, replace
 from datetime import UTC, date, datetime, timedelta
 from functools import partial
@@ -12,7 +12,7 @@ import httpx
 import psycopg
 
 from ingest.compute import compute_indicator, daily_close
-from ingest.fetchers import coinbase, okx
+from ingest.fetchers import coinbase, coinmetrics, okx, solana_rpc, validators_app
 from ingest.fetchers.okx import INDICATOR_KEY, MEASURED_ON, fetch_btc_daily_close
 from ingest.fetchers.okx_derivatives import (
     FundingRateOk,
@@ -41,9 +41,15 @@ type FundingRateFetcher = Callable[[str], FundingRateResult]
 type OpenInterestFetcher = Callable[[str], OpenInterestResult]
 type LongShortRatioFetcher = Callable[[str], LongShortRatioResult]
 type TakerRatioFetcher = Callable[[str], TakerRatioResult]
+type MvrvFetcher = Callable[[str], Result]
+type ActiveAddressesFetcher = Callable[[str], Result]
+type ExchangeFlowFetcher = Callable[[str], Result]
+type StakingFetcher = Callable[[str], Result]
 type BoardResult = (
     Result | FundingRateOk | OpenInterestOk | LongShortRatioOk | TakerRatioOk
 )
+
+SOL_ACTIVE_ADDRESSES_KEY = "sol_active_addresses"
 
 _HISTORY_NOTE = re.compile(
     r"^History availability measured (?P<date>\d{4}-\d{2}-\d{2}): "
@@ -257,6 +263,35 @@ def _fetch_asset_taker_ratio(asset: str) -> TakerRatioResult:
     return fetch_taker_ratio(asset)
 
 
+def _fetch_asset_mvrv(
+    asset: str,
+    rate_limiter: coinmetrics.CoinMetricsRateLimiter | None = None,
+) -> Result:
+    return coinmetrics.fetch_mvrv(asset, rate_limiter=rate_limiter)
+
+
+def _fetch_asset_active_addresses(
+    asset: str,
+    rate_limiter: coinmetrics.CoinMetricsRateLimiter | None = None,
+) -> Result:
+    if asset == "SOL":
+        return solana_rpc.fetch_sol_active_addresses()
+    return coinmetrics.fetch_active_addresses(asset, rate_limiter=rate_limiter)
+
+
+def _fetch_asset_exchange_flow(
+    asset: str,
+    rate_limiter: coinmetrics.CoinMetricsRateLimiter | None = None,
+) -> Result:
+    return coinmetrics.fetch_exchange_flow(asset, rate_limiter=rate_limiter)
+
+
+def _fetch_asset_staking(asset: str) -> Result:
+    if asset == "SOL":
+        return validators_app.fetch_sol_staking()
+    return Unavailable(reason=Reason.NOT_DEFINABLE)
+
+
 def _calculate(definition: IndicatorDefinition, bars: Sequence[Bar]) -> float:
     parameters = definition.parameters or {}
     if definition.key == INDICATOR_KEY:
@@ -307,34 +342,67 @@ def run_all_assets(
     fetch_open_interest: OpenInterestFetcher | None = None,
     fetch_long_short_ratio: LongShortRatioFetcher | None = None,
     fetch_taker_ratio: TakerRatioFetcher | None = None,
+    fetch_mvrv: MvrvFetcher | None = None,
+    fetch_active_addresses: ActiveAddressesFetcher | None = None,
+    fetch_exchange_flow: ExchangeFlowFetcher | None = None,
+    fetch_staking: StakingFetcher | None = None,
+    excluded_indicator_keys: Collection[str] = (),
 ) -> FullAssetRun:
     """Fetch both venues and compute every registered board cell."""
 
+    excluded_keys = frozenset(excluded_indicator_keys)
     registered = load_registry().root
     definitions = tuple(
         definition
         for definition in registered
-        if definition.talib_function is not None or definition.key == INDICATOR_KEY
+        if definition.key not in excluded_keys
+        and (definition.talib_function is not None or definition.key == INDICATOR_KEY)
     )
     funding_definitions = tuple(
         definition
         for definition in registered
-        if definition.response_model == "okx_funding_rate_history"
+        if definition.key not in excluded_keys
+        and definition.response_model == "okx_funding_rate_history"
     )
     open_interest_definitions = tuple(
         definition
         for definition in registered
-        if definition.response_model == "okx_open_interest"
+        if definition.key not in excluded_keys
+        and definition.response_model == "okx_open_interest"
     )
     long_short_definitions = tuple(
         definition
         for definition in registered
-        if definition.response_model == "okx_long_short_ratio"
+        if definition.key not in excluded_keys
+        and definition.response_model == "okx_long_short_ratio"
     )
     taker_ratio_definitions = tuple(
         definition
         for definition in registered
-        if definition.response_model == "okx_taker_volume"
+        if definition.key not in excluded_keys
+        and definition.response_model == "okx_taker_volume"
+    )
+    mvrv_definitions = tuple(
+        definition
+        for definition in registered
+        if definition.key not in excluded_keys and definition.key.endswith("_mvrv")
+    )
+    active_address_definitions = tuple(
+        definition
+        for definition in registered
+        if definition.key not in excluded_keys
+        and definition.key.endswith("_active_addresses")
+    )
+    exchange_flow_definitions = tuple(
+        definition
+        for definition in registered
+        if definition.key not in excluded_keys
+        and definition.key.endswith("_exchange_flow")
+    )
+    staking_definitions = tuple(
+        definition
+        for definition in registered
+        if definition.key not in excluded_keys and definition.key.endswith("_staking")
     )
     by_asset = {
         asset: tuple(
@@ -365,6 +433,22 @@ def run_all_assets(
     )
     fetch_taker = (
         _fetch_asset_taker_ratio if fetch_taker_ratio is None else fetch_taker_ratio
+    )
+    fetch_coinmetrics_mvrv: MvrvFetcher = (
+        _fetch_asset_mvrv if fetch_mvrv is None else fetch_mvrv
+    )
+    fetch_coinmetrics_active_addresses: ActiveAddressesFetcher = (
+        _fetch_asset_active_addresses
+        if fetch_active_addresses is None
+        else fetch_active_addresses
+    )
+    fetch_coinmetrics_exchange_flow: ExchangeFlowFetcher = (
+        _fetch_asset_exchange_flow
+        if fetch_exchange_flow is None
+        else fetch_exchange_flow
+    )
+    fetch_validators_app_staking: StakingFetcher = (
+        _fetch_asset_staking if fetch_staking is None else fetch_staking
     )
     history: dict[tuple[str, Venue], HistoryAssessment] = {}
     indicators: dict[str, BoardResult] = {}
@@ -437,7 +521,46 @@ def run_all_assets(
     for definition in taker_ratio_definitions:
         indicators[definition.key] = fetch_taker(definition.definable_for[0])
 
+    for definition in mvrv_definitions:
+        indicators[definition.key] = fetch_coinmetrics_mvrv(
+            definition.definable_for[0]
+        )
+
+    for definition in active_address_definitions:
+        indicators[definition.key] = fetch_coinmetrics_active_addresses(
+            definition.definable_for[0]
+        )
+
+    for definition in exchange_flow_definitions:
+        indicators[definition.key] = fetch_coinmetrics_exchange_flow(
+            definition.definable_for[0]
+        )
+
+    for definition in staking_definitions:
+        indicators[definition.key] = fetch_validators_app_staking(
+            definition.definable_for[0]
+        )
+
     return FullAssetRun(indicators=indicators, history=history)
+
+
+def run_scheduled_board() -> FullAssetRun:
+    """Fetch the scheduled board, leaving SOL active addresses to its slow job."""
+
+    return run_all_assets(
+        excluded_indicator_keys=(SOL_ACTIVE_ADDRESSES_KEY,),
+    )
+
+
+def run_sol_active_addresses() -> FullAssetRun:
+    """Fetch only SOL active addresses for the separate long-running schedule."""
+
+    return FullAssetRun(
+        indicators={
+            SOL_ACTIVE_ADDRESSES_KEY: _fetch_asset_active_addresses("SOL"),
+        },
+        history={},
+    )
 
 
 def persist_board(

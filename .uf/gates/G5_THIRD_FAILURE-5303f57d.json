@@ -1,0 +1,22 @@
+{
+  "gate": "G5_THIRD_FAILURE",
+  "question": "US-704 has failed 3 times — is the story wrong?",
+  "feature": "PRD-007-onchain",
+  "story": "US-704",
+  "options": [
+    "split",
+    "rewrite-criteria",
+    "skip",
+    "retry-anyway"
+  ],
+  "context": "Criteria judged not met:\n  - US-704-C9: The only test matching this criterion's text (tests/test_solana_rpc_fetcher.py:302) is @pytest.mark.integration and self-skips without HELIUS_API_KEY; pyproject.toml:32 sets addopts=['-m','not integration'], so the reported green 'test' gate never executes it. No separate deterministic gate for C9 (unlike US-703's dedicated C7 override) was supplied or evidenced as run, so there is no proof this test actually hit the real Helius endpoint and returned a non-zero count rather than being silently skipped.",
+  "defaultOnTimeout": "block",
+  "id": "G5_THIRD_FAILURE-5303f57d",
+  "openedAt": "2026-09-15T22:47:47.666Z",
+  "answer": {
+    "choice": "skip",
+    "reason": "Verified directly against real live-data testing; see verdict.json overrideReason.",
+    "at": "2026-09-16T03:46:33.523Z",
+    "by": "human"
+  }
+}

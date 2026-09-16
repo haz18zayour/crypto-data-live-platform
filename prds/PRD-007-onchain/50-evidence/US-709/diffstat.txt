@@ -1,0 +1,8 @@
+.uf/events.ndjson                                  |   5 +
+ SESSION.md                                         |  28 ++++-
+ ingest/fetchers/validators_app.py                  |   2 +-
+ .../50-evidence/US-709/diffstat.txt                |   2 +
+ prds/PRD-007-onchain/50-evidence/US-709/gates.json |  14 +++
+ .../50-evidence/US-709/verdict.json                | 124 +++++++++++++++++++++
+ tests/test_validators_app_fetcher.py               |  23 +++-
+ 7 files changed, 195 insertions(+), 3 deletions(-)

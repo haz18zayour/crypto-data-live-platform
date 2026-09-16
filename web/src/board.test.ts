@@ -11,6 +11,22 @@ import type { Datapoint } from "./datapoint";
 
 const registry = parse(registryYaml) as BoardRegistryEntry[];
 
+function declaredReason(
+  declaration: {
+    reason?: string;
+    reasons?: readonly string[];
+  },
+  asset: string,
+): string | undefined {
+  const assetPrefix = `${asset}:`;
+  return (
+    declaration.reasons
+      ?.find((candidate) => candidate.startsWith(assetPrefix))
+      ?.slice(assetPrefix.length)
+      .trim() ?? declaration.reason
+  );
+}
+
 function provenance(indicatorKey: string, asset: string) {
   return {
     indicatorKey,
@@ -25,17 +41,17 @@ function provenance(indicatorKey: string, asset: string) {
 }
 
 describe("buildBoard", () => {
-  test("the board model built from the parsed registry and the four assets yields exactly 64 cells", () => {
+  test("the board model built from the parsed registry and the four assets yields one cell per family and asset", () => {
     const board = buildBoard(registry, [], BOARD_ASSETS);
 
-    expect(board.families).toHaveLength(16);
+    expect(board.families).toHaveLength(20);
     expect(board.assets).toHaveLength(4);
     expect(board.cells).toHaveLength(
       board.families.length * board.assets.length,
     );
   });
 
-  test("every one of the 64 cells carries a state and none is undefined or empty", () => {
+  test("every board cell carries a state and none is undefined or empty", () => {
     const board = buildBoard(registry, [], BOARD_ASSETS);
 
     expect(board.cells).toHaveLength(
@@ -63,19 +79,44 @@ describe("buildBoard", () => {
       {
         status: "UNAVAILABLE",
         reason: "NOT_DEFINABLE",
-        detail: declaration?.reason,
+        detail: declaration ? declaredReason(declaration, "ETH") : undefined,
       },
       {
         status: "UNAVAILABLE",
         reason: "NOT_DEFINABLE",
-        detail: declaration?.reason,
+        detail: declaration ? declaredReason(declaration, "SOL") : undefined,
       },
       {
         status: "UNAVAILABLE",
         reason: "NOT_DEFINABLE",
-        detail: declaration?.reason,
+        detail: declaration ? declaredReason(declaration, "BNB") : undefined,
       },
     ]);
+  });
+
+  test("staking gaps carry the asset-specific registry reason", () => {
+    const board = buildBoard(registry, [], BOARD_ASSETS);
+    const stakingCells = Object.fromEntries(
+      board.cells
+        .filter((cell) => cell.family === "staking")
+        .map((cell) => [cell.asset, cell]),
+    );
+
+    expect(stakingCells.BTC.state).toEqual({
+      status: "UNAVAILABLE",
+      reason: "NOT_DEFINABLE",
+      detail: "Proof-of-work has no staking concept.",
+    });
+    expect(stakingCells.ETH.state).toMatchObject({
+      status: "UNAVAILABLE",
+      reason: "NOT_DEFINABLE",
+      detail: expect.stringContaining("Out of scope for this PRD's on-chain panel"),
+    });
+    expect(stakingCells.BNB.state).toMatchObject({
+      status: "UNAVAILABLE",
+      reason: "NOT_DEFINABLE",
+      detail: expect.stringContaining("not a claim that BNB staking is undefined"),
+    });
   });
 
   test("without the declaration all three daily close gaps return to NOT_FETCHED", () => {

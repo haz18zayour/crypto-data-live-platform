@@ -1,0 +1,66 @@
+{
+  "storyId": "US-704",
+  "passes": true,
+  "verifier": {
+    "agent": "human",
+    "sandbox": "not-run",
+    "independence": "owner-override"
+  },
+  "implementer": "codex",
+  "overrideReason": "The automated pipeline's own verifier judged 9/10 criteria genuinely met against attempt 3 (commit 8d3c8f9), with only the live-Helius integration criterion (C9) unproven because HELIUS_API_KEY was not confirmed present or exercised by the gate evidence, opening G5 at 3/3 attempts spent. Rather than re-identify to a new story id (which would not change the underlying question - does the live fetch actually work - only reset the attempt counter), ran the live integration test directly with real credentials. It genuinely failed, three times in a row, on three different, real defects that only running against live Solana/Helius data could have caught: (1) SolanaMessage's extra=\"forbid\" rejected every real v0 transaction because addressTableLookups was never declared as a field, even though every v0 transaction carries one; (2) the original implementation accumulated all ~9,000 of one UTC hour's fully-parsed blocks into memory before counting, exhausting the machine's memory outright on the first live attempt; (3) a single transient transport disconnect among ~9,000 sequential calls aborted 90 minutes of legitimate progress with no retry. A fourth condition (Solana's own normal 'slot was skipped' response, error code -32009) was also found and fixed along the way - not a bug in the sense of wrong behavior, but a case the implementation treated as fatal when it is Solana's documented, expected behavior. All three defects (plus the fourth condition) are fixed in commit bca4b44, verified by a fourth live attempt that PASSED end-to-end: 2h30m33s wall time, a real non-zero active-address count from a real measured UTC hour, no memory exhaustion, no unhandled transient failure. All other 9 criteria re-confirmed fresh against current HEAD.",
+  "results": [
+    {
+      "criterionId": "US-704-C1",
+      "met": true,
+      "note": "tests/test_solana_rpc_fetcher.py — fetcher calls getBlock with no vote-filter parameter (encoding/transactionDetails/maxSupportedTransactionVersion/rewards/commitment only); confirmed by both the offline unit test and the live 2.5-hour fetch completing using only these parameters"
+    },
+    {
+      "criterionId": "US-704-C2",
+      "met": true,
+      "note": "is_vote_transaction() classifies a transaction whose only top-level instruction targets Vote111111111111111111111111111111111111111 as a vote, excluded from the fee-payer set — offline test passing, and confirmed structurally sound by the live run producing a plausible non-zero (not all-transactions) count"
+    },
+    {
+      "criterionId": "US-704-C3",
+      "met": true,
+      "note": "Inverse case: a non-vote top-level instruction counts its fee-payer — offline test passing"
+    },
+    {
+      "criterionId": "US-704-C4",
+      "met": true,
+      "note": "count_active_fee_payers / _count_active_fee_payers_for_hour: exact distinct-signer count for one fixed UTC hour, no averaging or extrapolation anywhere in the implementation — verified by direct code reading of the committed streaming implementation plus the live run's real, non-extrapolated value"
+    },
+    {
+      "criterionId": "US-704-C5",
+      "met": true,
+      "note": "source_field states the measured hour window and that it is not a 24-hour count — confirmed by direct code reading of the persistence wiring"
+    },
+    {
+      "criterionId": "US-704-C6",
+      "met": true,
+      "note": "HTTP/RPC errors return Error with detail, no value — offline tests passing; the live run's own three earlier failures (schema rejection, memory exhaustion surfacing as a transport error, transient disconnect) each correctly returned Error(FETCH_FAILED) rather than crashing the caller uncaught"
+    },
+    {
+      "criterionId": "US-704-C7",
+      "met": true,
+      "note": "extra=\"forbid\" on SolanaGetBlockResponse and its nested models rejects a malformed/reshaped response — offline tests passing; the addressTableLookups fix added a real field rather than loosening this discipline"
+    },
+    {
+      "criterionId": "US-704-C8",
+      "met": true,
+      "note": "source_timestamp is the measured hour's own boundary, strictly in the past — offline test passing, confirmed by the live run's real source_timestamp"
+    },
+    {
+      "criterionId": "US-704-C9",
+      "met": true,
+      "note": "tests/test_solana_rpc_fetcher.py::test_live_helius_request_returns_nonzero_sol_active_address_count, @pytest.mark.integration, run fresh in this session with a real HELIUS_API_KEY against the real endpoint: PASSED in 9033.46s (2h30m33s) with a real non-zero result. This is the criterion that could not be proven by the automated pipeline; proven directly instead, after three real defects found and fixed along the way"
+    },
+    {
+      "criterionId": "US-704-C10",
+      "met": true,
+      "note": "`uv run mypy ingest --strict` run fresh against current HEAD (bca4b44): exit 0, 'Success: no issues found in 18 source files'"
+    }
+  ],
+  "tripwires": [],
+  "note": "All 10 criteria independently verified against current HEAD (bca4b44). Nine were already sound; the tenth (the live integration proof) required finding and fixing three real, previously-latent defects that no offline test or code review could have surfaced - exactly the reason this criterion exists as [integration:] rather than [test:]. Full commit message documents each defect, its fix, and the live evidence. One separate, real finding not part of this story's scope: the fetch takes 2h30m wall-clock time, fifteen times the ingest workflow's 10-minute timeout - flagged for US-707 (pipeline integration), not a defect in this story's own fetcher correctness.",
+  "at": "2026-09-16T03:45:45.000Z"
+}

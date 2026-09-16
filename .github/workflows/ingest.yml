@@ -12,6 +12,7 @@ on:
       - 'ingest/**'
       - 'pyproject.toml'
       - 'tests/test_heartbeat.py'
+      - 'tests/test_persist_board.py'
       - 'uv.lock'
 
 permissions:

@@ -1,0 +1,44 @@
+name: sol-active-addresses
+
+on:
+  schedule:
+    - cron: '43 3 * * 0'
+  repository_dispatch:
+    types: [sol-active-addresses]
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/sol-active-addresses.yml'
+      - 'ingest/**'
+      - 'pyproject.toml'
+      - 'tests/test_heartbeat.py'
+      - 'tests/test_persist_board.py'
+      - 'uv.lock'
+
+permissions:
+  contents: read
+
+jobs:
+  sol-active-addresses:
+    name: sol-active-addresses
+    runs-on: ubuntu-latest
+    timeout-minutes: 210
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      HEALTHCHECKS_PING_URL: ${{ secrets.HEALTHCHECKS_PING_URL }}
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+
+      - name: Run SOL active-addresses ingestion
+        run: >
+          uv run python -c
+          "from ingest.heartbeat import main_sol_active_addresses; main_sol_active_addresses()"

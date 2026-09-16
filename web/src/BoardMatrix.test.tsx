@@ -17,6 +17,7 @@ import { definitions } from "./registry";
 // The fixture's source timestamp is 2026-09-13T00:00Z, so the stale cell is one day old.
 const NOW = new Date("2026-09-14T00:01:00Z");
 const emptyResponseBoard = buildBoard(definitions, [], BOARD_ASSETS);
+const CELL_COUNT = mixedBoard.cells.length;
 
 function renderMatrix(board: BoardModel) {
   render(<BoardMatrix board={board} now={NOW} />);
@@ -71,21 +72,21 @@ describe("completeness matrix", () => {
         .getAllByRole("rowheader")
         .map((header) => header.textContent),
     ).toEqual(mixedBoard.families.map((family) => family.replaceAll("_", " ")));
-    expect(mixedBoard.families).toHaveLength(16);
+    expect(mixedBoard.families).toHaveLength(20);
 
     const bodyRows = within(table).getAllByRole("row").slice(1);
-    expect(bodyRows).toHaveLength(16);
+    expect(bodyRows).toHaveLength(mixedBoard.families.length);
     for (const row of bodyRows) {
       expect(within(row).getAllByRole("rowheader")).toHaveLength(1);
       expect(within(row).getAllByRole("cell")).toHaveLength(BOARD_ASSETS.length);
     }
   });
 
-  test("64 data cells render and every one has non-empty text content", () => {
+  test("all data cells render and every one has non-empty text content", () => {
     for (const board of [mixedBoard, emptyResponseBoard]) {
       const cells = renderMatrix(board);
 
-      expect(cells).toHaveLength(64);
+      expect(cells).toHaveLength(CELL_COUNT);
       for (const cell of cells) {
         expect(cell.textContent?.trim()).not.toBe("");
       }
@@ -97,7 +98,7 @@ describe("completeness matrix", () => {
     for (const board of [mixedBoard, emptyResponseBoard]) {
       const cells = renderMatrix(board);
 
-      expect(cells).toHaveLength(64);
+      expect(cells).toHaveLength(CELL_COUNT);
       for (const cell of cells) {
         expect(faceClass(cell)).toBeDefined();
         expect(part(cell, "glyph")).not.toBe("");
@@ -139,7 +140,7 @@ describe("completeness matrix", () => {
     expect(part(notDefinable, "word")).not.toBe(part(fetchFailed, "word"));
     expect(faceClass(notDefinable)).not.toBe(faceClass(fetchFailed));
     expect(part(notDefinable, "detail")).toBe(
-      "Daily close is intentionally BTC-only on this board.",
+      "Daily close is intentionally BTC-only on this board; SOL has no daily-close cell here.",
     );
     expect(part(fetchFailed, "detail")).toBe("Synthetic upstream timeout");
   });
@@ -184,7 +185,7 @@ describe("completeness matrix", () => {
 
     renderPage();
 
-    await waitFor(() => expect(screen.getAllByRole("cell")).toHaveLength(64));
+    await waitFor(() => expect(screen.getAllByRole("cell")).toHaveLength(CELL_COUNT));
     await screen.findByLabelText("Not corroborated value");
 
     const urls = fetchMock.mock.calls.map(([input]) => new URL(String(input)));
@@ -206,7 +207,7 @@ describe("completeness matrix", () => {
     ).toHaveLength(definitions.length);
   });
 
-  test("rendering the mixed fixture produces all five faces at once", () => {
+  test("rendering the mixed fixture produces all six faces at once", () => {
     const cells = renderMatrix(mixedBoard);
     const faces = new Set(cells.map(faceClass));
 
@@ -214,6 +215,7 @@ describe("completeness matrix", () => {
       new Set([
         "cell--ok",
         "cell--stale",
+        "cell--not-fetched",
         "cell--not-definable",
         "cell--paywalled",
         "cell--fetch-failed",
@@ -238,7 +240,7 @@ describe("completeness matrix", () => {
 });
 
 describe("integration: the assembled page against live Supabase", () => {
-  test("the assembled page loads 64 cells from the live board_read endpoint", async () => {
+  test("the assembled page loads every cell from the live board_read endpoint", async () => {
     // Real URL, real anon key, real fetch. Missing configuration fails here; it never skips.
     expect(import.meta.env.VITE_SUPABASE_URL).toBeTruthy();
     expect(import.meta.env.VITE_SUPABASE_ANON_KEY).toBeTruthy();
@@ -247,14 +249,16 @@ describe("integration: the assembled page against live Supabase", () => {
     renderPage();
 
     await waitFor(
-      () => expect(screen.getAllByRole("cell")).toHaveLength(64),
+      () => expect(screen.getAllByRole("cell")).toHaveLength(CELL_COUNT),
       { timeout: 20_000 },
     );
     const cells = screen.getAllByRole("cell");
     for (const cell of cells) {
       expect(cell.textContent?.trim()).not.toBe("");
     }
-    expect(screen.getByRole("status")).toHaveTextContent(/of 64 indicators OK/);
+    expect(screen.getByRole("status")).toHaveTextContent(
+      new RegExp(`of ${CELL_COUNT} indicators OK`),
+    );
 
     const boardRequests = liveFetch.mock.calls.filter(
       ([input]) => new URL(String(input)).pathname === "/rest/v1/board_read",
@@ -281,6 +285,6 @@ describe("integration: the assembled page against live Supabase", () => {
     ).length;
     expect(
       cells.filter((cell) => faceClass(cell) === "cell--not-fetched"),
-    ).toHaveLength(64 - declaredNotDefinable - registeredRows.length);
+    ).toHaveLength(CELL_COUNT - declaredNotDefinable - registeredRows.length);
   }, 30_000);
 });

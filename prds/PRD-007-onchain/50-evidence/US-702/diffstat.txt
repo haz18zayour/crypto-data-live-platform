@@ -1,0 +1,20 @@
+.uf/events.ndjson                                  |   6 ++
+ SESSION.md                                         |  20 ++--
+ ingest/canary.py                                   |   2 +
+ ingest/fetchers/coinmetrics.py                     |  57 +++++++++--
+ ingest/pipeline.py                                 |  24 ++++-
+ ingest/registry.yaml                               |  51 ++++++++++
+ .../50-evidence/US-702/diffstat.txt                |  13 +++
+ prds/PRD-007-onchain/50-evidence/US-702/gates.json |  20 ++++
+ .../50-evidence/US-702/verdict.json                | 102 +++++++++++++++++++
+ tests/fixtures/coinmetrics_asset_metrics.json      |   9 ++
+ tests/test_assets.py                               |  17 ++++
+ tests/test_coverage.py                             |   2 +-
+ tests/test_persist_board.py                        | 113 +++++++++++++++++++--
+ tests/test_registry.py                             |  44 +++++++-
+ tests/test_registry_not_definable.py               |   4 +-
+ web/src/BoardMatrix.test.tsx                       |  20 ++--
+ web/src/CoverageHeadline.test.tsx                  |  10 +-
+ web/src/board.test.ts                              |   6 +-
+ web/src/fixtures/mixedBoard.test.ts                |   6 +-
+ 19 files changed, 478 insertions(+), 48 deletions(-)

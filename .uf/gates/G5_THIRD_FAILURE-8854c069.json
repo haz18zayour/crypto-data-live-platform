@@ -1,0 +1,22 @@
+{
+  "gate": "G5_THIRD_FAILURE",
+  "question": "US-705 has failed 3 times — is the story wrong?",
+  "feature": "PRD-007-onchain",
+  "story": "US-705",
+  "options": [
+    "split",
+    "rewrite-criteria",
+    "skip",
+    "retry-anyway"
+  ],
+  "context": "Criteria judged not met:\n  - US-705-C1: not judged — a cheaper layer already failed\n  - US-705-C2: not judged — a cheaper layer already failed\n  - US-705-C3: not judged — a cheaper layer already failed\n  - US-705-C4: not judged — a cheaper layer already failed\n  - US-705-C5: not judged — a cheaper layer already failed\n  - US-705-C6: not judged — a cheaper layer already failed\n  - US-705-C7: not judged — a cheaper layer already failed\n  - US-705-C8: not judged — a cheaper layer already failed",
+  "defaultOnTimeout": "block",
+  "id": "G5_THIRD_FAILURE-8854c069",
+  "openedAt": "2026-09-16T04:25:59.777Z",
+  "answer": {
+    "choice": "skip",
+    "reason": "Root cause was pre-existing test fragility (three tests requiring 100% simultaneous success across all 70 live indicators), not a US-705 defect. Fixed in c76e33a; fresh full suite (284 tests, real credentials, all three independent live SOL fetches) passed end to end in 8h01m44s. See prds/PRD-007-onchain/50-evidence/US-705/verdict.json overrideReason.",
+    "at": "2026-09-16T16:31:00.000Z",
+    "by": "human"
+  }
+}

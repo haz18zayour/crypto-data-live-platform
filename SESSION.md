@@ -9,19 +9,15 @@ Do not hand-edit it — it is regenerated. The hand-written sections below it su
 
 ## ▶ Resume here
 
-**2 uncommitted file(s) — the runner will not start**
+**PRD-005-dashboard — GATE G1, scope lock**
 
-A previous session edited source and did not commit. uf refuses to run on a dirty tree rather than auto-committing someone else's half-finished work.
+The research asked you questions and each carries the agent's own hypothesis. Anything you leave blank becomes an explicit assumption with a tripwire. The out-of-scope list is the one field with no default.
 
 Owner: **You.** This one cannot be delegated.
 
 ```
-review the diff, then: git add -A && git commit
+open prds/PRD-005-dashboard/20-decisions.yaml
 ```
-
-**Left in flight by the previous session:**
-
-- 2 uncommitted file(s): prds/PRD-007-onchain/30-spec.md, prds/PRD-007-onchain/40-stories/US-704-sol-active-addresses.md
 
 **Last handoff note:** **2026-09-15 — STOPPED HERE. PRD-007 is fully specced and compiled (8 stories, 62 criteria,
 
@@ -35,9 +31,9 @@ review the diff, then: git add -A && git commit
 | PRD-004-indicators | 11 | 11 | **all green** |
 | PRD-005-dashboard | 9 | 9 | **all green** |
 | PRD-006-derivatives | 7 | 7 | **all green** |
-| PRD-007-onchain | 8 | 0 | 0/8 |
+| PRD-007-onchain | 8 | 7 | 7/8 |
 
-Spend to date: **$70.68** Claude · **143304k** Codex tokens.
+Spend to date: **$75.44** Claude · **184255k** Codex tokens.
 
 ## What happened
 
@@ -467,6 +463,95 @@ Spend to date: **$70.68** Claude · **143304k** Codex tokens.
 - 16:13  researched PRD-007-onchain — 13 sources · $0.91
 - 16:22  **PRD-007-onchain** compiled — 8 stories
 - 20:34  **PRD-007-onchain** compiled — 8 stories
+- 20:38  US-701 started, attempt 1 (codex)
+- 20:42  US-701 — codex finished `38817e92` · 994k tok
+- 20:49  US-701 **PASSED** — 9/9 criteria, judged by claude · $0.83
+- 20:49  US-702 started, attempt 1 (codex)
+- 20:55  US-702 — codex finished `63eb5381` · 3203k tok
+- 21:05  US-702 **rejected** — 0/8 criteria, judged by claude
+- 21:05  US-702 started, attempt 2 (codex)
+- 21:12  US-702 — codex finished `e9de2733` · 3119k tok
+- 21:23  US-702 **PASSED** — 8/8 criteria, judged by claude · $0.48
+- 21:23  US-703 started, attempt 1 (codex)
+- 21:30  US-703 — codex finished `77c713a4` · 4279k tok
+- 21:45  US-703 **rejected** — 0/7 criteria, judged by claude
+- 21:45  US-703 started, attempt 2 (codex)
+- 21:52  US-703 — codex finished `eabb15e0` · 2023k tok
+- 22:10  US-703 **PASSED** — 7/7 criteria, judged by claude · $0.92
+- 22:10  US-704 started, attempt 1 (codex)
+- 22:17  US-704 — codex finished `b8cb5fd7` · 3820k tok
+- 22:23  US-704 **rejected** — 0/10 criteria, judged by claude
+- 22:23  US-704 started, attempt 2 (codex)
+- 22:28  US-704 — codex finished `b676344d` · 976k tok
+- 22:33  US-704 **rejected** — 0/10 criteria, judged by claude
+- 22:33  US-704 started, attempt 3 (codex)
+- 22:39  US-704 — codex finished `8d3c8f9b` · 1587k tok
+- 22:47  US-704 **rejected** — 9/10 criteria, judged by claude · $0.71
+- 22:47  ⏸ **gate opened** — US-704 has failed 3 times — is the story wrong?
+
+### 2026-09-16
+
+- 03:46  US-704 **PASSED** — 10/10 criteria, judged by human
+- 03:46  ▶ gate answered **skip** — Verified directly: 3 real defects found and fixed via live testing (schema gap, memory exhaustion, transient-failure resilience), then a 4th live run passed end-to-end (2h30m33s, real non-zero count). See verdict.json overrideReason.
+- 03:47  US-705 started, attempt 1 (codex)
+- 03:53  US-705 — codex finished `3989c233` · 4188k tok
+- 04:02  US-705 **rejected** — 0/8 criteria, judged by claude
+- 04:02  US-705 started, attempt 2 (codex)
+- 04:08  US-705 — codex finished `8806e73d` · 1688k tok
+- 04:17  US-705 **rejected** — 0/8 criteria, judged by claude
+- 04:17  US-705 started, attempt 3 (codex)
+- 04:19  US-705 — codex finished `66449520` · 880k tok
+- 04:25  US-705 **rejected** — 0/8 criteria, judged by claude
+- 04:25  ⏸ **gate opened** — US-705 has failed 3 times — is the story wrong?
+- 16:31  US-705 **PASSED** — 8/8 criteria, judged by human
+- 16:31  ▶ gate answered **skip** — Root cause was pre-existing test fragility (three tests requiring 100% simultaneous success across all 70 live indicators), not a US-705 defect. Fixed in c76e33a; fresh full suite (284 tests, real credentials, all three independent live SOL fetches) passed end to end in 8h01m44s. See verdict.json overrideReason.
+- 13:42  US-706 started, attempt 1 (codex)
+- 13:48  US-706 — codex finished `05243d36` · 2957k tok
+- 14:04  US-706 **rejected** — 0/11 criteria, judged by claude
+- 14:04  US-706 started, attempt 2 (codex)
+- 14:10  US-706 — codex finished `cb192163` · 1786k tok
+- 14:26  US-706 **rejected** — 0/11 criteria, judged by claude
+- 14:26  US-706 started, attempt 3 (codex)
+- 14:33  US-706 — codex finished `8c945015` · 3458k tok
+- 14:49  US-706 **rejected** — 0/11 criteria, judged by claude
+- 14:49  ⏸ **gate opened** — US-706 has failed 3 times — is the story wrong?
+- 14:55  **PRD-001-spine** compiled — 8 stories
+- 14:55  **PRD-002-harness** compiled — 7 stories
+- 14:55  **PRD-003-corroboration** compiled — 7 stories
+- 14:55  **PRD-004-indicators** compiled — 11 stories
+- 14:55  **PRD-005-dashboard** compiled — 9 stories
+- 14:55  **PRD-006-derivatives** compiled — 7 stories
+- 14:55  **PRD-007-onchain** compiled — 8 stories
+- 14:55  **PRD-001-spine** compiled — 8 stories
+- 14:55  **PRD-002-harness** compiled — 7 stories
+- 14:55  **PRD-003-corroboration** compiled — 7 stories
+- 14:55  **PRD-004-indicators** compiled — 11 stories
+- 14:55  **PRD-005-dashboard** compiled — 9 stories
+- 14:55  **PRD-006-derivatives** compiled — 7 stories
+- 14:55  **PRD-007-onchain** compiled — 8 stories
+- 14:57  **PRD-001-spine** compiled — 8 stories
+- 14:57  **PRD-002-harness** compiled — 7 stories
+- 14:57  **PRD-003-corroboration** compiled — 7 stories
+- 14:57  **PRD-004-indicators** compiled — 11 stories
+- 14:57  **PRD-005-dashboard** compiled — 9 stories
+- 14:57  **PRD-006-derivatives** compiled — 7 stories
+- 14:57  **PRD-007-onchain** compiled — 8 stories
+- 15:10  ▶ gate answered **rewrite-criteria** — US-706 re-identified as US-709; both failures were the pipeline gate-execution timeout killing the dropped [cmd: full addopts= suite] criterion, not a defect. See prds/PRD-007-onchain/30-spec.md for the full decision record.
+- 14:59  US-709 started, attempt 1 (codex)
+- 15:01  US-709 — codex finished `d83ff8af` · 580k tok
+- 15:02  US-709 **rejected** — 0/10 criteria, judged by claude
+- 15:02  US-709 started, attempt 2 (codex)
+- 15:04  US-709 — codex finished `8017f5be` · 1509k tok
+- 15:08  US-709 **PASSED** — 10/10 criteria, judged by claude · $0.84
+- 15:08  US-707 started, attempt 1 (codex)
+- 15:13  US-707 — codex finished `eb9f0a04` · 1866k tok
+- 15:16  US-707 **rejected** — 7/9 criteria, judged by claude · $0.55
+- 15:16  US-707 started, attempt 2 (codex)
+- 15:17  US-707 — codex finished `bc22a779` · 349k tok
+- 15:19  US-707 **PASSED** — 9/9 criteria, judged by claude · $0.42
+- 15:19  US-708 started, attempt 1 (codex)
+- 15:23  US-708 — codex finished `e0b05e76` · 1690k tok
+- 15:25  US-708 **rejected** — 0/3 criteria, judged by claude
 
 <!-- uf:generated:end -->
 

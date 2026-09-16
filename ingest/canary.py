@@ -13,11 +13,14 @@ from pydantic import BaseModel, ValidationError
 from ingest.heartbeat import _ping
 from ingest.registry import IndicatorDefinition, load_registry
 from ingest.schemas import (
+    CoinMetricsAssetMetricsResponse,
     OkxCandleResponse,
     OkxFundingRateHistoryResponse,
     OkxLongShortRatioResponse,
     OkxOpenInterestResponse,
     OkxTakerVolumeResponse,
+    SolanaGetBlockResponse,
+    ValidatorsAppValidatorsResponse,
 )
 
 REQUEST_TIMEOUT_SECONDS = 10
@@ -27,6 +30,9 @@ RESPONSE_MODEL_TYPES: dict[str, type[BaseModel]] = {
     "okx_open_interest": OkxOpenInterestResponse,
     "okx_long_short_ratio": OkxLongShortRatioResponse,
     "okx_taker_volume": OkxTakerVolumeResponse,
+    "coinmetrics_asset_metrics": CoinMetricsAssetMetricsResponse,
+    "solana_get_block": SolanaGetBlockResponse,
+    "validators_app_validators": ValidatorsAppValidatorsResponse,
 }
 RESPONSE_MODELS: dict[str, type[BaseModel]] = {
     definition.key: RESPONSE_MODEL_TYPES[definition.response_model]
@@ -60,6 +66,62 @@ def _validation_detail(vendor: str, error: ValidationError) -> str:
     return f"{vendor} field {field}: {first_error['msg']}"
 
 
+def _helius_rpc_endpoint() -> str:
+    api_key = os.environ.get("HELIUS_API_KEY")
+    base = "https://mainnet.helius-rpc.com/"
+    if api_key is None or not api_key.strip():
+        return base
+    return f"{base}?api-key={api_key}"
+
+
+def _check_helius_get_block(client: httpx.Client) -> object:
+    """getBlock is a JSON-RPC POST, not a GET — build and send a real request.
+
+    A bare GET (what every other registered vendor's shape-check uses) returns Helius's own
+    'Method not found' JSON-RPC error shape, which never resembles a getBlock response and
+    would falsely report every canary run as broken regardless of Helius's real health
+    (confirmed live, 2026-09-16). Queries the current slot first so getBlock targets a
+    slot that is actually finalized and available, avoiding a spurious -32009 (skipped slot).
+    """
+
+    endpoint = _helius_rpc_endpoint()
+    slot_response = client.post(
+        endpoint,
+        json={
+            "jsonrpc": "2.0",
+            "id": 1,
+            "method": "getSlot",
+            "params": [{"commitment": "finalized"}],
+        },
+        timeout=REQUEST_TIMEOUT_SECONDS,
+    )
+    slot_response.raise_for_status()
+    slot_payload = slot_response.json()
+    current_slot = slot_payload["result"]
+
+    block_response = client.post(
+        endpoint,
+        json={
+            "jsonrpc": "2.0",
+            "id": 1,
+            "method": "getBlock",
+            "params": [
+                current_slot - 50,
+                {
+                    "commitment": "finalized",
+                    "encoding": "jsonParsed",
+                    "transactionDetails": "full",
+                    "maxSupportedTransactionVersion": 1,
+                    "rewards": False,
+                },
+            ],
+        },
+        timeout=REQUEST_TIMEOUT_SECONDS,
+    )
+    block_response.raise_for_status()
+    return block_response.json()
+
+
 def _check_endpoint(
     definition: IndicatorDefinition,
     client: httpx.Client,
@@ -76,12 +138,21 @@ def _check_endpoint(
         )
 
     try:
-        response = client.get(
-            definition.endpoint,
-            timeout=REQUEST_TIMEOUT_SECONDS,
-        )
-        response.raise_for_status()
-        payload = response.json()
+        if definition.vendor == "helius":
+            payload = _check_helius_get_block(client)
+        else:
+            headers = {}
+            if definition.vendor == "validators_app":
+                token = os.environ.get("VALIDATORS_APP_API_TOKEN")
+                if token:
+                    headers["Token"] = token
+            response = client.get(
+                definition.endpoint,
+                headers=headers,
+                timeout=REQUEST_TIMEOUT_SECONDS,
+            )
+            response.raise_for_status()
+            payload = response.json()
         model.model_validate(payload)
     except ValidationError as error:
         detail = _validation_detail(definition.vendor, error)

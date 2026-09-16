@@ -50,7 +50,37 @@ class NotDefinableDefinition(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True)
 
     assets: tuple[NonEmptyString, ...] = Field(min_length=1)
-    reason: NonEmptyString
+    reason: NonEmptyString | None = None
+    reasons: tuple[NonEmptyString, ...] | None = None
+
+    @model_validator(mode="after")
+    def require_one_reason_shape(self) -> NotDefinableDefinition:
+        if self.reason is None and self.reasons is None:
+            raise ValueError("not_definable must declare reason or reasons")
+        if self.reason is not None and self.reasons is not None:
+            raise ValueError("not_definable must not mix reason and reasons")
+        if self.reasons is None:
+            return self
+        declared_assets = set()
+        for reason in self.reasons:
+            asset, separator, detail = reason.partition(":")
+            if not separator or not asset.strip() or not detail.strip():
+                raise ValueError("not_definable reasons must use 'ASSET: reason'")
+            declared_assets.add(asset.strip())
+        if declared_assets != set(self.assets):
+            raise ValueError("not_definable reasons must match assets")
+        return self
+
+    def reason_for(self, asset: str) -> str:
+        if self.reasons is not None:
+            prefix = f"{asset}:"
+            for reason in self.reasons:
+                if reason.startswith(prefix):
+                    return reason.removeprefix(prefix).strip()
+            raise KeyError(asset)
+        if self.reason is None:
+            raise KeyError(asset)
+        return self.reason
 
 
 class IndicatorDefinition(BaseModel):

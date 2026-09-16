@@ -36,7 +36,8 @@ def test_btc_daily_close_declares_three_reasoned_not_definable_assets() -> None:
 
     assert daily_close.not_definable is not None
     assert daily_close.not_definable.assets == ("ETH", "SOL", "BNB")
-    assert daily_close.not_definable.reason.strip()
+    for asset in daily_close.not_definable.assets:
+        assert daily_close.not_definable.reason_for(asset).strip()
 
 
 @pytest.mark.parametrize("reason", (None, "", "   "))
@@ -51,6 +52,34 @@ def test_not_definable_requires_a_non_empty_reason(reason: str | None) -> None:
         IndicatorDefinition.model_validate(data)
 
 
+def test_not_definable_accepts_distinct_per_asset_reasons() -> None:
+    data = definition_data()
+    data["not_definable"] = {
+        "assets": ["ETH", "BNB"],
+        "reasons": [
+            "ETH: Out of scope for this board.",
+            "BNB: Out of scope for this board.",
+        ],
+    }
+
+    definition = IndicatorDefinition.model_validate(data)
+
+    assert definition.not_definable is not None
+    assert definition.not_definable.reason_for("ETH") == "Out of scope for this board."
+    assert definition.not_definable.reason_for("BNB") == "Out of scope for this board."
+
+
+def test_not_definable_per_asset_reasons_must_cover_exactly_the_assets() -> None:
+    data = definition_data()
+    data["not_definable"] = {
+        "assets": ["ETH", "BNB"],
+        "reasons": ["ETH: Out of scope for this board."],
+    }
+
+    with pytest.raises(ValidationError, match="reasons must match assets"):
+        IndicatorDefinition.model_validate(data)
+
+
 def test_asset_cannot_be_both_definable_and_not_definable() -> None:
     data = definition_data()
     data["not_definable"] = {
@@ -62,10 +91,25 @@ def test_asset_cannot_be_both_definable_and_not_definable() -> None:
         IndicatorDefinition.model_validate(data)
 
 
-def test_registry_coverage_still_passes_for_all_61_entries() -> None:
+def test_us_708_registry_not_definable_reasons_are_unique() -> None:
+    seen: dict[str, tuple[str, str]] = {}
+
+    for entry in load_registry().root:
+        if entry.not_definable is None:
+            continue
+        for asset in entry.not_definable.assets:
+            reason = entry.not_definable.reason_for(asset)
+            assert reason not in seen, (
+                f"{entry.key}/{asset} repeats not_definable reason from "
+                f"{seen[reason][0]}/{seen[reason][1]}: {reason}"
+            )
+            seen[reason] = (entry.key, asset)
+
+
+def test_registry_coverage_still_passes_for_all_71_entries() -> None:
     registry = load_registry()
 
-    assert len(registry.root) == 61
+    assert len(registry.root) == 71
     assert_registry_coverage(
         registry,
         golden_keys={

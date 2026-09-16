@@ -1,0 +1,20 @@
+{
+  "gate": "G6_HUMAN",
+  "question": "US-708: The demonstration item the acceptance protocol calls for, not a machine check",
+  "feature": "PRD-007-onchain",
+  "story": "US-708",
+  "options": [
+    "met",
+    "not-met"
+  ],
+  "context": "Everything a machine can check has passed (2/3).\nOnly your judgement is left:\n  · The demonstration item the acceptance protocol calls for, not a machine check\n\nRun it yourself: npm run dev\nEvidence: prds/PRD-007-onchain/50-evidence/US-708/",
+  "defaultOnTimeout": "block",
+  "id": "G6_HUMAN-b125b88d",
+  "openedAt": "2026-09-16T15:34:50.858Z",
+  "answer": {
+    "choice": "met",
+    "reason": "Reviewed the captured four-asset on-chain readout (prds/PRD-007-onchain/50-evidence/US-708/adversarial-four-asset-onchain-column.md): every NOT_DEFINABLE/UNAVAILABLE reason across BTC/ETH/BNB/SOL's MVRV, active-addresses, exchange-flow, and staking cells is distinct and names its own real cause (PoW has no staking concept; out-of-scope for this PRD's SOL cell; no free-tier BNB exchange-flow metric; no vendor sells genuine SOL MVRV; no reliable SOL exchange-label set) — no two absences read as the same excuse.",
+    "at": "2026-09-16T16:36:34.000Z",
+    "by": "human"
+  }
+}

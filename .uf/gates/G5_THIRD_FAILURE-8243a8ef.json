@@ -1,0 +1,22 @@
+{
+  "gate": "G5_THIRD_FAILURE",
+  "question": "US-706 has failed 3 times — is the story wrong?",
+  "feature": "PRD-007-onchain",
+  "story": "US-706",
+  "options": [
+    "split",
+    "rewrite-criteria",
+    "skip",
+    "retry-anyway"
+  ],
+  "context": "Criteria judged not met:\n  - US-706-C1: not judged — a cheaper layer already failed\n  - US-706-C2: not judged — a cheaper layer already failed\n  - US-706-C3: not judged — a cheaper layer already failed\n  - US-706-C4: not judged — a cheaper layer already failed\n  - US-706-C5: not judged — a cheaper layer already failed\n  - US-706-C6: not judged — a cheaper layer already failed\n  - US-706-C7: not judged — a cheaper layer already failed\n  - US-706-C8: not judged — a cheaper layer already failed\n  - US-706-C9: not judged — a cheaper layer already failed\n  - US-706-C10: not judged — a cheaper layer already failed\n  - US-706-C11: not judged — a cheaper layer already failed",
+  "defaultOnTimeout": "block",
+  "id": "G5_THIRD_FAILURE-8243a8ef",
+  "openedAt": "2026-09-16T14:49:14.071Z",
+  "answer": {
+    "choice": "rewrite-criteria",
+    "reason": "US-706 re-identified as US-709; same content, minus the `[cmd: uv run pytest -q --no-header -o addopts=]` criterion. All 3 attempts failed only on that criterion being killed by the pipeline's own gate-execution timeout (the real full suite takes ~8hrs, including three independent live SOL fetches), never on a genuine defect in the SOL-staking feature itself. The owner decided directly to drop that criterion pattern going forward across this PRD, and to give US-707's sol_active_addresses fetch its own separate schedule. Re-identifying rather than answering in place because closing this gate does not restore US-706's spent attempts (run.ts opens G5 whenever attempts >= maxAttempts regardless of a prior answer) — matching this project's established precedent (US-511 -> US-512).",
+    "at": "2026-09-16T15:10:00.000Z",
+    "by": "human"
+  }
+}

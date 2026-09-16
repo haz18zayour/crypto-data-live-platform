@@ -1,0 +1,12 @@
+.uf/events.ndjson                                  |  6 +++
+ SESSION.md                                         | 10 ++++-
+ ingest/registry.yaml                               |  8 ++--
+ .../adversarial-four-asset-onchain-column.md       | 19 +++++++++
+ .../50-evidence/US-708/diffstat.txt                |  7 ++++
+ prds/PRD-007-onchain/50-evidence/US-708/gates.json | 14 +++++++
+ .../50-evidence/US-708/verdict.json                | 47 ++++++++++++++++++++++
+ tests/test_coinmetrics_fetcher.py                  | 30 ++++++++++++++
+ tests/test_registry_not_definable.py               | 18 ++++++++-
+ web/src/BoardMatrix.test.tsx                       |  2 +-
+ web/src/board.test.ts                              | 22 ++++++++--
+ 11 files changed, 172 insertions(+), 11 deletions(-)

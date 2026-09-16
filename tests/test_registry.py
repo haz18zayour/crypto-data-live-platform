@@ -94,7 +94,7 @@ def test_definable_for_requires_a_nonempty_asset_list(
 def test_shipped_registry_definitions_cover_four_assets_at_scale() -> None:
     registry = load_registry()
 
-    assert len(registry.root) == 61
+    assert len(registry.root) == 71
     assert {asset for entry in registry.root for asset in entry.definable_for} == {
         "BTC",
         "ETH",
@@ -116,6 +116,226 @@ def test_funding_rate_is_registered_once_per_asset_without_talib() -> None:
         "BNB",
     }
     assert all(entry.talib_function is None for entry in entries)
+
+
+def test_mvrv_is_registered_for_btc_eth_bnb_without_talib() -> None:
+    entries = tuple(
+        entry for entry in load_registry().root if entry.key.endswith("_mvrv")
+    )
+
+    assert {entry.definable_for[0] for entry in entries} == {
+        "BTC",
+        "ETH",
+        "BNB",
+    }
+    assert len(entries) == 3
+    assert all(entry.vendor == "coinmetrics" for entry in entries)
+    assert all(entry.talib_function is None for entry in entries)
+    assert all(entry.parameters == {} for entry in entries)
+    assert all(entry.response_model == "coinmetrics_asset_metrics" for entry in entries)
+
+
+def test_mvrv_entries_declare_sol_not_definable_with_researched_reason() -> None:
+    entries = tuple(
+        entry for entry in load_registry().root if entry.key.endswith("_mvrv")
+    )
+
+    assert len(entries) == 3
+    for entry in entries:
+        assert entry.not_definable is not None
+        assert entry.not_definable.assets == ("SOL",)
+        reason = entry.not_definable.reason
+        assert "account-based" in reason
+        assert "no UTXO" in reason
+        assert "No vendor researched" in reason
+        assert "Coin Metrics, Glassnode, CryptoQuant, Messari, Santiment" in reason
+
+
+def test_mvrv_entries_declare_uncorroborated_coinmetrics_source() -> None:
+    entries = tuple(
+        entry for entry in load_registry().root if entry.key.endswith("_mvrv")
+    )
+
+    assert len(entries) == 3
+    for entry in entries:
+        assert entry.uncorroborated is not None
+        assert entry.corroboration is None
+        assert entry.uncorroborated.note == (
+            "Coin Metrics is the only researched source for CapMVRVCur in this "
+            "PRD, so this MVRV value has no independent corroborating venue."
+        )
+
+
+def test_active_addresses_is_registered_for_btc_eth_bnb_without_talib() -> None:
+    entries = tuple(
+        entry
+        for entry in load_registry().root
+        if entry.key.endswith("_active_addresses")
+    )
+
+    assert {entry.definable_for[0] for entry in entries} == {
+        "BTC",
+        "ETH",
+        "BNB",
+        "SOL",
+    }
+    assert len(entries) == 4
+    coinmetrics_entries = tuple(
+        entry for entry in entries if entry.definable_for[0] != "SOL"
+    )
+    sol_entry = next(entry for entry in entries if entry.definable_for[0] == "SOL")
+    assert all(entry.vendor == "coinmetrics" for entry in coinmetrics_entries)
+    assert sol_entry.vendor == "helius"
+    assert all(entry.talib_function is None for entry in entries)
+    assert all(entry.parameters == {} for entry in entries)
+    assert all(
+        entry.response_model == "coinmetrics_asset_metrics"
+        for entry in coinmetrics_entries
+    )
+    assert sol_entry.response_model == "solana_get_block"
+    assert all(entry.source_field == "data[].AdrActCnt" for entry in coinmetrics_entries)
+    assert "not a 24-hour count" in sol_entry.source_field
+    assert all("metrics=AdrActCnt" in entry.endpoint for entry in coinmetrics_entries)
+
+
+def test_active_addresses_entries_declare_uncorroborated_coinmetrics_source() -> None:
+    entries = tuple(
+        entry
+        for entry in load_registry().root
+        if entry.key.endswith("_active_addresses")
+    )
+
+    assert len(entries) == 4
+    for entry in entries:
+        assert entry.uncorroborated is not None
+        assert entry.corroboration is None
+    for entry in entries:
+        if entry.definable_for[0] == "SOL":
+            assert "one-hour method" in entry.uncorroborated.note
+            continue
+        assert entry.uncorroborated.note == (
+            "Coin Metrics is the only researched source for AdrActCnt in this "
+            "PRD, so this active-addresses value has no independent corroborating "
+            "venue."
+        )
+
+
+def test_staking_is_registered_for_sol_without_talib() -> None:
+    entries = tuple(
+        entry for entry in load_registry().root if entry.key.endswith("_staking")
+    )
+
+    assert len(entries) == 1
+    entry = entries[0]
+    assert entry.key == "sol_staking"
+    assert entry.vendor == "validators_app"
+    assert entry.definable_for == ("SOL",)
+    assert entry.talib_function is None
+    assert entry.parameters == {}
+    assert entry.response_model == "validators_app_validators"
+    assert entry.source_field == (
+        "sum of active_stake across every mainnet validator from Validators.app "
+        "validators/mainnet, converted from lamports to SOL (the epochs endpoint's "
+        "total_active_stake is permanently null, confirmed live 2026-09-16)"
+    )
+    assert "validators/mainnet.json?per=2000" in entry.endpoint
+
+
+def test_sol_staking_entry_declares_uncorroborated_validators_app_source() -> None:
+    entry = next(entry for entry in load_registry().root if entry.key == "sol_staking")
+
+    assert entry.uncorroborated is not None
+    assert entry.corroboration is None
+    assert entry.uncorroborated.note == (
+        "Validators.app is the only researched free source used for SOL staking "
+        "in this PRD, so this staking value has no independent corroborating venue."
+    )
+
+
+def test_staking_declares_btc_eth_bnb_not_definable_with_distinct_reasons() -> None:
+    entry = next(entry for entry in load_registry().root if entry.key == "sol_staking")
+
+    assert entry.not_definable is not None
+    assert entry.not_definable.assets == ("BTC", "ETH", "BNB")
+    reasons = {
+        asset: entry.not_definable.reason_for(asset)
+        for asset in entry.not_definable.assets
+    }
+
+    assert "Proof-of-work has no staking concept" in reasons["BTC"]
+    for asset in ("ETH", "BNB"):
+        assert "Out of scope for this PRD's on-chain panel" in reasons[asset]
+        assert (
+            "SOL staking is research R8's specific build recommendation"
+            in reasons[asset]
+        )
+        assert f"not a claim that {asset} staking is undefined" in reasons[asset]
+        assert "proof-of-work" not in reasons[asset].casefold()
+    assert reasons["ETH"] != reasons["BTC"]
+    assert reasons["BNB"] != reasons["BTC"]
+
+
+def test_exchange_flow_is_registered_for_btc_eth_only_without_talib() -> None:
+    entries = tuple(
+        entry
+        for entry in load_registry().root
+        if entry.key.endswith("_exchange_flow")
+    )
+
+    assert {entry.definable_for[0] for entry in entries} == {"BTC", "ETH"}
+    assert len(entries) == 2
+    assert all(entry.vendor == "coinmetrics" for entry in entries)
+    assert all(entry.talib_function is None for entry in entries)
+    assert all(entry.parameters == {} for entry in entries)
+    assert all(entry.response_model == "coinmetrics_asset_metrics" for entry in entries)
+    assert all(
+        entry.source_field == "data[].FlowInExNtv - data[].FlowOutExNtv"
+        for entry in entries
+    )
+    assert all(
+        "metrics=FlowInExNtv,FlowOutExNtv" in entry.endpoint for entry in entries
+    )
+
+
+def test_exchange_flow_declares_bnb_and_sol_not_definable_with_distinct_reasons() -> None:
+    entries = tuple(
+        entry
+        for entry in load_registry().root
+        if entry.key.endswith("_exchange_flow")
+    )
+    reasons = {
+        asset: entry.not_definable.reason
+        for entry in entries
+        if entry.not_definable is not None
+        for asset in entry.not_definable.assets
+    }
+
+    assert set(reasons) == {"BNB", "SOL"}
+    assert "Coin Metrics" in reasons["BNB"]
+    assert "NO-METRIC" in reasons["BNB"] or "bad_parameter" in reasons["BNB"]
+    assert "FlowInExNtv" in reasons["BNB"]
+    assert "FlowOutExNtv" in reasons["BNB"]
+    assert "exchange-wallet labeling ecosystem" in reasons["SOL"]
+    assert "confidently-wrong number" in reasons["SOL"]
+    assert reasons["BNB"] != reasons["SOL"]
+
+
+def test_exchange_flow_entries_declare_uncorroborated_coinmetrics_source() -> None:
+    entries = tuple(
+        entry
+        for entry in load_registry().root
+        if entry.key.endswith("_exchange_flow")
+    )
+
+    assert len(entries) == 2
+    for entry in entries:
+        assert entry.uncorroborated is not None
+        assert entry.corroboration is None
+        assert entry.uncorroborated.note == (
+            "Coin Metrics is the only researched source for FlowInExNtv and "
+            "FlowOutExNtv in this PRD, so this exchange-flow value has no "
+            "independent corroborating venue."
+        )
 
 
 def test_funding_rate_entries_declare_g1_uncorroborated_reason() -> None:
@@ -166,9 +386,7 @@ def test_long_short_ratio_is_registered_once_per_asset_without_talib() -> None:
     assert len(entries) == 4
     assert all(entry.talib_function is None for entry in entries)
     assert all(entry.uncorroborated is not None for entry in entries)
-    assert all(
-        entry.response_model == "okx_long_short_ratio" for entry in entries
-    )
+    assert all(entry.response_model == "okx_long_short_ratio" for entry in entries)
 
 
 def test_taker_ratio_is_registered_once_per_asset_without_talib() -> None:

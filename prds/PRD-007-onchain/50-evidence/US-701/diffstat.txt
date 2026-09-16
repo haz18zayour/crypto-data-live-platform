@@ -1,0 +1,5 @@
+.uf/events.ndjson                 |   2 +
+ ingest/fetchers/coinmetrics.py    | 186 ++++++++++++++++++++++++++++++
+ ingest/schemas.py                 |  18 +++
+ tests/test_coinmetrics_fetcher.py | 237 ++++++++++++++++++++++++++++++++++++++
+ 4 files changed, 443 insertions(+)

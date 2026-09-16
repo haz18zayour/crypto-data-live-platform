@@ -1,0 +1,14 @@
+[
+  {
+    "name": "typecheck",
+    "run": "node -e \"const f=require('fs'),c=require('child_process');let r=0;const run=(cmd)=>{try{c.execSync(cmd,{stdio:'inherit'})}catch(e){r=1}};if(f.existsSync('web/package.json'))run('npm --prefix web run typecheck');if(f.existsSync('pyproject.toml'))run('uv run mypy ingest --strict');process.exit(r)\"",
+    "exitCode": 0,
+    "output": "\n> crypto-data-live-web@0.0.0 typecheck\n> tsc -b --pretty false\n\nSuccess: no issues found in 19 source files\r\n"
+  },
+  {
+    "name": "test",
+    "run": "node -e \"const f=require('fs'),c=require('child_process');let r=0;const run=(cmd)=>{try{c.execSync(cmd,{stdio:'inherit'})}catch(e){r=1}};if(f.existsSync('web/package.json'))run('npm --prefix web test');if(f.existsSync('tests'))run('uv run pytest -q');process.exit(r)\"",
+    "exitCode": 0,
+    "output": "\n> crypto-data-live-web@0.0.0 pretest\n> playwright install chromium chromium-headless-shell\n\n\n> crypto-data-live-web@0.0.0 test\n> vitest run --configLoader runner\n\n\n RUN  v4.1.9 C:/Users/user/Desktop/Projects/crypto-data-live-platform/web\n\n\n Test Files  11 passed (11)\n      Tests  52 passed (52)\n   Start at  18:04:53\n   Duration  3.66s (transform 534ms, setup 1.84s, import 1.90s, tests 6.27s, environment 5.65s)\n\n........................................................................ [ 26%]\r\n........................................................................ [ 53%]\r\n........................................................................ [ 79%]\r\n.......................................................                  [100%]\r\n271 passed, 28 deselected in 46.73s\r\n"
+  }
+]
