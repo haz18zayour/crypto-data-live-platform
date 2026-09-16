@@ -43,7 +43,6 @@ pattern: a board-scope reason, stated as such, not a claim of universal impossib
 - [test: `assert_registry_coverage` passes for the new entry] Golden, response model, required_bars, parameters
 - [test: a run persists one staking datapoint for SOL] End to end for this metric
 - [integration: a live Validators.app request returns real SOL validator/stake data] Hits the real endpoint
-- [cmd: uv run pytest -q --no-header -o addopts=] The full offline suite stays green
 
 ## Notes for the implementer
 

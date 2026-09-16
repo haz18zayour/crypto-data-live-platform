@@ -1,11 +1,15 @@
-.uf/events.ndjson                                  |   5 +
- SESSION.md                                         |  13 +-
+.uf/events.ndjson                                  |   8 +
+ SESSION.md                                         |  16 +-
  ingest/canary.py                                   |   8 +
  ingest/fetchers/validators_app.py                  | 104 +++++++++++++
  ingest/pipeline.py                                 |  21 ++-
+ ingest/registry.py                                 |  32 +++-
  ingest/registry.yaml                               |  17 +++
  ingest/schemas.py                                  |  23 +++
- .../50-evidence/US-706/diffstat.txt                |  16 ++
+ prds/PRD-007-onchain/30-spec.md                    |  12 ++
+ .../40-stories/US-706-sol-staking.md               |   1 -
+ .../40-stories/US-707-one-ingest-run.md            |  39 +++--
+ .../50-evidence/US-706/diffstat.txt                |  23 +++
  prds/PRD-007-onchain/50-evidence/US-706/gates.json |  20 +++
  .../50-evidence/US-706/verdict.json                |  69 +++++++++
  tests/fixtures/validators_app_epochs.json          |  14 ++
@@ -13,11 +17,12 @@
  tests/test_coverage.py                             |   2 +-
  tests/test_okx_derivatives_fetcher.py              |   4 +
  tests/test_persist_board.py                        |  72 ++++++++-
- tests/test_registry.py                             |  47 +++++-
- tests/test_registry_not_definable.py               |   4 +-
+ tests/test_registry.py                             |  56 ++++++-
+ tests/test_registry_not_definable.py               |  32 +++-
  tests/test_validators_app_fetcher.py               | 170 +++++++++++++++++++++
  web/src/BoardMatrix.test.tsx                       |   2 +-
  web/src/CoverageHeadline.test.tsx                  |  10 +-
- web/src/board.test.ts                              |   2 +-
+ web/src/board.test.ts                              |  27 +++-
+ web/src/board.ts                                   |  17 ++-
  web/src/fixtures/mixedBoard.test.ts                |   2 +-
- 22 files changed, 623 insertions(+), 24 deletions(-)
+ 27 files changed, 784 insertions(+), 39 deletions(-)
