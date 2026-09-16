@@ -43,6 +43,7 @@ type LongShortRatioFetcher = Callable[[str], LongShortRatioResult]
 type TakerRatioFetcher = Callable[[str], TakerRatioResult]
 type MvrvFetcher = Callable[[str], Result]
 type ActiveAddressesFetcher = Callable[[str], Result]
+type ExchangeFlowFetcher = Callable[[str], Result]
 type BoardResult = (
     Result | FundingRateOk | OpenInterestOk | LongShortRatioOk | TakerRatioOk
 )
@@ -275,6 +276,13 @@ def _fetch_asset_active_addresses(
     return coinmetrics.fetch_active_addresses(asset, rate_limiter=rate_limiter)
 
 
+def _fetch_asset_exchange_flow(
+    asset: str,
+    rate_limiter: coinmetrics.CoinMetricsRateLimiter | None = None,
+) -> Result:
+    return coinmetrics.fetch_exchange_flow(asset, rate_limiter=rate_limiter)
+
+
 def _calculate(definition: IndicatorDefinition, bars: Sequence[Bar]) -> float:
     parameters = definition.parameters or {}
     if definition.key == INDICATOR_KEY:
@@ -327,6 +335,7 @@ def run_all_assets(
     fetch_taker_ratio: TakerRatioFetcher | None = None,
     fetch_mvrv: MvrvFetcher | None = None,
     fetch_active_addresses: ActiveAddressesFetcher | None = None,
+    fetch_exchange_flow: ExchangeFlowFetcher | None = None,
 ) -> FullAssetRun:
     """Fetch both venues and compute every registered board cell."""
 
@@ -363,6 +372,11 @@ def run_all_assets(
         definition
         for definition in registered
         if definition.key.endswith("_active_addresses")
+    )
+    exchange_flow_definitions = tuple(
+        definition
+        for definition in registered
+        if definition.key.endswith("_exchange_flow")
     )
     by_asset = {
         asset: tuple(
@@ -401,6 +415,11 @@ def run_all_assets(
         _fetch_asset_active_addresses
         if fetch_active_addresses is None
         else fetch_active_addresses
+    )
+    fetch_coinmetrics_exchange_flow: ExchangeFlowFetcher = (
+        _fetch_asset_exchange_flow
+        if fetch_exchange_flow is None
+        else fetch_exchange_flow
     )
     history: dict[tuple[str, Venue], HistoryAssessment] = {}
     indicators: dict[str, BoardResult] = {}
@@ -480,6 +499,11 @@ def run_all_assets(
 
     for definition in active_address_definitions:
         indicators[definition.key] = fetch_coinmetrics_active_addresses(
+            definition.definable_for[0]
+        )
+
+    for definition in exchange_flow_definitions:
+        indicators[definition.key] = fetch_coinmetrics_exchange_flow(
             definition.definable_for[0]
         )
 

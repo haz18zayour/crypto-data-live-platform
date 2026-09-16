@@ -101,6 +101,11 @@ def synthetic_active_addresses(asset: str) -> Ok:
     return Ok(value=offset, source_timestamp=SOURCE_TIMESTAMP)
 
 
+def synthetic_exchange_flow(asset: str) -> Ok:
+    offset = {"BTC": 10.0, "ETH": 20.0}[asset]
+    return Ok(value=offset, source_timestamp=SOURCE_TIMESTAMP)
+
+
 def test_registry_declares_measured_history_availability_per_asset_per_venue() -> (
     None
 ):
@@ -151,6 +156,7 @@ def test_asset_with_fewer_available_bars_than_required_is_declared_uncorroborate
         fetch_taker_ratio=synthetic_taker_ratio,
         fetch_mvrv=synthetic_mvrv,
         fetch_active_addresses=synthetic_active_addresses,
+        fetch_exchange_flow=synthetic_exchange_flow,
     )
     assessment = run.history[("BNB", "coinbase")]
 
@@ -210,6 +216,7 @@ def test_all_four_assets_produce_an_indicator_value_or_explicit_status() -> None
         fetch_taker_ratio=synthetic_taker_ratio,
         fetch_mvrv=synthetic_mvrv,
         fetch_active_addresses=synthetic_active_addresses,
+        fetch_exchange_flow=synthetic_exchange_flow,
     )
     technical_definitions = tuple(
         definition
@@ -383,6 +390,7 @@ def test_full_run_routes_each_asset_to_its_actual_pair_at_both_venues(
         fetch_taker_ratio=synthetic_taker_ratio,
         fetch_mvrv=synthetic_mvrv,
         fetch_active_addresses=synthetic_active_addresses,
+        fetch_exchange_flow=synthetic_exchange_flow,
     )
 
     assert requested_pairs == {

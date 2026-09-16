@@ -150,6 +150,8 @@ class CoinMetricsAssetMetricsEntry(BaseModel):
     time: StrictStr
     CapMVRVCur: StrictStr | None = None
     AdrActCnt: StrictStr | None = None
+    FlowInExNtv: StrictStr | None = None
+    FlowOutExNtv: StrictStr | None = None
 
 
 class CoinMetricsAssetMetricsResponse(BaseModel):

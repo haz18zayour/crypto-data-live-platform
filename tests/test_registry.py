@@ -94,7 +94,7 @@ def test_definable_for_requires_a_nonempty_asset_list(
 def test_shipped_registry_definitions_cover_four_assets_at_scale() -> None:
     registry = load_registry()
 
-    assert len(registry.root) == 68
+    assert len(registry.root) == 70
     assert {asset for entry in registry.root for asset in entry.definable_for} == {
         "BTC",
         "ETH",
@@ -217,6 +217,69 @@ def test_active_addresses_entries_declare_uncorroborated_coinmetrics_source() ->
             "Coin Metrics is the only researched source for AdrActCnt in this "
             "PRD, so this active-addresses value has no independent corroborating "
             "venue."
+        )
+
+
+def test_exchange_flow_is_registered_for_btc_eth_only_without_talib() -> None:
+    entries = tuple(
+        entry
+        for entry in load_registry().root
+        if entry.key.endswith("_exchange_flow")
+    )
+
+    assert {entry.definable_for[0] for entry in entries} == {"BTC", "ETH"}
+    assert len(entries) == 2
+    assert all(entry.vendor == "coinmetrics" for entry in entries)
+    assert all(entry.talib_function is None for entry in entries)
+    assert all(entry.parameters == {} for entry in entries)
+    assert all(entry.response_model == "coinmetrics_asset_metrics" for entry in entries)
+    assert all(
+        entry.source_field == "data[].FlowInExNtv - data[].FlowOutExNtv"
+        for entry in entries
+    )
+    assert all(
+        "metrics=FlowInExNtv,FlowOutExNtv" in entry.endpoint for entry in entries
+    )
+
+
+def test_exchange_flow_declares_bnb_and_sol_not_definable_with_distinct_reasons() -> None:
+    entries = tuple(
+        entry
+        for entry in load_registry().root
+        if entry.key.endswith("_exchange_flow")
+    )
+    reasons = {
+        asset: entry.not_definable.reason
+        for entry in entries
+        if entry.not_definable is not None
+        for asset in entry.not_definable.assets
+    }
+
+    assert set(reasons) == {"BNB", "SOL"}
+    assert "Coin Metrics" in reasons["BNB"]
+    assert "NO-METRIC" in reasons["BNB"] or "bad_parameter" in reasons["BNB"]
+    assert "FlowInExNtv" in reasons["BNB"]
+    assert "FlowOutExNtv" in reasons["BNB"]
+    assert "exchange-wallet labeling ecosystem" in reasons["SOL"]
+    assert "confidently-wrong number" in reasons["SOL"]
+    assert reasons["BNB"] != reasons["SOL"]
+
+
+def test_exchange_flow_entries_declare_uncorroborated_coinmetrics_source() -> None:
+    entries = tuple(
+        entry
+        for entry in load_registry().root
+        if entry.key.endswith("_exchange_flow")
+    )
+
+    assert len(entries) == 2
+    for entry in entries:
+        assert entry.uncorroborated is not None
+        assert entry.corroboration is None
+        assert entry.uncorroborated.note == (
+            "Coin Metrics is the only researched source for FlowInExNtv and "
+            "FlowOutExNtv in this PRD, so this exchange-flow value has no "
+            "independent corroborating venue."
         )
 
 

@@ -10,6 +10,7 @@ from ingest.fetchers.coinmetrics import (
     _fetch_btc_metric,
     fetch_active_addresses,
     fetch_btc_mvrv,
+    fetch_exchange_flow,
 )
 from ingest.schemas import CoinMetricsAssetMetricsResponse
 from ingest.status import Error, Ok, Reason, Unavailable
@@ -45,6 +46,25 @@ def active_addresses_payload(
                 "asset": asset,
                 "time": source_timestamp.isoformat().replace("+00:00", "Z"),
                 "AdrActCnt": value,
+            }
+        ]
+    }
+
+
+def exchange_flow_payload(
+    source_timestamp: datetime,
+    *,
+    asset: str = "btc",
+    flow_in: str = "125.5",
+    flow_out: str = "100.25",
+) -> dict[str, list[dict[str, str]]]:
+    return {
+        "data": [
+            {
+                "asset": asset,
+                "time": source_timestamp.isoformat().replace("+00:00", "Z"),
+                "FlowInExNtv": flow_in,
+                "FlowOutExNtv": flow_out,
             }
         ]
     }
@@ -96,6 +116,32 @@ def test_fetcher_calls_asset_metrics_for_active_addresses_without_api_key() -> N
     assert str(request.url).startswith(COINMETRICS_ASSET_METRICS_ENDPOINT)
     assert request.url.params["assets"] == "eth"
     assert request.url.params["metrics"] == "AdrActCnt"
+    assert "api_key" not in request.url.params
+    assert "apikey" not in request.url.params
+    assert "authorization" not in {key.lower() for key in request.headers}
+    assert "x-cm-api-key" not in {key.lower() for key in request.headers}
+
+
+def test_fetcher_calls_asset_metrics_for_net_exchange_flow_without_api_key() -> None:
+    requested: list[httpx.Request] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        requested.append(request)
+        return httpx.Response(
+            200,
+            json=exchange_flow_payload(NOW - timedelta(days=1), asset="eth"),
+            request=request,
+        )
+
+    with httpx.Client(transport=httpx.MockTransport(handler)) as client:
+        result = fetch_exchange_flow("ETH", client=client, now=NOW)
+
+    assert isinstance(result, Ok)
+    assert result.value == 25.25
+    request = requested[0]
+    assert str(request.url).startswith(COINMETRICS_ASSET_METRICS_ENDPOINT)
+    assert request.url.params["assets"] == "eth"
+    assert request.url.params["metrics"] == "FlowInExNtv,FlowOutExNtv"
     assert "api_key" not in request.url.params
     assert "apikey" not in request.url.params
     assert "authorization" not in {key.lower() for key in request.headers}
@@ -165,6 +211,13 @@ def test_response_model_rejects_added_renamed_or_retyped_fields() -> None:
     retyped["data"][0]["CapMVRVCur"] = 2.123456  # type: ignore[assignment]
     with pytest.raises(ValidationError, match="string_type"):
         CoinMetricsAssetMetricsResponse.model_validate(retyped)
+
+    flow_renamed = exchange_flow_payload(NOW - timedelta(days=1))
+    flow_renamed["data"][0]["FlowInExchangeNtv"] = flow_renamed["data"][0].pop(
+        "FlowInExNtv"
+    )
+    with pytest.raises(ValidationError, match="FlowInExchangeNtv"):
+        CoinMetricsAssetMetricsResponse.model_validate(flow_renamed)
 
 
 def test_malformed_response_becomes_fetch_failed_error() -> None:

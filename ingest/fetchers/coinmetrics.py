@@ -252,3 +252,105 @@ def fetch_active_addresses(
         now=now,
         rate_limiter=rate_limiter,
     )
+
+
+def fetch_exchange_flow(
+    asset: str,
+    client: httpx.Client | None = None,
+    now: datetime | None = None,
+    rate_limiter: CoinMetricsRateLimiter | None = None,
+) -> Result:
+    """Return latest net exchange flow, inflow minus outflow, or absence."""
+
+    asset_parameter = asset.casefold()
+    params = {
+        "assets": asset_parameter,
+        "metrics": "FlowInExNtv,FlowOutExNtv",
+        "limit_per_asset": "1",
+        "page_size": "1",
+    }
+    try:
+        limiter = rate_limiter
+        if limiter is None and client is None:
+            limiter = _DEFAULT_RATE_LIMITER
+        if limiter is not None:
+            limiter.wait()
+        response = (
+            httpx.get(
+                COINMETRICS_ASSET_METRICS_ENDPOINT,
+                params=params,
+                timeout=REQUEST_TIMEOUT_SECONDS,
+            )
+            if client is None
+            else client.get(
+                COINMETRICS_ASSET_METRICS_ENDPOINT,
+                params=params,
+                timeout=REQUEST_TIMEOUT_SECONDS,
+            )
+        )
+    except httpx.RequestError as error:
+        return Error(
+            reason=Reason.FETCH_FAILED,
+            detail=f"Coin Metrics request failed: {error}",
+        )
+
+    try:
+        payload: object = response.json()
+    except ValueError:
+        payload = None
+
+    error_type = _coinmetrics_error_type(payload)
+    if response.status_code == 403 and error_type in {None, "forbidden"}:
+        return Unavailable(reason=Reason.PAYWALLED)
+    if error_type == "bad_parameter":
+        message = _coinmetrics_error_message(payload) or "bad_parameter"
+        return Error(reason=Reason.FETCH_FAILED, detail=message)
+
+    try:
+        response.raise_for_status()
+    except httpx.HTTPStatusError as error:
+        return Error(
+            reason=Reason.FETCH_FAILED,
+            detail=f"Coin Metrics returned HTTP {error.response.status_code}",
+        )
+
+    try:
+        rows = CoinMetricsAssetMetricsResponse.model_validate(payload).data
+        if len(rows) != 1:
+            return Error(
+                reason=Reason.FETCH_FAILED,
+                detail=(
+                    "Coin Metrics returned an unexpected number of "
+                    "FlowInExNtv/FlowOutExNtv entries"
+                ),
+            )
+        row = rows[0]
+        if row.asset != asset_parameter:
+            return Error(
+                reason=Reason.FETCH_FAILED,
+                detail=(
+                    f"Coin Metrics returned asset {row.asset}, "
+                    f"expected {asset_parameter}"
+                ),
+            )
+        source_timestamp = _parse_coinmetrics_time(row.time)
+        current_time = datetime.now(UTC) if now is None else now
+        if source_timestamp >= current_time:
+            return Error(
+                reason=Reason.FETCH_FAILED,
+                detail="Coin Metrics source timestamp is in the future or present",
+            )
+        if row.FlowInExNtv is None or row.FlowOutExNtv is None:
+            return Error(
+                reason=Reason.FETCH_FAILED,
+                detail="Coin Metrics response omitted FlowInExNtv or FlowOutExNtv",
+            )
+        return Ok(
+            value=float(row.FlowInExNtv) - float(row.FlowOutExNtv),
+            source_timestamp=source_timestamp,
+        )
+    except (TypeError, ValueError, OverflowError) as error:
+        return Error(
+            reason=Reason.FETCH_FAILED,
+            detail=f"Invalid Coin Metrics asset-metrics response: {error}",
+        )
