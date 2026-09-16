@@ -661,14 +661,14 @@
     note: Helius Solana RPC is the only researched source used for this built SOL active-addresses cell, and its one-hour method is not directly comparable to Coin Metrics' 24-hour AdrActCnt.
 - key: sol_staking
   vendor: validators_app
-  endpoint: https://www.validators.app/api/v1/epochs/mainnet.json?per=1
-  source_field: epochs[0].total_active_stake from Validators.app epochs/mainnet, converted from lamports to SOL
+  endpoint: https://www.validators.app/api/v1/validators/mainnet.json?per=2000
+  source_field: sum of active_stake across every mainnet validator from Validators.app validators/mainnet, converted from lamports to SOL (the epochs endpoint's total_active_stake is permanently null, confirmed live 2026-09-16)
   definable_for: [SOL]
   not_definable:
     assets: [BTC, ETH, BNB]
     reasons: ["BTC: Proof-of-work has no staking concept.", "ETH: Out of scope for this PRD's on-chain panel; SOL staking is research R8's specific build recommendation and not a claim that ETH staking is undefined.", "BNB: Out of scope for this PRD's on-chain panel; SOL staking is research R8's specific build recommendation and not a claim that BNB staking is undefined."]
-  golden: fixtures/validators_app_epochs.json
-  response_model: validators_app_epochs
+  golden: fixtures/validators_app_validators.json
+  response_model: validators_app_validators
   required_bars: 1
   parameters:
   expected_update_interval_seconds: 86400

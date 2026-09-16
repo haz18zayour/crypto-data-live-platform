@@ -210,7 +210,9 @@ def _get_block(slot: int, *, client: httpx.Client | None) -> SolanaBlock | None:
                 "commitment": "finalized",
                 "encoding": "jsonParsed",
                 "transactionDetails": "full",
-                "maxSupportedTransactionVersion": 0,
+                # Confirmed live, 2026-09-16: recent blocks now contain version-1
+                # transactions; 0 makes Helius reject the whole block with -32015.
+                "maxSupportedTransactionVersion": 1,
                 "rewards": False,
             },
         ],

@@ -232,12 +232,13 @@ def test_staking_is_registered_for_sol_without_talib() -> None:
     assert entry.definable_for == ("SOL",)
     assert entry.talib_function is None
     assert entry.parameters == {}
-    assert entry.response_model == "validators_app_epochs"
+    assert entry.response_model == "validators_app_validators"
     assert entry.source_field == (
-        "epochs[0].total_active_stake from Validators.app epochs/mainnet, "
-        "converted from lamports to SOL"
+        "sum of active_stake across every mainnet validator from Validators.app "
+        "validators/mainnet, converted from lamports to SOL (the epochs endpoint's "
+        "total_active_stake is permanently null, confirmed live 2026-09-16)"
     )
-    assert "epochs/mainnet.json?per=1" in entry.endpoint
+    assert "validators/mainnet.json?per=2000" in entry.endpoint
 
 
 def test_sol_staking_entry_declares_uncorroborated_validators_app_source() -> None:

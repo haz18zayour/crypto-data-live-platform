@@ -6,12 +6,17 @@ from datetime import UTC, datetime
 import httpx
 from pydantic import ValidationError
 
-from ingest.schemas import ValidatorsAppEpochsResponse
+from ingest.schemas import ValidatorsAppValidatorsResponse
 from ingest.status import Error, Ok, Reason, Result
 
-VALIDATORS_APP_EPOCHS_ENDPOINT = "https://www.validators.app/api/v1/epochs/mainnet.json"
+VALIDATORS_APP_VALIDATORS_ENDPOINT = (
+    "https://www.validators.app/api/v1/validators/mainnet.json"
+)
 REQUEST_TIMEOUT_SECONDS = 10
 LAMPORTS_PER_SOL = 1_000_000_000
+# Comfortably above the live mainnet validator count (681, confirmed 2026-09-16) so a full,
+# untruncated page is requested in one call; the truncation check below still guards it.
+VALIDATORS_PAGE_SIZE = 2000
 
 
 def _api_token() -> str | None:
@@ -21,19 +26,17 @@ def _api_token() -> str | None:
     return token.strip()
 
 
-def _parse_validators_app_time(value: str) -> datetime:
-    normalized = value.removesuffix("Z")
-    if "." in normalized:
-        prefix, suffix = normalized.split(".", 1)
-        normalized = f"{prefix}.{suffix[:6]}"
-    return datetime.fromisoformat(normalized).replace(tzinfo=UTC)
-
-
 def fetch_sol_staking(
     client: httpx.Client | None = None,
     now: datetime | None = None,
 ) -> Result:
-    """Return SOL total active stake from Validators.app's latest epoch."""
+    """Return SOL total active stake, summed live across every mainnet validator.
+
+    Validators.app's epochs endpoint (this project's original source) returns
+    total_active_stake as null on every epoch checked, current or already completed -
+    confirmed live across a month of epochs, 2026-09-16. The validators-list endpoint
+    carries a real, non-null active_stake per validator instead.
+    """
 
     token = _api_token()
     if token is None:
@@ -42,18 +45,20 @@ def fetch_sol_staking(
             detail="VALIDATORS_APP_API_TOKEN is not configured",
         )
 
+    source_timestamp = datetime.now(UTC) if now is None else now
+
     try:
         response = (
             httpx.get(
-                VALIDATORS_APP_EPOCHS_ENDPOINT,
-                params={"per": "1"},
+                VALIDATORS_APP_VALIDATORS_ENDPOINT,
+                params={"per": str(VALIDATORS_PAGE_SIZE)},
                 headers={"Token": token},
                 timeout=REQUEST_TIMEOUT_SECONDS,
             )
             if client is None
             else client.get(
-                VALIDATORS_APP_EPOCHS_ENDPOINT,
-                params={"per": "1"},
+                VALIDATORS_APP_VALIDATORS_ENDPOINT,
+                params={"per": str(VALIDATORS_PAGE_SIZE)},
                 headers={"Token": token},
                 timeout=REQUEST_TIMEOUT_SECONDS,
             )
@@ -74,31 +79,39 @@ def fetch_sol_staking(
 
     try:
         payload = response.json()
-        rows = ValidatorsAppEpochsResponse.model_validate(payload).epochs
-        if len(rows) != 1:
+        validators = ValidatorsAppValidatorsResponse.model_validate(payload).root
+        if len(validators) >= VALIDATORS_PAGE_SIZE:
             return Error(
                 reason=Reason.FETCH_FAILED,
-                detail="Validators.app returned an unexpected number of epoch rows",
+                detail=(
+                    f"Validators.app returned {len(validators)} validators, at or above "
+                    f"the requested page size ({VALIDATORS_PAGE_SIZE}) — the result may "
+                    "be truncated"
+                ),
             )
-        row = rows[0]
-        if row.network != "mainnet":
+        mainnet_validators = [row for row in validators if row.network == "mainnet"]
+        if not mainnet_validators:
             return Error(
                 reason=Reason.FETCH_FAILED,
-                detail=f"Validators.app returned network {row.network}, expected mainnet",
+                detail="Validators.app returned no mainnet validators",
             )
-        source_timestamp = _parse_validators_app_time(row.created_at)
-        current_time = datetime.now(UTC) if now is None else now
-        if source_timestamp >= current_time:
+        total_active_stake = sum(
+            row.active_stake or 0 for row in mainnet_validators
+        )
+        if total_active_stake <= 0:
             return Error(
                 reason=Reason.FETCH_FAILED,
-                detail="Validators.app source timestamp is in the future or present",
+                detail=(
+                    "Validators.app returned zero total active stake across all "
+                    "mainnet validators"
+                ),
             )
         return Ok(
-            value=row.total_active_stake / LAMPORTS_PER_SOL,
+            value=total_active_stake / LAMPORTS_PER_SOL,
             source_timestamp=source_timestamp,
         )
     except (ValidationError, TypeError, ValueError, OverflowError) as error:
         return Error(
             reason=Reason.FETCH_FAILED,
-            detail=f"Invalid Validators.app epochs response: {error}",
+            detail=f"Invalid Validators.app validators response: {error}",
         )

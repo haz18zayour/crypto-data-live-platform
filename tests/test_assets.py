@@ -257,7 +257,7 @@ def test_all_four_assets_produce_an_indicator_value_or_explicit_status() -> None
         in {
             "coinmetrics_asset_metrics",
             "solana_get_block",
-            "validators_app_epochs",
+            "validators_app_validators",
         }
     )
     mvrv_definitions = tuple(

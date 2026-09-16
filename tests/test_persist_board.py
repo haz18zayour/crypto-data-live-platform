@@ -216,7 +216,7 @@ def _board_definitions() -> tuple[IndicatorDefinition, ...]:
         or definition.response_model == "okx_taker_volume"
         or definition.response_model == "coinmetrics_asset_metrics"
         or definition.response_model == "solana_get_block"
-        or definition.response_model == "validators_app_epochs"
+        or definition.response_model == "validators_app_validators"
     )
 
 

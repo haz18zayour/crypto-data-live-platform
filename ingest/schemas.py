@@ -199,6 +199,19 @@ class SolanaInstruction(BaseModel):
     stack_height: StrictInt | None = Field(default=None, alias="stackHeight")
 
 
+class SolanaTransactionConfig(BaseModel):
+    """Present only on version-1 transactions (confirmed live against Helius, 2026-09-16)."""
+
+    model_config = ConfigDict(extra="forbid", frozen=True)
+
+    priority_fee: StrictInt | None = Field(default=None, alias="priorityFee")
+    compute_unit_limit: StrictInt | None = Field(default=None, alias="computeUnitLimit")
+    loaded_accounts_data_size_limit: StrictInt | None = Field(
+        default=None, alias="loadedAccountsDataSizeLimit"
+    )
+    heap_size: StrictInt | None = Field(default=None, alias="heapSize")
+
+
 class SolanaMessage(BaseModel):
     """The transaction message fields needed to classify and count activity."""
 
@@ -212,6 +225,12 @@ class SolanaMessage(BaseModel):
     # rejects the field entirely if it is not declared, so a real response fails to parse.
     address_table_lookups: tuple[object, ...] = Field(
         default=(), alias="addressTableLookups"
+    )
+    # Present only on version-1 transactions (confirmed live, 2026-09-16), absent on legacy
+    # and v0 ones. Not consumed by vote classification or signer counting, but extra="forbid"
+    # rejects the field entirely if it is not declared.
+    transaction_config: SolanaTransactionConfig | None = Field(
+        default=None, alias="transactionConfig"
     )
 
 
@@ -257,24 +276,70 @@ class SolanaGetBlockResponse(BaseModel):
     id: StrictInt | StrictStr
 
 
-class ValidatorsAppEpoch(BaseModel):
-    """One epoch row from Validators.app's Solana epoch endpoint."""
+class ValidatorsAppValidator(BaseModel):
+    """One validator row from Validators.app's Solana validators endpoint.
+
+    Confirmed live (2026-09-16): the epochs endpoint's total_active_stake/total_rewards are
+    permanently null (checked across a month of epochs, not just the in-progress one), so this
+    project sums active_stake across every validator here instead. Fields this project does not
+    consume are typed loosely (object) rather than pinned exactly, since their precise shape
+    across all ~700 live validators was not exhaustively verified and pinning them risks the
+    same brittleness this project has hit before on fields nobody reads.
+    """
 
     model_config = ConfigDict(extra="forbid", frozen=True)
 
-    epoch: StrictInt
-    starting_slot: StrictInt = Field(alias="starting_slot")
-    slots_in_epoch: StrictInt = Field(alias="slots_in_epoch")
     network: StrictStr
-    created_at: StrictStr
-    total_rewards: StrictInt
-    total_active_stake: StrictInt
+    account: StrictStr
+    active_stake: StrictInt | None
+    name: object = None
+    keybase_id: object = None
+    www_url: object = None
+    details: object = None
+    avatar_url: object = None
+    created_at: object = None
+    updated_at: object = None
+    admin_warning: object = None
+    jito: object = None
+    jito_commission: object = None
+    stake_pools_list: object = None
+    is_active: object = None
+    is_dz: object = None
+    avatar_file_url: object = None
+    authorized_withdrawer_score: object = None
+    commission: object = None
+    data_center_concentration_score: object = None
+    delinquent: object = None
+    published_information_score: object = None
+    root_distance_score: object = None
+    security_report_score: object = None
+    skipped_slot_score: object = None
+    skipped_after_score: object = None
+    software_version: object = None
+    software_version_score: object = None
+    stake_concentration_score: object = None
+    consensus_mods_score: object = None
+    vote_latency_score: object = None
+    total_score: object = None
+    vote_distance_score: object = None
+    software_client: object = None
+    software_client_id: object = None
+    ip: object = None
+    data_center_key: object = None
+    autonomous_system_number: object = None
+    latitude: object = None
+    longitude: object = None
+    data_center_host: object = None
+    vote_account: object = None
+    epoch_credits: object = None
+    epoch: object = None
+    skipped_slots: object = None
+    skipped_slot_percent: object = None
+    ping_time: object = None
+    url: object = None
 
 
-class ValidatorsAppEpochsResponse(BaseModel):
-    """The response contract for Validators.app epoch staking data."""
+class ValidatorsAppValidatorsResponse(RootModel[tuple[ValidatorsAppValidator, ...]]):
+    """The response contract for Validators.app's validators-list endpoint."""
 
-    model_config = ConfigDict(extra="forbid", frozen=True)
-
-    epochs: tuple[ValidatorsAppEpoch, ...]
-    epochs_count: StrictInt
+    model_config = ConfigDict(frozen=True)

@@ -114,7 +114,7 @@ def test_get_block_is_called_without_a_vote_filter_parameter() -> None:
         "commitment": "finalized",
         "encoding": "jsonParsed",
         "transactionDetails": "full",
-        "maxSupportedTransactionVersion": 0,
+        "maxSupportedTransactionVersion": 1,
         "rewards": False,
     }
     assert "votes" not in config
