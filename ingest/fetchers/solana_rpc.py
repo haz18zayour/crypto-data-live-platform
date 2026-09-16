@@ -1,8 +1,9 @@
 """Fetch SOL active addresses from public Solana JSON-RPC blocks."""
 
 from collections.abc import Iterable, Sequence
-from datetime import UTC, datetime, time, timedelta
+from datetime import UTC, datetime, time as time_of_day, timedelta
 import os
+import time as time_module
 
 import httpx
 from pydantic import ValidationError
@@ -13,7 +14,7 @@ from ingest.status import Error, Ok, Reason, Result
 VOTE_PROGRAM_ID = "Vote111111111111111111111111111111111111111"
 HELIUS_RPC_ENDPOINT = "https://mainnet.helius-rpc.com/"
 REQUEST_TIMEOUT_SECONDS = 30
-FIXED_UTC_HOUR = time(0, 0, tzinfo=UTC)
+FIXED_UTC_HOUR = time_of_day(0, 0, tzinfo=UTC)
 
 
 class SolanaRpcFailure(RuntimeError):
@@ -27,12 +28,29 @@ def _rpc_endpoint() -> str:
     return f"{HELIUS_RPC_ENDPOINT}?api-key={api_key}"
 
 
+_SLOT_SKIPPED_ERROR_CODE = -32009
+
+
+class _SlotSkipped:
+    """Sentinel: the requested slot was skipped, or is missing in long-term storage.
+
+    Solana's own documented, normal behavior — not every slot produces a block. Returned only
+    when the caller opts in via `treat_slot_skipped_as_none`, since the meaning of "skipped"
+    differs by method (getBlockTime: no block time for this slot; other methods do not expect
+    a per-slot skip at all and should keep raising).
+    """
+
+
+_SLOT_SKIPPED = _SlotSkipped()
+
+
 def _post_rpc(
     method: str,
     params: Sequence[object],
     *,
     client: httpx.Client | None,
     request_id: int | str = 1,
+    treat_slot_skipped_as_none: bool = False,
 ) -> object:
     body = {
         "jsonrpc": "2.0",
@@ -68,6 +86,11 @@ def _post_rpc(
     if isinstance(payload, dict) and "error" in payload:
         error_payload = payload["error"]
         if isinstance(error_payload, dict):
+            if (
+                treat_slot_skipped_as_none
+                and error_payload.get("code") == _SLOT_SKIPPED_ERROR_CODE
+            ):
+                return _SLOT_SKIPPED
             message = error_payload.get("message")
             if isinstance(message, str):
                 raise SolanaRpcFailure(message)
@@ -94,8 +117,13 @@ def _get_slot(client: httpx.Client | None) -> int:
 
 
 def _get_block_time(slot: int, client: httpx.Client | None) -> int | None:
-    result = _post_rpc("getBlockTime", [slot], client=client)
-    if result is None:
+    # A skipped slot has no block time at all — _nearest_block_time already walks backward
+    # through slots for exactly this case, so it must be told "no result", not raised as a
+    # failure. Confirmed live: -32009 for a skipped slot is common, not exceptional, here.
+    result = _post_rpc(
+        "getBlockTime", [slot], client=client, treat_slot_skipped_as_none=True
+    )
+    if result is None or isinstance(result, _SlotSkipped):
         return None
     if not isinstance(result, int):
         raise SolanaRpcFailure("getBlockTime returned a non-integer result")
@@ -150,6 +178,10 @@ def _get_blocks(
     return tuple(result)
 
 
+GET_BLOCK_MAX_ATTEMPTS = 3
+GET_BLOCK_RETRY_BACKOFF_SECONDS = 2.0
+
+
 def _get_block(slot: int, *, client: httpx.Client | None) -> SolanaBlock | None:
     body = {
         "jsonrpc": "2.0",
@@ -166,25 +198,53 @@ def _get_block(slot: int, *, client: httpx.Client | None) -> SolanaBlock | None:
             },
         ],
     }
-    try:
-        response = (
-            httpx.post(
-                _rpc_endpoint(),
-                json=body,
-                timeout=REQUEST_TIMEOUT_SECONDS,
+    # Fetching one UTC hour is ~9,000 sequential calls; a single transient disconnect
+    # (confirmed live: "Server disconnected without sending a response") must not discard
+    # everything already fetched. Retried only for transport-level failures (httpx.RequestError)
+    # — an HTTP error status or a malformed response is a real failure, not a network blip, and
+    # must not be retried into a false pass.
+    last_transport_error: httpx.RequestError | None = None
+    for attempt in range(1, GET_BLOCK_MAX_ATTEMPTS + 1):
+        try:
+            response = (
+                httpx.post(
+                    _rpc_endpoint(),
+                    json=body,
+                    timeout=REQUEST_TIMEOUT_SECONDS,
+                )
+                if client is None
+                else client.post(
+                    _rpc_endpoint(),
+                    json=body,
+                    timeout=REQUEST_TIMEOUT_SECONDS,
+                )
             )
-            if client is None
-            else client.post(
-                _rpc_endpoint(),
-                json=body,
-                timeout=REQUEST_TIMEOUT_SECONDS,
-            )
+            break
+        except httpx.RequestError as error:
+            last_transport_error = error
+            if attempt == GET_BLOCK_MAX_ATTEMPTS:
+                raise SolanaRpcFailure(
+                    f"Helius getBlock request failed after {GET_BLOCK_MAX_ATTEMPTS} "
+                    f"attempts: {error}"
+                ) from error
+            time_module.sleep(GET_BLOCK_RETRY_BACKOFF_SECONDS)
+    else:  # pragma: no cover - loop always breaks or raises
+        raise SolanaRpcFailure(
+            f"Helius getBlock request failed: {last_transport_error}"
         )
+
+    try:
         payload: object = response.json()
         response.raise_for_status()
         if isinstance(payload, dict) and "error" in payload:
             error_payload = payload["error"]
             if isinstance(error_payload, dict):
+                # -32009: "Slot N was skipped, or missing in long-term storage" — confirmed
+                # live. Not every slot produces a block (a validator can miss its turn); this
+                # is Solana's normal, documented behavior, not a fetch failure. Treated the same
+                # as the existing "no block at this slot" case, never raised.
+                if error_payload.get("code") == -32009:
+                    return None
                 message = error_payload.get("message")
                 if isinstance(message, str):
                     raise SolanaRpcFailure(message)
@@ -214,21 +274,36 @@ def is_vote_transaction(instructions: Iterable[SolanaInstruction]) -> bool:
     )
 
 
+def _add_active_fee_payers(block: SolanaBlock, fee_payers: set[str]) -> None:
+    """Add one block's non-vote fee-payer signers to the running set, in place."""
+
+    for row in block.transactions:
+        message = row.transaction.message
+        account_keys = message.account_keys
+        if (
+            not account_keys
+            or not account_keys[0].signer
+            or is_vote_transaction(message.instructions)
+        ):
+            continue
+        fee_payers.add(account_keys[0].pubkey)
+
+
 def count_active_fee_payers(blocks: Iterable[SolanaBlock]) -> int:
-    """Count distinct fee-payer signers from non-vote transactions."""
+    """Count distinct fee-payer signers from non-vote transactions.
+
+    Kept for the unit tests that exercise classification against a handful of blocks held in
+    memory. The live fetch path (`_fetch_blocks_for_hour`) does NOT call this — it streams each
+    block through `_add_active_fee_payers` and discards it immediately, because accumulating a
+    full UTC hour's fully-parsed blocks (~9,000 of them, `encoding: jsonParsed`,
+    `transactionDetails: full`, tens of millions of transactions network-wide per hour at
+    Solana's real throughput) before counting exhausted this machine's memory outright when
+    verified live — a genuine defect, not a hypothetical one.
+    """
 
     fee_payers: set[str] = set()
     for block in blocks:
-        for row in block.transactions:
-            message = row.transaction.message
-            account_keys = message.account_keys
-            if (
-                not account_keys
-                or not account_keys[0].signer
-                or is_vote_transaction(message.instructions)
-            ):
-                continue
-            fee_payers.add(account_keys[0].pubkey)
+        _add_active_fee_payers(block, fee_payers)
     return len(fee_payers)
 
 
@@ -240,12 +315,20 @@ def _default_measured_hour_start(now: datetime) -> datetime:
     return today_boundary - timedelta(days=1)
 
 
-def _fetch_blocks_for_hour(
+def _count_active_fee_payers_for_hour(
     measured_hour_start: datetime,
     *,
     client: httpx.Client | None,
     slots: Sequence[int] | None,
-) -> tuple[SolanaBlock, ...]:
+) -> int:
+    """Stream one UTC hour's blocks, one at a time, never holding more than one in memory.
+
+    A full hour is ~9,000 blocks at Solana's ~400ms block time, each with full parsed
+    transaction detail — accumulating them into a list before counting exhausted memory outright
+    when verified live. Each block is fetched, its fee-payers folded into the running set, then
+    the block itself is dropped before the next fetch.
+    """
+
     if slots is None:
         current_slot = _get_slot(client)
         start_slot = _find_first_slot_at_or_after(
@@ -260,7 +343,7 @@ def _fetch_blocks_for_hour(
         )
         slots = _get_blocks(start_slot, end_slot - 1, client=client)
 
-    blocks: list[SolanaBlock] = []
+    fee_payers: set[str] = set()
     start_timestamp = int(measured_hour_start.timestamp())
     end_timestamp = int((measured_hour_start + timedelta(hours=1)).timestamp())
     for slot in slots:
@@ -268,8 +351,8 @@ def _fetch_blocks_for_hour(
         if block is None or block.block_time is None:
             continue
         if start_timestamp <= block.block_time < end_timestamp:
-            blocks.append(block)
-    return tuple(blocks)
+            _add_active_fee_payers(block, fee_payers)
+    return len(fee_payers)
 
 
 def fetch_sol_active_addresses(
@@ -295,9 +378,11 @@ def fetch_sol_active_addresses(
         )
 
     try:
-        blocks = _fetch_blocks_for_hour(hour_start, client=client, slots=slots)
+        active_count = _count_active_fee_payers_for_hour(
+            hour_start, client=client, slots=slots
+        )
         return Ok(
-            value=float(count_active_fee_payers(blocks)),
+            value=float(active_count),
             source_timestamp=hour_start,
         )
     except (SolanaRpcFailure, ValidationError, TypeError, ValueError) as error:

@@ -192,6 +192,12 @@ class SolanaMessage(BaseModel):
     account_keys: tuple[SolanaAccountKey, ...] = Field(alias="accountKeys")
     instructions: tuple[SolanaInstruction, ...]
     recent_blockhash: StrictStr = Field(alias="recentBlockhash")
+    # Present on every real v0 transaction (confirmed live against Helius, 2026-09-16), empty
+    # for legacy ones. Not consumed by vote classification or signer counting, but extra="forbid"
+    # rejects the field entirely if it is not declared, so a real response fails to parse.
+    address_table_lookups: tuple[object, ...] = Field(
+        default=(), alias="addressTableLookups"
+    )
 
 
 class SolanaTransactionPayload(BaseModel):
