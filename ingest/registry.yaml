@@ -666,7 +666,7 @@
   definable_for: [SOL]
   not_definable:
     assets: [BTC, ETH, BNB]
-    reason: "BTC: proof-of-work has no staking concept. ETH/BNB: out of scope for this PRD's on-chain panel; SOL staking is research R8's specific build recommendation, not a claim that ETH or BNB staking is undefined."
+    reasons: ["BTC: Proof-of-work has no staking concept.", "ETH: Out of scope for this PRD's on-chain panel; SOL staking is research R8's specific build recommendation and not a claim that ETH staking is undefined.", "BNB: Out of scope for this PRD's on-chain panel; SOL staking is research R8's specific build recommendation and not a claim that BNB staking is undefined."]
   golden: fixtures/validators_app_epochs.json
   response_model: validators_app_epochs
   required_bars: 1

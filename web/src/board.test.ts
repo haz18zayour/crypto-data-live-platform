@@ -78,6 +78,31 @@ describe("buildBoard", () => {
     ]);
   });
 
+  test("staking gaps carry the asset-specific registry reason", () => {
+    const board = buildBoard(registry, [], BOARD_ASSETS);
+    const stakingCells = Object.fromEntries(
+      board.cells
+        .filter((cell) => cell.family === "staking")
+        .map((cell) => [cell.asset, cell]),
+    );
+
+    expect(stakingCells.BTC.state).toEqual({
+      status: "UNAVAILABLE",
+      reason: "NOT_DEFINABLE",
+      detail: "Proof-of-work has no staking concept.",
+    });
+    expect(stakingCells.ETH.state).toMatchObject({
+      status: "UNAVAILABLE",
+      reason: "NOT_DEFINABLE",
+      detail: expect.stringContaining("Out of scope for this PRD's on-chain panel"),
+    });
+    expect(stakingCells.BNB.state).toMatchObject({
+      status: "UNAVAILABLE",
+      reason: "NOT_DEFINABLE",
+      detail: expect.stringContaining("not a claim that BNB staking is undefined"),
+    });
+  });
+
   test("without the declaration all three daily close gaps return to NOT_FETCHED", () => {
     const registryWithoutDeclaration = registry.map((entry) => {
       const { not_definable: _removed, ...definition } = entry;

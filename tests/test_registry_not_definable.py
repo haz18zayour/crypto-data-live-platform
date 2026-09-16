@@ -51,6 +51,34 @@ def test_not_definable_requires_a_non_empty_reason(reason: str | None) -> None:
         IndicatorDefinition.model_validate(data)
 
 
+def test_not_definable_accepts_distinct_per_asset_reasons() -> None:
+    data = definition_data()
+    data["not_definable"] = {
+        "assets": ["ETH", "BNB"],
+        "reasons": [
+            "ETH: Out of scope for this board.",
+            "BNB: Out of scope for this board.",
+        ],
+    }
+
+    definition = IndicatorDefinition.model_validate(data)
+
+    assert definition.not_definable is not None
+    assert definition.not_definable.reason_for("ETH") == "Out of scope for this board."
+    assert definition.not_definable.reason_for("BNB") == "Out of scope for this board."
+
+
+def test_not_definable_per_asset_reasons_must_cover_exactly_the_assets() -> None:
+    data = definition_data()
+    data["not_definable"] = {
+        "assets": ["ETH", "BNB"],
+        "reasons": ["ETH: Out of scope for this board."],
+    }
+
+    with pytest.raises(ValidationError, match="reasons must match assets"):
+        IndicatorDefinition.model_validate(data)
+
+
 def test_asset_cannot_be_both_definable_and_not_definable() -> None:
     data = definition_data()
     data["not_definable"] = {

@@ -7,7 +7,8 @@ export type BoardRegistryEntry = {
   definable_for: readonly string[];
   not_definable?: {
     assets: readonly string[];
-    reason: string;
+    reason?: string;
+    reasons?: readonly string[];
   };
 };
 
@@ -61,9 +62,21 @@ export function buildBoard(
       const notDefinable = definition.not_definable;
       if (notDefinable) {
         for (const excludedAsset of notDefinable.assets) {
+          const assetPrefix = `${excludedAsset}:`;
+          const assetReason = notDefinable.reasons
+            ?.find((candidate) => candidate.startsWith(assetPrefix))
+            ?.slice(assetPrefix.length)
+            .trim();
+          const reason =
+            assetReason ?? notDefinable.reason;
+          if (reason === undefined) {
+            throw new Error(
+              `Registry not_definable declaration for ${definition.key} is missing ${excludedAsset}'s reason`,
+            );
+          }
           notDefinableByCell.set(
             `${family}:${excludedAsset}`,
-            notDefinable.reason,
+            reason,
           );
         }
       }

@@ -256,13 +256,22 @@ def test_staking_declares_btc_eth_bnb_not_definable_with_distinct_reasons() -> N
 
     assert entry.not_definable is not None
     assert entry.not_definable.assets == ("BTC", "ETH", "BNB")
-    reason = entry.not_definable.reason
-    btc_reason, scope_reason = reason.split(" ETH/BNB: ")
-    assert "BTC: proof-of-work has no staking concept" in btc_reason
-    assert "out of scope for this PRD's on-chain panel" in scope_reason
-    assert "SOL staking is research R8's specific build recommendation" in scope_reason
-    assert "not a claim that ETH or BNB staking is undefined" in scope_reason
-    assert "proof-of-work" not in scope_reason
+    reasons = {
+        asset: entry.not_definable.reason_for(asset)
+        for asset in entry.not_definable.assets
+    }
+
+    assert "Proof-of-work has no staking concept" in reasons["BTC"]
+    for asset in ("ETH", "BNB"):
+        assert "Out of scope for this PRD's on-chain panel" in reasons[asset]
+        assert (
+            "SOL staking is research R8's specific build recommendation"
+            in reasons[asset]
+        )
+        assert f"not a claim that {asset} staking is undefined" in reasons[asset]
+        assert "proof-of-work" not in reasons[asset].casefold()
+    assert reasons["ETH"] != reasons["BTC"]
+    assert reasons["BNB"] != reasons["BTC"]
 
 
 def test_exchange_flow_is_registered_for_btc_eth_only_without_talib() -> None:
