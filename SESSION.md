@@ -33,7 +33,7 @@ open prds/PRD-005-dashboard/20-decisions.yaml
 | PRD-006-derivatives | 7 | 7 | **all green** |
 | PRD-007-onchain | 8 | 4 | 4/8 |
 
-Spend to date: **$73.63** Claude · **163303k** Codex tokens.
+Spend to date: **$73.63** Claude · **167492k** Codex tokens.
 
 ## What happened
 
@@ -493,6 +493,9 @@ Spend to date: **$73.63** Claude · **163303k** Codex tokens.
 
 - 03:46  US-704 **PASSED** — 10/10 criteria, judged by human
 - 03:46  ▶ gate answered **skip** — Verified directly: 3 real defects found and fixed via live testing (schema gap, memory exhaustion, transient-failure resilience), then a 4th live run passed end-to-end (2h30m33s, real non-zero count). See verdict.json overrideReason.
+- 03:47  US-705 started, attempt 1 (codex)
+- 03:53  US-705 — codex finished `3989c233` · 4188k tok
+- 04:02  US-705 **rejected** — 0/8 criteria, judged by claude
 
 <!-- uf:generated:end -->
 
