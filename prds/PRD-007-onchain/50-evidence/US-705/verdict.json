@@ -1,0 +1,54 @@
+{
+  "storyId": "US-705",
+  "passes": false,
+  "verifier": {
+    "agent": "claude",
+    "sandbox": "not-run"
+  },
+  "implementer": "codex",
+  "results": [
+    {
+      "criterionId": "US-705-C1",
+      "met": false,
+      "note": "not judged — a cheaper layer already failed"
+    },
+    {
+      "criterionId": "US-705-C2",
+      "met": false,
+      "note": "not judged — a cheaper layer already failed"
+    },
+    {
+      "criterionId": "US-705-C3",
+      "met": false,
+      "note": "not judged — a cheaper layer already failed"
+    },
+    {
+      "criterionId": "US-705-C4",
+      "met": false,
+      "note": "not judged — a cheaper layer already failed"
+    },
+    {
+      "criterionId": "US-705-C5",
+      "met": false,
+      "note": "not judged — a cheaper layer already failed"
+    },
+    {
+      "criterionId": "US-705-C6",
+      "met": false,
+      "note": "not judged — a cheaper layer already failed"
+    },
+    {
+      "criterionId": "US-705-C7",
+      "met": false,
+      "note": "not judged — a cheaper layer already failed"
+    },
+    {
+      "criterionId": "US-705-C8",
+      "met": false,
+      "note": "not judged — a cheaper layer already failed"
+    }
+  ],
+  "tripwires": [],
+  "note": "gates failed: test, US-705-C8",
+  "at": "2026-09-16T04:02:50.020Z"
+}
