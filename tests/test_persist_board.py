@@ -888,6 +888,7 @@ def test_board_persistence_is_idempotent_per_registered_identity(
     assert first_ids == second_ids
 
 
+@pytest.mark.integration
 def test_database_holds_complete_board_with_failure_and_idempotent_identity(
     monkeypatch: pytest.MonkeyPatch,
     postgres: psycopg.Connection[tuple[object, ...]],
