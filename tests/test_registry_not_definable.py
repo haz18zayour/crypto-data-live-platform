@@ -36,7 +36,8 @@ def test_btc_daily_close_declares_three_reasoned_not_definable_assets() -> None:
 
     assert daily_close.not_definable is not None
     assert daily_close.not_definable.assets == ("ETH", "SOL", "BNB")
-    assert daily_close.not_definable.reason.strip()
+    for asset in daily_close.not_definable.assets:
+        assert daily_close.not_definable.reason_for(asset).strip()
 
 
 @pytest.mark.parametrize("reason", (None, "", "   "))
@@ -88,6 +89,21 @@ def test_asset_cannot_be_both_definable_and_not_definable() -> None:
 
     with pytest.raises(ValidationError, match="BTC.*definable_for.*not_definable"):
         IndicatorDefinition.model_validate(data)
+
+
+def test_us_708_registry_not_definable_reasons_are_unique() -> None:
+    seen: dict[str, tuple[str, str]] = {}
+
+    for entry in load_registry().root:
+        if entry.not_definable is None:
+            continue
+        for asset in entry.not_definable.assets:
+            reason = entry.not_definable.reason_for(asset)
+            assert reason not in seen, (
+                f"{entry.key}/{asset} repeats not_definable reason from "
+                f"{seen[reason][0]}/{seen[reason][1]}: {reason}"
+            )
+            seen[reason] = (entry.key, asset)
 
 
 def test_registry_coverage_still_passes_for_all_71_entries() -> None:

@@ -195,6 +195,36 @@ def test_forbidden_error_response_is_paywalled_unavailable() -> None:
         _ = result.value  # type: ignore[attr-defined]
 
 
+def test_forced_caprealusd_forbidden_response_stays_paywalled_without_mvrv_fallback() -> (
+    None
+):
+    requested_metrics: list[str] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        requested_metrics.append(request.url.params["metrics"])
+        return httpx.Response(
+            403,
+            json={
+                "error": {
+                    "type": "forbidden",
+                    "message": "CapRealUSD requires credentials",
+                }
+            },
+            request=request,
+        )
+
+    with httpx.Client(transport=httpx.MockTransport(handler)) as client:
+        result = _fetch_btc_metric("CapRealUSD", client=client, now=NOW)
+
+    assert requested_metrics == ["CapRealUSD"]
+    assert "CapMVRVCur" not in requested_metrics
+    assert isinstance(result, Unavailable)
+    assert result.status == "UNAVAILABLE"
+    assert result.reason is Reason.PAYWALLED
+    with pytest.raises(AttributeError):
+        _ = result.value  # type: ignore[attr-defined]
+
+
 def test_response_model_rejects_added_renamed_or_retyped_fields() -> None:
     payload = coinmetrics_payload(NOW - timedelta(days=1))
     payload["unexpected"] = "vendor reshape"  # type: ignore[index]
