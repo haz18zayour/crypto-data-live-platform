@@ -1,5 +1,5 @@
 ---
-id: US-706
+id: US-709
 title: SOL staking — Validators.app; BTC/ETH/BNB each NOT_DEFINABLE with distinct reasons
 priority: 6
 touches:
