@@ -1,0 +1,7 @@
+.uf/events.ndjson                                  |  3 +++
+ SESSION.md                                         |  7 +++--
+ ingest/registry.yaml                               |  8 +++---
+ .../adversarial-four-asset-onchain-column.md       | 19 ++++++++++++++
+ tests/test_coinmetrics_fetcher.py                  | 30 ++++++++++++++++++++++
+ tests/test_registry_not_definable.py               | 18 ++++++++++++-
+ 6 files changed, 78 insertions(+), 7 deletions(-)
