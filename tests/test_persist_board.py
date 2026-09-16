@@ -1127,6 +1127,12 @@ def test_scheduled_entry_point_persists_board_without_sol_active_addresses_and_p
         request = httpx.Request("GET", url)
         return httpx.Response(200, request=request)
 
+    def fetch_scheduled_active_addresses(
+        asset: str, rate_limiter: object | None = None
+    ) -> Result:
+        assert asset != "SOL"
+        return _fetch_active_addresses(asset, rate_limiter)
+
     monkeypatch.setenv("DATABASE_URL", DATABASE_URL)
     monkeypatch.setenv("HEALTHCHECKS_PING_URL", HEARTBEAT_URL)
     monkeypatch.setattr(heartbeat.psycopg, "connect", connect)
@@ -1140,7 +1146,7 @@ def test_scheduled_entry_point_persists_board_without_sol_active_addresses_and_p
     monkeypatch.setattr(pipeline, "_fetch_asset_taker_ratio", _fetch_taker_ratio)
     monkeypatch.setattr(pipeline, "_fetch_asset_mvrv", _fetch_mvrv)
     monkeypatch.setattr(
-        pipeline, "_fetch_asset_active_addresses", _fetch_active_addresses
+        pipeline, "_fetch_asset_active_addresses", fetch_scheduled_active_addresses
     )
     monkeypatch.setattr(pipeline, "_fetch_asset_exchange_flow", _fetch_exchange_flow)
     monkeypatch.setattr(pipeline, "_fetch_asset_staking", _fetch_staking)
