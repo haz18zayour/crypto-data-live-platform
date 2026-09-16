@@ -18,7 +18,7 @@ def _api_token() -> str | None:
     token = os.environ.get("VALIDATORS_APP_API_TOKEN")
     if token is None or not token.strip():
         return None
-    return token
+    return token.strip()
 
 
 def _parse_validators_app_time(value: str) -> datetime:

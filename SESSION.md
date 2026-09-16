@@ -33,7 +33,7 @@ open prds/PRD-005-dashboard/20-decisions.yaml
 | PRD-006-derivatives | 7 | 7 | **all green** |
 | PRD-007-onchain | 8 | 5 | 5/8 |
 
-Spend to date: **$73.63** Claude · **178261k** Codex tokens.
+Spend to date: **$73.63** Claude · **178842k** Codex tokens.
 
 ## What happened
 
@@ -514,6 +514,32 @@ Spend to date: **$73.63** Claude · **178261k** Codex tokens.
 - 14:26  US-706 started, attempt 3 (codex)
 - 14:33  US-706 — codex finished `8c945015` · 3458k tok
 - 14:49  US-706 **rejected** — 0/11 criteria, judged by claude
+- 14:49  ⏸ **gate opened** — US-706 has failed 3 times — is the story wrong?
+- 14:55  **PRD-001-spine** compiled — 8 stories
+- 14:55  **PRD-002-harness** compiled — 7 stories
+- 14:55  **PRD-003-corroboration** compiled — 7 stories
+- 14:55  **PRD-004-indicators** compiled — 11 stories
+- 14:55  **PRD-005-dashboard** compiled — 9 stories
+- 14:55  **PRD-006-derivatives** compiled — 7 stories
+- 14:55  **PRD-007-onchain** compiled — 8 stories
+- 14:55  **PRD-001-spine** compiled — 8 stories
+- 14:55  **PRD-002-harness** compiled — 7 stories
+- 14:55  **PRD-003-corroboration** compiled — 7 stories
+- 14:55  **PRD-004-indicators** compiled — 11 stories
+- 14:55  **PRD-005-dashboard** compiled — 9 stories
+- 14:55  **PRD-006-derivatives** compiled — 7 stories
+- 14:55  **PRD-007-onchain** compiled — 8 stories
+- 14:57  **PRD-001-spine** compiled — 8 stories
+- 14:57  **PRD-002-harness** compiled — 7 stories
+- 14:57  **PRD-003-corroboration** compiled — 7 stories
+- 14:57  **PRD-004-indicators** compiled — 11 stories
+- 14:57  **PRD-005-dashboard** compiled — 9 stories
+- 14:57  **PRD-006-derivatives** compiled — 7 stories
+- 14:57  **PRD-007-onchain** compiled — 8 stories
+- 15:10  ▶ gate answered **rewrite-criteria** — US-706 re-identified as US-709; both failures were the pipeline gate-execution timeout killing the dropped [cmd: full addopts= suite] criterion, not a defect. See prds/PRD-007-onchain/30-spec.md for the full decision record.
+- 14:59  US-709 started, attempt 1 (codex)
+- 15:01  US-709 — codex finished `d83ff8af` · 580k tok
+- 15:02  US-709 **rejected** — 0/10 criteria, judged by claude
 
 <!-- uf:generated:end -->
 

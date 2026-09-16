@@ -35,7 +35,7 @@ def epochs_payload(source_timestamp: datetime) -> dict[str, object]:
 def test_fetcher_authenticates_with_token_read_from_configuration(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    monkeypatch.setenv("VALIDATORS_APP_API_TOKEN", "configured-token")
+    monkeypatch.setenv("VALIDATORS_APP_API_TOKEN", "  configured-token  ")
     requested: list[httpx.Request] = []
 
     def handler(request: httpx.Request) -> httpx.Response:
@@ -56,6 +56,27 @@ def test_fetcher_authenticates_with_token_read_from_configuration(
     assert request.url.params["per"] == "1"
     assert request.headers["Token"] == "configured-token"
     assert "configured-token" not in str(request.url)
+
+
+@pytest.mark.parametrize("configured_token", (None, "", "   "))
+def test_missing_or_blank_token_returns_fetch_failed_without_request(
+    monkeypatch: pytest.MonkeyPatch,
+    configured_token: str | None,
+) -> None:
+    if configured_token is None:
+        monkeypatch.delenv("VALIDATORS_APP_API_TOKEN", raising=False)
+    else:
+        monkeypatch.setenv("VALIDATORS_APP_API_TOKEN", configured_token)
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        raise AssertionError("Validators.app should not be called without a token")
+
+    with httpx.Client(transport=httpx.MockTransport(handler)) as client:
+        result = fetch_sol_staking(client=client, now=NOW)
+
+    assert isinstance(result, Error)
+    assert result.reason is Reason.FETCH_FAILED
+    assert "VALIDATORS_APP_API_TOKEN" in result.detail
 
 
 def test_http_429_returns_fetch_failed_with_status_and_no_retry(
