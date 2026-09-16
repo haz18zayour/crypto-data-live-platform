@@ -183,6 +183,11 @@ def _fetch_exchange_flow(asset: str, rate_limiter: object | None = None) -> Resu
     return Ok(value=offset, source_timestamp=SOURCE_TIMESTAMP)
 
 
+def _fetch_staking(asset: str) -> Result:
+    assert asset == "SOL"
+    return Ok(value=390_383_623.78255165, source_timestamp=SOURCE_TIMESTAMP)
+
+
 def _full_board() -> pipeline.FullAssetRun:
     return run_all_assets(
         fetch_bars=_fetch_bars,
@@ -193,6 +198,7 @@ def _full_board() -> pipeline.FullAssetRun:
         fetch_mvrv=_fetch_mvrv,
         fetch_active_addresses=_fetch_active_addresses,
         fetch_exchange_flow=_fetch_exchange_flow,
+        fetch_staking=_fetch_staking,
     )
 
 
@@ -207,6 +213,7 @@ def _board_definitions() -> tuple[IndicatorDefinition, ...]:
         or definition.response_model == "okx_taker_volume"
         or definition.response_model == "coinmetrics_asset_metrics"
         or definition.response_model == "solana_get_block"
+        or definition.response_model == "validators_app_epochs"
     )
 
 
@@ -238,7 +245,7 @@ def test_full_run_writes_one_datapoint_row_per_computed_indicator(
     row_ids = run_pipeline(object(), fetcher=_full_board)  # type: ignore[arg-type]
 
     definitions = _board_definitions()
-    assert len(definitions) == 70
+    assert len(definitions) == 71
     assert len(row_ids) == len(definitions)
     assert len(persisted) == len(definitions)
     assert {row["indicator_key"] for row in persisted} == {
@@ -289,9 +296,12 @@ def test_each_persisted_board_row_carries_schema_provenance(
     run_pipeline(object(), fetcher=_full_board)  # type: ignore[arg-type]
 
     assert len(persisted) == len(_board_definitions())
-    assert {
-        row["source_vendor"] for row in persisted if row["source_vendor"]
-    } == {"okx", "coinmetrics", "helius"}
+    assert {row["source_vendor"] for row in persisted if row["source_vendor"]} == {
+        "okx",
+        "coinmetrics",
+        "helius",
+        "validators_app",
+    }
     assert all(row["endpoint"] for row in persisted)
     assert all(row["source_field"] for row in persisted)
     assert all(row["source_timestamp"] == SOURCE_TIMESTAMP for row in persisted)
@@ -333,7 +343,7 @@ def test_non_ok_computed_result_is_persisted_with_status_and_reason_and_peers_co
         reason=Reason.FETCH_FAILED,
         detail="btc_rsi computation failed: forced computation failure",
     )
-    assert sum(isinstance(result, Ok) for result in persisted.values()) == 69
+    assert sum(isinstance(result, Ok) for result in persisted.values()) == 70
 
 
 def test_one_derivatives_fetch_failure_persists_error_and_other_cells_continue(
@@ -370,6 +380,7 @@ def test_one_derivatives_fetch_failure_persists_error_and_other_cells_continue(
         fetch_mvrv=_fetch_mvrv,
         fetch_active_addresses=_fetch_active_addresses,
         fetch_exchange_flow=_fetch_exchange_flow,
+        fetch_staking=_fetch_staking,
     )
 
     run_pipeline(object(), fetcher=lambda: run)  # type: ignore[arg-type]
@@ -379,7 +390,7 @@ def test_one_derivatives_fetch_failure_persists_error_and_other_cells_continue(
         reason=Reason.FETCH_FAILED,
         detail="forced long/short failure",
     )
-    assert sum(isinstance(result, Ok) for result in persisted.values()) == 69
+    assert sum(isinstance(result, Ok) for result in persisted.values()) == 70
 
 
 def test_full_run_persists_one_mvrv_datapoint_per_btc_eth_bnb(
@@ -456,6 +467,7 @@ def test_one_mvrv_fetch_failure_persists_error_and_other_assets_continue(
         fetch_mvrv=fetch_mvrv,
         fetch_active_addresses=_fetch_active_addresses,
         fetch_exchange_flow=_fetch_exchange_flow,
+        fetch_staking=_fetch_staking,
     )
 
     run_pipeline(object(), fetcher=lambda: run)  # type: ignore[arg-type]
@@ -560,6 +572,7 @@ def test_one_active_addresses_fetch_failure_persists_error_and_other_assets_cont
         fetch_mvrv=_fetch_mvrv,
         fetch_active_addresses=fetch_active_addresses,
         fetch_exchange_flow=_fetch_exchange_flow,
+        fetch_staking=_fetch_staking,
     )
 
     run_pipeline(object(), fetcher=lambda: run)  # type: ignore[arg-type]
@@ -709,6 +722,45 @@ def test_full_run_persists_one_open_interest_datapoint_per_asset(
     )
 
 
+def test_full_run_persists_one_staking_datapoint_for_sol(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    persisted: dict[str, dict[str, object]] = {}
+
+    def record_datapoint(
+        connection: object,
+        *,
+        definition: IndicatorDefinition,
+        asset: str,
+        measured_on: str,
+        result: Result,
+    ) -> int:
+        if definition.key.endswith("_staking"):
+            persisted[definition.key] = {
+                "asset": asset,
+                "measured_on": measured_on,
+                "status": result.status,
+                "value": result.value if isinstance(result, Ok) else None,
+                "source_vendor": definition.vendor,
+                "source_timestamp": (
+                    result.source_timestamp if isinstance(result, Ok) else None
+                ),
+            }
+        return len(persisted)
+
+    monkeypatch.setattr(pipeline, "persist_datapoint", record_datapoint)
+
+    run_pipeline(object(), fetcher=_full_board)  # type: ignore[arg-type]
+
+    assert set(persisted) == {"sol_staking"}
+    row = persisted["sol_staking"]
+    assert row["asset"] == row["measured_on"] == "SOL"
+    assert row["status"] == "OK"
+    assert row["value"] == 390_383_623.78255165
+    assert row["source_vendor"] == "validators_app"
+    assert row["source_timestamp"] == SOURCE_TIMESTAMP
+
+
 def test_full_run_persists_one_long_short_ratio_datapoint_per_asset(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -835,6 +887,7 @@ def test_one_funding_history_failure_persists_error_and_other_assets_continue(
         fetch_mvrv=_fetch_mvrv,
         fetch_active_addresses=_fetch_active_addresses,
         fetch_exchange_flow=_fetch_exchange_flow,
+        fetch_staking=_fetch_staking,
     )
 
     run_pipeline(object(), fetcher=lambda: run)  # type: ignore[arg-type]
@@ -988,6 +1041,7 @@ def test_scheduled_entry_point_persists_the_full_board_and_pings_once(
         pipeline, "_fetch_asset_active_addresses", _fetch_active_addresses
     )
     monkeypatch.setattr(pipeline, "_fetch_asset_exchange_flow", _fetch_exchange_flow)
+    monkeypatch.setattr(pipeline, "_fetch_asset_staking", _fetch_staking)
     monkeypatch.setattr(pipeline, "persist_datapoint", record_datapoint)
 
     heartbeat.main()
@@ -995,7 +1049,7 @@ def test_scheduled_entry_point_persists_the_full_board_and_pings_once(
     definitions = _board_definitions()
     assert connected_to == [DATABASE_URL]
     assert pinged == [HEARTBEAT_URL]
-    assert len(definitions) == 70
+    assert len(definitions) == 71
     assert len(persisted) == len(definitions)
     assert {row["indicator_key"] for row in persisted} == {
         definition.key for definition in definitions
@@ -1030,6 +1084,7 @@ def test_scheduled_entry_point_persists_the_full_board_and_pings_once(
         sum(str(row["indicator_key"]).endswith("_exchange_flow") for row in persisted)
         == 2
     )
+    assert sum(str(row["indicator_key"]).endswith("_staking") for row in persisted) == 1
     assert all(row["asset"] == row["measured_on"] for row in persisted)
 
 
@@ -1051,7 +1106,7 @@ def test_live_full_board_run_persists_registry_row_count(
         (list(row_ids),),
     ).fetchall()
 
-    assert len(definitions) == 70
+    assert len(definitions) == 71
     assert all(item.status == "AVAILABLE" for item in run.history.values())
     assert all(item.fetched_bars == 250 for item in run.history.values())
 
@@ -1083,6 +1138,7 @@ def test_live_full_board_run_persists_registry_row_count(
     assert sum(str(row[0]).endswith("_mvrv") for row in rows) == 3
     assert sum(str(row[0]).endswith("_active_addresses") for row in rows) == 4
     assert sum(str(row[0]).endswith("_exchange_flow") for row in rows) == 2
+    assert sum(str(row[0]).endswith("_staking") for row in rows) == 1
     assert all(row[1] == row[2] for row in rows)
     assert all(row[6] and row[7] and row[8] and row[9] for row in rows)
     for row in rows:

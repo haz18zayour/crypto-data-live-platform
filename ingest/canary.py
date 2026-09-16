@@ -20,6 +20,7 @@ from ingest.schemas import (
     OkxOpenInterestResponse,
     OkxTakerVolumeResponse,
     SolanaGetBlockResponse,
+    ValidatorsAppEpochsResponse,
 )
 
 REQUEST_TIMEOUT_SECONDS = 10
@@ -31,6 +32,7 @@ RESPONSE_MODEL_TYPES: dict[str, type[BaseModel]] = {
     "okx_taker_volume": OkxTakerVolumeResponse,
     "coinmetrics_asset_metrics": CoinMetricsAssetMetricsResponse,
     "solana_get_block": SolanaGetBlockResponse,
+    "validators_app_epochs": ValidatorsAppEpochsResponse,
 }
 RESPONSE_MODELS: dict[str, type[BaseModel]] = {
     definition.key: RESPONSE_MODEL_TYPES[definition.response_model]
@@ -80,8 +82,14 @@ def _check_endpoint(
         )
 
     try:
+        headers = {}
+        if definition.vendor == "validators_app":
+            token = os.environ.get("VALIDATORS_APP_API_TOKEN")
+            if token:
+                headers["Token"] = token
         response = client.get(
             definition.endpoint,
+            headers=headers,
             timeout=REQUEST_TIMEOUT_SECONDS,
         )
         response.raise_for_status()

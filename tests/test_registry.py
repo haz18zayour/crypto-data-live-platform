@@ -94,7 +94,7 @@ def test_definable_for_requires_a_nonempty_asset_list(
 def test_shipped_registry_definitions_cover_four_assets_at_scale() -> None:
     registry = load_registry()
 
-    assert len(registry.root) == 70
+    assert len(registry.root) == 71
     assert {asset for entry in registry.root for asset in entry.definable_for} == {
         "BTC",
         "ETH",
@@ -218,6 +218,51 @@ def test_active_addresses_entries_declare_uncorroborated_coinmetrics_source() ->
             "PRD, so this active-addresses value has no independent corroborating "
             "venue."
         )
+
+
+def test_staking_is_registered_for_sol_without_talib() -> None:
+    entries = tuple(
+        entry for entry in load_registry().root if entry.key.endswith("_staking")
+    )
+
+    assert len(entries) == 1
+    entry = entries[0]
+    assert entry.key == "sol_staking"
+    assert entry.vendor == "validators_app"
+    assert entry.definable_for == ("SOL",)
+    assert entry.talib_function is None
+    assert entry.parameters == {}
+    assert entry.response_model == "validators_app_epochs"
+    assert entry.source_field == (
+        "epochs[0].total_active_stake from Validators.app epochs/mainnet, "
+        "converted from lamports to SOL"
+    )
+    assert "epochs/mainnet.json?per=1" in entry.endpoint
+
+
+def test_sol_staking_entry_declares_uncorroborated_validators_app_source() -> None:
+    entry = next(entry for entry in load_registry().root if entry.key == "sol_staking")
+
+    assert entry.uncorroborated is not None
+    assert entry.corroboration is None
+    assert entry.uncorroborated.note == (
+        "Validators.app is the only researched free source used for SOL staking "
+        "in this PRD, so this staking value has no independent corroborating venue."
+    )
+
+
+def test_staking_declares_btc_eth_bnb_not_definable_with_distinct_reasons() -> None:
+    entry = next(entry for entry in load_registry().root if entry.key == "sol_staking")
+
+    assert entry.not_definable is not None
+    assert entry.not_definable.assets == ("BTC", "ETH", "BNB")
+    reason = entry.not_definable.reason
+    btc_reason, scope_reason = reason.split(" ETH/BNB: ")
+    assert "BTC: proof-of-work has no staking concept" in btc_reason
+    assert "out of scope for this PRD's on-chain panel" in scope_reason
+    assert "SOL staking is research R8's specific build recommendation" in scope_reason
+    assert "not a claim that ETH or BNB staking is undefined" in scope_reason
+    assert "proof-of-work" not in scope_reason
 
 
 def test_exchange_flow_is_registered_for_btc_eth_only_without_talib() -> None:

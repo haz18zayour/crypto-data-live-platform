@@ -12,7 +12,7 @@ import httpx
 import psycopg
 
 from ingest.compute import compute_indicator, daily_close
-from ingest.fetchers import coinbase, coinmetrics, okx, solana_rpc
+from ingest.fetchers import coinbase, coinmetrics, okx, solana_rpc, validators_app
 from ingest.fetchers.okx import INDICATOR_KEY, MEASURED_ON, fetch_btc_daily_close
 from ingest.fetchers.okx_derivatives import (
     FundingRateOk,
@@ -44,6 +44,7 @@ type TakerRatioFetcher = Callable[[str], TakerRatioResult]
 type MvrvFetcher = Callable[[str], Result]
 type ActiveAddressesFetcher = Callable[[str], Result]
 type ExchangeFlowFetcher = Callable[[str], Result]
+type StakingFetcher = Callable[[str], Result]
 type BoardResult = (
     Result | FundingRateOk | OpenInterestOk | LongShortRatioOk | TakerRatioOk
 )
@@ -283,6 +284,12 @@ def _fetch_asset_exchange_flow(
     return coinmetrics.fetch_exchange_flow(asset, rate_limiter=rate_limiter)
 
 
+def _fetch_asset_staking(asset: str) -> Result:
+    if asset == "SOL":
+        return validators_app.fetch_sol_staking()
+    return Unavailable(reason=Reason.NOT_DEFINABLE)
+
+
 def _calculate(definition: IndicatorDefinition, bars: Sequence[Bar]) -> float:
     parameters = definition.parameters or {}
     if definition.key == INDICATOR_KEY:
@@ -336,6 +343,7 @@ def run_all_assets(
     fetch_mvrv: MvrvFetcher | None = None,
     fetch_active_addresses: ActiveAddressesFetcher | None = None,
     fetch_exchange_flow: ExchangeFlowFetcher | None = None,
+    fetch_staking: StakingFetcher | None = None,
 ) -> FullAssetRun:
     """Fetch both venues and compute every registered board cell."""
 
@@ -377,6 +385,9 @@ def run_all_assets(
         definition
         for definition in registered
         if definition.key.endswith("_exchange_flow")
+    )
+    staking_definitions = tuple(
+        definition for definition in registered if definition.key.endswith("_staking")
     )
     by_asset = {
         asset: tuple(
@@ -420,6 +431,9 @@ def run_all_assets(
         _fetch_asset_exchange_flow
         if fetch_exchange_flow is None
         else fetch_exchange_flow
+    )
+    fetch_validators_app_staking: StakingFetcher = (
+        _fetch_asset_staking if fetch_staking is None else fetch_staking
     )
     history: dict[tuple[str, Venue], HistoryAssessment] = {}
     indicators: dict[str, BoardResult] = {}
@@ -504,6 +518,11 @@ def run_all_assets(
 
     for definition in exchange_flow_definitions:
         indicators[definition.key] = fetch_coinmetrics_exchange_flow(
+            definition.definable_for[0]
+        )
+
+    for definition in staking_definitions:
+        indicators[definition.key] = fetch_validators_app_staking(
             definition.definable_for[0]
         )
 

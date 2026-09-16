@@ -255,3 +255,26 @@ class SolanaGetBlockResponse(BaseModel):
     jsonrpc: StrictStr
     result: SolanaBlock | None
     id: StrictInt | StrictStr
+
+
+class ValidatorsAppEpoch(BaseModel):
+    """One epoch row from Validators.app's Solana epoch endpoint."""
+
+    model_config = ConfigDict(extra="forbid", frozen=True)
+
+    epoch: StrictInt
+    starting_slot: StrictInt = Field(alias="starting_slot")
+    slots_in_epoch: StrictInt = Field(alias="slots_in_epoch")
+    network: StrictStr
+    created_at: StrictStr
+    total_rewards: StrictInt
+    total_active_stake: StrictInt
+
+
+class ValidatorsAppEpochsResponse(BaseModel):
+    """The response contract for Validators.app epoch staking data."""
+
+    model_config = ConfigDict(extra="forbid", frozen=True)
+
+    epochs: tuple[ValidatorsAppEpoch, ...]
+    epochs_count: StrictInt

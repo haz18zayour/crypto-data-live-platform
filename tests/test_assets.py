@@ -106,6 +106,11 @@ def synthetic_exchange_flow(asset: str) -> Ok:
     return Ok(value=offset, source_timestamp=SOURCE_TIMESTAMP)
 
 
+def synthetic_staking(asset: str) -> Ok:
+    assert asset == "SOL"
+    return Ok(value=390_383_623.78255165, source_timestamp=SOURCE_TIMESTAMP)
+
+
 def test_registry_declares_measured_history_availability_per_asset_per_venue() -> (
     None
 ):
@@ -157,6 +162,7 @@ def test_asset_with_fewer_available_bars_than_required_is_declared_uncorroborate
         fetch_mvrv=synthetic_mvrv,
         fetch_active_addresses=synthetic_active_addresses,
         fetch_exchange_flow=synthetic_exchange_flow,
+        fetch_staking=synthetic_staking,
     )
     assessment = run.history[("BNB", "coinbase")]
 
@@ -217,6 +223,7 @@ def test_all_four_assets_produce_an_indicator_value_or_explicit_status() -> None
         fetch_mvrv=synthetic_mvrv,
         fetch_active_addresses=synthetic_active_addresses,
         fetch_exchange_flow=synthetic_exchange_flow,
+        fetch_staking=synthetic_staking,
     )
     technical_definitions = tuple(
         definition
@@ -247,7 +254,11 @@ def test_all_four_assets_produce_an_indicator_value_or_explicit_status() -> None
         definition
         for definition in load_registry().root
         if definition.response_model
-        in {"coinmetrics_asset_metrics", "solana_get_block"}
+        in {
+            "coinmetrics_asset_metrics",
+            "solana_get_block",
+            "validators_app_epochs",
+        }
     )
     mvrv_definitions = tuple(
         definition
@@ -258,6 +269,11 @@ def test_all_four_assets_produce_an_indicator_value_or_explicit_status() -> None
         definition
         for definition in onchain_definitions
         if definition.key.endswith("_active_addresses")
+    )
+    staking_definitions = tuple(
+        definition
+        for definition in onchain_definitions
+        if definition.key.endswith("_staking")
     )
 
     assert set(run.indicators) == {
@@ -292,6 +308,9 @@ def test_all_four_assets_produce_an_indicator_value_or_explicit_status() -> None
     assert Counter(
         definition.definable_for[0] for definition in active_address_definitions
     ) == Counter({"BTC": 1, "ETH": 1, "BNB": 1, "SOL": 1})
+    assert Counter(
+        definition.definable_for[0] for definition in staking_definitions
+    ) == Counter({"SOL": 1})
     assert all(
         result.status in {"OK", "STALE", "UNAVAILABLE", "ERROR"}
         for result in run.indicators.values()
@@ -391,6 +410,7 @@ def test_full_run_routes_each_asset_to_its_actual_pair_at_both_venues(
         fetch_mvrv=synthetic_mvrv,
         fetch_active_addresses=synthetic_active_addresses,
         fetch_exchange_flow=synthetic_exchange_flow,
+        fetch_staking=synthetic_staking,
     )
 
     assert requested_pairs == {

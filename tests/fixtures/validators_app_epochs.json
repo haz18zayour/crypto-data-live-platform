@@ -1,0 +1,14 @@
+{
+  "epochs": [
+    {
+      "epoch": 472,
+      "starting_slot": 203904008,
+      "slots_in_epoch": 432000,
+      "network": "mainnet",
+      "created_at": "2023-07-07T07:44:56.000Z",
+      "total_rewards": 181321548661377,
+      "total_active_stake": 390383623782551636
+    }
+  ],
+  "epochs_count": 169
+}

@@ -291,6 +291,10 @@ def test_two_assets_in_one_run_can_persist_different_derived_funding_intervals()
             value=10.0,
             source_timestamp=NOW - timedelta(days=1),
         ),
+        fetch_staking=lambda asset: Ok(
+            value=390_383_623.78255165,
+            source_timestamp=NOW - timedelta(days=1),
+        ),
     )
 
     btc = run.indicators["btc_funding_rate"]

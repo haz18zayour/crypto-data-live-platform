@@ -659,6 +659,23 @@
   freshness_stale_seconds: 172800
   uncorroborated:
     note: Helius Solana RPC is the only researched source used for this built SOL active-addresses cell, and its one-hour method is not directly comparable to Coin Metrics' 24-hour AdrActCnt.
+- key: sol_staking
+  vendor: validators_app
+  endpoint: https://www.validators.app/api/v1/epochs/mainnet.json?per=1
+  source_field: epochs[0].total_active_stake from Validators.app epochs/mainnet, converted from lamports to SOL
+  definable_for: [SOL]
+  not_definable:
+    assets: [BTC, ETH, BNB]
+    reason: "BTC: proof-of-work has no staking concept. ETH/BNB: out of scope for this PRD's on-chain panel; SOL staking is research R8's specific build recommendation, not a claim that ETH or BNB staking is undefined."
+  golden: fixtures/validators_app_epochs.json
+  response_model: validators_app_epochs
+  required_bars: 1
+  parameters:
+  expected_update_interval_seconds: 86400
+  freshness_warn_seconds: 108000
+  freshness_stale_seconds: 172800
+  uncorroborated:
+    note: Validators.app is the only researched free source used for SOL staking in this PRD, so this staking value has no independent corroborating venue.
 - key: sol_open_interest
   vendor: okx
   endpoint: https://www.okx.com/api/v5/public/open-interest?instType=SWAP&instId=SOL-USDT-SWAP
