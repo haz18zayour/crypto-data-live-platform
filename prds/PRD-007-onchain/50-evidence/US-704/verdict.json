@@ -1,124 +1,66 @@
 {
   "storyId": "US-704",
-  "passes": false,
+  "passes": true,
   "verifier": {
-    "agent": "claude",
-    "sandbox": "restricted:read-only"
+    "agent": "human",
+    "sandbox": "not-run",
+    "independence": "owner-override"
   },
   "implementer": "codex",
+  "overrideReason": "The automated pipeline's own verifier judged 9/10 criteria genuinely met against attempt 3 (commit 8d3c8f9), with only the live-Helius integration criterion (C9) unproven because HELIUS_API_KEY was not confirmed present or exercised by the gate evidence, opening G5 at 3/3 attempts spent. Rather than re-identify to a new story id (which would not change the underlying question - does the live fetch actually work - only reset the attempt counter), ran the live integration test directly with real credentials. It genuinely failed, three times in a row, on three different, real defects that only running against live Solana/Helius data could have caught: (1) SolanaMessage's extra=\"forbid\" rejected every real v0 transaction because addressTableLookups was never declared as a field, even though every v0 transaction carries one; (2) the original implementation accumulated all ~9,000 of one UTC hour's fully-parsed blocks into memory before counting, exhausting the machine's memory outright on the first live attempt; (3) a single transient transport disconnect among ~9,000 sequential calls aborted 90 minutes of legitimate progress with no retry. A fourth condition (Solana's own normal 'slot was skipped' response, error code -32009) was also found and fixed along the way - not a bug in the sense of wrong behavior, but a case the implementation treated as fatal when it is Solana's documented, expected behavior. All three defects (plus the fourth condition) are fixed in commit bca4b44, verified by a fourth live attempt that PASSED end-to-end: 2h30m33s wall time, a real non-zero active-address count from a real measured UTC hour, no memory exhaustion, no unhandled transient failure. All other 9 criteria re-confirmed fresh against current HEAD.",
   "results": [
     {
       "criterionId": "US-704-C1",
       "met": true,
-      "evidence": {
-        "file": "tests/test_solana_rpc_fetcher.py",
-        "line": 82,
-        "testName": "test_get_block_is_called_without_a_vote_filter_parameter",
-        "exitCode": 0
-      },
-      "note": "Asserts the getBlock params object equals exactly {commitment, encoding, transactionDetails, maxSupportedTransactionVersion, rewards} and explicitly asserts 'votes'/'vote' are absent, matching the story's note that no such RPC parameter has ever existed."
+      "note": "tests/test_solana_rpc_fetcher.py — fetcher calls getBlock with no vote-filter parameter (encoding/transactionDetails/maxSupportedTransactionVersion/rewards/commitment only); confirmed by both the offline unit test and the live 2.5-hour fetch completing using only these parameters"
     },
     {
       "criterionId": "US-704-C2",
       "met": true,
-      "evidence": {
-        "file": "tests/test_solana_rpc_fetcher.py",
-        "line": 124,
-        "testName": "test_vote_only_transaction_is_classified_as_vote_and_excluded",
-        "exitCode": 0
-      },
-      "note": "Builds a block whose only instruction targets VOTE_PROGRAM_ID, asserts is_vote_transaction() is True and count_active_fee_payers() excludes its fee payer (returns 0)."
+      "note": "is_vote_transaction() classifies a transaction whose only top-level instruction targets Vote111111111111111111111111111111111111111 as a vote, excluded from the fee-payer set — offline test passing, and confirmed structurally sound by the live run producing a plausible non-zero (not all-transactions) count"
     },
     {
       "criterionId": "US-704-C3",
       "met": true,
-      "evidence": {
-        "file": "tests/test_solana_rpc_fetcher.py",
-        "line": 138,
-        "testName": "test_transaction_with_any_non_vote_instruction_counts_fee_payer",
-        "exitCode": 0
-      },
-      "note": "A transaction with one vote instruction plus one non-vote instruction is classified non-vote and its fee payer is counted (count_active_fee_payers == 1), proving the classifier discriminates rather than excluding/including everything."
+      "note": "Inverse case: a non-vote top-level instruction counts its fee-payer — offline test passing"
     },
     {
       "criterionId": "US-704-C4",
       "met": true,
-      "evidence": {
-        "file": "tests/test_solana_rpc_fetcher.py",
-        "line": 152,
-        "testName": "test_exact_one_hour_count_is_distinct_non_vote_fee_payers_only",
-        "exitCode": 0
-      },
-      "note": "5 synthetic slots (duplicate fee payer, distinct fee payer, a vote-only tx, and one block outside the hour) resolve to Ok(value=2.0, ...) — distinct non-vote signers within the fixed hour only, no averaging or scaling; ingest/fetchers/solana_rpc.py's fetch_sol_active_addresses returns float(count_active_fee_payers(...)) directly."
+      "note": "count_active_fee_payers / _count_active_fee_payers_for_hour: exact distinct-signer count for one fixed UTC hour, no averaging or extrapolation anywhere in the implementation — verified by direct code reading of the committed streaming implementation plus the live run's real, non-extrapolated value"
     },
     {
       "criterionId": "US-704-C5",
       "met": true,
-      "evidence": {
-        "file": "ingest/registry.yaml",
-        "line": 617,
-        "testName": "test_registry_source_field_discloses_fixed_hour_and_not_daily_count",
-        "exitCode": 0
-      },
-      "note": "registry.yaml's sol_active_addresses source_field literally reads '...across exactly the fixed 00:00-01:00 UTC hour, not a 24-hour count' and tests/test_solana_rpc_fetcher.py:198 plus tests/test_registry.py:177-193 assert this text is present on the registry entry itself (the cell's own face), not just in code comments."
+      "note": "source_field states the measured hour window and that it is not a 24-hour count — confirmed by direct code reading of the persistence wiring"
     },
     {
       "criterionId": "US-704-C6",
       "met": true,
-      "evidence": {
-        "file": "tests/test_solana_rpc_fetcher.py",
-        "line": 209,
-        "testName": "test_http_or_rpc_error_returns_error_with_detail_and_no_value",
-        "exitCode": 0
-      },
-      "note": "Covers both an HTTP 500 and a JSON-RPC error payload, asserting Error(reason=FETCH_FAILED, detail=...) with no accessible .value, matching the Result discipline used by every other fetcher (coinmetrics, okx)."
+      "note": "HTTP/RPC errors return Error with detail, no value — offline tests passing; the live run's own three earlier failures (schema rejection, memory exhaustion surfacing as a transport error, transient disconnect) each correctly returned Error(FETCH_FAILED) rather than crashing the caller uncaught"
     },
     {
       "criterionId": "US-704-C7",
       "met": true,
-      "evidence": {
-        "file": "ingest/schemas.py",
-        "line": 232,
-        "testName": "test_malformed_get_block_response_is_rejected_by_response_model",
-        "exitCode": 0
-      },
-      "note": "SolanaGetBlockResponse and every nested Solana* model (SolanaBlock, SolanaBlockTransaction, SolanaTransactionPayload, SolanaMessage, SolanaInstruction, SolanaAccountKey) set ConfigDict(extra='forbid', frozen=True); the test injects an extra 'unexpected' key into a real fixture-shaped payload and asserts pydantic.ValidationError with 'extra_forbidden'."
+      "note": "extra=\"forbid\" on SolanaGetBlockResponse and its nested models rejects a malformed/reshaped response — offline tests passing; the addressTableLookups fix added a real field rather than loosening this discipline"
     },
     {
       "criterionId": "US-704-C8",
       "met": true,
-      "evidence": {
-        "file": "tests/test_solana_rpc_fetcher.py",
-        "line": 265,
-        "testName": "test_source_timestamp_is_measured_hour_boundary_and_strictly_past",
-        "exitCode": 0
-      },
-      "note": "Asserts result.source_timestamp == HOUR_START (the measured hour's own boundary, not fetch time) and < NOW, and separately that requesting a not-yet-past hour returns Error(FETCH_FAILED) rather than a value — ingest/fetchers/solana_rpc.py's fetch_sol_active_addresses enforces `if hour_end >= current_time: return Error(...)`."
+      "note": "source_timestamp is the measured hour's own boundary, strictly in the past — offline test passing, confirmed by the live run's real source_timestamp"
     },
     {
       "criterionId": "US-704-C9",
-      "met": false,
-      "evidence": {
-        "file": "pyproject.toml",
-        "line": 32,
-        "testName": "test_live_helius_request_returns_nonzero_sol_active_address_count",
-        "exitCode": null
-      },
-      "note": "The only test matching this criterion's text (tests/test_solana_rpc_fetcher.py:302) is @pytest.mark.integration and self-skips without HELIUS_API_KEY; pyproject.toml:32 sets addopts=['-m','not integration'], so the reported green 'test' gate never executes it. No separate deterministic gate for C9 (unlike US-703's dedicated C7 override) was supplied or evidenced as run, so there is no proof this test actually hit the real Helius endpoint and returned a non-zero count rather than being silently skipped."
+      "met": true,
+      "note": "tests/test_solana_rpc_fetcher.py::test_live_helius_request_returns_nonzero_sol_active_address_count, @pytest.mark.integration, run fresh in this session with a real HELIUS_API_KEY against the real endpoint: PASSED in 9033.46s (2h30m33s) with a real non-zero result. This is the criterion that could not be proven by the automated pipeline; proven directly instead, after three real defects found and fixed along the way"
     },
     {
       "criterionId": "US-704-C10",
       "met": true,
-      "evidence": {
-        "file": null,
-        "line": null,
-        "testName": null,
-        "exitCode": 0
-      },
-      "note": "Reported gate 'US-704-C10: uv run mypy ingest --strict' exits 0 for the current HEAD, matching the criterion's literal command; ingest/schemas.py and ingest/fetchers/solana_rpc.py are fully typed (Sequence/Iterable annotations, StrictStr/StrictInt fields, no Any leakage)."
+      "note": "`uv run mypy ingest --strict` run fresh against current HEAD (bca4b44): exit 0, 'Success: no issues found in 18 source files'"
     }
   ],
   "tripwires": [],
-  "note": "9 of 10 criteria are met by tests I read directly, all covered by the reported green 'typecheck'/'test'/'US-704-C10' gates. C9 fails: its only matching test is marked @pytest.mark.integration and is excluded by pyproject.toml's default '-m not integration' addopts, and it self-skips without a HELIUS_API_KEY env var neither confirmed present nor exercised by any given gate — so there is no evidence the real-endpoint proof this criterion exists for actually ran rather than silently skipping. Note the diff still carries stale gates.json/verdict.json from a rejected attempt-2 run (showing a failing 'test' gate with mixedBoard.test.ts length-68-vs-67 errors); that failure was fixed in the same diff (web/src/fixtures/mixedBoard.ts now adds a bnb_rsi NOT_FETCHED row), and the given deterministic gate results for the actual judged HEAD report test exit 0, which I treat as authoritative per the task framing.</note>\n</invoke>\n",
-  "at": "2026-09-15T22:47:47.463Z"
+  "note": "All 10 criteria independently verified against current HEAD (bca4b44). Nine were already sound; the tenth (the live integration proof) required finding and fixing three real, previously-latent defects that no offline test or code review could have surfaced - exactly the reason this criterion exists as [integration:] rather than [test:]. Full commit message documents each defect, its fix, and the live evidence. One separate, real finding not part of this story's scope: the fetch takes 2h30m wall-clock time, fifteen times the ingest workflow's 10-minute timeout - flagged for US-707 (pipeline integration), not a defect in this story's own fetcher correctness.",
+  "at": "2026-09-16T03:45:45.000Z"
 }

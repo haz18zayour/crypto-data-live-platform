@@ -31,9 +31,9 @@ open prds/PRD-005-dashboard/20-decisions.yaml
 | PRD-004-indicators | 11 | 11 | **all green** |
 | PRD-005-dashboard | 9 | 9 | **all green** |
 | PRD-006-derivatives | 7 | 7 | **all green** |
-| PRD-007-onchain | 8 | 3 | 3/8 |
+| PRD-007-onchain | 8 | 4 | 4/8 |
 
-Spend to date: **$72.92** Claude · **161717k** Codex tokens.
+Spend to date: **$73.63** Claude · **163303k** Codex tokens.
 
 ## What happened
 
@@ -484,6 +484,15 @@ Spend to date: **$72.92** Claude · **161717k** Codex tokens.
 - 22:23  US-704 started, attempt 2 (codex)
 - 22:28  US-704 — codex finished `b676344d` · 976k tok
 - 22:33  US-704 **rejected** — 0/10 criteria, judged by claude
+- 22:33  US-704 started, attempt 3 (codex)
+- 22:39  US-704 — codex finished `8d3c8f9b` · 1587k tok
+- 22:47  US-704 **rejected** — 9/10 criteria, judged by claude · $0.71
+- 22:47  ⏸ **gate opened** — US-704 has failed 3 times — is the story wrong?
+
+### 2026-09-16
+
+- 03:46  US-704 **PASSED** — 10/10 criteria, judged by human
+- 03:46  ▶ gate answered **skip** — Verified directly: 3 real defects found and fixed via live testing (schema gap, memory exhaustion, transient-failure resilience), then a 4th live run passed end-to-end (2h30m33s, real non-zero count). See verdict.json overrideReason.
 
 <!-- uf:generated:end -->
 
