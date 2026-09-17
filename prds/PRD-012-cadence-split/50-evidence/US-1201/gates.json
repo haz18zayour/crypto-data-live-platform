@@ -1,0 +1,20 @@
+[
+  {
+    "name": "typecheck",
+    "run": "node -e \"const f=require('fs'),c=require('child_process');let r=0;const run=(cmd)=>{try{c.execSync(cmd,{stdio:'inherit'})}catch(e){r=1}};if(f.existsSync('web/package.json'))run('npm --prefix web run typecheck');if(f.existsSync('pyproject.toml'))run('uv run mypy ingest --strict');process.exit(r)\"",
+    "exitCode": 1,
+    "output": "\n> crypto-data-live-web@0.0.0 typecheck\n> tsc -b --pretty false\n\ningest\\heartbeat.py:11: error: Module \"ingest.pipeline\" does not explicitly export attribute \"CadenceTier\"  [attr-defined]\r\nFound 1 error in 1 file (checked 19 source files)\r\n\n"
+  },
+  {
+    "name": "test",
+    "run": "node -e \"const f=require('fs'),c=require('child_process');let r=0;const run=(cmd)=>{try{c.execSync(cmd,{stdio:'inherit'})}catch(e){r=1}};if(f.existsSync('web/package.json'))run('npm --prefix web test');if(f.existsSync('tests'))run('uv run pytest -q');process.exit(r)\"",
+    "exitCode": 0,
+    "output": "\n> crypto-data-live-web@0.0.0 pretest\n> playwright install chromium chromium-headless-shell\n\n\n> crypto-data-live-web@0.0.0 test\n> vitest run --configLoader runner\n\n\n RUN  v4.1.9 C:/Users/user/Desktop/Projects/crypto-data-live-platform/web\n\n\n Test Files  11 passed (11)\n      Tests  52 passed (52)\n   Start at  19:08:01\n   Duration  12.95s (transform 663ms, setup 6.12s, import 2.78s, tests 8.94s, environment 81.92s)\n\n........................................................................ [ 24%]\r\n........................................................................ [ 49%]\r\n........................................................................ [ 74%]\r\n........................................................................ [ 99%]\r\n.                                                                        [100%]\r\n289 passed, 29 deselected in 48.31s\r\n"
+  },
+  {
+    "name": "US-1201-C7",
+    "run": "uv run pytest -q",
+    "exitCode": 0,
+    "output": "........................................................................ [ 24%]\r\n........................................................................ [ 49%]\r\n........................................................................ [ 74%]\r\n........................................................................ [ 99%]\r\n.                                                                        [100%]\r\n289 passed, 29 deselected in 50.99s\r\n"
+  }
+]
