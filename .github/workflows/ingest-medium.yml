@@ -1,0 +1,42 @@
+name: ingest-medium
+
+on:
+  schedule:
+    - cron: '37 */8 * * *'
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/ingest-medium.yml'
+      - 'ingest/**'
+      - 'pyproject.toml'
+      - 'tests/test_heartbeat.py'
+      - 'tests/test_ingest_medium_workflow.py'
+      - 'tests/test_ingest_workflow.py'
+      - 'tests/test_persist_board.py'
+      - 'uv.lock'
+
+permissions:
+  contents: read
+
+jobs:
+  ingest-medium:
+    name: ingest-medium
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      HEALTHCHECKS_PING_URL: ${{ secrets.HEALTHCHECK_URL_INGEST_MEDIUM }}
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+
+      - name: Run medium-tier ingestion
+        run: uv run python -m ingest.heartbeat --tier medium
