@@ -1349,6 +1349,93 @@ def test_scheduled_entry_point_persists_board_without_sol_active_addresses_and_p
     assert all(row["asset"] == row["measured_on"] for row in persisted)
 
 
+def test_daily_tier_entry_point_persists_only_daily_board_rows_and_pings_once(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    persisted: list[dict[str, object]] = []
+    connected_to: list[str] = []
+    pinged: list[str] = []
+
+    class FakeConnection:
+        def __enter__(self) -> Self:
+            return self
+
+        def __exit__(self, *args: object) -> None:
+            return None
+
+    def connect(database_url: str) -> FakeConnection:
+        connected_to.append(database_url)
+        return FakeConnection()
+
+    def record_datapoint(
+        connection: object,
+        *,
+        definition: IndicatorDefinition,
+        asset: str,
+        measured_on: str,
+        result: Result,
+    ) -> int:
+        assert isinstance(connection, FakeConnection)
+        persisted.append(
+            {
+                "indicator_key": definition.key,
+                "asset": asset,
+                "measured_on": measured_on,
+                "status": result.status,
+            }
+        )
+        return len(persisted)
+
+    def record_ping(url: str, *, timeout: int) -> httpx.Response:
+        pinged.append(url)
+        request = httpx.Request("GET", url)
+        return httpx.Response(200, request=request)
+
+    def fetch_scheduled_active_addresses(
+        asset: str, rate_limiter: object | None = None
+    ) -> Result:
+        assert asset != "SOL"
+        return _fetch_active_addresses(asset, rate_limiter)
+
+    monkeypatch.setenv("DATABASE_URL", DATABASE_URL)
+    monkeypatch.setenv("HEALTHCHECKS_PING_URL", HEARTBEAT_URL)
+    monkeypatch.setattr(heartbeat.psycopg, "connect", connect)
+    monkeypatch.setattr(heartbeat.httpx, "get", record_ping)
+    monkeypatch.setattr(pipeline, "_fetch_asset_bars", _fetch_bars)
+    monkeypatch.setattr(pipeline, "_fetch_asset_funding_rate", _fetch_funding_rate)
+    monkeypatch.setattr(pipeline, "_fetch_asset_open_interest", _fetch_open_interest)
+    monkeypatch.setattr(
+        pipeline, "_fetch_asset_long_short_ratio", _fetch_long_short_ratio
+    )
+    monkeypatch.setattr(pipeline, "_fetch_asset_taker_ratio", _fetch_taker_ratio)
+    monkeypatch.setattr(pipeline, "_fetch_asset_mvrv", _fetch_mvrv)
+    monkeypatch.setattr(
+        pipeline, "_fetch_asset_active_addresses", fetch_scheduled_active_addresses
+    )
+    monkeypatch.setattr(pipeline, "_fetch_asset_exchange_flow", _fetch_exchange_flow)
+    monkeypatch.setattr(pipeline, "_fetch_asset_staking", _fetch_staking)
+    monkeypatch.setattr(pipeline, "persist_datapoint", record_datapoint)
+
+    heartbeat.main(["--tier", "daily"])
+
+    expected = {
+        definition.key
+        for definition in _board_definitions()
+        if definition.expected_update_interval_seconds == 86400
+        and definition.key != pipeline.SOL_ACTIVE_ADDRESSES_KEY
+    }
+    assert connected_to == [DATABASE_URL]
+    assert pinged == [HEARTBEAT_URL]
+    assert len(expected) == 54
+    assert len(persisted) == 54
+    assert {row["indicator_key"] for row in persisted} == expected
+    assert pipeline.SOL_ACTIVE_ADDRESSES_KEY not in {
+        row["indicator_key"] for row in persisted
+    }
+    assert all(row["status"] == "OK" for row in persisted)
+    assert all(row["asset"] == row["measured_on"] for row in persisted)
+
+
 def test_sol_active_addresses_entry_point_persists_only_that_cell_and_pings_once(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
