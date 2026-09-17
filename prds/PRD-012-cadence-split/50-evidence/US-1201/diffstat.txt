@@ -1,8 +1,12 @@
-.uf/events.ndjson           |   2 +
- ingest/heartbeat.py         |  22 +++++--
- ingest/pipeline.py          |  18 +++++-
- ingest/registry.py          |  29 ++++++++-
- tests/test_heartbeat.py     |  35 +++++++++++
- tests/test_persist_board.py | 149 ++++++++++++++++++++++++++++++++++++++++++++
- tests/test_registry.py      |  40 +++++++++++-
- 7 files changed, 286 insertions(+), 9 deletions(-)
+.uf/events.ndjson                                  |   5 +
+ SESSION.md                                         |  19 ++-
+ ingest/heartbeat.py                                |  22 ++-
+ ingest/pipeline.py                                 |  18 ++-
+ ingest/registry.py                                 |  29 +++-
+ .../50-evidence/US-1201/diffstat.txt               |   8 ++
+ .../50-evidence/US-1201/gates.json                 |  20 +++
+ .../50-evidence/US-1201/verdict.json               |  91 +++++++++++++
+ tests/test_heartbeat.py                            |  35 +++++
+ tests/test_persist_board.py                        | 149 +++++++++++++++++++++
+ tests/test_registry.py                             |  40 +++++-
+ 11 files changed, 425 insertions(+), 11 deletions(-)
