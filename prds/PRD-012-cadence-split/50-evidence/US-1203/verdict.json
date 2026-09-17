@@ -13,10 +13,10 @@
       "evidence": {
         "file": ".github/workflows/ingest-medium.yml",
         "line": 1,
-        "testName": "test_ingest_medium_workflow_cron_runs_every_eight_hours_off_peak / test_ingest_medium_workflow_runs_shared_entrypoint_for_medium_tier",
+        "testName": "test_ingest_medium_workflow_cron_runs_every_eight_hours_off_peak",
         "exitCode": 0
       },
-      "note": "ingest-medium.yml mirrors ingest.yml's structure exactly: same triggers (schedule/workflow_dispatch/push paths), permissions, timeout-minutes:10, checkout/setup-python/setup-uv steps, and `uv run python -m ingest.heartbeat --tier <tier>` invocation pattern — only the cron string, job name, and heartbeat secret differ. Diffing the two files line-by-line confirms the practice is followed, not reinvented."
+      "note": "ingest-medium.yml mirrors ingest.yml's structure: same trigger shape (schedule/workflow_dispatch/push paths), permissions: contents: read, timeout-minutes: 10, checkout/setup-python/setup-uv steps, and `uv run python -m ingest.heartbeat --tier <tier>` invocation — only cron string, job name, and heartbeat secret name differ."
     },
     {
       "criterionId": "US-1203-C2",
@@ -24,10 +24,10 @@
       "evidence": {
         "file": "ingest/pipeline.py",
         "line": 364,
-        "testName": "test_tier_run_persists_only_registry_entries_for_that_cadence[medium-4]",
-        "exitCode": 0
+        "testName": null,
+        "exitCode": null
       },
-      "note": "The diff touches zero lines of ingest/pipeline.py or ingest/registry.py. The medium tier is filtered by the pre-existing US-1201 predicate `definition.expected_update_interval_seconds == TIER_INTERVAL_SECONDS[tier]` (pipeline.py:364), reused unchanged via `--tier medium` (heartbeat.py:87 already accepted 'medium' as a choice before this story)."
+      "note": "The diff touches zero lines of ingest/pipeline.py or ingest/registry.py; the workflow only adds `--tier medium` to the already-existing heartbeat CLI, which routes into US-1201's unmodified tier filter."
     },
     {
       "criterionId": "US-1203-C3",
@@ -38,29 +38,29 @@
         "testName": "test_ingest_medium_workflow_uses_dedicated_heartbeat_secret",
         "exitCode": 0
       },
-      "note": "Research doc cites the vendor's own documented practice: 'Healthchecks.io \"one check per job\" with per-check Grace Time is the vendor's own documented best practice... https://healthchecks.io/docs/configuring_checks/' (10-research.md:20). Implementation matches it with a dedicated secret `HEALTHCHECK_URL_INGEST_MEDIUM` (ingest-medium.yml:27), distinct from the daily tier's `HEALTHCHECKS_PING_URL` and the canary's `HEALTHCHECK_URL_CONTRACT_CANARY`, asserted by the new test."
+      "note": "Research doc explicitly cites Healthchecks.io's own documented 'one check per job' practice with a link (10-research.md:20); implementation matches it with a dedicated `HEALTHCHECK_URL_INGEST_MEDIUM` secret distinct from the daily and canary checks, asserted by the new workflow test."
     },
     {
       "criterionId": "US-1203-C4",
-      "met": false,
+      "met": true,
       "evidence": {
         "file": "tests/test_persist_board.py",
-        "line": 1352,
-        "testName": null,
-        "exitCode": null
+        "line": 1439,
+        "testName": "test_medium_tier_entry_point_persists_only_medium_board_rows_and_pings_once",
+        "exitCode": 0
       },
-      "note": "No test drives the assembled system through the real entry point for the medium tier. The genuine end-to-end pattern (mocking only I/O boundaries — psycopg.connect, httpx.get, and the vendor fetchers — then calling heartbeat.main(['--tier', X])) exists for daily (test_daily_tier_entry_point_persists_only_daily_board_rows_and_pings_once, line 1352) and for fast/SOL, but no equivalent 'medium' version was added. The only new test file, tests/test_ingest_medium_workflow.py, is a pure text-grep over the YAML file and never calls heartbeat.main or exercises run_ingestion/run_pipeline/run_scheduled_board. test_main_accepts_tier_argument (test_heartbeat.py:201) also doesn't count — it monkeypatches run_ingestion away entirely, so nothing downstream is actually wired or exercised."
+      "note": "Attempt 2 added a genuine end-to-end test that calls heartbeat.main(['--tier','medium']) directly, mocking only I/O boundaries (psycopg.connect, httpx.get, and each vendor fetcher, with non-funding fetchers set to raise if called) and asserting the real pipeline persists exactly the 4 medium funding-rate rows and pings once. This is the same pattern already accepted for the daily tier in US-1202 and closes the gap the attempt-1 verdict correctly flagged."
     },
     {
       "criterionId": "US-1203-C5",
       "met": false,
       "evidence": {
-        "file": ".uf/events.ndjson",
-        "line": 515,
+        "file": null,
+        "line": null,
         "testName": null,
         "exitCode": null
       },
-      "note": "No evidence of an actual GitHub Actions scheduled or dispatched run of ingest-medium.yml exists anywhere in the repo (events.ndjson, SESSION.md). This is the same structural gap flagged for US-1202-C5 before a human manually ran `gh workflow run` and cited the resulting run URL/conclusion — that same remediation has not happened for US-1203. Only a static YAML-text assertion (test_ingest_medium_workflow.py) exists, which does not satisfy a 'ci' method criterion requiring the real scheduled job."
+      "note": "No evidence anywhere in the repo (events.ndjson, SESSION.md, gates) of an actual completed or dispatched GitHub Actions run of ingest-medium.yml — only a static YAML-text test exists. This is the identical structural gap US-1202-C5 had, which was only closed there by a human manually running `gh workflow run ingest.yml` and citing the resulting run URL/conclusion; no equivalent remediation (run URL, dispatch log) is present for ingest-medium.yml."
     },
     {
       "criterionId": "US-1203-C6",
@@ -71,10 +71,10 @@
         "testName": null,
         "exitCode": 0
       },
-      "note": "Gate result 'US-1203-C6: exit 0 [uv run pytest -q]' confirms the full offline suite passes on current HEAD."
+      "note": "Gate result 'US-1203-C6: exit 0 [uv run pytest -q]' confirms the full offline suite passes on current HEAD, including the new medium-tier integration test."
     }
   ],
   "tripwires": [],
-  "note": "Two criteria fail: C4 has no true end-to-end test for the medium tier (only a YAML text-grep test was added; the same-pattern integration test that exists for daily/fast was never written for medium), and C5 has no evidence of a real completed/dispatched GitHub Actions run of ingest-medium.yml — this is the identical gap the human had to manually close for US-1202-C5, and it has not been closed here.",
-  "at": "2026-09-17T16:57:32.738Z"
+  "note": "5/6 criteria met on current HEAD (commit 5688925, attempt 2). Attempt 2 closed the C4 gap flagged in the stale attempt-1 verdict.json on disk by adding a real integration test (test_persist_board.py:1439) that drives heartbeat.main directly with only I/O boundaries mocked. C5 remains unmet: this is a 'ci' method criterion requiring proof of an actual GitHub Actions run, and unlike US-1202 (where a human manually dispatched the workflow and cited the run URL https://github.com/haz18zayour/crypto-data-live-platform/actions/runs/35248697411), no such dispatch or run evidence exists anywhere in the repo for ingest-medium.yml — only a static text-grep test over the YAML.",
+  "at": "2026-09-17T17:03:14.491Z"
 }
