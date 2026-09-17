@@ -16,51 +16,51 @@
         "testName": "test_ingest_workflow_cron_runs_once_daily_at_existing_offset",
         "exitCode": 0
       },
-      "note": "cron changed from '17 */6 * * *' to '17 0 * * *' (ingest.yml:5) and the run step now invokes `uv run python -m ingest.heartbeat --tier daily` (ingest.yml:43), asserted by the new tests/test_ingest_workflow.py tests, which ran green in the US-1202-C6 gate (289 passed)."
+      "note": "cron changed from '17 */6 * * *' to '17 0 * * *' (ingest.yml:5) and the run step now invokes `uv run python -m ingest.heartbeat --tier daily` (ingest.yml:43); asserted by tests/test_ingest_workflow.py, part of the green US-1202-C6 pytest run."
     },
     {
       "criterionId": "US-1202-C2",
       "met": true,
       "evidence": {
         "file": "ingest/pipeline.py",
-        "line": 362,
-        "testName": "test_scheduled_daily_tier_keeps_existing_sol_active_addresses_exclusion",
+        "line": 364,
+        "testName": "test_daily_tier_entry_point_persists_only_daily_board_rows_and_pings_once",
         "exitCode": 0
       },
-      "note": "The workflow only adds `--tier daily` to the existing CLI (ingest.yml:43); heartbeat.py's argparse (heartbeat.py:87) and run_ingestion (heartbeat.py:42-58) pass tier straight through to run_scheduled_board -> run_all_assets, whose filter (`definition.expected_update_interval_seconds == TIER_INTERVAL_SECONDS[tier]`, pipeline.py:362-365) is US-1201's unmodified filter — this diff touches none of registry.py or pipeline.py, only the workflow file and a new assertion-only test file."
+      "note": "run_all_assets' filter `definition.expected_update_interval_seconds == TIER_INTERVAL_SECONDS[tier]` (pipeline.py:364) is byte-identical to US-1201; this diff touches zero lines of registry.py/pipeline.py, only the workflow file and new test files. The new test drives that exact unmodified filter through --tier daily."
     },
     {
       "criterionId": "US-1202-C3",
       "met": true,
       "evidence": {
         "file": ".github/workflows/ingest.yml",
-        "line": 29,
+        "line": 27,
         "testName": "test_ingest_workflow_keeps_existing_heartbeat_secret",
         "exitCode": 0
       },
-      "note": "Job name, permissions, checkout/setup-python/setup-uv steps, and the HEALTHCHECKS_PING_URL/DATABASE_URL env wiring are byte-identical to before; the diff only touches the cron line and the run command line, and the 17-minute offset (GitHub's recommended anti-congestion practice) is explicitly preserved and tested."
+      "note": "Job name, permissions, timeout, checkout/setup-python/setup-uv steps, and the DATABASE_URL/HEALTHCHECKS_PING_URL env wiring (ingest.yml:22-29) are byte-identical to before; only the cron line and run-command line changed, and the 17-minute anti-congestion offset is explicitly preserved."
     },
     {
       "criterionId": "US-1202-C4",
-      "met": false,
+      "met": true,
       "evidence": {
-        "file": "tests/test_ingest_workflow.py",
-        "line": 18,
-        "testName": "test_ingest_workflow_runs_shared_entrypoint_for_daily_tier",
-        "exitCode": null
+        "file": "tests/test_persist_board.py",
+        "line": 1419,
+        "testName": "test_daily_tier_entry_point_persists_only_daily_board_rows_and_pings_once",
+        "exitCode": 0
       },
-      "note": "No test drives the actual entry point end to end: test_ingest_workflow.py only string-matches the YAML text, it never calls heartbeat.main. The only test that parses `--tier` via heartbeat.main (test_main_accepts_tier_argument in tests/test_heartbeat.py:201) uses 'fast' and monkeypatches run_ingestion itself away, so it never reaches the real run_scheduled_board -> run_all_assets tier filter. The unmocked daily-tier test (test_scheduled_daily_tier_keeps_existing_sol_active_addresses_exclusion, tests/test_persist_board.py:357-389, pre-existing from US-1201) calls run_scheduled_board(tier='daily') directly, bypassing the CLI/argparse entry point entirely. Nothing in this diff connects `python -m ingest.heartbeat --tier daily` argument parsing to the real (unmocked) filtering/persist pipeline."
+      "note": "This attempt-3 addition calls `heartbeat.main([\"--tier\", \"daily\"])` directly — the exact CLI entry point the workflow invokes — and only mocks psycopg.connect, httpx.get, the low-level per-source fetch functions, and persist_datapoint. argparse, run_ingestion, run_pipeline, run_scheduled_board(tier='daily'), and run_all_assets' real tier filter all execute unmocked, and the test asserts exactly the 54 daily-tier keys (minus SOL active addresses) were persisted. Unlike attempt 2's static YAML-text tests, this genuinely drives the assembled system through its public entry point."
     },
     {
       "criterionId": "US-1202-C5",
-      "met": true,
+      "met": false,
       "evidence": {
-        "file": "tests/test_ingest_workflow.py",
-        "line": 4,
-        "testName": "test_ingest_workflow_cron_runs_once_daily_at_existing_offset",
-        "exitCode": 0
+        "file": null,
+        "line": null,
+        "testName": null,
+        "exitCode": null
       },
-      "note": "The test reads WORKFLOW = Path('.github/workflows/ingest.yml') directly — the real production workflow file GitHub Actions schedules from, not a copied/local approximation — and asserts its exact cron and run-command strings; this is the closest verifiable proxy short of an actual scheduled GitHub Actions run."
+      "note": "No evidence of an actual GitHub Actions scheduled run (workflow-run log/URL) is available — the workflow hasn't fired on its new cron yet. The closest proxy is tests/test_ingest_workflow.py reading the real ingest.yml file, but that is a static text assertion, not a CI-executed scheduled job. Method is 'ci' and requires that stronger proof, which isn't present in the repo or supplied gate results."
     },
     {
       "criterionId": "US-1202-C6",
@@ -71,10 +71,10 @@
         "testName": null,
         "exitCode": 0
       },
-      "note": "Deterministic gate 'US-1202-C6: uv run pytest -q' exits 0 with 289 passed, 29 deselected, as supplied in the gate results."
+      "note": "Deterministic gate 'US-1202-C6: uv run pytest -q' exits 0 (292 passed, 29 deselected per gates.json), confirmed as one of the supplied deterministic gate results."
     }
   ],
   "tripwires": [],
-  "note": "5 of 6 criteria hold up under direct reading of the code and tests. C4 fails: the only tests touching the CLI --tier flag either mock run_ingestion away (test_main_accepts_tier_argument, 'fast' only) or call run_scheduled_board(tier='daily') directly, bypassing argparse/heartbeat.main — no test exercises the actual cron entry point (`python -m ingest.heartbeat --tier daily`) end to end through the real, unmocked filter/persist pipeline. The new test_ingest_workflow.py is a static text check on the YAML, not an integration test.",
-  "at": "2026-09-17T16:23:01.953Z"
+  "note": "Attempt 3 fixed the previously-failing C4 by adding test_daily_tier_entry_point_persists_only_daily_board_rows_and_pings_once (tests/test_persist_board.py:1352), which calls heartbeat.main(['--tier','daily']) and exercises the real argparse->run_ingestion->run_pipeline->run_scheduled_board->run_all_assets chain with only I/O boundaries mocked — a genuine integration test through the public entry point, not a module-isolated test. C5 still lacks any real CI/scheduled-run evidence (only static YAML text assertions exist), so it remains unmet on the strict 'actual scheduled job, not local approximation' bar.",
+  "at": "2026-09-17T16:27:55.865Z"
 }
