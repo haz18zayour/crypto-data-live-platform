@@ -1,9 +1,10 @@
 .github/workflows/ingest-medium.yml                | 42 +++++++++++
- .uf/events.ndjson                                  |  5 ++
- SESSION.md                                         | 13 +++-
- .../50-evidence/US-1203/diffstat.txt               |  5 ++
+ .uf/events.ndjson                                  |  8 +++
+ SESSION.md                                         | 16 ++++-
+ .../50-evidence/US-1203/c5-dispatch-attempt.txt    | 18 +++++
+ .../50-evidence/US-1203/diffstat.txt               |  9 +++
  .../50-evidence/US-1203/gates.json                 | 20 ++++++
  .../50-evidence/US-1203/verdict.json               | 80 +++++++++++++++++++++
  tests/test_ingest_medium_workflow.py               | 29 ++++++++
  tests/test_persist_board.py                        | 84 ++++++++++++++++++++++
- 8 files changed, 276 insertions(+), 2 deletions(-)
+ 9 files changed, 304 insertions(+), 2 deletions(-)
