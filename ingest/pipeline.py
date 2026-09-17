@@ -31,9 +31,9 @@ from ingest.fetchers.okx_derivatives import (
 from ingest.indicators import atr, bollinger_bands, ema, macd, obv, rsi, stochrsi
 from ingest.persist import persist_datapoint
 from ingest.registry import (
+    TIER_INTERVAL_SECONDS,
     CadenceTier,
     IndicatorDefinition,
-    TIER_INTERVAL_SECONDS,
     load_registry,
 )
 from ingest.status import Error, Ok, Reason, Result, Unavailable
