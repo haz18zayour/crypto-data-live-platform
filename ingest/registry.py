@@ -6,7 +6,7 @@ import argparse
 import ast
 from collections.abc import Collection, Mapping
 from pathlib import Path
-from typing import Annotated, Any
+from typing import Annotated, Any, Literal
 
 from pydantic import (
     BaseModel,
@@ -24,6 +24,13 @@ from talib import abstract
 REGISTRY_PATH = Path(__file__).with_name("registry.yaml")
 NonEmptyString = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1)]
 RECURSIVE_TALIB_FUNCTIONS = frozenset({"RSI", "ATR", "EMA", "STOCHRSI", "MACD"})
+CadenceTier = Literal["fast", "medium", "daily"]
+TIER_INTERVAL_SECONDS: Mapping[CadenceTier, int] = {
+    "fast": 300,
+    "medium": 28800,
+    "daily": 86400,
+}
+SUPPORTED_TIER_INTERVAL_SECONDS = frozenset(TIER_INTERVAL_SECONDS.values())
 
 
 class CorroborationDefinition(BaseModel):
@@ -175,6 +182,26 @@ class IndicatorRegistry(RootModel[tuple[IndicatorDefinition, ...]]):
                 raise ValueError(
                     f"{entry.talib_function} must declare at least 250 required bars"
                 )
+        return self
+
+    @model_validator(mode="after")
+    def reject_unsupported_tier_intervals(self) -> IndicatorRegistry:
+        unsupported = sorted(
+            {
+                entry.expected_update_interval_seconds
+                for entry in self.root
+                if entry.expected_update_interval_seconds
+                not in SUPPORTED_TIER_INTERVAL_SECONDS
+            }
+        )
+        if unsupported:
+            supported = ", ".join(
+                str(interval) for interval in sorted(SUPPORTED_TIER_INTERVAL_SECONDS)
+            )
+            raise ValueError(
+                "unsupported expected_update_interval_seconds for cadence tier "
+                f"filter: {unsupported}; supported intervals are {supported}"
+            )
         return self
 
 

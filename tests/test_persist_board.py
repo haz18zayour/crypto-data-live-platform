@@ -205,6 +205,21 @@ def _full_board() -> pipeline.FullAssetRun:
     )
 
 
+def _tier_board(tier: pipeline.CadenceTier) -> pipeline.FullAssetRun:
+    return run_all_assets(
+        tier=tier,
+        fetch_bars=_fetch_bars,
+        fetch_funding_rate=_fetch_funding_rate,
+        fetch_open_interest=_fetch_open_interest,
+        fetch_long_short_ratio=_fetch_long_short_ratio,
+        fetch_taker_ratio=_fetch_taker_ratio,
+        fetch_mvrv=_fetch_mvrv,
+        fetch_active_addresses=_fetch_active_addresses,
+        fetch_exchange_flow=_fetch_exchange_flow,
+        fetch_staking=_fetch_staking,
+    )
+
+
 def _board_definitions() -> tuple[IndicatorDefinition, ...]:
     return tuple(
         definition
@@ -262,6 +277,140 @@ def test_full_run_writes_one_datapoint_row_per_computed_indicator(
     assert {row["indicator_key"] for row in persisted} == {
         definition.key for definition in definitions
     }
+
+
+@pytest.mark.parametrize(
+    ("tier", "expected_count"),
+    (("fast", 12), ("medium", 4), ("daily", 55)),
+)
+def test_tier_run_persists_only_registry_entries_for_that_cadence(
+    monkeypatch: pytest.MonkeyPatch,
+    tier: pipeline.CadenceTier,
+    expected_count: int,
+) -> None:
+    persisted: list[str] = []
+
+    def record_datapoint(
+        connection: object,
+        *,
+        definition: IndicatorDefinition,
+        asset: str,
+        measured_on: str,
+        result: Result,
+    ) -> int:
+        persisted.append(definition.key)
+        return len(persisted)
+
+    monkeypatch.setattr(pipeline, "persist_datapoint", record_datapoint)
+
+    row_ids = run_pipeline(  # type: ignore[arg-type]
+        object(), fetcher=lambda: _tier_board(tier)
+    )
+
+    expected = {
+        definition.key
+        for definition in _board_definitions()
+        if definition.expected_update_interval_seconds
+        == pipeline.TIER_INTERVAL_SECONDS[tier]
+    }
+    assert len(expected) == expected_count
+    assert len(row_ids) == expected_count
+    assert set(persisted) == expected
+
+
+def test_tier_runs_union_to_the_full_registry_without_duplicates(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    persisted_by_tier: dict[str, list[str]] = {
+        "fast": [],
+        "medium": [],
+        "daily": [],
+    }
+    active_tier = ""
+
+    def record_datapoint(
+        connection: object,
+        *,
+        definition: IndicatorDefinition,
+        asset: str,
+        measured_on: str,
+        result: Result,
+    ) -> int:
+        persisted_by_tier[active_tier].append(definition.key)
+        return sum(len(keys) for keys in persisted_by_tier.values())
+
+    monkeypatch.setattr(pipeline, "persist_datapoint", record_datapoint)
+
+    for tier in ("fast", "medium", "daily"):
+        active_tier = tier
+        run_pipeline(  # type: ignore[arg-type]
+            object(), fetcher=lambda tier=tier: _tier_board(tier)
+        )
+
+    flattened = [
+        key for persisted in persisted_by_tier.values() for key in persisted
+    ]
+    assert set(flattened) == {definition.key for definition in _board_definitions()}
+    assert len(flattened) == len(set(flattened)) == 71
+
+
+def test_scheduled_daily_tier_keeps_existing_sol_active_addresses_exclusion(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    def fetch_scheduled_active_addresses(
+        asset: str, rate_limiter: object | None = None
+    ) -> Result:
+        assert asset != "SOL"
+        return _fetch_active_addresses(asset, rate_limiter)
+
+    monkeypatch.setattr(pipeline, "_fetch_asset_bars", _fetch_bars)
+    monkeypatch.setattr(pipeline, "_fetch_asset_funding_rate", _fetch_funding_rate)
+    monkeypatch.setattr(pipeline, "_fetch_asset_open_interest", _fetch_open_interest)
+    monkeypatch.setattr(
+        pipeline, "_fetch_asset_long_short_ratio", _fetch_long_short_ratio
+    )
+    monkeypatch.setattr(pipeline, "_fetch_asset_taker_ratio", _fetch_taker_ratio)
+    monkeypatch.setattr(pipeline, "_fetch_asset_mvrv", _fetch_mvrv)
+    monkeypatch.setattr(
+        pipeline, "_fetch_asset_active_addresses", fetch_scheduled_active_addresses
+    )
+    monkeypatch.setattr(pipeline, "_fetch_asset_exchange_flow", _fetch_exchange_flow)
+    monkeypatch.setattr(pipeline, "_fetch_asset_staking", _fetch_staking)
+
+    run = run_scheduled_board(tier="daily")
+    expected = {
+        definition.key
+        for definition in _board_definitions()
+        if definition.expected_update_interval_seconds == 86400
+        and definition.key != pipeline.SOL_ACTIVE_ADDRESSES_KEY
+    }
+
+    assert len(expected) == 54
+    assert set(run.indicators) == expected
+
+
+def test_no_tier_argument_preserves_full_registry_board_behavior(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    persisted: list[str] = []
+
+    def record_datapoint(
+        connection: object,
+        *,
+        definition: IndicatorDefinition,
+        asset: str,
+        measured_on: str,
+        result: Result,
+    ) -> int:
+        persisted.append(definition.key)
+        return len(persisted)
+
+    monkeypatch.setattr(pipeline, "persist_datapoint", record_datapoint)
+
+    row_ids = run_pipeline(object(), fetcher=_full_board)  # type: ignore[arg-type]
+
+    assert len(row_ids) == 71
+    assert set(persisted) == {definition.key for definition in _board_definitions()}
 
 
 def test_persist_board_has_one_path_for_technical_derivatives_and_onchain(

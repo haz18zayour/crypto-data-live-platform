@@ -3,7 +3,7 @@ from pathlib import Path
 import pytest
 from pydantic import ValidationError
 
-from ingest.registry import load_registry
+from ingest.registry import REGISTRY_PATH, TIER_INTERVAL_SECONDS, load_registry
 
 VALID_ENTRY = """\
 - key: btc_daily_close
@@ -102,6 +102,44 @@ def test_shipped_registry_definitions_cover_four_assets_at_scale() -> None:
         "BNB",
     }
     assert all(len(entry.definable_for) == 1 for entry in registry.root)
+
+
+def test_registry_cadence_intervals_partition_the_shipped_entries() -> None:
+    registry = load_registry()
+
+    by_tier = {
+        tier: {
+            entry.key
+            for entry in registry.root
+            if entry.expected_update_interval_seconds == interval
+        }
+        for tier, interval in TIER_INTERVAL_SECONDS.items()
+    }
+
+    assert {tier: len(keys) for tier, keys in by_tier.items()} == {
+        "fast": 12,
+        "medium": 4,
+        "daily": 55,
+    }
+    assert set().union(*by_tier.values()) == {entry.key for entry in registry.root}
+    assert sum(len(keys) for keys in by_tier.values()) == len(registry.root)
+
+
+def test_registry_rejects_unsupported_cadence_interval_at_load_time(
+    tmp_path: Path,
+) -> None:
+    registry_path = tmp_path / "registry.yaml"
+    registry_path.write_text(
+        REGISTRY_PATH.read_text(encoding="utf-8").replace(
+            "expected_update_interval_seconds: 86400",
+            "expected_update_interval_seconds: 604800",
+            1,
+        ),
+        encoding="utf-8",
+    )
+
+    with pytest.raises(ValidationError, match="unsupported.*cadence tier filter"):
+        load_registry(registry_path)
 
 
 def test_funding_rate_is_registered_once_per_asset_without_talib() -> None:

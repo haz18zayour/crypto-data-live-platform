@@ -30,7 +30,12 @@ from ingest.fetchers.okx_derivatives import (
 )
 from ingest.indicators import atr, bollinger_bands, ema, macd, obv, rsi, stochrsi
 from ingest.persist import persist_datapoint
-from ingest.registry import IndicatorDefinition, load_registry
+from ingest.registry import (
+    CadenceTier,
+    IndicatorDefinition,
+    TIER_INTERVAL_SECONDS,
+    load_registry,
+)
 from ingest.status import Error, Ok, Reason, Result, Unavailable
 
 type Venue = Literal["okx", "coinbase"]
@@ -337,6 +342,7 @@ def _calculate(definition: IndicatorDefinition, bars: Sequence[Bar]) -> float:
 
 def run_all_assets(
     *,
+    tier: CadenceTier | None = None,
     fetch_bars: BarFetcher | None = None,
     fetch_funding_rate: FundingRateFetcher | None = None,
     fetch_open_interest: OpenInterestFetcher | None = None,
@@ -351,7 +357,12 @@ def run_all_assets(
     """Fetch both venues and compute every registered board cell."""
 
     excluded_keys = frozenset(excluded_indicator_keys)
-    registered = load_registry().root
+    registered = tuple(
+        definition
+        for definition in load_registry().root
+        if tier is None
+        or definition.expected_update_interval_seconds == TIER_INTERVAL_SECONDS[tier]
+    )
     definitions = tuple(
         definition
         for definition in registered
@@ -544,10 +555,11 @@ def run_all_assets(
     return FullAssetRun(indicators=indicators, history=history)
 
 
-def run_scheduled_board() -> FullAssetRun:
+def run_scheduled_board(*, tier: CadenceTier | None = None) -> FullAssetRun:
     """Fetch the scheduled board, leaving SOL active addresses to its slow job."""
 
     return run_all_assets(
+        tier=tier,
         excluded_indicator_keys=(SOL_ACTIVE_ADDRESSES_KEY,),
     )
 
