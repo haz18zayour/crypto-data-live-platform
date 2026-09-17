@@ -32,9 +32,9 @@ open prds/PRD-005-dashboard/20-decisions.yaml
 | PRD-005-dashboard | 9 | 9 | **all green** |
 | PRD-006-derivatives | 7 | 7 | **all green** |
 | PRD-007-onchain | 8 | 8 | **all green** |
-| PRD-012-cadence-split | 6 | 1 | 1/6 |
+| PRD-012-cadence-split | 6 | 2 | 2/6 |
 
-Spend to date: **$78.36** Claude · **190146k** Codex tokens.
+Spend to date: **$78.76** Claude · **190798k** Codex tokens.
 
 ## What happened
 
@@ -579,6 +579,12 @@ Spend to date: **$78.36** Claude · **190146k** Codex tokens.
 - 16:23  US-1202 started, attempt 3 (codex)
 - 16:25  US-1202 — codex finished `e68a8586` · 526k tok
 - 16:27  US-1202 **rejected** — 5/6 criteria, judged by claude · $0.31
+- 16:27  ⏸ **gate opened** — US-1202 has failed 3 times — is the story wrong?
+- 16:51  US-1202 **PASSED** — 6/6 criteria, judged by human
+- 16:51  ▶ gate answered **skip** — C5 could not be proven within any single automated attempt (needs a real completed GitHub Actions run). Manually dispatched the real workflow and confirmed it succeeded: https://github.com/haz18zayour/crypto-data-live-platform/actions/runs/35248697411. All 6 criteria now verified against current HEAD. See verdict.json overrideReason.
+- 16:52  US-1203 started, attempt 1 (codex)
+- 16:54  US-1203 — codex finished `41bcb097` · 652k tok
+- 16:57  US-1203 **rejected** — 4/6 criteria, judged by claude · $0.40
 
 <!-- uf:generated:end -->
 
