@@ -34,7 +34,7 @@ open prds/PRD-005-dashboard/20-decisions.yaml
 | PRD-007-onchain | 8 | 8 | **all green** |
 | PRD-012-cadence-split | 6 | 2 | 2/6 |
 
-Spend to date: **$78.76** Claude · **190798k** Codex tokens.
+Spend to date: **$79.15** Claude · **191834k** Codex tokens.
 
 ## What happened
 
@@ -585,6 +585,9 @@ Spend to date: **$78.76** Claude · **190798k** Codex tokens.
 - 16:52  US-1203 started, attempt 1 (codex)
 - 16:54  US-1203 — codex finished `41bcb097` · 652k tok
 - 16:57  US-1203 **rejected** — 4/6 criteria, judged by claude · $0.40
+- 16:57  US-1203 started, attempt 2 (codex)
+- 17:00  US-1203 — codex finished `56889254` · 1036k tok
+- 17:03  US-1203 **rejected** — 5/6 criteria, judged by claude · $0.39
 
 <!-- uf:generated:end -->
 

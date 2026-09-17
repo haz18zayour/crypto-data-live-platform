@@ -1,0 +1,18 @@
+US-1203-C5 dispatch attempt
+
+Date: 2026-09-17
+Command:
+  gh workflow run ingest-medium.yml --ref feat/prd-012-cadence-split
+
+Result:
+  exit 1
+
+Output:
+  Get "https://api.github.com/repos/haz18zayour/crypto-data-live-platform/actions/workflows/ingest-medium.yml": dial tcp 140.82.121.5:443: connectex: An attempt was made to access a socket in a way forbidden by its access permissions.
+
+Conclusion:
+  This sandbox cannot dispatch or inspect the real GitHub Actions workflow run needed for
+  US-1203-C5. The workflow itself is present in .github/workflows/ingest-medium.yml and
+  exposes workflow_dispatch, but C5 still requires an owner-authenticated GitHub Actions run
+  (for example: gh workflow run ingest-medium.yml --ref feat/prd-012-cadence-split) and the
+  resulting run URL/conclusion.
