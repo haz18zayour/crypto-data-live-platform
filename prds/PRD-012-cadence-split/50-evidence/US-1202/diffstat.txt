@@ -1,4 +1,8 @@
-.github/workflows/ingest.yml | 4 ++--
- .uf/events.ndjson            | 3 +++
- SESSION.md                   | 7 +++++--
- 3 files changed, 10 insertions(+), 4 deletions(-)
+.github/workflows/ingest.yml                       |  5 +-
+ .uf/events.ndjson                                  |  6 ++
+ SESSION.md                                         | 10 ++-
+ .../50-evidence/US-1202/diffstat.txt               |  4 ++
+ .../50-evidence/US-1202/gates.json                 | 20 ++++++
+ .../50-evidence/US-1202/verdict.json               | 80 ++++++++++++++++++++++
+ tests/test_ingest_workflow.py                      | 27 ++++++++
+ 7 files changed, 148 insertions(+), 4 deletions(-)
