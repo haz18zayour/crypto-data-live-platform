@@ -1,0 +1,165 @@
+# GATE G1 — scope lock.
+#
+# Produced by /pre-prd-research interrogating you, then confirmed by you. The research
+# agent commits to a hypothesis for every question so you are correcting a draft rather
+# than answering a blank form: skim, override what is wrong, confirm the out-of-scope list.
+#
+# Anything you do NOT answer becomes an `assumptions:` row below — an explicit assumption
+# with a tripwire, never a silent guess. That is the whole point of this file.
+
+decisions:
+  - q: >
+      Is Option A (native GitHub Actions cron for the fast tier, accept its
+      documented drift) or Option B (cron-job.org -> repository_dispatch for
+      the fast tier, native cron for medium/daily) the right split?
+    hypothesis: >
+      Option B. The fast tier's own freshness contract (450s stale bound)
+      cannot absorb GitHub Actions' own documented delay behavior at
+      sub-hourly cadence (measured: ~1-in-10 runs land 5+ min late, ~1-in-50
+      land 15+ min late, with community reports of 60+ min delays at peak,
+      clustered specifically at top-of-hour). cron-job.org is already an
+      adopted trigger mechanism in this project's stack and its own
+      documented drift (4-40s) is two orders of magnitude tighter. The
+      medium (8h) and daily tiers stay on native GH Actions schedule since
+      a 15-30 min drift is immaterial against their 43200s/108000s bounds.
+    answer: B — confirmed by owner, 2026-09-17.
+
+  - q: >
+      Does the registry's expected_update_interval_seconds field cleanly
+      partition into exactly 3 tiers with no in-between values not shown in
+      the brief's table?
+    hypothesis: >
+      SETTLED, not a hypothesis — directly verified by grep against the
+      shipped registry.yaml (71 entries total): exactly three distinct
+      values exist (300s x12, 28800s x4, 86400s x55), summing to 71 with no
+      4th interval hiding anywhere. One real wrinkle found in the same
+      pass, not anticipated by the brief: sol_active_addresses DECLARES
+      86400s/172800s (daily/2-day) freshness fields in the registry, but
+      its real dedicated schedule (sol-active-addresses.yml, built in
+      PRD-007's US-707 for Helius's credit budget) only runs WEEKLY — so
+      this one cell currently reads STALE for roughly 5 of every 7 days
+      against its own declared contract, independent of anything this PRD
+      changes about the other 70 rows.
+    answer: >
+      Confirmed as researched. Folding the sol_active_addresses freshness-
+      field correction into this PRD's scope (owner decision, 2026-09-17) —
+      same class of cadence-vs-contract mismatch this PRD exists to fix,
+      just discovered in the opposite direction (registry expects faster
+      delivery than the real schedule provides, rather than this PRD's
+      main problem of collecting faster than reality requires).
+
+  - q: >
+      Should the fast/medium/daily tiers share one Python entrypoint
+      (filtered by a --tier flag), or be genuinely separate scripts?
+    hypothesis: >
+      Shared entrypoint, tier as a CLI/env filter. Avoids duplicating
+      fetch/write/heartbeat logic across three files for what is
+      fundamentally the same pipeline running on different registry rows.
+      A fix to shared logic (e.g. a corroboration-tolerance bug) then needs
+      one PR, not three — matching PRD-002's determinism-harness intent.
+    answer: Shared entrypoint with a --tier filter — confirmed by owner, 2026-09-17.
+
+# The one field with no default.
+out_of_scope:
+  - No rebuild of the contract-canary workflow. It already exists (built in
+    US-206, predates this PRD), already runs every 6h, already writes zero
+    datapoints, already pings its own dedicated heartbeat. This PRD confirms
+    it still passes with the vendors PRD-006/007 added; it does not replace it.
+  - No change to sol-active-addresses.yml's own cadence (still weekly). That
+    schedule is a direct, already-verified owner decision from PRD-007
+    (US-707), driven by Helius's credit budget, not this PRD's cadence
+    logic — only its DECLARED registry freshness fields are corrected here
+    to match the schedule that already exists, not the schedule itself.
+  - No new indicator, vendor, or panel. This PRD only changes when existing
+    registered indicators are collected (and, for the one exception above,
+    corrects a declared freshness contract to match reality), never what
+    is collected.
+  - No composite freshness score or health dashboard — that is PRD-010
+    (integrity dashboard), not this PRD.
+  - No change to OKX's own per-endpoint rate limits or usage-pattern
+    interpretation — research flagged continuous 5-minute automated polling
+    against OKX's usage-pattern terms as UNVERIFIED at the primary-source
+    level; out of scope to resolve definitively in this PRD, but the fast
+    tier's own acceptance criteria must not assume it is settled either.
+
+assumptions:
+  - claim: >
+      GitHub-hosted runners already receive a fresh IP per job run today
+      (confirmed via research, not the brief's original — and now
+      corrected — assumption that splitting workflows would introduce new
+      multi-IP rate-limit exposure that does not already exist).
+    tripwire: >
+      If a future vendor's rate limiter is ever found to key off something
+      other than the request's source IP (e.g. an API key alone), this
+      assumption about runner-IP diversity being a non-issue does not
+      transfer to that vendor automatically — re-verify per vendor rather
+      than assuming this finding generalizes.
+    acceptedBy: default
+
+  - claim: >
+      The fast tier's own wall-clock budget (checkout + uv install + 12
+      OKX calls + writes + heartbeat ping) fits comfortably inside a
+      5-minute cadence with real headroom, not just on paper.
+    tripwire: >
+      This must be verified with a real timed dry run before the story is
+      accepted, exactly as the wall-clock-vs-rate-limit lesson from the
+      Helius incident (PRD-007) prescribes — do not accept an estimate in
+      place of a measured run. If the real run does not fit with headroom,
+      successive 5-minute-cadence runs will start overlapping/queueing.
+    acceptedBy: default
+
+  - claim: >
+      cron-job.org's existing dispatch token/setup (already used elsewhere
+      in this project's stack per the architecture doc) can be reused for
+      the new fast-tier dispatch rather than provisioning a new one.
+    tripwire: >
+      Confirm which existing workflow actually uses cron-job.org today and
+      what scope its dispatch token has before assuming it can be reused
+      as-is for a new repository_dispatch type — a token scoped narrowly to
+      one existing dispatch type may need to be widened or a second token
+      minted, which is itself a credential-provisioning step, not a code
+      change.
+    acceptedBy: default
+
+# Options the research agent surfaced, and which you picked.
+chosen_approach:
+  option: >
+    Three-tier collect split: fast tier (12 five-minute OKX rows:
+    open interest, long/short ratio, taker ratio) triggered by
+    cron-job.org -> repository_dispatch; medium tier (4 eight-hour OKX
+    funding-rate rows) and daily tier (54 rows: technical indicators, Coin
+    Metrics, Validators.app staking) on native GitHub Actions schedule,
+    sharing one Python entrypoint filtered by a --tier argument. Plus:
+    correct sol_active_addresses' registry freshness fields to match its
+    real weekly schedule.
+  because: >
+    The fast tier's 450s freshness-stale bound cannot absorb GitHub
+    Actions' own documented schedule drift at sub-hourly cadence, but the
+    medium/daily tiers' much looser bounds (43200s/108000s) can. The
+    project has already adopted cron-job.org as a trigger mechanism for
+    exactly this reason, so this is a small, precedented extension rather
+    than new infrastructure. The sol_active_addresses freshness mismatch
+    was an unplanned discovery during this gate's own verification pass,
+    not something research set out to find, but is the same class of
+    defect this PRD exists to catch.
+  rejected:
+    - option: Option A — native GitHub Actions cron for all three tiers
+      because: >
+        GitHub's own documented delay behavior at sub-hourly cadence
+        (5-30+ min at peak, clustered at top-of-hour) would produce
+        recurring false-STALE reads on the fast tier indistinguishable
+        from a real vendor outage, increasing on-call noise for a
+        one-person team.
+    - option: Option C — one combined job on a tightened global cron with an internal skip-if-fresh check
+      because: >
+        Wastes the most CI minutes (288 daily invocations vs. one), and
+        risks recreating the exact "wall-clock timeout collides with a
+        shared job's mixed workload" failure mode already logged against
+        this codebase (the Helius 2.5h-vs-10min incident) by running slow
+        daily-tier work inside a job now scheduled every 5 minutes.
+    - option: Separate scripts per cadence tier instead of a shared entrypoint
+      because: >
+        Duplicates fetch/write/heartbeat logic across three files; a fix
+        to shared pipeline logic would then need three coordinated PRs
+        instead of one, reintroducing the duplication PRD-002's
+        determinism harness was built to prevent.
