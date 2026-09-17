@@ -31,9 +31,10 @@ open prds/PRD-005-dashboard/20-decisions.yaml
 | PRD-004-indicators | 11 | 11 | **all green** |
 | PRD-005-dashboard | 9 | 9 | **all green** |
 | PRD-006-derivatives | 7 | 7 | **all green** |
-| PRD-007-onchain | 8 | 7 | 7/8 |
+| PRD-007-onchain | 8 | 8 | **all green** |
+| PRD-012-cadence-split | 6 | 0 | 0/6 |
 
-Spend to date: **$75.44** Claude · **184255k** Codex tokens.
+Spend to date: **$77.01** Claude · **187699k** Codex tokens.
 
 ## What happened
 
@@ -552,6 +553,20 @@ Spend to date: **$75.44** Claude · **184255k** Codex tokens.
 - 15:19  US-708 started, attempt 1 (codex)
 - 15:23  US-708 — codex finished `e0b05e76` · 1690k tok
 - 15:25  US-708 **rejected** — 0/3 criteria, judged by claude
+- 15:25  US-708 started, attempt 2 (codex)
+- 15:32  US-708 — codex finished `59c01c02` · 1356k tok
+- 15:34  US-708 **awaiting your judgement** — 2/3 criteria, judged by claude · $0.47
+- 15:34  ⏸ **gate opened** — US-708: The demonstration item the acceptance protocol calls for, not a machine check
+- 16:36  ▶ gate answered **met** — Reviewed the captured four-asset on-chain readout (prds/PRD-007-onchain/50-evidence/US-708/adversarial-four-asset-onchain-column.md): every NOT_DEFINABLE/UNAVAILABLE reason across BTC/ETH/BNB/SOL is distinct and names its own real cause - no two absences read as the same excuse.
+- 16:36  👤 you judged US-708 **met** — Reviewed the captured four-asset on-chain readout (prds/PRD-007-onchain/50-evidence/US-708/adversarial-four-asset-onchain-column.md): every NOT_DEFINABLE/UNAVAILABLE reason across BTC/ETH/BNB/SOL is distinct and names its own real cause - no two absences read as the same excuse.
+- 20:24  researched PRD-012-cadence-split — 9 sources · $1.09
+
+### 2026-09-17
+
+- 15:55  **PRD-012-cadence-split** compiled — 6 stories
+- 16:02  US-1201 started, attempt 1 (codex)
+- 16:07  US-1201 — codex finished `0e485e4b` · 2088k tok
+- 16:09  US-1201 **rejected** — 0/7 criteria, judged by claude
 
 <!-- uf:generated:end -->
 

@@ -9,12 +9,12 @@ import httpx
 import psycopg
 
 from ingest.pipeline import (
-    CadenceTier,
     FullAssetRun,
     run_pipeline,
     run_scheduled_board,
     run_sol_active_addresses,
 )
+from ingest.registry import CadenceTier
 from ingest.status import Result
 
 HEARTBEAT_TIMEOUT_SECONDS = 10
