@@ -1,0 +1,22 @@
+{
+  "gate": "G5_THIRD_FAILURE",
+  "question": "US-1202 has failed 3 times — is the story wrong?",
+  "feature": "PRD-012-cadence-split",
+  "story": "US-1202",
+  "options": [
+    "split",
+    "rewrite-criteria",
+    "skip",
+    "retry-anyway"
+  ],
+  "context": "Criteria judged not met:\n  - US-1202-C5: No evidence of an actual GitHub Actions scheduled run (workflow-run log/URL) is available — the workflow hasn't fired on its new cron yet. The closest proxy is tests/test_ingest_workflow.py reading the real ingest.yml file, but that is a static text assertion, not a CI-executed scheduled job. Method is 'ci' and requires that stronger proof, which isn't present in the repo or supplied gate results.",
+  "defaultOnTimeout": "block",
+  "id": "G5_THIRD_FAILURE-1541eb63",
+  "openedAt": "2026-09-17T16:27:56.066Z",
+  "answer": {
+    "choice": "skip",
+    "reason": "C5 could not be proven within any single automated attempt (needs a real completed GitHub Actions run). Manually dispatched the real workflow and confirmed it succeeded: https://github.com/haz18zayour/crypto-data-live-platform/actions/runs/35248697411. All 6 criteria now verified against current HEAD.",
+    "at": "2026-09-17T16:51:00.000Z",
+    "by": "human"
+  }
+}
