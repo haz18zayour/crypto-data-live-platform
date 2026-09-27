@@ -1270,3 +1270,20 @@
   freshness_stale_seconds: 5184000
   uncorroborated:
     note: FRED mirrors the Fed/BLS directly; a second source would check the mirror against its origin rather than provide genuine independent corroboration.
+- key: spot_etf_net_flow
+  vendor: sosovalue
+  endpoint: https://openapi.sosovalue.com/openapi/v1/etfs/summary-history?symbol=BTC&country_code=US&limit=1
+  source_field: SoSoValue /etfs/summary-history total_net_inflow for US spot ETFs
+  definable_for: [BTC, ETH, SOL]
+  not_definable:
+    assets: [BNB]
+    reason: "SoSoValue's /etfs/summary-history API symbol enum includes BTC, ETH, SOL, LTC, HBAR, XRP, DOGE, LINK, AVAX, DOT; it does not include BNB."
+  golden: fixtures/sosovalue_etf_summary_history.json
+  response_model: sosovalue_etf_summary_history
+  required_bars: 1
+  parameters:
+  expected_update_interval_seconds: 86400
+  freshness_warn_seconds: 108000
+  freshness_stale_seconds: 172800
+  uncorroborated:
+    note: SoSoValue is the researched source for US spot ETF flow aggregates in this PRD; BNB is not in its API enum.

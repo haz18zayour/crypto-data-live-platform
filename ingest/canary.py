@@ -21,6 +21,7 @@ from ingest.schemas import (
     OkxOpenInterestResponse,
     OkxTakerVolumeResponse,
     SolanaGetBlockResponse,
+    SosoValueEtfSummaryHistoryResponse,
     ValidatorsAppValidatorsResponse,
 )
 
@@ -33,6 +34,7 @@ RESPONSE_MODEL_TYPES: dict[str, type[BaseModel]] = {
     "okx_taker_volume": OkxTakerVolumeResponse,
     "coinmetrics_asset_metrics": CoinMetricsAssetMetricsResponse,
     "fred_series_observations": FredSeriesObservationsResponse,
+    "sosovalue_etf_summary_history": SosoValueEtfSummaryHistoryResponse,
     "solana_get_block": SolanaGetBlockResponse,
     "validators_app_validators": ValidatorsAppValidatorsResponse,
 }
@@ -148,6 +150,10 @@ def _check_endpoint(
                 token = os.environ.get("VALIDATORS_APP_API_TOKEN")
                 if token:
                     headers["Token"] = token
+            if definition.vendor == "sosovalue":
+                token = os.environ.get("SOSOVALUE_API_KEY")
+                if token:
+                    headers["x-soso-api-key"] = token
             response = client.get(
                 definition.endpoint,
                 headers=headers,

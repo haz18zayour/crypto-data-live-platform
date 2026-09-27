@@ -131,7 +131,7 @@ def test_definable_for_requires_a_nonempty_asset_list(
 def test_shipped_registry_definitions_cover_four_assets_at_scale() -> None:
     registry = load_registry()
 
-    assert len(registry.root) == 78
+    assert len(registry.root) == 79
     crypto_entries = tuple(
         entry for entry in registry.root if entry.definable_for != ("MACRO",)
     )
@@ -141,7 +141,10 @@ def test_shipped_registry_definitions_cover_four_assets_at_scale() -> None:
         "SOL",
         "BNB",
     }
-    assert all(len(entry.definable_for) == 1 for entry in crypto_entries)
+    assert all(
+        len(entry.definable_for) == 1 or entry.key == "spot_etf_net_flow"
+        for entry in crypto_entries
+    )
 
 
 def test_registry_cadence_intervals_partition_the_shipped_entries() -> None:
@@ -159,7 +162,7 @@ def test_registry_cadence_intervals_partition_the_shipped_entries() -> None:
     assert {tier: len(keys) for tier, keys in by_tier.items()} == {
         "fast": 12,
         "medium": 4,
-        "daily": 58,
+        "daily": 59,
     }
     assert set().union(*by_tier.values()) == {
         entry.key

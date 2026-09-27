@@ -374,3 +374,25 @@ class FredSeriesObservationsResponse(BaseModel):
     offset: StrictInt
     limit: StrictInt
     observations: tuple[FredObservation, ...]
+
+
+class SosoValueEtfSummaryHistoryEntry(BaseModel):
+    """One aggregate row from SoSoValue's ETF summary-history endpoint."""
+
+    model_config = ConfigDict(extra="forbid", frozen=True)
+
+    date: StrictStr
+    total_net_inflow: StrictStr
+    total_value_traded: StrictStr
+    total_net_assets: StrictStr
+    cum_net_inflow: StrictStr
+
+
+class SosoValueEtfSummaryHistoryResponse(BaseModel):
+    """The response contract for SoSoValue's ETF summary-history endpoint."""
+
+    model_config = ConfigDict(extra="forbid", frozen=True)
+
+    code: StrictInt
+    message: StrictStr
+    data: tuple[SosoValueEtfSummaryHistoryEntry, ...]
