@@ -1520,6 +1520,107 @@ def test_medium_tier_entry_point_persists_only_medium_board_rows_and_pings_once(
     assert all(row["asset"] == row["measured_on"] for row in persisted)
 
 
+def test_fast_tier_entry_point_persists_only_fast_board_rows_and_pings_once(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    persisted: list[dict[str, object]] = []
+    connected_to: list[str] = []
+    pinged: list[str] = []
+    fetched_open_interest_for: list[str] = []
+    fetched_long_short_for: list[str] = []
+    fetched_taker_for: list[str] = []
+
+    class FakeConnection:
+        def __enter__(self) -> Self:
+            return self
+
+        def __exit__(self, *args: object) -> None:
+            return None
+
+    def connect(database_url: str) -> FakeConnection:
+        connected_to.append(database_url)
+        return FakeConnection()
+
+    def record_datapoint(
+        connection: object,
+        *,
+        definition: IndicatorDefinition,
+        asset: str,
+        measured_on: str,
+        result: Result,
+    ) -> int:
+        assert isinstance(connection, FakeConnection)
+        persisted.append(
+            {
+                "indicator_key": definition.key,
+                "asset": asset,
+                "measured_on": measured_on,
+                "status": result.status,
+            }
+        )
+        return len(persisted)
+
+    def record_ping(url: str, *, timeout: int) -> httpx.Response:
+        pinged.append(url)
+        request = httpx.Request("GET", url)
+        return httpx.Response(200, request=request)
+
+    def fetch_open_interest(asset: str) -> OpenInterestResult:
+        fetched_open_interest_for.append(asset)
+        return _fetch_open_interest(asset)
+
+    def fetch_long_short_ratio(asset: str) -> LongShortRatioResult:
+        fetched_long_short_for.append(asset)
+        return _fetch_long_short_ratio(asset)
+
+    def fetch_taker_ratio(asset: str) -> TakerRatioResult:
+        fetched_taker_for.append(asset)
+        return _fetch_taker_ratio(asset)
+
+    def unexpected_fetch(*args: object, **kwargs: object) -> Result:
+        raise AssertionError("fast tier should fetch only fast derivatives rows")
+
+    monkeypatch.setenv("DATABASE_URL", DATABASE_URL)
+    monkeypatch.setenv("HEALTHCHECKS_PING_URL", HEARTBEAT_URL)
+    monkeypatch.setattr(heartbeat.psycopg, "connect", connect)
+    monkeypatch.setattr(heartbeat.httpx, "get", record_ping)
+    monkeypatch.setattr(pipeline, "_fetch_asset_bars", unexpected_fetch)
+    monkeypatch.setattr(pipeline, "_fetch_asset_funding_rate", unexpected_fetch)
+    monkeypatch.setattr(pipeline, "_fetch_asset_open_interest", fetch_open_interest)
+    monkeypatch.setattr(pipeline, "_fetch_asset_long_short_ratio", fetch_long_short_ratio)
+    monkeypatch.setattr(pipeline, "_fetch_asset_taker_ratio", fetch_taker_ratio)
+    monkeypatch.setattr(pipeline, "_fetch_asset_mvrv", unexpected_fetch)
+    monkeypatch.setattr(pipeline, "_fetch_asset_active_addresses", unexpected_fetch)
+    monkeypatch.setattr(pipeline, "_fetch_asset_exchange_flow", unexpected_fetch)
+    monkeypatch.setattr(pipeline, "_fetch_asset_staking", unexpected_fetch)
+    monkeypatch.setattr(pipeline, "persist_datapoint", record_datapoint)
+
+    heartbeat.main(["--tier", "fast"])
+
+    expected = {
+        definition.key
+        for definition in _board_definitions()
+        if definition.expected_update_interval_seconds == 300
+    }
+    assert connected_to == [DATABASE_URL]
+    assert pinged == [HEARTBEAT_URL]
+    assert len(expected) == 12
+    assert len(persisted) == 12
+    assert {row["indicator_key"] for row in persisted} == expected
+    assert {row["asset"] for row in persisted} == {"BTC", "ETH", "SOL", "BNB"}
+    assert sorted(fetched_open_interest_for) == ["BNB", "BTC", "ETH", "SOL"]
+    assert sorted(fetched_long_short_for) == ["BNB", "BTC", "ETH", "SOL"]
+    assert sorted(fetched_taker_for) == ["BNB", "BTC", "ETH", "SOL"]
+    assert all(
+        str(row["indicator_key"]).endswith(
+            ("_open_interest", "_long_short_ratio", "_taker_ratio")
+        )
+        for row in persisted
+    )
+    assert all(row["status"] == "OK" for row in persisted)
+    assert all(row["asset"] == row["measured_on"] for row in persisted)
+
+
 def test_sol_active_addresses_entry_point_persists_only_that_cell_and_pings_once(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
