@@ -31,6 +31,9 @@ TIER_INTERVAL_SECONDS: Mapping[CadenceTier, int] = {
     "daily": 86400,
 }
 SUPPORTED_TIER_INTERVAL_SECONDS = frozenset(TIER_INTERVAL_SECONDS.values())
+SUPPORTED_REGISTRY_INTERVAL_SECONDS = frozenset(
+    (*TIER_INTERVAL_SECONDS.values(), 604800)
+)
 
 
 class CorroborationDefinition(BaseModel):
@@ -191,12 +194,12 @@ class IndicatorRegistry(RootModel[tuple[IndicatorDefinition, ...]]):
                 entry.expected_update_interval_seconds
                 for entry in self.root
                 if entry.expected_update_interval_seconds
-                not in SUPPORTED_TIER_INTERVAL_SECONDS
+                not in SUPPORTED_REGISTRY_INTERVAL_SECONDS
             }
         )
         if unsupported:
             supported = ", ".join(
-                str(interval) for interval in sorted(SUPPORTED_TIER_INTERVAL_SECONDS)
+                str(interval) for interval in sorted(SUPPORTED_REGISTRY_INTERVAL_SECONDS)
             )
             raise ValueError(
                 "unsupported expected_update_interval_seconds for cadence tier "

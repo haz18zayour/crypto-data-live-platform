@@ -281,7 +281,7 @@ def test_full_run_writes_one_datapoint_row_per_computed_indicator(
 
 @pytest.mark.parametrize(
     ("tier", "expected_count"),
-    (("fast", 12), ("medium", 4), ("daily", 55)),
+    (("fast", 12), ("medium", 4), ("daily", 54)),
 )
 def test_tier_run_persists_only_registry_entries_for_that_cadence(
     monkeypatch: pytest.MonkeyPatch,
@@ -318,7 +318,7 @@ def test_tier_run_persists_only_registry_entries_for_that_cadence(
     assert set(persisted) == expected
 
 
-def test_tier_runs_union_to_the_full_registry_without_duplicates(
+def test_tier_runs_union_to_the_scheduled_registry_without_duplicates(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     persisted_by_tier: dict[str, list[str]] = {
@@ -350,8 +350,12 @@ def test_tier_runs_union_to_the_full_registry_without_duplicates(
     flattened = [
         key for persisted in persisted_by_tier.values() for key in persisted
     ]
-    assert set(flattened) == {definition.key for definition in _board_definitions()}
-    assert len(flattened) == len(set(flattened)) == 71
+    assert set(flattened) == {
+        definition.key
+        for definition in _board_definitions()
+        if definition.key != pipeline.SOL_ACTIVE_ADDRESSES_KEY
+    }
+    assert len(flattened) == len(set(flattened)) == 70
 
 
 def test_scheduled_daily_tier_keeps_existing_sol_active_addresses_exclusion(
