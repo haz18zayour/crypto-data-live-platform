@@ -1,0 +1,12 @@
+.uf/config.json                                    |   2 +-
+ .uf/events.ndjson                                  |   9 ++
+ SESSION.md                                         |  16 ++-
+ ingest/pipeline.py                                 |  15 ++-
+ .../50-evidence/US-1206/attempt-2-evidence.md      |  48 +++++++++
+ .../50-evidence/US-1206/attempt-3-evidence.md      |  56 ++++++++++
+ .../c3-canary-collect-schedule-independence.md     |  23 ++++
+ .../50-evidence/US-1206/diffstat.txt               |   5 +
+ pyproject.toml                                     |   2 +-
+ tests/test_okx_derivatives_fetcher.py              |   1 +
+ tests/test_persist_board.py                        | 116 ++++++++++++++++++++-
+ 11 files changed, 287 insertions(+), 6 deletions(-)

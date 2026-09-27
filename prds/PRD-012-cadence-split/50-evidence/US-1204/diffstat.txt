@@ -1,0 +1,17 @@
+.github/workflows/ingest-fast.yml                  |  32 +++++++
+ .gitignore                                         |   3 +
+ .uf/events.ndjson                                  |   8 ++
+ SESSION.md                                         |  19 +++-
+ .../50-evidence/US-1204/diffstat.txt               |  16 ++++
+ .../50-evidence/US-1204/gates.json                 |  20 ++++
+ .../50-evidence/US-1204/verdict.json               |  44 +++++++++
+ project-documents/15_Services_and_Credentials.md   |   6 +-
+ pyproject.toml                                     |   7 +-
+ tests/test_board_read.py                           |   2 +
+ tests/test_canary.py                               |   1 +
+ tests/test_corroboration_schema.py                 |   2 +
+ tests/test_ingest_fast_workflow.py                 |  32 +++++++
+ tests/test_migration.py                            |   2 +
+ tests/test_persist.py                              |   6 ++
+ tests/test_persist_board.py                        | 101 +++++++++++++++++++++
+ 16 files changed, 294 insertions(+), 7 deletions(-)

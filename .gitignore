@@ -12,10 +12,13 @@ dist/
 # source and must never end up in a story's diff.
 .npm-cache/
 .npm-logs/
+.tmp/
 
 __pycache__/
 *.pyc
 .venv/
+.pytest_cache/
+.pytest-tmp/
 
 # Vite dependency pre-bundle cache
 .vite/

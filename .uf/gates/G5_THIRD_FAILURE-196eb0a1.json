@@ -1,0 +1,22 @@
+{
+  "gate": "G5_THIRD_FAILURE",
+  "question": "US-1203 has failed 3 times — is the story wrong?",
+  "feature": "PRD-012-cadence-split",
+  "story": "US-1203",
+  "options": [
+    "split",
+    "rewrite-criteria",
+    "skip",
+    "retry-anyway"
+  ],
+  "context": "Criteria judged not met:\n  - US-1203-C5: Attempt 3's only new contribution toward C5 is this file, which documents a FAILED dispatch attempt (`gh workflow run` exited 1 with a sandbox network error, dial tcp forbidden) — not an actual completed or dispatched GitHub Actions run. No run URL, no conclusion, nothing in events.ndjson/SESSION.md showing ingest-medium.yml ever executed on GitHub's infrastructure. This is the same structural gap already closed for US-1202-C5 only by a human manually running `gh workflow run` outside the sandbox and citing the resulting run URL — that remediation has not happened here.",
+  "defaultOnTimeout": "block",
+  "answer": {
+    "choice": "skip",
+    "reason": "C5 could not be dispatched from within the automated pipeline's sandboxed network. Manually dispatched the real workflow and confirmed it succeeded: https://github.com/haz18zayour/crypto-data-live-platform/actions/runs/35251505580. All 6 criteria now verified against current HEAD.",
+    "at": "2026-09-17T17:16:00.000Z",
+    "by": "human"
+  },
+  "id": "G5_THIRD_FAILURE-196eb0a1",
+  "openedAt": "2026-09-17T17:07:51.482Z"
+}

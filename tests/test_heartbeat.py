@@ -198,6 +198,41 @@ def test_default_heartbeat_run_uses_the_scheduled_board_fetcher(
     ]
 
 
+def test_main_accepts_tier_argument(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    calls: list[dict[str, object]] = []
+
+    def record_ingestion(
+        database_url: str,
+        heartbeat_url: str,
+        *,
+        tier: str | None = None,
+    ) -> tuple[int, ...]:
+        calls.append(
+            {
+                "database_url": database_url,
+                "heartbeat_url": heartbeat_url,
+                "tier": tier,
+            }
+        )
+        return (1,)
+
+    monkeypatch.setenv("DATABASE_URL", DATABASE_URL)
+    monkeypatch.setenv("HEALTHCHECKS_PING_URL", HEARTBEAT_URL)
+    monkeypatch.setattr(heartbeat, "run_ingestion", record_ingestion)
+
+    heartbeat.main(["--tier", "fast"])
+
+    assert calls == [
+        {
+            "database_url": DATABASE_URL,
+            "heartbeat_url": HEARTBEAT_URL,
+            "tier": "fast",
+        }
+    ]
+
+
 def test_heartbeat_failure_does_not_fail_the_run(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:

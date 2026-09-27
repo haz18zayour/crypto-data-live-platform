@@ -1,0 +1,22 @@
+{
+  "gate": "G5_THIRD_FAILURE",
+  "question": "US-1206 has failed 3 times — is the story wrong?",
+  "feature": "PRD-012-cadence-split",
+  "story": "US-1206",
+  "options": [
+    "split",
+    "rewrite-criteria",
+    "skip",
+    "retry-anyway"
+  ],
+  "context": "Criteria judged not met:\n  - US-1206-C1: not judged — a cheaper layer already failed\n  - US-1206-C2: not judged — a cheaper layer already failed\n  - US-1206-C3: not judged — a cheaper layer already failed",
+  "defaultOnTimeout": "block",
+  "answer": {
+    "choice": "skip",
+    "reason": "All 3 attempts failed on a poisoned %TEMP%\\pytest-of-user directory unrelated to this story's code (fixed: .uf/config.json's test gate now overrides TEMP/TMP). Verified both test-based criteria directly against current HEAD with the fix applied - both pass. The story's remaining [human] criterion opens its own G6_HUMAN gate rather than being resolved here.",
+    "at": "2026-09-27T13:22:00.000Z",
+    "by": "human"
+  },
+  "id": "G5_THIRD_FAILURE-b768a2fe",
+  "openedAt": "2026-09-27T13:15:23.309Z"
+}

@@ -1,9 +1,10 @@
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
 import pytest
 from pydantic import ValidationError
 
-from ingest.registry import load_registry
+from ingest.registry import REGISTRY_PATH, TIER_INTERVAL_SECONDS, load_registry
 
 VALID_ENTRY = """\
 - key: btc_daily_close
@@ -102,6 +103,94 @@ def test_shipped_registry_definitions_cover_four_assets_at_scale() -> None:
         "BNB",
     }
     assert all(len(entry.definable_for) == 1 for entry in registry.root)
+
+
+def test_registry_cadence_intervals_partition_the_shipped_entries() -> None:
+    registry = load_registry()
+
+    by_tier = {
+        tier: {
+            entry.key
+            for entry in registry.root
+            if entry.expected_update_interval_seconds == interval
+        }
+        for tier, interval in TIER_INTERVAL_SECONDS.items()
+    }
+
+    assert {tier: len(keys) for tier, keys in by_tier.items()} == {
+        "fast": 12,
+        "medium": 4,
+        "daily": 54,
+    }
+    assert set().union(*by_tier.values()) == {
+        entry.key
+        for entry in registry.root
+        if entry.key != "sol_active_addresses"
+    }
+    assert sum(len(keys) for keys in by_tier.values()) == len(registry.root) - 1
+
+
+def test_sol_active_addresses_declares_its_real_weekly_schedule() -> None:
+    entry = next(
+        entry for entry in load_registry().root if entry.key == "sol_active_addresses"
+    )
+
+    assert entry.expected_update_interval_seconds == 604800
+    assert entry.freshness_warn_seconds > entry.expected_update_interval_seconds
+    assert entry.freshness_stale_seconds > entry.freshness_warn_seconds
+    assert entry.freshness_warn_seconds == 691200
+    assert entry.freshness_stale_seconds == 777600
+
+
+def test_only_sol_active_addresses_uses_non_tier_freshness_fields() -> None:
+    freshness_by_interval = {
+        300: (450, 600),
+        28800: (43200, 57600),
+        86400: (108000, 172800),
+    }
+
+    for entry in load_registry().root:
+        if entry.key == "sol_active_addresses":
+            continue
+        assert entry.expected_update_interval_seconds in freshness_by_interval
+        assert (
+            entry.freshness_warn_seconds,
+            entry.freshness_stale_seconds,
+        ) == freshness_by_interval[entry.expected_update_interval_seconds]
+
+
+def test_sol_active_addresses_weekly_cron_datapoint_stays_fresh_until_next_run() -> None:
+    entry = next(
+        entry for entry in load_registry().root if entry.key == "sol_active_addresses"
+    )
+    last_sunday_cron = datetime(2026, 9, 27, 3, 43, tzinfo=UTC)
+    just_before_next_sunday_cron = last_sunday_cron + timedelta(days=7) - timedelta(
+        seconds=1
+    )
+
+    datapoint_age_seconds = (
+        just_before_next_sunday_cron - last_sunday_cron
+    ).total_seconds()
+
+    assert datapoint_age_seconds == 604799
+    assert datapoint_age_seconds < entry.freshness_stale_seconds
+
+
+def test_registry_rejects_unsupported_cadence_interval_at_load_time(
+    tmp_path: Path,
+) -> None:
+    registry_path = tmp_path / "registry.yaml"
+    registry_path.write_text(
+        REGISTRY_PATH.read_text(encoding="utf-8").replace(
+            "expected_update_interval_seconds: 86400",
+            "expected_update_interval_seconds: 604801",
+            1,
+        ),
+        encoding="utf-8",
+    )
+
+    with pytest.raises(ValidationError, match="unsupported.*cadence tier filter"):
+        load_registry(registry_path)
 
 
 def test_funding_rate_is_registered_once_per_asset_without_talib() -> None:

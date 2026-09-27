@@ -1,0 +1,69 @@
+{
+  "storyId": "US-1205",
+  "passes": true,
+  "verifier": {
+    "agent": "claude",
+    "sandbox": "restricted:read-only"
+  },
+  "implementer": "codex",
+  "results": [
+    {
+      "criterionId": "US-1205-C1",
+      "met": true,
+      "evidence": {
+        "file": "tests/test_registry.py",
+        "line": 138,
+        "testName": "test_sol_active_addresses_declares_its_real_weekly_schedule",
+        "exitCode": 0
+      },
+      "note": "ingest/registry.yaml:657 now sets sol_active_addresses expected_update_interval_seconds to 604800 (7 days), down from 86400. The test at tests/test_registry.py:138 asserts that value against the real loaded registry. That matches the workflow's weekly cron, '43 3 * * 0' (.github/workflows/sol-active-addresses.yml:5). The test gate passed."
+    },
+    {
+      "criterionId": "US-1205-C2",
+      "met": true,
+      "evidence": {
+        "file": "tests/test_registry.py",
+        "line": 139,
+        "testName": "test_sol_active_addresses_declares_its_real_weekly_schedule",
+        "exitCode": 0
+      },
+      "note": "warn is 691200 (8 days) and stale is 777600 (9 days), set at registry.yaml:658-659. The test asserts warn > interval, stale > warn, and the exact values (lines 139-142). That gives 1 day of headroom before warn and 2 days before stale, replacing the old daily/2-day values."
+    },
+    {
+      "criterionId": "US-1205-C3",
+      "met": true,
+      "evidence": {
+        "file": "tests/test_registry.py",
+        "line": 145,
+        "testName": "test_only_sol_active_addresses_uses_non_tier_freshness_fields",
+        "exitCode": 0
+      },
+      "note": "The test checks every entry except sol_active_addresses and requires each one to still use the standard tier (warn, stale) pair for its interval (300/28800/86400). So no other entry's freshness fields changed. The criterion is met at the registry-entry level, but the diff is not strictly single-file. It also changes ingest/registry.py, adding SUPPORTED_REGISTRY_INTERVAL_SECONDS so the loader accepts 604800. It also edits tests/test_persist_board.py: the daily tier count drops from 55 to 54, and the tier-union test now excludes sol_active_addresses. Neither file is in the declared touch list. The loader change is needed for the YAML to load at all, and the workflow cron was not touched."
+    },
+    {
+      "criterionId": "US-1205-C4",
+      "met": true,
+      "evidence": {
+        "file": "tests/test_registry.py",
+        "line": 176,
+        "testName": "test_sol_active_addresses_weekly_cron_datapoint_stays_fresh_until_next_run",
+        "exitCode": 0
+      },
+      "note": "The test anchors on a real cron firing time, Sunday 2026-09-27 03:43 UTC. It computes the age one second before the next weekly run (604799s) and asserts that age < the loaded freshness_stale_seconds. That is the same rule the app uses to mark STALE: web/src/data.ts:257 checks `ageSeconds > staleAfterSeconds`, reading the same ingest/registry.yaml (web/src/registry.ts:3). This is weak: the test repeats the comparison in Python instead of calling applyFreshness on a datapoint, and it hardcodes the cron time rather than reading it from the workflow. It still binds the real registry value to the real weekly window."
+    },
+    {
+      "criterionId": "US-1205-C5",
+      "met": true,
+      "evidence": {
+        "file": null,
+        "line": null,
+        "testName": null,
+        "exitCode": 0
+      },
+      "note": "The `uv run pytest -q` gate exited 0, and the typecheck and test gates also exited 0."
+    }
+  ],
+  "tripwires": [],
+  "note": "The core fix is real and the new tests make meaningful assertions against the loaded registry. Nothing looks faked. Two caveats: the diff also touches ingest/registry.py (loader now allows 604800) and tests/test_persist_board.py (sol_active_addresses no longer counts in the daily tier), neither of which was declared; and the C4 test only checks the thresholds with arithmetic rather than running the app's STALE check (applyFreshness).",
+  "at": "2026-09-27T12:02:24.575Z"
+}

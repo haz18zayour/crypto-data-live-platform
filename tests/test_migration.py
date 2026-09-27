@@ -13,6 +13,8 @@ from psycopg.errors import CheckViolation
 MIGRATIONS = Path(__file__).resolve().parents[1] / "supabase" / "migrations"
 ENV_FILE = MIGRATIONS.parents[1] / ".env.local"
 
+pytestmark = pytest.mark.integration
+
 
 def _database_url() -> str:
     database_url = os.environ.get("TEST_DATABASE_URL") or os.environ.get("DATABASE_URL")

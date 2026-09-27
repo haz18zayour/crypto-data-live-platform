@@ -1,0 +1,9 @@
+.github/workflows/ingest.yml                       |  5 +-
+ .uf/events.ndjson                                  |  9 +++
+ SESSION.md                                         | 13 +++-
+ .../50-evidence/US-1202/diffstat.txt               |  8 ++
+ .../50-evidence/US-1202/gates.json                 | 20 +++++
+ .../50-evidence/US-1202/verdict.json               | 80 ++++++++++++++++++++
+ tests/test_ingest_workflow.py                      | 27 +++++++
+ tests/test_persist_board.py                        | 87 ++++++++++++++++++++++
+ 8 files changed, 245 insertions(+), 4 deletions(-)

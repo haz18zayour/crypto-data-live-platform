@@ -1,7 +1,9 @@
 """Run ingestion and report its outcome to the dead-man's-switch."""
 
+import argparse
 import os
-from collections.abc import Callable
+import sys
+from collections.abc import Callable, Sequence
 
 import httpx
 import psycopg
@@ -12,6 +14,7 @@ from ingest.pipeline import (
     run_scheduled_board,
     run_sol_active_addresses,
 )
+from ingest.registry import CadenceTier
 from ingest.status import Result
 
 HEARTBEAT_TIMEOUT_SECONDS = 10
@@ -40,13 +43,19 @@ def run_ingestion(
     database_url: str,
     heartbeat_url: str,
     *,
+    tier: CadenceTier | None = None,
     fetcher: Callable[[], Result | FullAssetRun] | None = None,
     heartbeat_client: httpx.Client | None = None,
 ) -> int | tuple[int, ...]:
     """Persist the selected scheduled run, then signal success or explicit failure."""
 
     fetch_result: Result | FullAssetRun | None = None
-    selected_fetcher = run_scheduled_board if fetcher is None else fetcher
+    if fetcher is not None:
+        selected_fetcher = fetcher
+    elif tier is None:
+        selected_fetcher = run_scheduled_board
+    else:
+        selected_fetcher = lambda: run_scheduled_board(tier=tier)
 
     def observed_fetcher() -> Result | FullAssetRun:
         nonlocal fetch_result
@@ -71,12 +80,17 @@ def run_ingestion(
     return persisted
 
 
-def main() -> None:
+def main(argv: Sequence[str] = ()) -> None:
     """Run the scheduled ingestion using GitHub Actions secrets."""
+
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--tier", choices=("fast", "medium", "daily"))
+    args = parser.parse_args(argv)
 
     run_ingestion(
         os.environ["DATABASE_URL"],
         os.environ["HEALTHCHECKS_PING_URL"],
+        tier=args.tier,
     )
 
 
@@ -91,4 +105,4 @@ def main_sol_active_addresses() -> None:
 
 
 if __name__ == "__main__":
-    main()
+    main(sys.argv[1:])

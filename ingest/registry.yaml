@@ -654,9 +654,9 @@
   response_model: solana_get_block
   required_bars: 1
   parameters:
-  expected_update_interval_seconds: 86400
-  freshness_warn_seconds: 108000
-  freshness_stale_seconds: 172800
+  expected_update_interval_seconds: 604800
+  freshness_warn_seconds: 691200
+  freshness_stale_seconds: 777600
   uncorroborated:
     note: Helius Solana RPC is the only researched source used for this built SOL active-addresses cell, and its one-hour method is not directly comparable to Coin Metrics' 24-hour AdrActCnt.
 - key: sol_staking

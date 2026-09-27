@@ -25,11 +25,12 @@ testpaths = ["tests"]
 # test that imports ingest at module level fails collection with ModuleNotFoundError.
 pythonpath = ["."]
 markers = ["integration: touches a live third-party endpoint"]
-# Integration tests hit live venues. With 45 registry entries needing up to 250 bars and OKX
-# history-candles capped at 100/request, running all nine together throttles both venues:
+# Integration tests hit live venues or a live PostgreSQL database. With 45 registry
+# entries needing up to 250 bars and OKX history-candles capped at 100/request,
+# running all nine together throttles both venues:
 # measured 4h03m with 5 failures, versus 53s for the 175 offline tests. Deselected by
 # default so local feedback stays usable; CI runs them in a separate step.
-addopts = ["-m", "not integration"]
+addopts = ["-m", "not integration", "-p", "no:cacheprovider"]
 
 [tool.ruff]
 target-version = "py312"

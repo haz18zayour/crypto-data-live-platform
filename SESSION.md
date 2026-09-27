@@ -31,9 +31,10 @@ open prds/PRD-005-dashboard/20-decisions.yaml
 | PRD-004-indicators | 11 | 11 | **all green** |
 | PRD-005-dashboard | 9 | 9 | **all green** |
 | PRD-006-derivatives | 7 | 7 | **all green** |
-| PRD-007-onchain | 8 | 7 | 7/8 |
+| PRD-007-onchain | 8 | 8 | **all green** |
+| PRD-012-cadence-split | 6 | 5 | 5/6 |
 
-Spend to date: **$75.44** Claude · **184255k** Codex tokens.
+Spend to date: **$80.52** Claude · **201164k** Codex tokens.
 
 ## What happened
 
@@ -552,6 +553,71 @@ Spend to date: **$75.44** Claude · **184255k** Codex tokens.
 - 15:19  US-708 started, attempt 1 (codex)
 - 15:23  US-708 — codex finished `e0b05e76` · 1690k tok
 - 15:25  US-708 **rejected** — 0/3 criteria, judged by claude
+- 15:25  US-708 started, attempt 2 (codex)
+- 15:32  US-708 — codex finished `59c01c02` · 1356k tok
+- 15:34  US-708 **awaiting your judgement** — 2/3 criteria, judged by claude · $0.47
+- 15:34  ⏸ **gate opened** — US-708: The demonstration item the acceptance protocol calls for, not a machine check
+- 16:36  ▶ gate answered **met** — Reviewed the captured four-asset on-chain readout (prds/PRD-007-onchain/50-evidence/US-708/adversarial-four-asset-onchain-column.md): every NOT_DEFINABLE/UNAVAILABLE reason across BTC/ETH/BNB/SOL is distinct and names its own real cause - no two absences read as the same excuse.
+- 16:36  👤 you judged US-708 **met** — Reviewed the captured four-asset on-chain readout (prds/PRD-007-onchain/50-evidence/US-708/adversarial-four-asset-onchain-column.md): every NOT_DEFINABLE/UNAVAILABLE reason across BTC/ETH/BNB/SOL is distinct and names its own real cause - no two absences read as the same excuse.
+- 20:24  researched PRD-012-cadence-split — 9 sources · $1.09
+
+### 2026-09-17
+
+- 15:55  **PRD-012-cadence-split** compiled — 6 stories
+- 16:02  US-1201 started, attempt 1 (codex)
+- 16:07  US-1201 — codex finished `0e485e4b` · 2088k tok
+- 16:09  US-1201 **rejected** — 0/7 criteria, judged by claude
+- 16:09  US-1201 started, attempt 2 (codex)
+- 16:11  US-1201 — codex finished `b6ece318` · 900k tok
+- 16:14  US-1201 **PASSED** — 7/7 criteria, judged by claude · $0.66
+- 16:14  US-1202 started, attempt 1 (codex)
+- 16:16  US-1202 — codex finished `55bf65df` · 397k tok
+- 16:17  US-1202 **rejected** — 0/6 criteria, judged by claude
+- 16:17  US-1202 started, attempt 2 (codex)
+- 16:20  US-1202 — codex finished `23071d35` · 624k tok
+- 16:23  US-1202 **rejected** — 5/6 criteria, judged by claude · $0.39
+- 16:23  US-1202 started, attempt 3 (codex)
+- 16:25  US-1202 — codex finished `e68a8586` · 526k tok
+- 16:27  US-1202 **rejected** — 5/6 criteria, judged by claude · $0.31
+- 16:27  ⏸ **gate opened** — US-1202 has failed 3 times — is the story wrong?
+- 16:51  US-1202 **PASSED** — 6/6 criteria, judged by human
+- 16:51  ▶ gate answered **skip** — C5 could not be proven within any single automated attempt (needs a real completed GitHub Actions run). Manually dispatched the real workflow and confirmed it succeeded: https://github.com/haz18zayour/crypto-data-live-platform/actions/runs/35248697411. All 6 criteria now verified against current HEAD. See verdict.json overrideReason.
+- 16:52  US-1203 started, attempt 1 (codex)
+- 16:54  US-1203 — codex finished `41bcb097` · 652k tok
+- 16:57  US-1203 **rejected** — 4/6 criteria, judged by claude · $0.40
+- 16:57  US-1203 started, attempt 2 (codex)
+- 17:00  US-1203 — codex finished `56889254` · 1036k tok
+- 17:03  US-1203 **rejected** — 5/6 criteria, judged by claude · $0.39
+- 17:03  US-1203 started, attempt 3 (codex)
+- 17:05  US-1203 — codex finished `3720c589` · 1104k tok
+- 17:07  US-1203 **rejected** — 5/6 criteria, judged by claude · $0.33
+- 17:07  ⏸ **gate opened** — US-1203 has failed 3 times — is the story wrong?
+- 17:16  US-1203 **PASSED** — 6/6 criteria, judged by human
+- 17:16  ▶ gate answered **skip** — C5 could not be dispatched from within the automated pipeline's sandboxed network. Manually dispatched the real workflow and confirmed it succeeded: https://github.com/haz18zayour/crypto-data-live-platform/actions/runs/35251505580. All 6 criteria now verified against current HEAD. See verdict.json overrideReason.
+
+### 2026-09-27
+
+- 11:11  US-1204 started, attempt 1 (codex)
+- 11:14  US-1204 — codex finished `c3653e15` · 548k tok
+- 11:16  US-1204 **rejected** — 0/6 criteria, judged by claude
+- 11:16  US-1204 started, attempt 2 (codex)
+- 11:20  US-1204 — codex finished `bc51a1bd` · 1514k tok
+- 11:20  US-1204 **rejected** — 0/6 criteria, judged by claude
+- 11:20  US-1204 started, attempt 3 (codex)
+- 11:24  US-1204 — codex finished `c8e5c534` · 1855k tok
+- 11:24  US-1204 **rejected** — 0/6 criteria, judged by claude
+- 11:24  ⏸ **gate opened** — US-1204 has failed 3 times — is the story wrong?
+- 11:52  US-1204 **PASSED** — 6/6 criteria, judged by human
+- 11:52  ▶ gate answered **skip** — All 3 attempts were blocked by a poisoned local .tmp/pytest directory (fixed, unrelated to this story). Real evidence obtained: dispatched run https://github.com/haz18zayour/crypto-data-live-platform/actions/runs/36316892830 succeeded in 1m46s, and the missing HEALTHCHECK_URL_INGEST_FAST/MEDIUM secrets (a real, separate gap this override caught) are now provisioned. See verdict.json overrideReason.
+- 11:58  US-1205 started, attempt 1 (codex)
+- 12:01  US-1205 — codex finished `e44866e0` · 1170k tok
+- 12:02  US-1205 **PASSED** — 5/5 criteria, judged by claude · $1.04
+- 12:02  US-1206 started, attempt 1 (codex)
+- 12:06  US-1206 — codex finished `dddf74ef` · 1424k tok
+- 12:21  US-1206 **rejected** — 0/3 criteria, judged by claude
+- 12:21  US-1206 started, attempt 2 (codex)
+- 12:33  US-1206 — codex finished `b8bfc3b5` · 1715k tok
+- 12:48  US-1206 **rejected** — 0/3 criteria, judged by claude
 
 <!-- uf:generated:end -->
 

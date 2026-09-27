@@ -1,0 +1,22 @@
+{
+  "gate": "G5_THIRD_FAILURE",
+  "question": "US-1204 has failed 3 times — is the story wrong?",
+  "feature": "PRD-012-cadence-split",
+  "story": "US-1204",
+  "options": [
+    "split",
+    "rewrite-criteria",
+    "skip",
+    "retry-anyway"
+  ],
+  "context": "Criteria judged not met:\n  - US-1204-C1: not judged — a cheaper layer already failed\n  - US-1204-C2: not judged — a cheaper layer already failed\n  - US-1204-C3: not judged — a cheaper layer already failed\n  - US-1204-C4: not judged — a cheaper layer already failed\n  - US-1204-C5: not judged — a cheaper layer already failed\n  - US-1204-C6: not judged — a cheaper layer already failed",
+  "defaultOnTimeout": "block",
+  "answer": {
+    "choice": "skip",
+    "reason": "All 3 attempts were blocked by a poisoned local .tmp/pytest directory (fixed, unrelated to this story). Real evidence obtained: dispatched run https://github.com/haz18zayour/crypto-data-live-platform/actions/runs/36316892830 succeeded in 1m46s, and the missing HEALTHCHECK_URL_INGEST_FAST/MEDIUM secrets (a real, separate gap this override caught) are now provisioned.",
+    "at": "2026-09-27T11:52:00.000Z",
+    "by": "human"
+  },
+  "id": "G5_THIRD_FAILURE-663d5310",
+  "openedAt": "2026-09-27T11:24:28.239Z"
+}

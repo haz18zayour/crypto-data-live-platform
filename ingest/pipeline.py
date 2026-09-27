@@ -30,8 +30,13 @@ from ingest.fetchers.okx_derivatives import (
 )
 from ingest.indicators import atr, bollinger_bands, ema, macd, obv, rsi, stochrsi
 from ingest.persist import persist_datapoint
-from ingest.registry import IndicatorDefinition, load_registry
-from ingest.status import Error, Ok, Reason, Result, Unavailable
+from ingest.registry import (
+    TIER_INTERVAL_SECONDS,
+    CadenceTier,
+    IndicatorDefinition,
+    load_registry,
+)
+from ingest.status import Error, Ok, Reason, Result, Stale, Unavailable
 
 type Venue = Literal["okx", "coinbase"]
 type HistoryStatus = Literal["AVAILABLE", "UNCORROBORATED"]
@@ -57,6 +62,10 @@ _HISTORY_NOTE = re.compile(
     r"coinbase (?P<coinbase_kind>at least|exactly) "
     r"(?P<coinbase_bars>\d+) daily bars\.$"
 )
+
+
+def _utc_now() -> datetime:
+    return datetime.now(UTC)
 
 
 @dataclass(frozen=True, slots=True)
@@ -337,6 +346,7 @@ def _calculate(definition: IndicatorDefinition, bars: Sequence[Bar]) -> float:
 
 def run_all_assets(
     *,
+    tier: CadenceTier | None = None,
     fetch_bars: BarFetcher | None = None,
     fetch_funding_rate: FundingRateFetcher | None = None,
     fetch_open_interest: OpenInterestFetcher | None = None,
@@ -351,7 +361,12 @@ def run_all_assets(
     """Fetch both venues and compute every registered board cell."""
 
     excluded_keys = frozenset(excluded_indicator_keys)
-    registered = load_registry().root
+    registered = tuple(
+        definition
+        for definition in load_registry().root
+        if tier is None
+        or definition.expected_update_interval_seconds == TIER_INTERVAL_SECONDS[tier]
+    )
     definitions = tuple(
         definition
         for definition in registered
@@ -544,10 +559,11 @@ def run_all_assets(
     return FullAssetRun(indicators=indicators, history=history)
 
 
-def run_scheduled_board() -> FullAssetRun:
+def run_scheduled_board(*, tier: CadenceTier | None = None) -> FullAssetRun:
     """Fetch the scheduled board, leaving SOL active addresses to its slow job."""
 
     return run_all_assets(
+        tier=tier,
         excluded_indicator_keys=(SOL_ACTIVE_ADDRESSES_KEY,),
     )
 
@@ -590,6 +606,15 @@ def persist_board(
             persisted_result = Ok(result.value, result.source_timestamp)
         else:
             persisted_result = result
+        if (
+            isinstance(persisted_result, Ok)
+            and (_utc_now() - persisted_result.source_timestamp).total_seconds()
+            > definition.freshness_warn_seconds
+        ):
+            persisted_result = Stale(
+                persisted_result.value,
+                persisted_result.source_timestamp,
+            )
 
         row_ids.append(
             persist_datapoint(

@@ -1,0 +1,46 @@
+{
+  "storyId": "US-1203",
+  "passes": true,
+  "verifier": {
+    "agent": "human",
+    "sandbox": "not-run",
+    "independence": "owner-override"
+  },
+  "implementer": "codex",
+  "overrideReason": "The automated pipeline judged 5/6 criteria genuinely met at attempt 3, with only C5 ([ci: the ingest-medium workflow run completes successfully on the pushed commit]) unproven — the same structural gap already resolved for US-1202-C5, since no automated attempt (running inside a sandbox with restricted network access) can dispatch or wait for a real GitHub Actions run. Attempt 3's own dispatch attempt failed with a sandbox network error (dial tcp forbidden), not a code defect. Resolved directly, same remediation as US-1202: pushed the branch to origin, ran `uv run mypy ingest --strict`, `uv run ruff check`, and `uv run pytest -q -m \"not integration\"` fresh (all clean, 297 passed), then manually dispatched the real workflow via `gh workflow run ingest-medium.yml --ref feat/prd-012-cadence-split` outside any sandbox restriction and confirmed it completed successfully.",
+  "results": [
+    {
+      "criterionId": "US-1203-C1",
+      "met": true,
+      "note": "ingest-medium.yml mirrors ingest.yml's structure (same trigger shape, permissions, timeout, checkout/setup-python/setup-uv steps); only the cron ('37 */8 * * *'), job name, and heartbeat secret differ. Re-confirmed against current HEAD (270b685)."
+    },
+    {
+      "criterionId": "US-1203-C2",
+      "met": true,
+      "note": "Uses US-1201's unmodified tier filter (pipeline.py:364); this story adds zero lines to pipeline.py/registry.py, only invokes the existing --tier medium CLI option."
+    },
+    {
+      "criterionId": "US-1203-C3",
+      "met": true,
+      "note": "Dedicated HEALTHCHECK_URL_INGEST_MEDIUM secret, distinct from the daily/canary checks, per Healthchecks.io's own documented 'one check per job' practice cited in research."
+    },
+    {
+      "criterionId": "US-1203-C4",
+      "met": true,
+      "note": "tests/test_persist_board.py::test_medium_tier_entry_point_persists_only_medium_board_rows_and_pings_once calls heartbeat.main(['--tier','medium']) directly, exercising the real argparse -> run_ingestion -> run_pipeline -> run_scheduled_board -> run_all_assets chain with only I/O boundaries mocked, asserting exactly the 4 medium-tier funding-rate rows persisted and one heartbeat ping."
+    },
+    {
+      "criterionId": "US-1203-C5",
+      "met": true,
+      "note": "Manually dispatched the real workflow outside the sandbox: `gh workflow run ingest-medium.yml --ref feat/prd-012-cadence-split` produced run https://github.com/haz18zayour/crypto-data-live-platform/actions/runs/35251505580, which completed successfully (job 'ingest-medium', 25s, conclusion success) on the actual pushed commit (270b685)."
+    },
+    {
+      "criterionId": "US-1203-C6",
+      "met": true,
+      "note": "`uv run pytest -q -m \"not integration\"` re-run fresh against current HEAD: 297 passed, 29 deselected, exit 0. `uv run mypy ingest --strict` and `uv run ruff check` both clean."
+    }
+  ],
+  "tripwires": [],
+  "note": "All 6 criteria independently verified against current HEAD (270b685). Five were already sound at attempt 3; the sixth (C5, the live CI proof) required the same remediation as US-1202-C5: dispatching the real workflow from outside the sandbox's network restrictions and citing the actual run URL and conclusion, since no automated attempt can do this itself.",
+  "at": "2026-09-17T17:16:00.000Z"
+}
