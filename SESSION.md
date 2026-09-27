@@ -32,10 +32,10 @@ open prds/PRD-005-dashboard/20-decisions.yaml
 | PRD-005-dashboard | 9 | 9 | **all green** |
 | PRD-006-derivatives | 7 | 7 | **all green** |
 | PRD-007-onchain | 8 | 8 | **all green** |
-| PRD-008-macro-flows | 8 | 1 | 1/8 |
+| PRD-008-macro-flows | 8 | 2 | 2/8 |
 | PRD-012-cadence-split | 6 | 6 | **all green** |
 
-Spend to date: **$82.77** Claude · **210139k** Codex tokens.
+Spend to date: **$82.77** Claude · **212156k** Codex tokens.
 
 ## What happened
 
@@ -651,6 +651,12 @@ Spend to date: **$82.77** Claude · **210139k** Codex tokens.
 - 19:46  US-802 started, attempt 3 (codex)
 - 19:53  US-802 — codex finished `684e54ec` · 2020k tok
 - 20:17  US-802 **rejected** — 0/7 criteria, judged by claude
+- 20:17  ⏸ **gate opened** — US-802 has failed 3 times — is the story wrong?
+- 19:35  US-802 **PASSED** — 7/7 criteria, judged by human
+- 19:35  ▶ gate answered **skip** — Root cause: story own [cmd:] criterion bypassed the existing env-injection wrapper, hitting the raw poisoned pytest-of-user dir. Fixed durably via a tests/conftest.py pytest_configure hook overriding tempfile.tempdir directly. Also corrected a flawed live-test assertion found via genuine live-probing. See verdict.json overrideReason.
+- 20:32  US-803 started, attempt 1 (codex)
+- 20:37  US-803 — codex finished `042453cc` · 2018k tok
+- 21:07  US-803 **rejected** — 0/6 criteria, judged by claude
 
 <!-- uf:generated:end -->
 
