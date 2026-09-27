@@ -32,10 +32,10 @@ open prds/PRD-005-dashboard/20-decisions.yaml
 | PRD-005-dashboard | 9 | 9 | **all green** |
 | PRD-006-derivatives | 7 | 7 | **all green** |
 | PRD-007-onchain | 8 | 8 | **all green** |
-| PRD-008-macro-flows | 8 | 0 | 0/8 |
+| PRD-008-macro-flows | 8 | 1 | 1/8 |
 | PRD-012-cadence-split | 6 | 6 | **all green** |
 
-Spend to date: **$82.77** Claude · **206009k** Codex tokens.
+Spend to date: **$82.77** Claude · **207547k** Codex tokens.
 
 ## What happened
 
@@ -639,6 +639,12 @@ Spend to date: **$82.77** Claude · **206009k** Codex tokens.
 - 18:00  US-801 started, attempt 3 (codex)
 - 18:03  US-801 — codex finished `0248f3a0` · 1106k tok
 - 18:33  US-801 **rejected** — 0/6 criteria, judged by claude
+- 18:33  ⏸ **gate opened** — US-801 has failed 3 times — is the story wrong?
+- 18:40  US-801 **PASSED** — 6/6 criteria, judged by human
+- 18:40  ▶ gate answered **skip** — Root cause: implementer added an out-of-scope pyproject.toml change that overrode PRD-012s existing TEMP/TMP fix, recreating the poisoned-pytest-temp-dir class of failure. Reverted; verified clean (292/292 offline tests). Migration/persist.py/tests content independently verified correct. See verdict.json overrideReason.
+- 18:38  US-802 started, attempt 1 (codex)
+- 18:43  US-802 — codex finished `4ff8de75` · 1538k tok
+- 19:13  US-802 **rejected** — 0/7 criteria, judged by claude
 
 <!-- uf:generated:end -->
 
