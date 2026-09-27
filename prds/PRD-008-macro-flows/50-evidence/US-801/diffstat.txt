@@ -1,6 +1,10 @@
-.uf/events.ndjson                                  |  2 +
- ingest/persist.py                                  | 18 ++++-
- ...datapoint_reference_period_and_published_at.sql | 50 ++++++++++++++
- supabase/migrations/checksums.sha256               |  1 +
- tests/test_persist.py                              | 77 ++++++++++++++++++++++
- 5 files changed, 145 insertions(+), 3 deletions(-)
+.uf/events.ndjson                                  |   5 +
+ SESSION.md                                         |  19 +-
+ ingest/persist.py                                  |  18 +-
+ .../50-evidence/US-801/diffstat.txt                |   6 +
+ .../50-evidence/US-801/gates.json                  |  20 +++
+ .../50-evidence/US-801/verdict.json                |  44 +++++
+ ...datapoint_reference_period_and_published_at.sql |  50 ++++++
+ supabase/migrations/checksums.sha256               |   1 +
+ tests/test_persist.py                              | 199 +++++++++++++++++++++
+ 9 files changed, 357 insertions(+), 5 deletions(-)
