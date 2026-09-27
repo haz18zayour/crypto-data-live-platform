@@ -4,7 +4,31 @@ from pathlib import Path
 import pytest
 from pydantic import ValidationError
 
-from ingest.registry import REGISTRY_PATH, TIER_INTERVAL_SECONDS, load_registry
+from ingest.canary import RESPONSE_MODELS
+from ingest.registry import (
+    REGISTRY_PATH,
+    TIER_INTERVAL_SECONDS,
+    IndicatorRegistry,
+    assert_registry_coverage,
+    load_registry,
+)
+
+GOLDEN_DIRECTORY = Path(__file__).with_name("goldens")
+FIXTURE_DIRECTORY = Path(__file__).with_name("fixtures")
+FRED_SERIES_KEYS = {
+    "VIXCLS": "fred_vixcls",
+    "DFF": "fred_dff",
+    "T10Y2Y": "fred_t10y2y",
+    "DFII10": "fred_dfii10",
+    "DTWEXBGS": "fred_dtwexbgs",
+    "CPIAUCSL": "fred_cpiaucsl",
+    "M2SL": "fred_m2sl",
+}
+FRED_UNCORROBORATED_NOTE = (
+    "FRED mirrors the Fed/BLS directly; a second source would check the "
+    "mirror against its origin rather than provide genuine independent "
+    "corroboration."
+)
 
 VALID_ENTRY = """\
 - key: btc_daily_close
@@ -20,6 +44,18 @@ VALID_ENTRY = """\
 
 def write_registry(path: Path, contents: str) -> None:
     path.write_text(contents, encoding="utf-8")
+
+
+def golden_keys() -> set[str]:
+    keys = {
+        path.relative_to(GOLDEN_DIRECTORY).as_posix()
+        for path in GOLDEN_DIRECTORY.rglob("*.json")
+    }
+    keys.update(
+        f"fixtures/{path.relative_to(FIXTURE_DIRECTORY).as_posix()}"
+        for path in FIXTURE_DIRECTORY.rglob("*.json")
+    )
+    return keys
 
 
 def entry_without(field: str) -> str:
@@ -95,14 +131,17 @@ def test_definable_for_requires_a_nonempty_asset_list(
 def test_shipped_registry_definitions_cover_four_assets_at_scale() -> None:
     registry = load_registry()
 
-    assert len(registry.root) == 71
-    assert {asset for entry in registry.root for asset in entry.definable_for} == {
+    assert len(registry.root) == 78
+    crypto_entries = tuple(
+        entry for entry in registry.root if entry.definable_for != ("MACRO",)
+    )
+    assert {asset for entry in crypto_entries for asset in entry.definable_for} == {
         "BTC",
         "ETH",
         "SOL",
         "BNB",
     }
-    assert all(len(entry.definable_for) == 1 for entry in registry.root)
+    assert all(len(entry.definable_for) == 1 for entry in crypto_entries)
 
 
 def test_registry_cadence_intervals_partition_the_shipped_entries() -> None:
@@ -120,14 +159,20 @@ def test_registry_cadence_intervals_partition_the_shipped_entries() -> None:
     assert {tier: len(keys) for tier, keys in by_tier.items()} == {
         "fast": 12,
         "medium": 4,
-        "daily": 54,
+        "daily": 58,
     }
     assert set().union(*by_tier.values()) == {
         entry.key
         for entry in registry.root
-        if entry.key != "sol_active_addresses"
+        if entry.key
+        not in {
+            "sol_active_addresses",
+            "fred_dtwexbgs",
+            "fred_cpiaucsl",
+            "fred_m2sl",
+        }
     }
-    assert sum(len(keys) for keys in by_tier.values()) == len(registry.root) - 1
+    assert sum(len(keys) for keys in by_tier.values()) == len(registry.root) - 4
 
 
 def test_sol_active_addresses_declares_its_real_weekly_schedule() -> None:
@@ -142,15 +187,21 @@ def test_sol_active_addresses_declares_its_real_weekly_schedule() -> None:
     assert entry.freshness_stale_seconds == 777600
 
 
-def test_only_sol_active_addresses_uses_non_tier_freshness_fields() -> None:
+def test_only_weekly_and_monthly_entries_use_non_tier_freshness_fields() -> None:
     freshness_by_interval = {
         300: (450, 600),
         28800: (43200, 57600),
         86400: (108000, 172800),
     }
+    non_tier_keys = {
+        "sol_active_addresses",
+        "fred_dtwexbgs",
+        "fred_cpiaucsl",
+        "fred_m2sl",
+    }
 
     for entry in load_registry().root:
-        if entry.key == "sol_active_addresses":
+        if entry.key in non_tier_keys:
             continue
         assert entry.expected_update_interval_seconds in freshness_by_interval
         assert (
@@ -174,6 +225,75 @@ def test_sol_active_addresses_weekly_cron_datapoint_stays_fresh_until_next_run()
 
     assert datapoint_age_seconds == 604799
     assert datapoint_age_seconds < entry.freshness_stale_seconds
+
+
+def test_seven_confirmed_fred_series_are_registered_with_shared_fetcher_contract() -> (
+    None
+):
+    entries = {
+        series_id: next(
+            entry for entry in load_registry().root if entry.key == key
+        )
+        for series_id, key in FRED_SERIES_KEYS.items()
+    }
+
+    assert set(entries) == set(FRED_SERIES_KEYS)
+    for series_id, entry in entries.items():
+        assert entry.vendor == "fred"
+        assert entry.definable_for == ("MACRO",)
+        assert f"series_id={series_id}" in entry.endpoint
+        assert "output_type=4" in entry.endpoint
+        assert entry.response_model == "fred_series_observations"
+        assert entry.golden == "fixtures/fred_series_observations.json"
+        assert entry.required_bars == 1
+        assert entry.parameters == {}
+        assert "output_type=4 realtime_start" in entry.source_field
+
+
+def test_dtwexbgs_uses_weekly_release_cadence_freshness_thresholds() -> None:
+    entry = next(entry for entry in load_registry().root if entry.key == "fred_dtwexbgs")
+
+    assert entry.expected_update_interval_seconds == 604800
+    assert entry.freshness_warn_seconds == 864000
+    assert entry.freshness_stale_seconds == 1209600
+    assert entry.freshness_stale_seconds > 3 * 86400
+    assert entry.freshness_stale_seconds >= 2 * entry.expected_update_interval_seconds
+
+
+def test_cpiaucsl_and_m2sl_use_monthly_release_cadence_freshness_thresholds() -> None:
+    entries = {
+        entry.key: entry
+        for entry in load_registry().root
+        if entry.key in {"fred_cpiaucsl", "fred_m2sl"}
+    }
+
+    assert set(entries) == {"fred_cpiaucsl", "fred_m2sl"}
+    for entry in entries.values():
+        assert entry.expected_update_interval_seconds == 2678400
+        assert entry.freshness_warn_seconds == 3888000
+        assert entry.freshness_stale_seconds == 5184000
+        assert entry.freshness_stale_seconds > 30 * 86400
+
+
+def test_fred_entries_disclose_mirror_not_independent_corroboration_reason() -> None:
+    entries = tuple(entry for entry in load_registry().root if entry.vendor == "fred")
+
+    assert {entry.key for entry in entries} == set(FRED_SERIES_KEYS.values())
+    for entry in entries:
+        assert entry.corroboration is None
+        assert entry.uncorroborated is not None
+        assert entry.uncorroborated.note == FRED_UNCORROBORATED_NOTE
+
+
+def test_fred_entries_pass_registry_coverage() -> None:
+    fred_entries = tuple(entry for entry in load_registry().root if entry.vendor == "fred")
+
+    assert len(fred_entries) == 7
+    assert_registry_coverage(
+        IndicatorRegistry.model_validate(fred_entries),
+        golden_keys=golden_keys(),
+        response_models=RESPONSE_MODELS,
+    )
 
 
 def test_registry_rejects_unsupported_cadence_interval_at_load_time(

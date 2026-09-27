@@ -14,6 +14,7 @@ from ingest.heartbeat import _ping
 from ingest.registry import IndicatorDefinition, load_registry
 from ingest.schemas import (
     CoinMetricsAssetMetricsResponse,
+    FredSeriesObservationsResponse,
     OkxCandleResponse,
     OkxFundingRateHistoryResponse,
     OkxLongShortRatioResponse,
@@ -31,6 +32,7 @@ RESPONSE_MODEL_TYPES: dict[str, type[BaseModel]] = {
     "okx_long_short_ratio": OkxLongShortRatioResponse,
     "okx_taker_volume": OkxTakerVolumeResponse,
     "coinmetrics_asset_metrics": CoinMetricsAssetMetricsResponse,
+    "fred_series_observations": FredSeriesObservationsResponse,
     "solana_get_block": SolanaGetBlockResponse,
     "validators_app_validators": ValidatorsAppValidatorsResponse,
 }
