@@ -1,0 +1,22 @@
+{
+  "gate": "G5_THIRD_FAILURE",
+  "question": "US-801 has failed 3 times — is the story wrong?",
+  "feature": "PRD-008-macro-flows",
+  "story": "US-801",
+  "options": [
+    "split",
+    "rewrite-criteria",
+    "skip",
+    "retry-anyway"
+  ],
+  "context": "Criteria judged not met:\n  - US-801-C1: not judged — a cheaper layer already failed\n  - US-801-C2: not judged — a cheaper layer already failed\n  - US-801-C3: not judged — a cheaper layer already failed\n  - US-801-C4: not judged — a cheaper layer already failed\n  - US-801-C5: not judged — a cheaper layer already failed\n  - US-801-C6: not judged — a cheaper layer already failed",
+  "defaultOnTimeout": "block",
+  "answer": {
+    "choice": "skip",
+    "reason": "Root cause: implementer added an out-of-scope pyproject.toml change that overrode PRD-012's existing TEMP/TMP fix, recreating the poisoned-pytest-temp-dir class of failure. Reverted; verified clean (292/292 offline tests). Migration/persist.py/tests content independently verified correct.",
+    "at": "2026-09-27T18:40:00.000Z",
+    "by": "human"
+  },
+  "id": "G5_THIRD_FAILURE-ae7a5515",
+  "openedAt": "2026-09-27T18:33:13.887Z"
+}
