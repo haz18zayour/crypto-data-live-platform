@@ -3,57 +3,111 @@
   "passes": false,
   "verifier": {
     "agent": "claude",
-    "sandbox": "not-run"
+    "sandbox": "restricted:read-only"
   },
   "implementer": "codex",
   "results": [
     {
       "criterionId": "US-804-C1",
-      "met": false,
-      "note": "not judged — a cheaper layer already failed"
+      "met": true,
+      "evidence": {
+        "file": "tests/test_sosovalue_fetcher.py",
+        "line": 42,
+        "testName": "test_fetcher_authenticates_with_configured_sosovalue_header",
+        "exitCode": 0
+      },
+      "note": "The test checks that the x-soso-api-key header carries the configured token. test_fetcher_reads_sosovalue_token_from_environment_header (line 63) covers the env-var path. test_missing_sosovalue_api_key_fails_loudly_without_request (line 155) shows that a missing key gives FETCH_FAILED and sends no request. No token is hardcoded in ingest/fetchers/sosovalue.py:46-50."
     },
     {
       "criterionId": "US-804-C2",
-      "met": false,
-      "note": "not judged — a cheaper layer already failed"
+      "met": true,
+      "evidence": {
+        "file": "tests/test_sosovalue_fetcher.py",
+        "line": 86,
+        "testName": "test_btc_eth_and_sol_return_real_decimal_net_flow_values",
+        "exitCode": 0
+      },
+      "note": "The test is parametrized over BTC, ETH and SOL against a mocked summary-history payload. Each asset returns SosoValueEtfFlowOk with the Decimal value, date and reference period. Nothing persists these values past the fetcher's return, so 'persist' is only checked at the fetcher level."
     },
     {
       "criterionId": "US-804-C3",
-      "met": false,
-      "note": "not judged — a cheaper layer already failed"
+      "met": true,
+      "evidence": {
+        "file": "tests/test_registry_not_definable.py",
+        "line": 127,
+        "testName": "test_bnb_etf_flow_declares_sosovalue_enum_not_definable_reason",
+        "exitCode": 0
+      },
+      "note": "The registry entry spot_etf_net_flow declares BNB NOT_DEFINABLE. Its reason names SoSoValue's /etfs/summary-history enum and says it 'does not include BNB'. test_us_708_registry_not_definable_reasons_are_unique (line 94) checks that the reason is distinct from every other NOT_DEFINABLE reason. The fetcher also returns NOT_DEFINABLE for BNB (test at line 146)."
     },
     {
       "criterionId": "US-804-C4",
-      "met": false,
-      "note": "not judged — a cheaper layer already failed"
+      "met": true,
+      "evidence": {
+        "file": "tests/test_sosovalue_fetcher.py",
+        "line": 110,
+        "testName": "test_long_decimal_money_round_trips_without_float_precision_loss",
+        "exitCode": 0
+      },
+      "note": "A 36-digit money string round-trips exactly through format(value,'f'). The fetcher parses with Decimal(value) at sosovalue.py:53-57, and the schema keeps money fields as StrictStr, so no float coercion happens. The test at line 86 also asserts the value is not a float."
     },
     {
       "criterionId": "US-804-C5",
-      "met": false,
-      "note": "not judged — a cheaper layer already failed"
+      "met": true,
+      "evidence": {
+        "file": "tests/test_sosovalue_fetcher.py",
+        "line": 128,
+        "testName": "test_reported_zero_persists_as_real_ok_zero_not_unavailable",
+        "exitCode": 0
+      },
+      "note": "A reported '0.0000000000000000' comes back as SosoValueEtfFlowOk with status 'OK' and value Decimal 0, not as an Error or UNAVAILABLE."
     },
     {
       "criterionId": "US-804-C6",
-      "met": false,
-      "note": "not judged — a cheaper layer already failed"
+      "met": true,
+      "evidence": {
+        "file": "tests/test_sosovalue_fetcher.py",
+        "line": 172,
+        "testName": "test_http_429_returns_fetch_failed_with_status_and_no_retry",
+        "exitCode": 0
+      },
+      "note": "A mocked 429 with code 42901 gives Error(FETCH_FAILED) with '429' in the detail. The test asserts exactly one request, so there is no retry."
     },
     {
       "criterionId": "US-804-C7",
-      "met": false,
-      "note": "not judged — a cheaper layer already failed"
+      "met": true,
+      "evidence": {
+        "file": "tests/test_sosovalue_fetcher.py",
+        "line": 193,
+        "testName": "test_response_model_rejects_added_renamed_or_retyped_fields",
+        "exitCode": 0
+      },
+      "note": "Added, renamed and retyped fields each raise ValidationError. Both models use ConfigDict(extra='forbid') (ingest/schemas.py). test_malformed_response_becomes_fetch_failed_error (line 211) confirms the fetcher turns a rejection into FETCH_FAILED."
     },
     {
       "criterionId": "US-804-C8",
       "met": false,
-      "note": "not judged — a cheaper layer already failed"
+      "evidence": {
+        "file": "tests/test_sosovalue_fetcher.py",
+        "line": 227,
+        "testName": "test_live_sosovalue_request_returns_real_etf_flow_data_for_one_asset",
+        "exitCode": null
+      },
+      "note": "The only live test calls fetch_etf_net_flow('BTC') directly, in isolation. Nothing in ingest/ calls fetch_etf_net_flow or the fetch_*_etf_net_flow helpers (grep finds only their definitions), so the fetcher is not wired into any runner or pipeline entry point. The test also skips when SOSOVALUE_API_KEY is unset. No gate result shows it ran against the real endpoint. Its main assertion is the tautology `result.value == result.value`."
     },
     {
       "criterionId": "US-804-C9",
-      "met": false,
-      "note": "not judged — a cheaper layer already failed"
+      "met": true,
+      "evidence": {
+        "file": null,
+        "line": null,
+        "testName": null,
+        "exitCode": 0
+      },
+      "note": "The US-804-C9 gate `uv run pytest -q` exited 0, and so did the combined test gate."
     }
   ],
   "tripwires": [],
-  "note": "gates failed: test, US-804-C9",
-  "at": "2026-09-27T23:21:40.488Z"
+  "note": "C1–C7 and C9 are backed by real offline tests with meaningful assertions, and both gates pass. C8 is not met: the live test calls the fetcher in isolation, skips when no API key is set, asserts a tautology (`value == value`), and the fetcher is not wired into any ingest runner.",
+  "at": "2026-09-27T23:47:20.211Z"
 }
