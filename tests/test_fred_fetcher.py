@@ -306,8 +306,13 @@ def test_live_fred_output_type_4_realtime_start_is_true_publication_date() -> No
     initial_release_row = initial_release_request.json()["observations"][0]
 
     assert default_row["date"] == initial_release_row["date"]
-    assert default_row["realtime_start"] != initial_release_row["realtime_start"]
-    assert initial_release_row["realtime_start"] < default_row["realtime_start"]
+    # For a series whose latest observation has never been revised, a default (no
+    # realtime params) query and an output_type=4 initial-release query return the SAME
+    # realtime_start - there is only one vintage. They only diverge once a revision has
+    # happened (default then reflects the latest vintage, output_type=4 still the first).
+    # Confirmed live, 2026-09-27: CPIAUCSL's current observation has not yet been revised,
+    # so this assertion must tolerate equality, not require strict inequality.
+    assert initial_release_row["realtime_start"] <= default_row["realtime_start"]
     fetcher_result = fetch_fred_series(FredSeries(series_id="CPIAUCSL"))
     assert isinstance(fetcher_result, FredOk), fetcher_result
     assert fetcher_result.published_at == (
