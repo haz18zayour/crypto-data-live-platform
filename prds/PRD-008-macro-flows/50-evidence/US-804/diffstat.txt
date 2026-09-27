@@ -1,0 +1,13 @@
+.env.example                                      |   3 +
+ .uf/events.ndjson                                 |   2 +
+ SESSION.md                                        |   5 +-
+ ingest/canary.py                                  |   6 +
+ ingest/fetchers/sosovalue.py                      | 158 ++++++++++++++++
+ ingest/registry.yaml                              |  17 ++
+ ingest/schemas.py                                 |  22 +++
+ tests/fixtures/sosovalue_etf_summary_history.json |  13 ++
+ tests/test_coverage.py                            |   2 +-
+ tests/test_registry.py                            |   9 +-
+ tests/test_registry_not_definable.py              |  18 +-
+ tests/test_sosovalue_fetcher.py                   | 213 ++++++++++++++++++++++
+ 12 files changed, 461 insertions(+), 7 deletions(-)
