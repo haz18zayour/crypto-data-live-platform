@@ -1,0 +1,11 @@
+{
+  "gate": "G6_HUMAN",
+  "question": "US-1206: The demonstration item the acceptance protocol calls for, not a machine check",
+  "feature": "PRD-012-cadence-split",
+  "story": "US-1206",
+  "options": ["met", "not-met"],
+  "context": "Everything a machine can check has passed (2/3).\nOnly your judgement is left:\n  · The owner confirms, from real Healthchecks.io check history or a real dispatched run, that contract-canary's 6-hourly heartbeat and the new tiered collect heartbeats fire independently of each other — a failure in one schedule does not silently suppress or trigger the other.\n\nEvidence already gathered this session: your Healthchecks.io dashboard shows crypto-data-ingest (6h/2h grace), ingest-medium (8h/1h grace), and ingest-fast (5min/5min grace) each with their own distinct, recent last-ping timestamps — confirming they are separately-tracked checks, not one shared heartbeat. Look at that same dashboard (or dispatch a fresh run of each workflow) and confirm each schedule's pings are genuinely independent of the others.\nEvidence: prds/PRD-012-cadence-split/50-evidence/US-1206/",
+  "defaultOnTimeout": "block",
+  "id": "G6_HUMAN-c5a6fc3d",
+  "openedAt": "2026-09-27T13:22:00.000Z"
+}
