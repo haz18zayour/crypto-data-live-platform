@@ -32,9 +32,9 @@ open prds/PRD-005-dashboard/20-decisions.yaml
 | PRD-005-dashboard | 9 | 9 | **all green** |
 | PRD-006-derivatives | 7 | 7 | **all green** |
 | PRD-007-onchain | 8 | 8 | **all green** |
-| PRD-012-cadence-split | 6 | 2 | 2/6 |
+| PRD-012-cadence-split | 6 | 3 | 3/6 |
 
-Spend to date: **$79.48** Claude · **192938k** Codex tokens.
+Spend to date: **$79.48** Claude · **193486k** Codex tokens.
 
 ## What happened
 
@@ -591,6 +591,15 @@ Spend to date: **$79.48** Claude · **192938k** Codex tokens.
 - 17:03  US-1203 started, attempt 3 (codex)
 - 17:05  US-1203 — codex finished `3720c589` · 1104k tok
 - 17:07  US-1203 **rejected** — 5/6 criteria, judged by claude · $0.33
+- 17:07  ⏸ **gate opened** — US-1203 has failed 3 times — is the story wrong?
+- 17:16  US-1203 **PASSED** — 6/6 criteria, judged by human
+- 17:16  ▶ gate answered **skip** — C5 could not be dispatched from within the automated pipeline's sandboxed network. Manually dispatched the real workflow and confirmed it succeeded: https://github.com/haz18zayour/crypto-data-live-platform/actions/runs/35251505580. All 6 criteria now verified against current HEAD. See verdict.json overrideReason.
+
+### 2026-09-27
+
+- 11:11  US-1204 started, attempt 1 (codex)
+- 11:14  US-1204 — codex finished `c3653e15` · 548k tok
+- 11:16  US-1204 **rejected** — 0/6 criteria, judged by claude
 
 <!-- uf:generated:end -->
 

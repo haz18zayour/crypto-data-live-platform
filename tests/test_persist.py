@@ -109,6 +109,7 @@ class NoDatabaseConnection:
         raise AssertionError("database was reached before validation")
 
 
+@pytest.mark.integration
 def test_unavailable_result_is_persisted_with_reason_and_null_value(
     postgres: psycopg.Connection[tuple[object, ...]],
     definition: IndicatorDefinition,
@@ -128,6 +129,7 @@ def test_unavailable_result_is_persisted_with_reason_and_null_value(
     assert row == ("UNAVAILABLE", "FETCH_FAILED", None)
 
 
+@pytest.mark.integration
 def test_provenance_fields_are_copied_from_registry_entry(
     postgres: psycopg.Connection[tuple[object, ...]],
     definition: IndicatorDefinition,
@@ -165,6 +167,7 @@ def test_mismatched_measured_on_raises_before_reaching_database(
         )
 
 
+@pytest.mark.integration
 def test_writer_sets_fetched_at_and_uses_fetcher_source_timestamp(
     monkeypatch: pytest.MonkeyPatch,
     postgres: psycopg.Connection[tuple[object, ...]],
@@ -207,6 +210,7 @@ def test_future_source_timestamp_is_rejected_before_reaching_database(
         )
 
 
+@pytest.mark.integration
 def test_source_field_is_persisted_and_non_empty(
     postgres: psycopg.Connection[tuple[object, ...]],
     definition: IndicatorDefinition,
@@ -227,6 +231,7 @@ def test_source_field_is_persisted_and_non_empty(
     assert source_field.strip()
 
 
+@pytest.mark.integration
 def test_same_source_timestamp_updates_instead_of_inserting_a_duplicate(
     postgres: psycopg.Connection[tuple[object, ...]],
     definition: IndicatorDefinition,
@@ -258,6 +263,7 @@ def test_same_source_timestamp_updates_instead_of_inserting_a_duplicate(
     assert rows == [(first_id, 42.5)]
 
 
+@pytest.mark.integration
 def test_pipeline_without_fetcher_records_not_fetched(
     postgres: psycopg.Connection[tuple[object, ...]],
 ) -> None:

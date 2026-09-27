@@ -16,6 +16,8 @@ dist/
 __pycache__/
 *.pyc
 .venv/
+.pytest_cache/
+.pytest-tmp/
 
 # Vite dependency pre-bundle cache
 .vite/

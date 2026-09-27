@@ -155,6 +155,7 @@ def datapoint_count() -> Iterator[tuple[psycopg.Connection[tuple[object, ...]], 
             )
 
 
+@pytest.mark.integration
 def test_canary_writes_no_datapoints(
     datapoint_count: tuple[psycopg.Connection[tuple[object, ...]], str],
     monkeypatch: pytest.MonkeyPatch,
