@@ -1,6 +1,9 @@
 import type { Datapoint } from "./datapoint";
 
-export const BOARD_ASSETS = ["BTC", "ETH", "SOL", "BNB"] as const;
+// MACRO is not a tracked crypto asset — it is the board's pseudo-asset column for
+// market-wide indicators (FRED macro series, Fear & Greed) that have no per-asset value.
+// Owner decision, 2026-09-28: represent it as a 5th column rather than a separate panel.
+export const BOARD_ASSETS = ["BTC", "ETH", "SOL", "BNB", "MACRO"] as const;
 
 export type BoardRegistryEntry = {
   key: string;

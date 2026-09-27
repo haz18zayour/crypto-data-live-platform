@@ -16,13 +16,13 @@ from ingest.registry import (
 GOLDEN_DIRECTORY = Path(__file__).with_name("goldens")
 FIXTURE_DIRECTORY = Path(__file__).with_name("fixtures")
 FRED_SERIES_KEYS = {
-    "VIXCLS": "fred_vixcls",
-    "DFF": "fred_dff",
-    "T10Y2Y": "fred_t10y2y",
-    "DFII10": "fred_dfii10",
-    "DTWEXBGS": "fred_dtwexbgs",
-    "CPIAUCSL": "fred_cpiaucsl",
-    "M2SL": "fred_m2sl",
+    "VIXCLS": "macro_vixcls",
+    "DFF": "macro_dff",
+    "T10Y2Y": "macro_t10y2y",
+    "DFII10": "macro_dfii10",
+    "DTWEXBGS": "macro_dtwexbgs",
+    "CPIAUCSL": "macro_cpiaucsl",
+    "M2SL": "macro_m2sl",
 }
 FRED_UNCORROBORATED_NOTE = (
     "FRED mirrors the Fed/BLS directly; a second source would check the "
@@ -167,9 +167,9 @@ def test_registry_cadence_intervals_partition_the_shipped_entries() -> None:
         if entry.key
         not in {
             "sol_active_addresses",
-            "fred_dtwexbgs",
-            "fred_cpiaucsl",
-            "fred_m2sl",
+            "macro_dtwexbgs",
+            "macro_cpiaucsl",
+            "macro_m2sl",
         }
     }
     assert sum(len(keys) for keys in by_tier.values()) == len(registry.root) - 4
@@ -195,9 +195,9 @@ def test_only_weekly_and_monthly_entries_use_non_tier_freshness_fields() -> None
     }
     non_tier_keys = {
         "sol_active_addresses",
-        "fred_dtwexbgs",
-        "fred_cpiaucsl",
-        "fred_m2sl",
+        "macro_dtwexbgs",
+        "macro_cpiaucsl",
+        "macro_m2sl",
     }
 
     for entry in load_registry().root:
@@ -251,7 +251,7 @@ def test_seven_confirmed_fred_series_are_registered_with_shared_fetcher_contract
 
 
 def test_dtwexbgs_uses_weekly_release_cadence_freshness_thresholds() -> None:
-    entry = next(entry for entry in load_registry().root if entry.key == "fred_dtwexbgs")
+    entry = next(entry for entry in load_registry().root if entry.key == "macro_dtwexbgs")
 
     assert entry.expected_update_interval_seconds == 604800
     assert entry.freshness_warn_seconds == 864000
@@ -264,10 +264,10 @@ def test_cpiaucsl_and_m2sl_use_monthly_release_cadence_freshness_thresholds() ->
     entries = {
         entry.key: entry
         for entry in load_registry().root
-        if entry.key in {"fred_cpiaucsl", "fred_m2sl"}
+        if entry.key in {"macro_cpiaucsl", "macro_m2sl"}
     }
 
-    assert set(entries) == {"fred_cpiaucsl", "fred_m2sl"}
+    assert set(entries) == {"macro_cpiaucsl", "macro_m2sl"}
     for entry in entries.values():
         assert entry.expected_update_interval_seconds == 2678400
         assert entry.freshness_warn_seconds == 3888000

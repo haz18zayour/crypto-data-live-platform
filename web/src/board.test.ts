@@ -44,8 +44,8 @@ describe("buildBoard", () => {
   test("the board model built from the parsed registry and the four assets yields one cell per family and asset", () => {
     const board = buildBoard(registry, [], BOARD_ASSETS);
 
-    expect(board.families).toHaveLength(20);
-    expect(board.assets).toHaveLength(4);
+    expect(board.families).toHaveLength(27);
+    expect(board.assets).toHaveLength(5);
     expect(board.cells).toHaveLength(
       board.families.length * board.assets.length,
     );
@@ -91,6 +91,7 @@ describe("buildBoard", () => {
         reason: "NOT_DEFINABLE",
         detail: declaration ? declaredReason(declaration, "BNB") : undefined,
       },
+      { status: "UNAVAILABLE", reason: "NOT_FETCHED" },
     ]);
   });
 
@@ -133,6 +134,7 @@ describe("buildBoard", () => {
       { status: "UNAVAILABLE", reason: "NOT_FETCHED" },
       { status: "UNAVAILABLE", reason: "NOT_FETCHED" },
       { status: "UNAVAILABLE", reason: "NOT_FETCHED" },
+      { status: "UNAVAILABLE", reason: "NOT_FETCHED" },
     ]);
   });
 
@@ -144,17 +146,6 @@ describe("buildBoard", () => {
     expect(() => buildBoard(malformedRegistry, [], BOARD_ASSETS)).toThrow(
       /btc_daily_close.*bnb_/,
     );
-  });
-
-  test("registry entries for assets outside this board are left for their own panel", () => {
-    const board = buildBoard(
-      [{ key: "fred_vixcls", definable_for: ["MACRO"] }],
-      [],
-      BOARD_ASSETS,
-    );
-
-    expect(board.families).toEqual([]);
-    expect(board.cells).toEqual([]);
   });
 
   test("a cell whose registry entry exists but whose board row is missing is also NOT_FETCHED", () => {
@@ -197,8 +188,13 @@ describe("buildBoard", () => {
       "STALE",
       "UNAVAILABLE",
       "ERROR",
+      "UNAVAILABLE",
     ]);
-    expect(board.cells.map((cell) => cell.state)).toEqual(rows);
+    expect(board.cells.slice(0, 4).map((cell) => cell.state)).toEqual(rows);
+    expect(board.cells[4].state).toEqual({
+      status: "UNAVAILABLE",
+      reason: "NOT_FETCHED",
+    });
     expect(board.cells[0].state).toHaveProperty("value", 12.25);
     expect(board.cells[1].state).toHaveProperty("value", -4.5);
   });
