@@ -20,6 +20,7 @@ MIGRATIONS = Path(__file__).resolve().parents[1] / "supabase" / "migrations"
 ENV_FILE = MIGRATIONS.parents[1] / ".env.local"
 FETCHED_AT = datetime(2026, 9, 9, 12, tzinfo=UTC)
 SOURCE_TIMESTAMP = datetime(2026, 9, 8, tzinfo=UTC)
+PUBLISHED_AT = datetime(2026, 9, 11, 12, tzinfo=UTC)
 
 
 def _database_url() -> str:
@@ -189,6 +190,82 @@ def test_writer_sets_fetched_at_and_uses_fetcher_source_timestamp(
 
     assert row == (FETCHED_AT, result.source_timestamp)
     assert row[0] != row[1]
+
+
+@pytest.mark.integration
+def test_existing_call_pattern_writes_null_reference_period_and_published_at(
+    postgres: psycopg.Connection[tuple[object, ...]],
+    definition: IndicatorDefinition,
+) -> None:
+    row_id = persist_datapoint(
+        postgres,
+        definition=definition,
+        asset="BTC",
+        measured_on="BTC",
+        result=Ok(value=42.5, source_timestamp=SOURCE_TIMESTAMP),
+    )
+
+    row = postgres.execute(
+        "select reference_period, published_at from datapoints where id = %s",
+        (row_id,),
+    ).fetchone()
+
+    assert row == (None, None)
+
+
+@pytest.mark.integration
+def test_reference_period_and_published_at_are_written_when_provided(
+    postgres: psycopg.Connection[tuple[object, ...]],
+    definition: IndicatorDefinition,
+) -> None:
+    row_id = persist_datapoint(
+        postgres,
+        definition=definition,
+        asset="BTC",
+        measured_on="BTC",
+        result=Ok(value=42.5, source_timestamp=SOURCE_TIMESTAMP),
+        reference_period="2026-08",
+        published_at=PUBLISHED_AT,
+    )
+
+    row = postgres.execute(
+        "select reference_period, published_at from datapoints where id = %s",
+        (row_id,),
+    ).fetchone()
+
+    assert row == ("2026-08", PUBLISHED_AT)
+
+
+@pytest.mark.integration
+@pytest.mark.parametrize(
+    ("reference_period", "published_at"),
+    (
+        ("2026-08", None),
+        (None, PUBLISHED_AT),
+    ),
+)
+def test_reference_period_and_published_at_are_independently_nullable(
+    postgres: psycopg.Connection[tuple[object, ...]],
+    definition: IndicatorDefinition,
+    reference_period: str | None,
+    published_at: datetime | None,
+) -> None:
+    row_id = persist_datapoint(
+        postgres,
+        definition=definition,
+        asset="BTC",
+        measured_on="BTC",
+        result=Ok(value=42.5, source_timestamp=SOURCE_TIMESTAMP),
+        reference_period=reference_period,
+        published_at=published_at,
+    )
+
+    row = postgres.execute(
+        "select reference_period, published_at from datapoints where id = %s",
+        (row_id,),
+    ).fetchone()
+
+    assert row == (reference_period, published_at)
 
 
 def test_future_source_timestamp_is_rejected_before_reaching_database(
