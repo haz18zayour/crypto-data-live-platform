@@ -32,9 +32,9 @@ open prds/PRD-005-dashboard/20-decisions.yaml
 | PRD-005-dashboard | 9 | 9 | **all green** |
 | PRD-006-derivatives | 7 | 7 | **all green** |
 | PRD-007-onchain | 8 | 8 | **all green** |
-| PRD-012-cadence-split | 6 | 3 | 3/6 |
+| PRD-012-cadence-split | 6 | 5 | 5/6 |
 
-Spend to date: **$79.48** Claude · **196855k** Codex tokens.
+Spend to date: **$80.52** Claude · **198025k** Codex tokens.
 
 ## What happened
 
@@ -606,6 +606,12 @@ Spend to date: **$79.48** Claude · **196855k** Codex tokens.
 - 11:20  US-1204 started, attempt 3 (codex)
 - 11:24  US-1204 — codex finished `c8e5c534` · 1855k tok
 - 11:24  US-1204 **rejected** — 0/6 criteria, judged by claude
+- 11:24  ⏸ **gate opened** — US-1204 has failed 3 times — is the story wrong?
+- 11:52  US-1204 **PASSED** — 6/6 criteria, judged by human
+- 11:52  ▶ gate answered **skip** — All 3 attempts were blocked by a poisoned local .tmp/pytest directory (fixed, unrelated to this story). Real evidence obtained: dispatched run https://github.com/haz18zayour/crypto-data-live-platform/actions/runs/36316892830 succeeded in 1m46s, and the missing HEALTHCHECK_URL_INGEST_FAST/MEDIUM secrets (a real, separate gap this override caught) are now provisioned. See verdict.json overrideReason.
+- 11:58  US-1205 started, attempt 1 (codex)
+- 12:01  US-1205 — codex finished `e44866e0` · 1170k tok
+- 12:02  US-1205 **PASSED** — 5/5 criteria, judged by claude · $1.04
 
 <!-- uf:generated:end -->
 

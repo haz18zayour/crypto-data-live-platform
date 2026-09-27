@@ -4,7 +4,7 @@ import inspect
 import math
 import os
 from collections.abc import Iterator
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Any, Self
 from uuid import uuid4
@@ -41,6 +41,11 @@ ENV_FILE = MIGRATIONS.parents[1] / ".env.local"
 DATABASE_URL = "postgresql://example.test/app"
 HEARTBEAT_URL = "https://hc-ping.com/check-id"
 SOURCE_TIMESTAMP = datetime(2026, 9, 10, tzinfo=UTC)
+
+
+@pytest.fixture(autouse=True)
+def freeze_pipeline_freshness_clock(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(pipeline, "_utc_now", lambda: SOURCE_TIMESTAMP)
 
 
 def _database_url() -> str:
@@ -356,6 +361,115 @@ def test_tier_runs_union_to_the_scheduled_registry_without_duplicates(
         if definition.key != pipeline.SOL_ACTIVE_ADDRESSES_KEY
     }
     assert len(flattened) == len(set(flattened)) == 70
+
+
+def test_adversarial_fast_tier_missed_window_reads_stale_within_450_seconds(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    read_at = SOURCE_TIMESTAMP + timedelta(seconds=451)
+    persisted: dict[str, Result] = {}
+
+    def fetch_open_interest(asset: str) -> OpenInterestResult:
+        source_timestamp = (
+            read_at - timedelta(seconds=451)
+            if asset == "BTC"
+            else read_at - timedelta(seconds=1)
+        )
+        return OpenInterestOk(value=1_000_000.0, source_timestamp=source_timestamp)
+
+    def fetch_long_short_ratio(asset: str) -> LongShortRatioResult:
+        return LongShortRatioOk(
+            value=1.1, source_timestamp=read_at - timedelta(seconds=1)
+        )
+
+    def fetch_taker_ratio(asset: str) -> TakerRatioResult:
+        return TakerRatioOk(value=1.1, source_timestamp=read_at - timedelta(seconds=1))
+
+    def record_datapoint(
+        connection: object,
+        *,
+        definition: IndicatorDefinition,
+        asset: str,
+        measured_on: str,
+        result: Result,
+    ) -> int:
+        persisted[definition.key] = result
+        return len(persisted)
+
+    monkeypatch.setattr(pipeline, "_utc_now", lambda: read_at)
+    monkeypatch.setattr(pipeline, "persist_datapoint", record_datapoint)
+
+    row_ids = run_pipeline(
+        object(),  # type: ignore[arg-type]
+        fetcher=lambda: run_all_assets(
+            tier="fast",
+            fetch_open_interest=fetch_open_interest,
+            fetch_long_short_ratio=fetch_long_short_ratio,
+            fetch_taker_ratio=fetch_taker_ratio,
+        ),
+    )
+
+    definition = next(
+        entry for entry in load_registry().root if entry.key == "btc_open_interest"
+    )
+    affected = persisted["btc_open_interest"]
+    assert definition.expected_update_interval_seconds == 300
+    assert definition.freshness_warn_seconds == 450
+    assert definition.freshness_stale_seconds == 600
+    assert len(row_ids) == 12
+    assert isinstance(affected, Stale)
+    assert affected.source_timestamp == read_at - timedelta(seconds=451)
+    assert persisted["eth_open_interest"].status == "OK"
+    assert persisted["btc_long_short_ratio"].status == "OK"
+    assert persisted["btc_taker_ratio"].status == "OK"
+
+
+def test_adversarial_full_cycle_reconciles_all_71_registry_rows_once_each(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    persisted_by_run: dict[str, list[str]] = {
+        "fast": [],
+        "medium": [],
+        "daily": [],
+        "sol_active_addresses": [],
+    }
+    active_run = ""
+
+    def record_datapoint(
+        connection: object,
+        *,
+        definition: IndicatorDefinition,
+        asset: str,
+        measured_on: str,
+        result: Result,
+    ) -> int:
+        persisted_by_run[active_run].append(definition.key)
+        return sum(len(keys) for keys in persisted_by_run.values())
+
+    monkeypatch.setattr(pipeline, "persist_datapoint", record_datapoint)
+
+    for tier in ("fast", "medium", "daily"):
+        active_run = tier
+        run_pipeline(  # type: ignore[arg-type]
+            object(), fetcher=lambda tier=tier: _tier_board(tier)
+        )
+    active_run = "sol_active_addresses"
+    run_pipeline(  # type: ignore[arg-type]
+        object(), fetcher=run_sol_active_addresses
+    )
+
+    flattened = [
+        key for persisted in persisted_by_run.values() for key in persisted
+    ]
+    assert len(_board_definitions()) == 71
+    assert len(persisted_by_run["fast"]) == 12
+    assert len(persisted_by_run["medium"]) == 4
+    assert len(persisted_by_run["daily"]) == 54
+    assert persisted_by_run["sol_active_addresses"] == [
+        pipeline.SOL_ACTIVE_ADDRESSES_KEY
+    ]
+    assert set(flattened) == {definition.key for definition in _board_definitions()}
+    assert len(flattened) == len(set(flattened)) == 71
 
 
 def test_scheduled_daily_tier_keeps_existing_sol_active_addresses_exclusion(

@@ -36,7 +36,7 @@ from ingest.registry import (
     IndicatorDefinition,
     load_registry,
 )
-from ingest.status import Error, Ok, Reason, Result, Unavailable
+from ingest.status import Error, Ok, Reason, Result, Stale, Unavailable
 
 type Venue = Literal["okx", "coinbase"]
 type HistoryStatus = Literal["AVAILABLE", "UNCORROBORATED"]
@@ -62,6 +62,10 @@ _HISTORY_NOTE = re.compile(
     r"coinbase (?P<coinbase_kind>at least|exactly) "
     r"(?P<coinbase_bars>\d+) daily bars\.$"
 )
+
+
+def _utc_now() -> datetime:
+    return datetime.now(UTC)
 
 
 @dataclass(frozen=True, slots=True)
@@ -602,6 +606,15 @@ def persist_board(
             persisted_result = Ok(result.value, result.source_timestamp)
         else:
             persisted_result = result
+        if (
+            isinstance(persisted_result, Ok)
+            and (_utc_now() - persisted_result.source_timestamp).total_seconds()
+            > definition.freshness_warn_seconds
+        ):
+            persisted_result = Stale(
+                persisted_result.value,
+                persisted_result.source_timestamp,
+            )
 
         row_ids.append(
             persist_datapoint(
