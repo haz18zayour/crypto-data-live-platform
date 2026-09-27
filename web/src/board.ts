@@ -56,6 +56,9 @@ export function buildBoard(
   const notDefinableByCell = new Map<string, string>();
   for (const definition of definitions) {
     for (const asset of definition.definable_for) {
+      if (!assets.includes(asset)) {
+        continue;
+      }
       const family = familyOf(definition.key, asset);
       families.add(family);
       definitionsByCell.set(`${family}:${asset}`, definition);

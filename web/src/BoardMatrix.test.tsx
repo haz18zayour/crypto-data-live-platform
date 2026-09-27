@@ -18,6 +18,10 @@ import { definitions } from "./registry";
 const NOW = new Date("2026-09-14T00:01:00Z");
 const emptyResponseBoard = buildBoard(definitions, [], BOARD_ASSETS);
 const CELL_COUNT = mixedBoard.cells.length;
+const boardAssetSet: ReadonlySet<string> = new Set(BOARD_ASSETS);
+const boardDefinitions = definitions.filter((definition) =>
+  definition.definable_for.some((asset) => boardAssetSet.has(asset)),
+);
 
 function renderMatrix(board: BoardModel) {
   render(<BoardMatrix board={board} now={NOW} />);
@@ -204,7 +208,7 @@ describe("completeness matrix", () => {
     ]);
     expect(
       screen.getAllByRole("cell").filter((cell) => faceClass(cell) === "cell--ok"),
-    ).toHaveLength(definitions.length);
+    ).toHaveLength(boardDefinitions.length);
   });
 
   test("rendering the mixed fixture produces all six faces at once", () => {

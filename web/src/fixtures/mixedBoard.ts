@@ -21,10 +21,14 @@ type FixtureRegistryEntry = BoardRegistryEntry & {
 };
 
 const registry = parse(registryYaml) as FixtureRegistryEntry[];
+const boardAssetSet: ReadonlySet<string> = new Set(BOARD_ASSETS);
 const SOURCE_TIMESTAMP = "2026-09-13T00:00:00Z";
 
 const rows = registry.flatMap((definition, index): Datapoint[] => {
   const asset = definition.definable_for[0];
+  if (!boardAssetSet.has(asset)) {
+    return [];
+  }
   const provenance = {
     indicatorKey: definition.key,
     asset,

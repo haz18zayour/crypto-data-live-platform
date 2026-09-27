@@ -146,6 +146,17 @@ describe("buildBoard", () => {
     );
   });
 
+  test("registry entries for assets outside this board are left for their own panel", () => {
+    const board = buildBoard(
+      [{ key: "fred_vixcls", definable_for: ["MACRO"] }],
+      [],
+      BOARD_ASSETS,
+    );
+
+    expect(board.families).toEqual([]);
+    expect(board.cells).toEqual([]);
+  });
+
   test("a cell whose registry entry exists but whose board row is missing is also NOT_FETCHED", () => {
     const board = buildBoard(registry, [], BOARD_ASSETS);
     const registeredButMissing = board.cells.find(
