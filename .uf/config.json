@@ -21,7 +21,7 @@
       },
       {
         "name": "test",
-        "run": "node -e \"const f=require('fs'),c=require('child_process');let r=0;const run=(cmd)=>{try{c.execSync(cmd,{stdio:'inherit'})}catch(e){r=1}};if(f.existsSync('web/package.json'))run('npm --prefix web test');if(f.existsSync('tests'))run('uv run pytest -q');process.exit(r)\""
+        "run": "node -e \"const f=require('fs'),c=require('child_process'),p=require('path');const tmp=p.join(process.cwd(),'.tmp','systemtemp');f.mkdirSync(tmp,{recursive:true});const env={...process.env,TEMP:tmp,TMP:tmp};let r=0;const run=(cmd)=>{try{c.execSync(cmd,{stdio:'inherit',env})}catch(e){r=1}};if(f.existsSync('web/package.json'))run('npm --prefix web test');if(f.existsSync('tests'))run('uv run pytest -q');process.exit(r)\""
       }
     ],
     "requireCi": false

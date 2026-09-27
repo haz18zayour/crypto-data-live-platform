@@ -1,3 +1,13 @@
-pyproject.toml                        | 2 +-
-tests/test_okx_derivatives_fetcher.py | 1 +
-2 files changed, 2 insertions(+), 1 deletion(-)
+.uf/config.json                                    |   2 +-
+ .uf/events.ndjson                                  |   6 ++
+ SESSION.md                                         |  13 ++-
+ ingest/pipeline.py                                 |  15 ++-
+ .../50-evidence/US-1206/attempt-2-evidence.md      |  48 +++++++++
+ .../c3-canary-collect-schedule-independence.md     |  23 ++++
+ .../50-evidence/US-1206/diffstat.txt               |   3 +
+ .../50-evidence/US-1206/gates.json                 |  14 +++
+ .../50-evidence/US-1206/verdict.json               |  29 ++++++
+ pyproject.toml                                     |   2 +-
+ tests/test_okx_derivatives_fetcher.py              |   1 +
+ tests/test_persist_board.py                        | 116 ++++++++++++++++++++-
+ 12 files changed, 266 insertions(+), 6 deletions(-)
