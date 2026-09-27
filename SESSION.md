@@ -32,10 +32,10 @@ open prds/PRD-005-dashboard/20-decisions.yaml
 | PRD-005-dashboard | 9 | 9 | **all green** |
 | PRD-006-derivatives | 7 | 7 | **all green** |
 | PRD-007-onchain | 8 | 8 | **all green** |
-| PRD-008-macro-flows | 8 | 2 | 2/8 |
+| PRD-008-macro-flows | 8 | 3 | 3/8 |
 | PRD-012-cadence-split | 6 | 6 | **all green** |
 
-Spend to date: **$82.77** Claude · **214395k** Codex tokens.
+Spend to date: **$82.77** Claude · **216172k** Codex tokens.
 
 ## What happened
 
@@ -663,6 +663,18 @@ Spend to date: **$82.77** Claude · **214395k** Codex tokens.
 - 21:19  US-803 started, attempt 3 (codex)
 - 21:26  US-803 — codex finished `e7845c89` · 1797k tok
 - 21:56  US-803 **rejected** — 0/6 criteria, judged by claude
+- 21:56  ⏸ **gate opened** — US-803 has failed 3 times — is the story wrong?
+
+### 2026-09-28
+
+- 01:15  US-803 **PASSED** — 6/6 criteria, judged by human
+- 01:15  ▶ gate answered **skip** — Real architecture gap: board model had no representation for market-wide data. Owner decided (via AskUserQuestion) on a 5th MACRO pseudo-asset column. Implemented: BOARD_ASSETS extended, registry keys renamed fred_*->macro_*, hardcoded board-cell-count tests updated to new real totals. See verdict.json overrideReason.
+
+### 2026-09-27
+
+- 22:10  US-804 started, attempt 1 (codex)
+- 22:15  US-804 — codex finished `fdf0ee2f` · 1777k tok
+- 22:45  US-804 **rejected** — 0/9 criteria, judged by claude
 
 <!-- uf:generated:end -->
 

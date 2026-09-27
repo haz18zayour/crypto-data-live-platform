@@ -43,11 +43,11 @@ describe("coverage headline", () => {
 
   test("the mixed fixture reports every state separately", () => {
     expect(countCoverage(mixedBoard)).toEqual({
-      total: 135,
-      ok: 74,
+      total: 140,
+      ok: 75,
       stale: 1,
-      unavailable: 49,
-      notDefinable: 9,
+      unavailable: 52,
+      notDefinable: 10,
       paywalled: 1,
       fetchFailed: 1,
     });
@@ -65,7 +65,7 @@ describe("coverage headline", () => {
     render(<CoverageHeadline board={mixedBoard} />);
 
     const status = screen.getByRole("status");
-    expect(status).toHaveTextContent("9 not definable");
+    expect(status).toHaveTextContent("10 not definable");
     expect(status).toHaveTextContent("1 paywalled");
     expect(status).toHaveTextContent("1 fetch failed");
     expect(status).not.toHaveTextContent(/5 (missing|unavailable)/i);
@@ -94,7 +94,7 @@ describe("coverage headline", () => {
     expect(statuses).toHaveLength(1);
     expect(statuses[0]).toHaveAttribute("aria-atomic", "true");
     expect(statuses[0]).toHaveTextContent(
-      "74 of 135 indicators OK · 1 stale · 49 unavailable 9 not definable · 1 paywalled · 1 fetch failed",
+      "75 of 140 indicators OK · 1 stale · 52 unavailable 10 not definable · 1 paywalled · 1 fetch failed",
     );
     expect(statuses[0]).toHaveStyle({ fontVariantNumeric: "tabular-nums" });
   });

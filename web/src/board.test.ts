@@ -44,7 +44,7 @@ describe("buildBoard", () => {
   test("the board model built from the parsed registry and the four assets yields one cell per family and asset", () => {
     const board = buildBoard(registry, [], BOARD_ASSETS);
 
-    expect(board.families).toHaveLength(27);
+    expect(board.families).toHaveLength(28);
     expect(board.assets).toHaveLength(5);
     expect(board.cells).toHaveLength(
       board.families.length * board.assets.length,
@@ -146,6 +146,33 @@ describe("buildBoard", () => {
     expect(() => buildBoard(malformedRegistry, [], BOARD_ASSETS)).toThrow(
       /btc_daily_close.*bnb_/,
     );
+  });
+
+  test("a shared registry key with no asset prefix can define the same family for multiple assets", () => {
+    const sharedRegistry: BoardRegistryEntry[] = [
+      { key: "spot_etf_net_flow", definable_for: ["BTC", "ETH", "SOL"] },
+    ];
+    const rows = [
+      {
+        ...provenance("spot_etf_net_flow", "ETH"),
+        status: "OK",
+        value: 0,
+      },
+    ] satisfies Datapoint[];
+
+    const board = buildBoard(sharedRegistry, rows, BOARD_ASSETS);
+    const cellsByAsset = Object.fromEntries(
+      board.cells.map((cell) => [cell.asset, cell]),
+    );
+
+    expect(board.families).toEqual(["spot_etf_net_flow"]);
+    expect(cellsByAsset.BTC.indicatorKey).toBe("spot_etf_net_flow");
+    expect(cellsByAsset.ETH.state).toEqual(rows[0]);
+    expect(cellsByAsset.SOL.indicatorKey).toBe("spot_etf_net_flow");
+    expect(cellsByAsset.BNB.state).toEqual({
+      status: "UNAVAILABLE",
+      reason: "NOT_FETCHED",
+    });
   });
 
   test("a cell whose registry entry exists but whose board row is missing is also NOT_FETCHED", () => {

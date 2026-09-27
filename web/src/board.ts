@@ -39,14 +39,23 @@ export type BoardModel = {
 
 // The strip is asserted, never defaulted: a key that does not begin with its own asset would
 // otherwise be filed quietly under the wrong row.
-function familyOf(key: string, asset: string): string {
+function familyOf(key: string, asset: string, assets: readonly string[]): string {
   const prefix = `${asset.toLowerCase()}_`;
-  if (!key.startsWith(prefix)) {
+  if (key.startsWith(prefix)) {
+    return key.slice(prefix.length);
+  }
+
+  const otherAssetPrefix = assets
+    .filter((candidate) => candidate !== asset)
+    .map((candidate) => `${candidate.toLowerCase()}_`)
+    .find((candidate) => key.startsWith(candidate));
+  if (otherAssetPrefix !== undefined) {
     throw new Error(
       `Registry key ${key} does not begin with its asset prefix ${prefix}`,
     );
   }
-  return key.slice(prefix.length);
+
+  return key;
 }
 
 export function buildBoard(
@@ -62,7 +71,7 @@ export function buildBoard(
       if (!assets.includes(asset)) {
         continue;
       }
-      const family = familyOf(definition.key, asset);
+      const family = familyOf(definition.key, asset, assets);
       families.add(family);
       definitionsByCell.set(`${family}:${asset}`, definition);
       const notDefinable = definition.not_definable;
