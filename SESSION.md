@@ -35,7 +35,7 @@ open prds/PRD-005-dashboard/20-decisions.yaml
 | PRD-008-macro-flows | 8 | 1 | 1/8 |
 | PRD-012-cadence-split | 6 | 6 | **all green** |
 
-Spend to date: **$82.77** Claude · **207547k** Codex tokens.
+Spend to date: **$82.77** Claude · **208119k** Codex tokens.
 
 ## What happened
 
@@ -645,6 +645,9 @@ Spend to date: **$82.77** Claude · **207547k** Codex tokens.
 - 18:38  US-802 started, attempt 1 (codex)
 - 18:43  US-802 — codex finished `4ff8de75` · 1538k tok
 - 19:13  US-802 **rejected** — 0/7 criteria, judged by claude
+- 19:13  US-802 started, attempt 2 (codex)
+- 19:16  US-802 — codex finished `eda67269` · 573k tok
+- 19:46  US-802 **rejected** — 0/7 criteria, judged by claude
 
 <!-- uf:generated:end -->
 
