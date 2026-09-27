@@ -30,7 +30,7 @@ markers = ["integration: touches a live third-party endpoint"]
 # running all nine together throttles both venues:
 # measured 4h03m with 5 failures, versus 53s for the 175 offline tests. Deselected by
 # default so local feedback stays usable; CI runs them in a separate step.
-addopts = ["-m", "not integration", "--basetemp=.tmp/pytest", "-p", "no:cacheprovider"]
+addopts = ["-m", "not integration", "--basetemp=.tmp/pytest2", "-p", "no:cacheprovider"]
 
 [tool.ruff]
 target-version = "py312"
