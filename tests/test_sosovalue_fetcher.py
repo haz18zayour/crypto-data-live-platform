@@ -60,6 +60,28 @@ def test_fetcher_authenticates_with_configured_sosovalue_header(symbol: str) -> 
     assert request.url.params["country_code"] == "US"
 
 
+def test_fetcher_reads_sosovalue_token_from_environment_header(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    requests: list[httpx.Request] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        requests.append(request)
+        return httpx.Response(
+            200,
+            json=sosovalue_payload([summary_row()]),
+            request=request,
+        )
+
+    monkeypatch.setenv("SOSOVALUE_API_KEY", "env-token")
+
+    with httpx.Client(transport=httpx.MockTransport(handler)) as client:
+        result = fetch_etf_net_flow("BTC", client=client)
+
+    assert isinstance(result, SosoValueEtfFlowOk)
+    assert requests[0].headers["x-soso-api-key"] == "env-token"
+
+
 @pytest.mark.parametrize("symbol", ("BTC", "ETH", "SOL"))
 def test_btc_eth_and_sol_return_real_decimal_net_flow_values(symbol: str) -> None:
     payload = sosovalue_payload(
