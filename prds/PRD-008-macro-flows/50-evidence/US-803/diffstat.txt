@@ -1,0 +1,10 @@
+.uf/events.ndjson                            |   2 +
+ SESSION.md                                   |   5 +-
+ ingest/canary.py                             |   2 +
+ ingest/registry.py                           |   2 +-
+ ingest/registry.yaml                         |  98 +++++++++++++++++++
+ tests/fixtures/fred_series_observations.json |  22 +++++
+ tests/test_coverage.py                       |   2 +-
+ tests/test_registry.py                       | 138 +++++++++++++++++++++++++--
+ tests/test_registry_not_definable.py         |   4 +-
+ 9 files changed, 261 insertions(+), 14 deletions(-)
