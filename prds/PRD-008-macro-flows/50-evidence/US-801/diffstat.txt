@@ -1,0 +1,6 @@
+.uf/events.ndjson                                  |  2 +
+ ingest/persist.py                                  | 18 ++++-
+ ...datapoint_reference_period_and_published_at.sql | 50 ++++++++++++++
+ supabase/migrations/checksums.sha256               |  1 +
+ tests/test_persist.py                              | 77 ++++++++++++++++++++++
+ 5 files changed, 145 insertions(+), 3 deletions(-)
