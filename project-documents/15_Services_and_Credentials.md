@@ -19,8 +19,8 @@ Sourced from `research/R0`–`R8`, plus the US-011 reachability measurement. **v
 | GitHub | repo, Actions scheduling, `gh` for the verifier's CI check | `gh auth login` (already done) | 2,000 Actions min/mo (private repo) | **READY** — repo exists, `gh` authenticated |
 | Cloudflare | Pages hosting **+ Access (Zero Trust)** for single-user auth | `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID` | yes — Access free up to 50 users | **N/A until PRD-011** — deployment deferred; the page runs on localhost and the data path is already in production |
 | Supabase | Postgres for `datapoints` | `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` (ingest only), `VITE_SUPABASE_ANON_KEY` (browser), `DATABASE_URL` | 500 MB DB, 5 GB egress | **READY** — project `jsfyvxzuvxdnqhrqloux`, PostgreSQL 17.6, session pooler (direct is IPv6-only without the paid add-on). Migration applied, all three CHECK constraints proven live |
-| Healthchecks.io | **dead-man's-switch** — alerts on job *silence*. The single highest value-per-effort defence (R5 §1) | `HEALTHCHECKS_PING_URL` | 20 checks | **READY** — check `crypto-data-ingest` receiving pings from the GitHub runner; DOWN-on-silence email verified by the owner 2026-09-09 |
-| cron-job.org | independent second trigger via `repository_dispatch`, offset from the GH Actions cron | `GH_DISPATCH_PAT` (fine-grained, this repo, Actions: R/W) | yes | **N/A until PRD-012** — the split-cadence PRD decides whether a second trigger is still wanted alongside the 6h canary |
+| Healthchecks.io | **dead-man's-switch** — alerts on job *silence*. The single highest value-per-effort defence (R5 §1) | `HEALTHCHECKS_PING_URL`; `HEALTHCHECK_URL_INGEST_MEDIUM`; `HEALTHCHECK_URL_INGEST_FAST` | 20 checks | **READY / PRD-012 provisioning required** — check `crypto-data-ingest` receiving pings from the GitHub runner; DOWN-on-silence email verified by the owner 2026-09-09. PRD-012 adds dedicated medium and fast tier checks; `HEALTHCHECK_URL_INGEST_FAST` must be distinct from `HEALTHCHECKS_PING_URL`, `HEALTHCHECK_URL_INGEST_MEDIUM`, and `HEALTHCHECK_URL_CONTRACT_CANARY` |
+| cron-job.org | independent 5-minute trigger for `.github/workflows/ingest-fast.yml` via `repository_dispatch` type `ingest-fast` | `GH_DISPATCH_PAT` (fine-grained, this repo, Actions: R/W) | yes | **PRD-012 provisioning required** — create one cron-job.org job firing every 5 minutes at GitHub's repository dispatch endpoint with `event_type: ingest-fast`; the fast tier intentionally has no GitHub Actions `schedule:` trigger |
 
 > `SUPABASE_SERVICE_ROLE_KEY` bypasses RLS. It must never reach the client bundle or any
 > `VITE_`-prefixed variable. Any story touching it is blast-radius and needs gate G4.
@@ -81,8 +81,10 @@ multi-user — per the G1 out-of-scope list.
 - [ ] Cloudflare account + Access policy restricted to `zayourhassan.1@gmail.com`
 - [ ] Supabase project created; anon key and service-role key noted separately
 - [ ] Healthchecks.io check created; ping URL saved
+- [ ] Healthchecks.io fast-tier check created; `HEALTHCHECK_URL_INGEST_FAST` saved as a GitHub Actions secret and confirmed distinct from every other check URL
 - [ ] `FRED_API_KEY` issued
 - [ ] `GH_DISPATCH_PAT` fine-grained, this repo only, `Actions: Read and write`, expiry recorded
+- [ ] cron-job.org job created for `repository_dispatch` event type `ingest-fast`, running every 5 minutes with `GH_DISPATCH_PAT`
 - [ ] every `TODO` above resolved or explicitly marked `N/A`
 - [ ] `uf doctor` clean
 
