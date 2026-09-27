@@ -334,6 +334,7 @@ def test_persisted_funding_datapoint_source_field_names_derived_interval(
         return len(persisted)
 
     monkeypatch.setattr(pipeline, "persist_datapoint", record_datapoint)
+    monkeypatch.setattr(pipeline, "_utc_now", lambda: NOW)
     pipeline.persist_board(
         object(),  # type: ignore[arg-type]
         pipeline.FullAssetRun(indicators={"btc_funding_rate": result}, history={}),

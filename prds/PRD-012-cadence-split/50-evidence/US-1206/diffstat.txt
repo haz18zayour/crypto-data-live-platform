@@ -1,6 +1,3 @@
-.uf/events.ndjson                                  |   3 +
- SESSION.md                                         |  10 +-
- ingest/pipeline.py                                 |  15 ++-
- .../c3-canary-collect-schedule-independence.md     |  23 ++++
- tests/test_persist_board.py                        | 116 ++++++++++++++++++++-
- 5 files changed, 163 insertions(+), 4 deletions(-)
+pyproject.toml                        | 2 +-
+tests/test_okx_derivatives_fetcher.py | 1 +
+2 files changed, 2 insertions(+), 1 deletion(-)
