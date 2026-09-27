@@ -32,9 +32,10 @@ open prds/PRD-005-dashboard/20-decisions.yaml
 | PRD-005-dashboard | 9 | 9 | **all green** |
 | PRD-006-derivatives | 7 | 7 | **all green** |
 | PRD-007-onchain | 8 | 8 | **all green** |
-| PRD-012-cadence-split | 6 | 5 | 5/6 |
+| PRD-008-macro-flows | 8 | 0 | 0/8 |
+| PRD-012-cadence-split | 6 | 6 | **all green** |
 
-Spend to date: **$80.52** Claude · **201164k** Codex tokens.
+Spend to date: **$82.77** Claude · **203158k** Codex tokens.
 
 ## What happened
 
@@ -618,6 +619,20 @@ Spend to date: **$80.52** Claude · **201164k** Codex tokens.
 - 12:21  US-1206 started, attempt 2 (codex)
 - 12:33  US-1206 — codex finished `b8bfc3b5` · 1715k tok
 - 12:48  US-1206 **rejected** — 0/3 criteria, judged by claude
+- 12:48  US-1206 started, attempt 3 (codex)
+- 13:00  US-1206 — codex finished `23c648f5` · 1200k tok
+- 13:15  US-1206 **rejected** — 0/3 criteria, judged by claude
+- 13:15  ⏸ **gate opened** — US-1206 has failed 3 times — is the story wrong?
+- 13:22  US-1206 **awaiting your judgement** — 2/3 criteria, judged by human
+- 13:22  ▶ gate answered **skip** — All 3 attempts failed on a poisoned pytest-of-user directory unrelated to this story (fixed). Verified both test-based criteria directly - both pass. Remaining [human] criterion opens G6_HUMAN-c5a6fc3d instead.
+- 13:22  ⏸ **gate opened** — US-1206: The demonstration item the acceptance protocol calls for, not a machine check
+- 13:34  ▶ gate answered **met** — Confirmed from real Healthchecks.io dashboard: crypto-data-ingest, ingest-medium, and ingest-fast each show as separate checks with their own distinct, recent last-ping timestamps and their own period/grace settings - not one shared heartbeat.
+- 13:34  👤 you judged US-1206 **met** — Confirmed from real Healthchecks.io dashboard: crypto-data-ingest, ingest-medium, and ingest-fast each show as separate checks with their own distinct, recent last-ping timestamps and their own period/grace settings - not one shared heartbeat.
+- 16:03  researched PRD-008-macro-flows — 24 sources · $2.25
+- 16:15  **PRD-008-macro-flows** compiled — 8 stories
+- 16:51  US-801 started, attempt 1 (codex)
+- 16:54  US-801 — codex finished `af424c24` · 794k tok
+- 17:24  US-801 **rejected** — 0/6 criteria, judged by claude
 
 <!-- uf:generated:end -->
 
