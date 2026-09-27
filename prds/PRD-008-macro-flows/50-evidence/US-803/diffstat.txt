@@ -1,13 +1,18 @@
-.uf/events.ndjson                                  |   5 +
- SESSION.md                                         |  13 +-
+.uf/events.ndjson                                  |   8 ++
+ SESSION.md                                         |  16 ++-
  ingest/canary.py                                   |   2 +
  ingest/registry.py                                 |   2 +-
  ingest/registry.yaml                               |  98 +++++++++++++++
- .../50-evidence/US-803/diffstat.txt                |  10 ++
+ .../50-evidence/US-803/diffstat.txt                |  13 ++
  .../50-evidence/US-803/gates.json                  |  20 +++
  .../50-evidence/US-803/verdict.json                |  44 +++++++
  tests/fixtures/fred_series_observations.json       |  22 ++++
  tests/test_coverage.py                             |   2 +-
  tests/test_registry.py                             | 138 +++++++++++++++++++--
  tests/test_registry_not_definable.py               |   4 +-
- 12 files changed, 345 insertions(+), 15 deletions(-)
+ web/src/BoardMatrix.test.tsx                       |   6 +-
+ web/src/board.test.ts                              |  11 ++
+ web/src/board.ts                                   |   3 +
+ web/src/fixtures/mixedBoard.test.ts                |  12 +-
+ web/src/fixtures/mixedBoard.ts                     |   4 +
+ 17 files changed, 385 insertions(+), 20 deletions(-)
