@@ -1,0 +1,6 @@
+.uf/events.ndjson          |   2 +
+ SESSION.md                 |   5 +-
+ ingest/fetchers/fred.py    | 197 ++++++++++++++++++++++++++++
+ ingest/schemas.py          |  31 +++++
+ tests/test_fred_fetcher.py | 315 +++++++++++++++++++++++++++++++++++++++++++++
+ 5 files changed, 549 insertions(+), 1 deletion(-)
