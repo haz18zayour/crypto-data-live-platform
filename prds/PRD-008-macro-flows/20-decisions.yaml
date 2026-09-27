@@ -1,0 +1,220 @@
+# GATE G1 — scope lock.
+#
+# Produced by /pre-prd-research interrogating you, then confirmed by you. The research
+# agent commits to a hypothesis for every question so you are correcting a draft rather
+# than answering a blank form: skim, override what is wrong, confirm the out-of-scope list.
+#
+# Anything you do NOT answer becomes an `assumptions:` row below — an explicit assumption
+# with a tripwire, never a silent guess. That is the whole point of this file.
+
+decisions:
+  - q: >
+      Which lag anchor goes on the cell face — a single "N days lag" number, or
+      something else?
+    hypothesis: >
+      Show the reference period ("Aug 2026") and the published date ("published
+      Sep 22") separately, reusing the referencePeriod/publishedAt pattern
+      already built in PRD-001's US-004 (web/src/datapoint.ts:16-17,
+      web/src/data.ts:255). Compute staleness from the published date against
+      each series' own release cadence (daily/weekly/monthly), never from the
+      observation frequency. Never show a single "N days lag" number, since
+      live-probing found the anchor choice alone swings M2's apparent lag
+      between 22 and 87 days depending on which date you measure from.
+    answer: Confirmed — reference period + published date, no single lag number. 2026-09-27.
+
+  - q: >
+      Which FRED rows ship in PRD-008?
+    hypothesis: >
+      Seven rows: VIXCLS, DFF, T10Y2Y, DFII10, DTWEXBGS, CPIAUCSL, M2SL —
+      spanning daily, weekly, and monthly release cadences, which is the whole
+      adversarial staleness-gradient case this PRD wants to demonstrate. Defer
+      SP500 (FRED carries only 10 years and S&P prohibits reproduction without
+      permission) and NASDAQCOM (dropped for symmetry with SP500), SOFR
+      (near-duplicate of DFF for display purposes), and FEDFUNDS (a monthly
+      average of DFF, redundant with it on this board).
+    answer: Confirmed — the seven named rows, SP500/NASDAQCOM/SOFR/FEDFUNDS deferred. 2026-09-27.
+
+  - q: >
+      ETF flows — which assets, given SoSoValue's API enum does not include BNB?
+    hypothesis: >
+      BTC, ETH, SOL (US-listed), all present in SoSoValue's asset enum. BNB
+      renders NOT_DEFINABLE with the reason "not offered by SoSoValue's API" —
+      a settled absence, not a gap, matching the project's established
+      per-asset-honesty pattern from PRD-006/007. If a BNB spot ETF's flow data
+      is ever wanted, that reopens the sourcing question for a future PRD, not
+      this one (SoSoValue's own website has a us-bnb-spot page per search, but
+      it wasn't in the fetched API's symbol list — pursuing it now would mean
+      an unverified scrape, the exact failure mode already rejected for
+      Farside).
+    answer: Confirmed — BTC/ETH/SOL from SoSoValue, BNB NOT_DEFINABLE. 2026-09-27.
+
+  - q: >
+      Stablecoin supply — per-chain or a global total, and which chains?
+    hypothesis: >
+      Per-chain peggedUSD for Ethereum, Solana, BSC only. BTC's stablecoin-
+      supply cell is NOT_DEFINABLE ("no stablecoin supply tracked on
+      Bitcoin" — confirmed live, DefiLlama's /stablecoinchains has no Bitcoin
+      entry at all). No global total row: a global total would be dominated by
+      Tron (~$94B), a chain this board doesn't otherwise track, and showing it
+      without that context invites misreading the number as relevant to the
+      four tracked assets.
+    answer: Confirmed — per-chain ETH/SOL/BSC only, BTC NOT_DEFINABLE, no global total. 2026-09-27.
+
+  - q: >
+      Does BTC dominance ship in this PRD?
+    hypothesis: >
+      No. Defer to a later PRD, or omit permanently. It needs a new
+      CoinGecko key and a UI attribution requirement neither named in the
+      roadmap line for PRD-008, it is methodology-sensitive (whether
+      stablecoins count inside "total crypto market cap" swings the printed
+      number by an estimated 6-8 points per R4), and alternative.me's Fear &
+      Greed composite already folds BTC dominance in at a 10% weight — shipping
+      a standalone dominance row alongside F&G edges toward the same
+      "counted twice" category-collapse this project has already identified
+      and removed once.
+    answer: Confirmed — dominance out of scope for PRD-008. 2026-09-27.
+
+  - q: >
+      Which cadence tier (per PRD-012's fast/medium/daily split) do PRD-008's
+      rows belong on?
+    hypothesis: >
+      All PRD-008 rows go on the daily/slow tier. Nothing here changes
+      intraday — FRED series are daily-slowest-to-monthly, ETF flows are T+1,
+      stablecoin supply and Fear & Greed update at most once a day
+      meaningfully. Putting ETF rows on PRD-012's fast (5-minute) tier would
+      burn SoSoValue's 100,000-request monthly quota for zero new data, since
+      T+1 data does not change intraday.
+    answer: Confirmed — daily tier only. 2026-09-27.
+
+  - q: >
+      Do the seven FRED rows need a second, corroborating source?
+    hypothesis: >
+      No — ship uncorroborated. FRED mirrors the Federal Reserve Board/BLS
+      directly; fetching the same number from a second aggregator would check
+      a mirror against its origin (catching a transport bug, not a source
+      error), not provide genuine independent corroboration. Label the
+      uncorroborated note accordingly if this is ever revisited.
+    answer: Confirmed — uncorroborated, labeled as such. 2026-09-27.
+
+# The one field with no default.
+out_of_scope:
+  - No BTC dominance in this PRD — see decision above. Revisit only at a
+    future G1 with its own CoinGecko key, attribution UI element, and
+    single-provider-only rule (never blend CoinGecko and CoinMarketCap).
+  - No SP500, NASDAQCOM, SOFR, or FEDFUNDS rows — SP500/NASDAQCOM deferred on
+    licensing/history-depth grounds; SOFR/FEDFUNDS deferred as near-duplicates
+    of DFF already covering that display need.
+  - No BNB ETF-flow or stablecoin-supply cells — both settled NOT_DEFINABLE,
+    not a gap to fill by scraping an unofficial source.
+  - No global stablecoin-supply total — chain-dominated by an untracked asset
+    (Tron); per-chain only.
+  - No CoinMarketCap Fear & Greed Index — duplicate construct of
+    alternative.me's under a less-transparent methodology; the exact
+    "counted twice" failure this project has already identified and removed.
+  - No Google Trends, X/Twitter sentiment, Reddit sentiment, LunarCrush, or
+    Santiment real-time endpoints — R4's adversarial pass already ruled all
+    of these out (dead/paywalled/no-free-tier/no-validity-evidence); this
+    gate re-confirms rather than reopens that finding.
+  - No CME futures basis, exchange reserve aggregates, or Coinbase premium —
+    no free, keyless API exists for any of them (R4).
+  - No news headlines or accompanying sentiment scores (CryptoPanic,
+    Marketaux, NewsAPI) — not named in the roadmap line for this PRD.
+  - No new panel layout or UI work — PRD-005's board model already
+    generalized three times (PRD-006, PRD-007, PRD-012's monitoring); this is
+    the fourth data category, not new UI.
+  - No composite score, signal, or cross-indicator judgement — permanent,
+    project-wide.
+
+assumptions:
+  - claim: >
+      FRED's own error-handling semantics ("." for a missing observation,
+      realtime_start/realtime_end query parameters governing what counts as
+      "published") are used correctly: "." never becomes 0, and the
+      published-at date is derived from the real publication metadata
+      (output_type=4, fred/series last_updated, or release dates) rather than
+      from a naive realtime_start default that would stamp every row as
+      "published today."
+    tripwire: >
+      Research flagged this as UNVERIFIED pending a live probe. Before a
+      story commits to a specific field for "published date," confirm live
+      against a real FRED response which field actually carries the true
+      publication date — do not assume realtime_start behaves as expected
+      without checking.
+    acceptedBy: default
+
+  - claim: >
+      The existing FRED_API_KEY (shared with the crypto-investing-signals
+      project) is not rate-limited into failure by this PRD's own calls, and
+      a burst from that other project does not starve this board.
+    tripwire: >
+      FRED's 120 req/min limit is per-key, not per-project. Issue a
+      dedicated FRED_API_KEY for this product before this PRD ships (free,
+      instant self-serve) rather than sharing the existing one — a burst from
+      the other project would otherwise take every macro row on this board to
+      UNAVAILABLE and look like this project's own bug.
+    acceptedBy: default
+
+  - claim: >
+      A revision to a FRED value under the same observation date (e.g. a
+      seasonally-adjusted CPI restatement, or an M2 benchmark revision) is
+      shown as a revision, not silently overwritten or treated as
+      non-determinism by PRD-002's golden-file harness.
+    tripwire: >
+      Nobody has yet decided whether a revision is disclosed ("revised from
+      X") or swallowed by an upsert. Swallowing it is exactly the quiet
+      dishonesty this project exists to prevent — this must be decided
+      explicitly in 30-spec.md, not left as an accidental side effect of
+      however persist_datapoint happens to handle a same-date, different-value
+      write.
+    acceptedBy: default
+
+  - claim: >
+      SoSoValue's documented "only the most recent 1 month of history"
+      constraint and its separate "limit max 300" parameter do not
+      contradict each other in a way that silently truncates or duplicates
+      data.
+    tripwire: >
+      Research flagged this contradiction as UNVERIFIED. Live-probe the
+      actual response shape and date range returned before a story commits
+      to a specific backfill/pagination assumption.
+    acceptedBy: default
+
+  - claim: >
+      alternative.me's Fear & Greed attribution requirement, and the
+      "surveys 15%, currently paused" sub-weight, are both disclosed on the
+      cell's own face, not just in a code comment.
+    tripwire: >
+      Both are UI/copy requirements a verifier can grep for if written as
+      explicit acceptance criteria; if left implicit, they are easy to skip
+      entirely, and the F&G composite would ship without the disclosure
+      research and R4 both call load-bearing.
+    acceptedBy: default
+
+# Options the research agent surfaced, and which you picked.
+chosen_approach:
+  option: >
+    One generic FRED fetcher driven by a series registry (series_id, display
+    name, release cadence, reference-period semantics, disclosure text), plus
+    one thin fetcher each for SoSoValue, DefiLlama, and alternative.me.
+  because: >
+    Turns the brief's biggest scope question (which macro rows ship) into a
+    registry config change rather than a story-count decision — matching how
+    PRD-006/007 were built. Reuses the referencePeriod/publishedAt datapoint
+    shape PRD-001's US-004 already established, rather than inventing a
+    second "lag" field.
+  rejected:
+    - option: FRED v2 bulk pull by release (H.10, H.6, H.15, CPI)
+      because: >
+        Each release returns every series on it, most of which this board
+        discards; ties ingest to release IDs instead of series IDs for no
+        benefit outside a one-off backfill.
+    - option: Go to the originating publishers (NY Fed, BLS, Fed Board) instead of FRED
+      because: >
+        3-4 more integrations, formats, and possibly keys, all for numbers
+        FRED already mirrors reliably. Worth revisiting only as a later
+        transport cross-check, not as the primary source now.
+    - option: Scrape Farside for ETF flows
+      because: >
+        HTML-only, no official API, returned HTTP 403 to an automated fetch
+        in research — repeats the exact scrape fragility this project's own
+        history already identifies as a prior failure mode.
