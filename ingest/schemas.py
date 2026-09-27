@@ -343,3 +343,34 @@ class ValidatorsAppValidatorsResponse(RootModel[tuple[ValidatorsAppValidator, ..
     """The response contract for Validators.app's validators-list endpoint."""
 
     model_config = ConfigDict(frozen=True)
+
+
+class FredObservation(BaseModel):
+    """One observation row from FRED's series/observations endpoint."""
+
+    model_config = ConfigDict(extra="forbid", frozen=True)
+
+    realtime_start: StrictStr
+    realtime_end: StrictStr
+    date: StrictStr
+    value: StrictStr
+
+
+class FredSeriesObservationsResponse(BaseModel):
+    """The response contract for FRED's series/observations endpoint."""
+
+    model_config = ConfigDict(extra="forbid", frozen=True)
+
+    realtime_start: StrictStr
+    realtime_end: StrictStr
+    observation_start: StrictStr
+    observation_end: StrictStr
+    units: StrictStr
+    output_type: StrictInt
+    file_type: StrictStr
+    order_by: StrictStr
+    sort_order: StrictStr
+    count: StrictInt
+    offset: StrictInt
+    limit: StrictInt
+    observations: tuple[FredObservation, ...]
