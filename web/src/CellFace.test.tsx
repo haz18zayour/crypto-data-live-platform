@@ -127,6 +127,31 @@ describe("cell provenance", () => {
     expect(within(renderedCell).getByText("Published")).toBeVisible();
   });
 
+  test("the Fear and Greed cell face shows alternative.me composite and paused-survey disclosure", () => {
+    const sourceField =
+      "alternative.me Crypto Fear & Greed Index value; vendor's own six-weight composite: volatility 25%, momentum/volume 25%, social 15%, surveys 15% currently paused, dominance 10%, Google Trends 10%; attribution: Data provided by alternative.me";
+    const [renderedCell] = renderCells({
+      ...provenance,
+      indicatorKey: "fear_greed_index",
+      asset: "MACRO",
+      measuredOn: "MACRO",
+      sourceVendor: "alternative.me",
+      sourceField,
+      status: "OK",
+      value: 42,
+    });
+    const summary = renderedCell.querySelector("summary");
+
+    expect(summary).not.toBeNull();
+    expect(within(summary as HTMLElement).getByText("alternative.me")).toBeVisible();
+    expect(
+      within(summary as HTMLElement).getByText(/six-weight composite/),
+    ).toBeVisible();
+    expect(
+      within(summary as HTMLElement).getByText(/surveys 15% currently paused/),
+    ).toBeVisible();
+  });
+
   test("opening a cell reveals endpoint source field and fetch time", () => {
     const [renderedCell] = renderCells({
       ...provenance,

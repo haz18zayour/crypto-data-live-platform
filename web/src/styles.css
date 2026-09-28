@@ -244,6 +244,7 @@ h2 {
 .cell-provenance,
 .cell-reference-period,
 .cell-published-at,
+.cell-face-disclosure,
 .cell-reason,
 .cell-detail-cue {
   margin-top: 0.125rem;
@@ -254,8 +255,14 @@ h2 {
 .cell-provenance,
 .cell-reference-period,
 .cell-published-at,
+.cell-face-disclosure,
 .cell-detail-cue {
   color: var(--label-secondary);
+}
+
+.cell-face-disclosure {
+  display: block;
+  overflow-wrap: anywhere;
 }
 
 .cell-vendor,

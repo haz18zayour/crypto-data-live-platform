@@ -12,6 +12,22 @@ from ingest.registry import (
 
 GOLDEN_DIRECTORY = Path(__file__).with_name("goldens")
 FIXTURE_DIRECTORY = Path(__file__).with_name("fixtures")
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+SOURCE_GREP_PATHS = (
+    PROJECT_ROOT / "ingest",
+    PROJECT_ROOT / "web" / "src",
+    PROJECT_ROOT / "tests",
+)
+SOURCE_GREP_SUFFIXES = {
+    ".css",
+    ".json",
+    ".md",
+    ".py",
+    ".ts",
+    ".tsx",
+    ".yaml",
+    ".yml",
+}
 
 
 def definition_data() -> dict[str, object]:
@@ -104,6 +120,45 @@ def test_us_708_registry_not_definable_reasons_are_unique() -> None:
                 f"{seen[reason][0]}/{seen[reason][1]}: {reason}"
             )
             seen[reason] = (entry.key, asset)
+
+
+def test_us_808_rendered_board_and_source_never_label_the_fed_broad_index_with_proprietary_ice_name() -> None:
+    forbidden = "".join(("D", "X", "Y"))
+    offenders: list[str] = []
+
+    for root in SOURCE_GREP_PATHS:
+        for path in root.rglob("*"):
+            if path.suffix not in SOURCE_GREP_SUFFIXES:
+                continue
+            text = path.read_text(encoding="utf-8", errors="ignore")
+            if forbidden in text:
+                offenders.append(str(path.relative_to(PROJECT_ROOT)))
+
+    assert offenders == []
+
+
+def test_us_808_macro_flow_not_definable_reasons_do_not_collapse_into_existing_board_reasons() -> None:
+    prd_reasons: dict[tuple[str, str], str] = {}
+    existing_reasons: dict[tuple[str, str], str] = {}
+
+    for entry in load_registry().root:
+        if entry.not_definable is None:
+            continue
+        for asset in entry.not_definable.assets:
+            destination = (
+                prd_reasons
+                if (entry.key, asset)
+                in {("spot_etf_net_flow", "BNB"), ("stablecoin_supply", "BTC")}
+                else existing_reasons
+            )
+            destination[(entry.key, asset)] = entry.not_definable.reason_for(asset)
+
+    assert set(prd_reasons) == {
+        ("spot_etf_net_flow", "BNB"),
+        ("stablecoin_supply", "BTC"),
+    }
+    assert len(set(prd_reasons.values())) == len(prd_reasons)
+    assert not (set(prd_reasons.values()) & set(existing_reasons.values()))
 
 
 def test_registry_coverage_still_passes_for_all_81_entries() -> None:
