@@ -12,7 +12,18 @@ import httpx
 import psycopg
 
 from ingest.compute import compute_indicator, daily_close
-from ingest.fetchers import coinbase, coinmetrics, okx, solana_rpc, validators_app
+from ingest.fetchers import (
+    alternative_me,
+    coinbase,
+    coinmetrics,
+    okx,
+    solana_rpc,
+    validators_app,
+)
+from ingest.fetchers.alternative_me import (
+    AlternativeMeFearGreedOk,
+    AlternativeMeFearGreedResult,
+)
 from ingest.fetchers.okx import INDICATOR_KEY, MEASURED_ON, fetch_btc_daily_close
 from ingest.fetchers.okx_derivatives import (
     FundingRateOk,
@@ -50,8 +61,14 @@ type MvrvFetcher = Callable[[str], Result]
 type ActiveAddressesFetcher = Callable[[str], Result]
 type ExchangeFlowFetcher = Callable[[str], Result]
 type StakingFetcher = Callable[[str], Result]
+type FearGreedFetcher = Callable[[], AlternativeMeFearGreedResult]
 type BoardResult = (
-    Result | FundingRateOk | OpenInterestOk | LongShortRatioOk | TakerRatioOk
+    Result
+    | FundingRateOk
+    | OpenInterestOk
+    | LongShortRatioOk
+    | TakerRatioOk
+    | AlternativeMeFearGreedOk
 )
 
 SOL_ACTIVE_ADDRESSES_KEY = "sol_active_addresses"
@@ -301,6 +318,10 @@ def _fetch_asset_staking(asset: str) -> Result:
     return Unavailable(reason=Reason.NOT_DEFINABLE)
 
 
+def _fetch_fear_greed_index() -> AlternativeMeFearGreedResult:
+    return alternative_me.fetch_fear_greed_index()
+
+
 def _calculate(definition: IndicatorDefinition, bars: Sequence[Bar]) -> float:
     parameters = definition.parameters or {}
     if definition.key == INDICATOR_KEY:
@@ -356,6 +377,7 @@ def run_all_assets(
     fetch_active_addresses: ActiveAddressesFetcher | None = None,
     fetch_exchange_flow: ExchangeFlowFetcher | None = None,
     fetch_staking: StakingFetcher | None = None,
+    fetch_fear_greed: FearGreedFetcher | None = None,
     excluded_indicator_keys: Collection[str] = (),
 ) -> FullAssetRun:
     """Fetch both venues and compute every registered board cell."""
@@ -419,6 +441,12 @@ def run_all_assets(
         for definition in registered
         if definition.key not in excluded_keys and definition.key.endswith("_staking")
     )
+    fear_greed_definitions = tuple(
+        definition
+        for definition in registered
+        if definition.key not in excluded_keys
+        and definition.response_model == "alternative_me_fear_greed"
+    )
     by_asset = {
         asset: tuple(
             definition
@@ -464,6 +492,9 @@ def run_all_assets(
     )
     fetch_validators_app_staking: StakingFetcher = (
         _fetch_asset_staking if fetch_staking is None else fetch_staking
+    )
+    fetch_alternative_me_fear_greed: FearGreedFetcher = (
+        _fetch_fear_greed_index if fetch_fear_greed is None else fetch_fear_greed
     )
     history: dict[tuple[str, Venue], HistoryAssessment] = {}
     indicators: dict[str, BoardResult] = {}
@@ -556,6 +587,9 @@ def run_all_assets(
             definition.definable_for[0]
         )
 
+    for definition in fear_greed_definitions:
+        indicators[definition.key] = fetch_alternative_me_fear_greed()
+
     return FullAssetRun(indicators=indicators, history=history)
 
 
@@ -602,6 +636,11 @@ def persist_board(
                 update={"source_field": result.source_field}
             )
             persisted_result = Ok(result.value, result.source_timestamp)
+        elif isinstance(result, AlternativeMeFearGreedOk):
+            persisted_definition = definition.model_copy(
+                update={"source_field": result.source_field}
+            )
+            persisted_result = Ok(float(result.value), result.source_timestamp)
         elif isinstance(result, (OpenInterestOk, LongShortRatioOk, TakerRatioOk)):
             persisted_result = Ok(result.value, result.source_timestamp)
         else:
@@ -623,6 +662,16 @@ def persist_board(
                 asset=definition.definable_for[0],
                 measured_on=definition.definable_for[0],
                 result=persisted_result,
+                reference_period=(
+                    result.reference_period
+                    if isinstance(result, AlternativeMeFearGreedOk)
+                    else None
+                ),
+                published_at=(
+                    result.published_at
+                    if isinstance(result, AlternativeMeFearGreedOk)
+                    else None
+                ),
             ),
         )
     return tuple(row_ids)

@@ -11,6 +11,7 @@ from ingest.fetchers.alternative_me import (
     AlternativeMeFearGreedOk,
     fetch_fear_greed_index,
 )
+from ingest.pipeline import run_all_assets
 from ingest.registry import load_registry
 from ingest.schemas import AlternativeMeFearGreedResponse
 from ingest.status import Error, Reason
@@ -131,10 +132,42 @@ def test_malformed_response_becomes_fetch_failed_error() -> None:
     assert "value" in result.detail
 
 
-@pytest.mark.integration
-def test_live_alternative_me_request_returns_real_fear_greed_value() -> None:
-    result = fetch_fear_greed_index()
+def _daily_keys_except_fear_greed() -> tuple[str, ...]:
+    return tuple(
+        entry.key
+        for entry in load_registry().root
+        if entry.expected_update_interval_seconds == 86400
+        and entry.key != "fear_greed_index"
+    )
 
+
+def test_daily_board_assembles_fear_greed_fetcher_from_registry_slot() -> None:
+    result = AlternativeMeFearGreedOk(
+        value=70,
+        source_timestamp=datetime(2026, 9, 28, tzinfo=UTC),
+        reference_period="2026-09-28",
+        published_at=datetime(2026, 9, 28, tzinfo=UTC),
+        value_classification="Greed",
+    )
+
+    run = run_all_assets(
+        tier="daily",
+        fetch_fear_greed=lambda: result,
+        excluded_indicator_keys=_daily_keys_except_fear_greed(),
+    )
+
+    assert run.history == {}
+    assert run.indicators == {"fear_greed_index": result}
+
+
+@pytest.mark.integration
+def test_live_daily_board_assembled_alternative_me_request_returns_real_fear_greed_value() -> None:
+    run = run_all_assets(
+        tier="daily",
+        excluded_indicator_keys=_daily_keys_except_fear_greed(),
+    )
+
+    result = run.indicators["fear_greed_index"]
     assert isinstance(result, AlternativeMeFearGreedOk), result
     assert isinstance(result.value, int)
     assert 0 <= result.value <= 100

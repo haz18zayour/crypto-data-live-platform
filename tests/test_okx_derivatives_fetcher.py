@@ -328,6 +328,7 @@ def test_persisted_funding_datapoint_source_field_names_derived_interval(
         asset: str,
         measured_on: str,
         result: Result,
+        **_: object,
     ) -> int:
         assert isinstance(result, Ok)
         persisted[definition.key] = definition.source_field

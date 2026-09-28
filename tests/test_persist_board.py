@@ -15,6 +15,7 @@ import pytest
 from psycopg import sql
 
 from ingest import heartbeat, pipeline
+from ingest.fetchers.alternative_me import AlternativeMeFearGreedOk
 from ingest.fetchers.okx_derivatives import (
     FundingRateOk,
     LongShortRatioOk,
@@ -196,6 +197,16 @@ def _fetch_staking(asset: str) -> Result:
     return Ok(value=390_383_623.78255165, source_timestamp=SOURCE_TIMESTAMP)
 
 
+def _fetch_fear_greed() -> pipeline.AlternativeMeFearGreedResult:
+    return AlternativeMeFearGreedOk(
+        value=70,
+        source_timestamp=SOURCE_TIMESTAMP,
+        reference_period=SOURCE_TIMESTAMP.date().isoformat(),
+        published_at=SOURCE_TIMESTAMP,
+        value_classification="Greed",
+    )
+
+
 def _full_board() -> pipeline.FullAssetRun:
     return run_all_assets(
         fetch_bars=_fetch_bars,
@@ -207,6 +218,7 @@ def _full_board() -> pipeline.FullAssetRun:
         fetch_active_addresses=_fetch_active_addresses,
         fetch_exchange_flow=_fetch_exchange_flow,
         fetch_staking=_fetch_staking,
+        fetch_fear_greed=_fetch_fear_greed,
     )
 
 
@@ -222,6 +234,7 @@ def _tier_board(tier: pipeline.CadenceTier) -> pipeline.FullAssetRun:
         fetch_active_addresses=_fetch_active_addresses,
         fetch_exchange_flow=_fetch_exchange_flow,
         fetch_staking=_fetch_staking,
+        fetch_fear_greed=_fetch_fear_greed,
     )
 
 
@@ -237,6 +250,7 @@ def _board_definitions() -> tuple[IndicatorDefinition, ...]:
         or definition.response_model == "coinmetrics_asset_metrics"
         or definition.response_model == "solana_get_block"
         or definition.response_model == "validators_app_validators"
+        or definition.response_model == "alternative_me_fear_greed"
     )
 
 
@@ -260,6 +274,7 @@ def test_full_run_writes_one_datapoint_row_per_computed_indicator(
         asset: str,
         measured_on: str,
         result: Result,
+        **_: object,
     ) -> int:
         persisted.append(
             {
@@ -276,7 +291,7 @@ def test_full_run_writes_one_datapoint_row_per_computed_indicator(
     row_ids = run_pipeline(object(), fetcher=_full_board)  # type: ignore[arg-type]
 
     definitions = _board_definitions()
-    assert len(definitions) == 71
+    assert len(definitions) == 72
     assert len(row_ids) == len(definitions)
     assert len(persisted) == len(definitions)
     assert {row["indicator_key"] for row in persisted} == {
@@ -286,7 +301,7 @@ def test_full_run_writes_one_datapoint_row_per_computed_indicator(
 
 @pytest.mark.parametrize(
     ("tier", "expected_count"),
-    (("fast", 12), ("medium", 4), ("daily", 54)),
+    (("fast", 12), ("medium", 4), ("daily", 55)),
 )
 def test_tier_run_persists_only_registry_entries_for_that_cadence(
     monkeypatch: pytest.MonkeyPatch,
@@ -302,6 +317,7 @@ def test_tier_run_persists_only_registry_entries_for_that_cadence(
         asset: str,
         measured_on: str,
         result: Result,
+        **_: object,
     ) -> int:
         persisted.append(definition.key)
         return len(persisted)
@@ -340,6 +356,7 @@ def test_tier_runs_union_to_the_scheduled_registry_without_duplicates(
         asset: str,
         measured_on: str,
         result: Result,
+        **_: object,
     ) -> int:
         persisted_by_tier[active_tier].append(definition.key)
         return sum(len(keys) for keys in persisted_by_tier.values())
@@ -360,7 +377,7 @@ def test_tier_runs_union_to_the_scheduled_registry_without_duplicates(
         for definition in _board_definitions()
         if definition.key != pipeline.SOL_ACTIVE_ADDRESSES_KEY
     }
-    assert len(flattened) == len(set(flattened)) == 70
+    assert len(flattened) == len(set(flattened)) == 71
 
 
 def test_adversarial_fast_tier_missed_window_reads_stale_within_450_seconds(
@@ -392,6 +409,7 @@ def test_adversarial_fast_tier_missed_window_reads_stale_within_450_seconds(
         asset: str,
         measured_on: str,
         result: Result,
+        **_: object,
     ) -> int:
         persisted[definition.key] = result
         return len(persisted)
@@ -424,7 +442,7 @@ def test_adversarial_fast_tier_missed_window_reads_stale_within_450_seconds(
     assert persisted["btc_taker_ratio"].status == "OK"
 
 
-def test_adversarial_full_cycle_reconciles_all_71_registry_rows_once_each(
+def test_adversarial_full_cycle_reconciles_all_72_registry_rows_once_each(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     persisted_by_run: dict[str, list[str]] = {
@@ -442,6 +460,7 @@ def test_adversarial_full_cycle_reconciles_all_71_registry_rows_once_each(
         asset: str,
         measured_on: str,
         result: Result,
+        **_: object,
     ) -> int:
         persisted_by_run[active_run].append(definition.key)
         return sum(len(keys) for keys in persisted_by_run.values())
@@ -461,15 +480,15 @@ def test_adversarial_full_cycle_reconciles_all_71_registry_rows_once_each(
     flattened = [
         key for persisted in persisted_by_run.values() for key in persisted
     ]
-    assert len(_board_definitions()) == 71
+    assert len(_board_definitions()) == 72
     assert len(persisted_by_run["fast"]) == 12
     assert len(persisted_by_run["medium"]) == 4
-    assert len(persisted_by_run["daily"]) == 54
+    assert len(persisted_by_run["daily"]) == 55
     assert persisted_by_run["sol_active_addresses"] == [
         pipeline.SOL_ACTIVE_ADDRESSES_KEY
     ]
     assert set(flattened) == {definition.key for definition in _board_definitions()}
-    assert len(flattened) == len(set(flattened)) == 71
+    assert len(flattened) == len(set(flattened)) == 72
 
 
 def test_scheduled_daily_tier_keeps_existing_sol_active_addresses_exclusion(
@@ -494,6 +513,7 @@ def test_scheduled_daily_tier_keeps_existing_sol_active_addresses_exclusion(
     )
     monkeypatch.setattr(pipeline, "_fetch_asset_exchange_flow", _fetch_exchange_flow)
     monkeypatch.setattr(pipeline, "_fetch_asset_staking", _fetch_staking)
+    monkeypatch.setattr(pipeline, "_fetch_fear_greed_index", _fetch_fear_greed)
 
     run = run_scheduled_board(tier="daily")
     expected = {
@@ -503,7 +523,7 @@ def test_scheduled_daily_tier_keeps_existing_sol_active_addresses_exclusion(
         and definition.key != pipeline.SOL_ACTIVE_ADDRESSES_KEY
     }
 
-    assert len(expected) == 54
+    assert len(expected) == 55
     assert set(run.indicators) == expected
 
 
@@ -519,6 +539,7 @@ def test_no_tier_argument_preserves_full_registry_board_behavior(
         asset: str,
         measured_on: str,
         result: Result,
+        **_: object,
     ) -> int:
         persisted.append(definition.key)
         return len(persisted)
@@ -527,7 +548,7 @@ def test_no_tier_argument_preserves_full_registry_board_behavior(
 
     row_ids = run_pipeline(object(), fetcher=_full_board)  # type: ignore[arg-type]
 
-    assert len(row_ids) == 71
+    assert len(row_ids) == 72
     assert set(persisted) == {definition.key for definition in _board_definitions()}
 
 
@@ -549,6 +570,7 @@ def test_persist_board_has_one_path_for_technical_derivatives_and_onchain(
         asset: str,
         measured_on: str,
         result: Result,
+        **_: object,
     ) -> int:
         persisted[definition.key] = result
         return len(persisted)
@@ -587,6 +609,7 @@ def test_each_persisted_board_row_carries_schema_provenance(
         asset: str,
         measured_on: str,
         result: Result,
+        **_: object,
     ) -> int:
         persisted.append(
             {
@@ -623,6 +646,7 @@ def test_each_persisted_board_row_carries_schema_provenance(
         "coinmetrics",
         "helius",
         "validators_app",
+        "alternative.me",
     }
     assert all(row["endpoint"] for row in persisted)
     assert all(row["source_field"] for row in persisted)
@@ -651,6 +675,7 @@ def test_non_ok_computed_result_is_persisted_with_status_and_reason_and_peers_co
         asset: str,
         measured_on: str,
         result: Result,
+        **_: object,
     ) -> int:
         persisted[definition.key] = result
         return len(persisted)
@@ -665,7 +690,7 @@ def test_non_ok_computed_result_is_persisted_with_status_and_reason_and_peers_co
         reason=Reason.FETCH_FAILED,
         detail="btc_rsi computation failed: forced computation failure",
     )
-    assert sum(isinstance(result, Ok) for result in persisted.values()) == 70
+    assert sum(isinstance(result, Ok) for result in persisted.values()) == 71
 
 
 def test_one_derivatives_fetch_failure_persists_error_and_other_cells_continue(
@@ -688,6 +713,7 @@ def test_one_derivatives_fetch_failure_persists_error_and_other_cells_continue(
         asset: str,
         measured_on: str,
         result: Result,
+        **_: object,
     ) -> int:
         persisted[definition.key] = result
         return len(persisted)
@@ -703,6 +729,7 @@ def test_one_derivatives_fetch_failure_persists_error_and_other_cells_continue(
         fetch_active_addresses=_fetch_active_addresses,
         fetch_exchange_flow=_fetch_exchange_flow,
         fetch_staking=_fetch_staking,
+        fetch_fear_greed=_fetch_fear_greed,
     )
 
     run_pipeline(object(), fetcher=lambda: run)  # type: ignore[arg-type]
@@ -712,7 +739,7 @@ def test_one_derivatives_fetch_failure_persists_error_and_other_cells_continue(
         reason=Reason.FETCH_FAILED,
         detail="forced long/short failure",
     )
-    assert sum(isinstance(result, Ok) for result in persisted.values()) == 70
+    assert sum(isinstance(result, Ok) for result in persisted.values()) == 71
 
 
 def test_full_run_persists_one_mvrv_datapoint_per_btc_eth_bnb(
@@ -727,6 +754,7 @@ def test_full_run_persists_one_mvrv_datapoint_per_btc_eth_bnb(
         asset: str,
         measured_on: str,
         result: Result,
+        **_: object,
     ) -> int:
         if definition.key.endswith("_mvrv"):
             persisted[definition.key] = {
@@ -774,6 +802,7 @@ def test_one_mvrv_fetch_failure_persists_error_and_other_assets_continue(
         asset: str,
         measured_on: str,
         result: Result,
+        **_: object,
     ) -> int:
         if definition.key.endswith("_mvrv"):
             persisted[definition.key] = result
@@ -790,6 +819,7 @@ def test_one_mvrv_fetch_failure_persists_error_and_other_assets_continue(
         fetch_active_addresses=_fetch_active_addresses,
         fetch_exchange_flow=_fetch_exchange_flow,
         fetch_staking=_fetch_staking,
+        fetch_fear_greed=_fetch_fear_greed,
     )
 
     run_pipeline(object(), fetcher=lambda: run)  # type: ignore[arg-type]
@@ -817,6 +847,7 @@ def test_full_run_persists_one_active_addresses_datapoint_per_btc_eth_bnb(
         asset: str,
         measured_on: str,
         result: Result,
+        **_: object,
     ) -> int:
         if definition.key.endswith("_active_addresses"):
             persisted[definition.key] = {
@@ -879,6 +910,7 @@ def test_one_active_addresses_fetch_failure_persists_error_and_other_assets_cont
         asset: str,
         measured_on: str,
         result: Result,
+        **_: object,
     ) -> int:
         if definition.key.endswith("_active_addresses"):
             persisted[definition.key] = result
@@ -895,6 +927,7 @@ def test_one_active_addresses_fetch_failure_persists_error_and_other_assets_cont
         fetch_active_addresses=fetch_active_addresses,
         fetch_exchange_flow=_fetch_exchange_flow,
         fetch_staking=_fetch_staking,
+        fetch_fear_greed=_fetch_fear_greed,
     )
 
     run_pipeline(object(), fetcher=lambda: run)  # type: ignore[arg-type]
@@ -927,6 +960,7 @@ def test_one_onchain_fetch_failure_persists_error_and_all_other_categories_conti
         asset: str,
         measured_on: str,
         result: Result,
+        **_: object,
     ) -> int:
         persisted[definition.key] = result
         return len(persisted)
@@ -942,6 +976,7 @@ def test_one_onchain_fetch_failure_persists_error_and_all_other_categories_conti
         fetch_active_addresses=_fetch_active_addresses,
         fetch_exchange_flow=_fetch_exchange_flow,
         fetch_staking=_fetch_staking,
+        fetch_fear_greed=_fetch_fear_greed,
     )
 
     run_pipeline(object(), fetcher=lambda: run)  # type: ignore[arg-type]
@@ -969,6 +1004,7 @@ def test_full_run_persists_one_exchange_flow_datapoint_per_btc_eth(
         asset: str,
         measured_on: str,
         result: Result,
+        **_: object,
     ) -> int:
         if definition.key.endswith("_exchange_flow"):
             persisted[definition.key] = {
@@ -1010,6 +1046,7 @@ def test_full_run_persists_one_funding_rate_datapoint_per_asset_with_runtime_sou
         asset: str,
         measured_on: str,
         result: Result,
+        **_: object,
     ) -> int:
         if definition.key.endswith("_funding_rate"):
             persisted[definition.key] = {
@@ -1043,6 +1080,56 @@ def test_full_run_persists_one_funding_rate_datapoint_per_asset_with_runtime_sou
     )
 
 
+def test_full_run_persists_fear_greed_with_disclosure_and_reference_dates(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    persisted: dict[str, object] = {}
+
+    def record_datapoint(
+        connection: object,
+        *,
+        definition: IndicatorDefinition,
+        asset: str,
+        measured_on: str,
+        result: Result,
+        reference_period: str | None = None,
+        published_at: datetime | None = None,
+    ) -> int:
+        if definition.key == "fear_greed_index":
+            persisted.update(
+                {
+                    "asset": asset,
+                    "measured_on": measured_on,
+                    "status": result.status,
+                    "value": result.value if isinstance(result, Ok) else None,
+                    "source_vendor": definition.vendor,
+                    "source_field": definition.source_field,
+                    "source_timestamp": (
+                        result.source_timestamp if isinstance(result, Ok) else None
+                    ),
+                    "reference_period": reference_period,
+                    "published_at": published_at,
+                }
+            )
+        return 1
+
+    monkeypatch.setattr(pipeline, "persist_datapoint", record_datapoint)
+
+    run_pipeline(object(), fetcher=_full_board)  # type: ignore[arg-type]
+
+    assert persisted["asset"] == "MACRO"
+    assert persisted["measured_on"] == "MACRO"
+    assert persisted["status"] == "OK"
+    assert persisted["value"] == 70.0
+    assert persisted["source_vendor"] == "alternative.me"
+    assert persisted["source_timestamp"] == SOURCE_TIMESTAMP
+    assert persisted["reference_period"] == SOURCE_TIMESTAMP.date().isoformat()
+    assert persisted["published_at"] == SOURCE_TIMESTAMP
+    assert "six-weight composite" in str(persisted["source_field"])
+    assert "surveys 15% currently paused" in str(persisted["source_field"])
+    assert "Data provided by alternative.me" in str(persisted["source_field"])
+
+
 def test_full_run_persists_one_open_interest_datapoint_per_asset(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -1055,6 +1142,7 @@ def test_full_run_persists_one_open_interest_datapoint_per_asset(
         asset: str,
         measured_on: str,
         result: Result,
+        **_: object,
     ) -> int:
         if definition.key.endswith("_open_interest"):
             persisted[definition.key] = {
@@ -1103,6 +1191,7 @@ def test_full_run_persists_one_staking_datapoint_for_sol(
         asset: str,
         measured_on: str,
         result: Result,
+        **_: object,
     ) -> int:
         if definition.key.endswith("_staking"):
             persisted[definition.key] = {
@@ -1142,6 +1231,7 @@ def test_full_run_persists_one_long_short_ratio_datapoint_per_asset(
         asset: str,
         measured_on: str,
         result: Result,
+        **_: object,
     ) -> int:
         if definition.key.endswith("_long_short_ratio"):
             persisted[definition.key] = {
@@ -1189,6 +1279,7 @@ def test_full_run_persists_one_taker_ratio_datapoint_per_asset(
         asset: str,
         measured_on: str,
         result: Result,
+        **_: object,
     ) -> int:
         if definition.key.endswith("_taker_ratio"):
             persisted[definition.key] = {
@@ -1241,6 +1332,7 @@ def test_one_funding_history_failure_persists_error_and_other_assets_continue(
         asset: str,
         measured_on: str,
         result: Result,
+        **_: object,
     ) -> int:
         if definition.key.endswith("_funding_rate"):
             persisted[definition.key] = result
@@ -1257,6 +1349,7 @@ def test_one_funding_history_failure_persists_error_and_other_assets_continue(
         fetch_active_addresses=_fetch_active_addresses,
         fetch_exchange_flow=_fetch_exchange_flow,
         fetch_staking=_fetch_staking,
+        fetch_fear_greed=_fetch_fear_greed,
     )
 
     run_pipeline(object(), fetcher=lambda: run)  # type: ignore[arg-type]
@@ -1284,6 +1377,7 @@ def test_board_persistence_is_idempotent_per_registered_identity(
         asset: str,
         measured_on: str,
         result: Result,
+        **_: object,
     ) -> int:
         source_timestamp = (
             result.source_timestamp
@@ -1377,6 +1471,7 @@ def test_scheduled_entry_point_persists_board_without_sol_active_addresses_and_p
         asset: str,
         measured_on: str,
         result: Result,
+        **_: object,
     ) -> int:
         assert isinstance(connection, FakeConnection)
         persisted.append(
@@ -1417,6 +1512,7 @@ def test_scheduled_entry_point_persists_board_without_sol_active_addresses_and_p
     )
     monkeypatch.setattr(pipeline, "_fetch_asset_exchange_flow", _fetch_exchange_flow)
     monkeypatch.setattr(pipeline, "_fetch_asset_staking", _fetch_staking)
+    monkeypatch.setattr(pipeline, "_fetch_fear_greed_index", _fetch_fear_greed)
     monkeypatch.setattr(pipeline, "persist_datapoint", record_datapoint)
 
     heartbeat.main()
@@ -1424,8 +1520,8 @@ def test_scheduled_entry_point_persists_board_without_sol_active_addresses_and_p
     definitions = _scheduled_board_definitions()
     assert connected_to == [DATABASE_URL]
     assert pinged == [HEARTBEAT_URL]
-    assert len(_board_definitions()) == 71
-    assert len(definitions) == 70
+    assert len(_board_definitions()) == 72
+    assert len(definitions) == 71
     assert len(persisted) == len(definitions)
     assert {row["indicator_key"] for row in persisted} == {
         definition.key for definition in definitions
@@ -1464,6 +1560,7 @@ def test_scheduled_entry_point_persists_board_without_sol_active_addresses_and_p
         == 2
     )
     assert sum(str(row["indicator_key"]).endswith("_staking") for row in persisted) == 1
+    assert sum(row["indicator_key"] == "fear_greed_index" for row in persisted) == 1
     assert all(row["asset"] == row["measured_on"] for row in persisted)
 
 
@@ -1492,6 +1589,7 @@ def test_daily_tier_entry_point_persists_only_daily_board_rows_and_pings_once(
         asset: str,
         measured_on: str,
         result: Result,
+        **_: object,
     ) -> int:
         assert isinstance(connection, FakeConnection)
         persisted.append(
@@ -1532,6 +1630,7 @@ def test_daily_tier_entry_point_persists_only_daily_board_rows_and_pings_once(
     )
     monkeypatch.setattr(pipeline, "_fetch_asset_exchange_flow", _fetch_exchange_flow)
     monkeypatch.setattr(pipeline, "_fetch_asset_staking", _fetch_staking)
+    monkeypatch.setattr(pipeline, "_fetch_fear_greed_index", _fetch_fear_greed)
     monkeypatch.setattr(pipeline, "persist_datapoint", record_datapoint)
 
     heartbeat.main(["--tier", "daily"])
@@ -1544,8 +1643,8 @@ def test_daily_tier_entry_point_persists_only_daily_board_rows_and_pings_once(
     }
     assert connected_to == [DATABASE_URL]
     assert pinged == [HEARTBEAT_URL]
-    assert len(expected) == 54
-    assert len(persisted) == 54
+    assert len(expected) == 55
+    assert len(persisted) == 55
     assert {row["indicator_key"] for row in persisted} == expected
     assert pipeline.SOL_ACTIVE_ADDRESSES_KEY not in {
         row["indicator_key"] for row in persisted
@@ -1580,6 +1679,7 @@ def test_medium_tier_entry_point_persists_only_medium_board_rows_and_pings_once(
         asset: str,
         measured_on: str,
         result: Result,
+        **_: object,
     ) -> int:
         assert isinstance(connection, FakeConnection)
         persisted.append(
@@ -1666,6 +1766,7 @@ def test_fast_tier_entry_point_persists_only_fast_board_rows_and_pings_once(
         asset: str,
         measured_on: str,
         result: Result,
+        **_: object,
     ) -> int:
         assert isinstance(connection, FakeConnection)
         persisted.append(
@@ -1764,6 +1865,7 @@ def test_sol_active_addresses_entry_point_persists_only_that_cell_and_pings_once
         asset: str,
         measured_on: str,
         result: Result,
+        **_: object,
     ) -> int:
         assert isinstance(connection, FakeConnection)
         persisted.append(
@@ -1822,12 +1924,20 @@ def test_live_scheduled_board_run_persists_registry_minus_sol_active_addresses(
         (list(row_ids),),
     ).fetchall()
 
-    assert len(_board_definitions()) == 71
-    assert len(definitions) == 70
+    assert len(_board_definitions()) == 72
+    assert len(definitions) == 71
     assert all(item.status == "AVAILABLE" for item in run.history.values())
     assert all(item.fetched_bars == 250 for item in run.history.values())
 
-    ok_like = (Ok, FundingRateOk, OpenInterestOk, LongShortRatioOk, TakerRatioOk, Stale)
+    ok_like = (
+        Ok,
+        FundingRateOk,
+        OpenInterestOk,
+        LongShortRatioOk,
+        TakerRatioOk,
+        AlternativeMeFearGreedOk,
+        Stale,
+    )
     for key, result in run.indicators.items():
         assert isinstance(result, (*ok_like, Unavailable, Error)), (
             f"{key} produced an untyped result: {result!r}"
@@ -1857,6 +1967,7 @@ def test_live_scheduled_board_run_persists_registry_minus_sol_active_addresses(
     assert sum(str(row[0]).endswith("_active_addresses") for row in rows) == 3
     assert sum(str(row[0]).endswith("_exchange_flow") for row in rows) == 2
     assert sum(str(row[0]).endswith("_staking") for row in rows) == 1
+    assert sum(row[0] == "fear_greed_index" for row in rows) == 1
     assert all(row[1] == row[2] for row in rows)
     assert all(row[6] and row[7] and row[8] and row[9] for row in rows)
     for row in rows:
