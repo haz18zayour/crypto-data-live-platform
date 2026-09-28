@@ -1,10 +1,10 @@
-.uf/events.ndjson                                  |   5 +
- SESSION.md                                         |  16 ++-
+.uf/events.ndjson                                  |   8 ++
+ SESSION.md                                         |  19 ++-
  ingest/canary.py                                   |   2 +
  ingest/fetchers/defillama_stablecoins.py           | 145 +++++++++++++++++++++
  ingest/registry.yaml                               |  17 +++
  ingest/schemas.py                                  |  36 +++++
- .../50-evidence/US-805/diffstat.txt                |  12 ++
+ .../50-evidence/US-805/diffstat.txt                |  19 +++
  .../50-evidence/US-805/gates.json                  |  20 +++
  .../50-evidence/US-805/verdict.json                |  54 ++++++++
  tests/fixtures/defillama_stablecoinchains.json     |  35 +++++
@@ -16,4 +16,4 @@
  web/src/CoverageHeadline.test.tsx                  |  14 +-
  web/src/board.test.ts                              |   2 +-
  web/src/fixtures/mixedBoard.test.ts                |   2 +-
- 18 files changed, 552 insertions(+), 18 deletions(-)
+ 18 files changed, 565 insertions(+), 18 deletions(-)
