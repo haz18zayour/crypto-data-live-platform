@@ -161,6 +161,6 @@ would prove nothing about a splice at the seam (research's own blind-spot findin
 | US-904 | OKX backfill recipes — candles (deep, TA-Lib warm-up reseeded), funding (shallow, honestly bounded), open-interest history (separate endpoint, distinct provenance), long/short and taker volume at 1D | US-903 |
 | US-905 | Coin Metrics backfill recipe — MVRV/active addresses/exchange flows via `catalog-v2` `min_time`, empty response never treated as no-history | US-903 |
 | US-906 | FRED backfill recipe — chunked initial-release (`output_type=4`) vintages matching live semantics | US-903 |
-| US-907 | SoSoValue, DefiLlama (`/stablecoincharts`), and alternative.me backfill recipes | US-903 |
+| US-910 | SoSoValue, DefiLlama (`/stablecoincharts`), and alternative.me backfill recipes (re-identified from US-907, which exhausted all 3 attempts on codex's own account usage quota outage without producing any diff) | US-903 |
 | US-908 | Sparkline component — min/max value labels with dates, real time axis with raw points, cadence-tiered minimum-history threshold, explicit insufficient-history state | US-902 |
-| US-909 | The adversarial case — sparse-history honesty, and a cross-vendor seam check proving no splice at the backfill/live boundary | US-904, US-905, US-906, US-907, US-908 |
+| US-909 | The adversarial case — sparse-history honesty, and a cross-vendor seam check proving no splice at the backfill/live boundary | US-904, US-905, US-906, US-910, US-908 |

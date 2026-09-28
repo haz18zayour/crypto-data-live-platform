@@ -4,8 +4,8 @@
   "title": "History and charts — a value read against its own history, never a verdict",
   "product": "crypto-data-live-platform",
   "branch": "feat/prd-009-history-charts",
-  "inputDigest": "ad78ca7230ebc5f7",
-  "compiledAt": "2026-09-28T15:32:01.182Z",
+  "inputDigest": "207723390f37b551",
+  "compiledAt": "2026-09-28T21:43:14.659Z",
   "stories": [
     {
       "id": "US-901",
@@ -540,13 +540,13 @@
       ]
     },
     {
-      "id": "US-907",
+      "id": "US-910",
       "title": "SoSoValue, DefiLlama (stablecoincharts), and alternative.me backfill recipes",
-      "source": "prds/PRD-009-history-charts/40-stories/US-907-remaining-vendor-backfill.md",
+      "source": "prds/PRD-009-history-charts/40-stories/US-910-remaining-vendor-backfill.md",
       "description": "As the owner, I want ETF net flows, stablecoin supply, and Fear & Greed to backfill from each\nvendor's real history, with SoSoValue's actual shape and limits live-probed first since research\ncould not confirm them from documentation alone.\n\nDefiLlama's `/stablecoincharts/{chain}` is a different endpoint from the same already-integrated\nvendor, confirmed live to hold daily history back to 2017 for Ethereum — this removes stablecoin\nsupply from the brief's original (and now overturned) \"cannot backfill\" assumption.",
       "criteria": [
         {
-          "id": "US-907-C1",
+          "id": "US-910-C1",
           "text": "Settles the assumption flagged in 30-spec.md before any backfill code commits to a specific window",
           "method": {
             "kind": "integration",
@@ -554,7 +554,7 @@
           }
         },
         {
-          "id": "US-907-C2",
+          "id": "US-910-C2",
           "text": "Reuses PRD-008's already-fixed float-precision defect, does not reintroduce it",
           "method": {
             "kind": "test",
@@ -562,7 +562,7 @@
           }
         },
         {
-          "id": "US-907-C3",
+          "id": "US-910-C3",
           "text": "Proves the two endpoints agree at the seam, not a silent splice between them",
           "method": {
             "kind": "test",
@@ -570,7 +570,7 @@
           }
         },
         {
-          "id": "US-907-C4",
+          "id": "US-910-C4",
           "text": "Directly guards against the exact vendor-supplied verdict research flagged as a gotcha",
           "method": {
             "kind": "test",
@@ -578,7 +578,7 @@
           }
         },
         {
-          "id": "US-907-C5",
+          "id": "US-910-C5",
           "text": "Consistency with PRD-008's decisions",
           "method": {
             "kind": "test",
@@ -586,7 +586,7 @@
           }
         },
         {
-          "id": "US-907-C6",
+          "id": "US-910-C6",
           "text": "The full offline suite stays green",
           "method": {
             "kind": "cmd",

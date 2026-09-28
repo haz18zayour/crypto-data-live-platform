@@ -1,0 +1,22 @@
+{
+  "gate": "G5_THIRD_FAILURE",
+  "question": "US-907 has failed 3 times — is the story wrong?",
+  "feature": "PRD-009-history-charts",
+  "story": "US-907",
+  "options": [
+    "split",
+    "rewrite-criteria",
+    "skip",
+    "retry-anyway"
+  ],
+  "context": "Structural problems: the story changed no files at all\nCriteria judged not met:\n  - US-907-C1: not judged — a cheaper layer already failed\n  - US-907-C2: not judged — a cheaper layer already failed\n  - US-907-C3: not judged — a cheaper layer already failed\n  - US-907-C4: not judged — a cheaper layer already failed\n  - US-907-C5: not judged — a cheaper layer already failed\n  - US-907-C6: not judged — a cheaper layer already failed",
+  "defaultOnTimeout": "block",
+  "answer": {
+    "choice": "rewrite-criteria",
+    "reason": "All 3 attempts exhausted on codex's own account usage quota outage (confirmed directly: raw implementer stdout for each attempt shows 'You've hit your usage limit... try again at 2:11 AM'; a direct `codex exec` probe outside uf run reproduced the same wall). Zero files were changed across all 3 attempts - there is no code to verify, so no owner-override pass is possible here, unlike prior quota incidents (e.g. US-605) where an earlier attempt had already produced real work before the quota hit. Re-identified as US-910 (same content) so it gets a fresh attempt budget once the quota window passes, per this project's established re-identification pattern (US-001->US-011, US-005->US-012, US-502->US-510, US-509->US-511->US-512, US-706->US-709).",
+    "at": "2026-09-29T00:45:00.000Z",
+    "by": "human"
+  },
+  "id": "G5_THIRD_FAILURE-c5237b42",
+  "openedAt": "2026-09-28T21:38:47.184Z"
+}

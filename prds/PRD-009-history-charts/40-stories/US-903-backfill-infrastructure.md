@@ -37,7 +37,7 @@ turn "did we forget one" into a build failure, not a hope.
   that migration lands.
 - This story builds the shared mechanism and the coverage test only. Do not implement any
   vendor's actual historical fetch logic here — OKX, Coin Metrics, FRED, SoSoValue, DefiLlama, and
-  alternative.me each get their own story (US-904 through US-907). A minimal fake/no-op recipe is
+  alternative.me each get their own story (US-904 through US-910). A minimal fake/no-op recipe is
   sufficient here to prove the mechanism and the coverage test both work.
 - The `not_backfillable` reason strings for Solana on-chain history and validators.app must each
   be genuinely distinct from each other and from every other NOT_DEFINABLE/UNAVAILABLE reason
