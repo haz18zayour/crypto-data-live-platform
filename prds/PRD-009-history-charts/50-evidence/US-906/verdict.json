@@ -16,7 +16,7 @@
         "testName": "test_fred_backfill_requests_output_type_4_in_small_realtime_start_chunks",
         "exitCode": 0
       },
-      "note": "The test is parametrized over M2SL and the daily VIXCLS. For a 2020-01-01 to 2022-03-15 window it asserts exactly 3 requests. Each request is checked for output_type=4, series_id, and a realtime span no longer than FRED_BACKFILL_CHUNK_DAYS (365). The implementation is _date_chunks and backfill_fred_initial_release in ingest/fetchers/fred.py. The mock returns empty payloads, so the test covers only how requests are chunked."
+      "note": "The test runs for both M2SL and the daily VIXCLS over a 2020-01-01 to 2022-03-15 window. It asserts exactly 3 requests, each with output_type=4, the correct series_id, and a realtime span of no more than FRED_BACKFILL_CHUNK_DAYS (365). The code under test is _date_chunks and backfill_fred_initial_release in ingest/fetchers/fred.py. The mock returns empty payloads, so this proves how requests are split, not how responses are handled."
     },
     {
       "criterionId": "US-906-C2",
@@ -27,7 +27,7 @@
         "testName": "test_backfilled_value_at_live_observation_date_matches_live_initial_release",
         "exitCode": 0
       },
-      "note": "One mocked output_type=4 row is fed through both the live fetch_fred_series and backfill_fred_initial_release. The test asserts that reference_period, value, source_timestamp and published_at are equal. This is a seam check at the code level, using a shared mock."
+      "note": "The same mocked output_type=4 row goes through both the live fetch_fred_series and backfill_fred_initial_release. The test asserts that reference_period, value, source_timestamp and published_at are equal across the two. This is a code-level check where live and backfill meet, using a shared mock."
     },
     {
       "criterionId": "US-906-C3",
@@ -38,7 +38,7 @@
         "testName": "test_revised_same_observation_date_backfills_with_live_revision_disclosure",
         "exitCode": 0
       },
-      "note": "Two vintages for 2026-08-01 come back as two separate runs. The second carries 'revised from 323.976' through the live _revision_source_field helper, which the backfill reuses."
+      "note": "Two vintages of 2026-08-01 come back as separate runs. The second run's source_field contains 'revised from 323.976', produced by the live _revision_source_field helper, which the backfill reuses."
     },
     {
       "criterionId": "US-906-C4",
@@ -49,7 +49,7 @@
         "testName": "test_live_dff_run_backfill_persists_90_days_without_vintage_cap",
         "exitCode": null
       },
-      "note": "The test carries @pytest.mark.integration, and pyproject.toml:33 addopts '-m not integration' deselects it: the gate output shows '386 passed, 74 deselected'. The only recorded live attempt, in 50-evidence/US-906/attempt-2-local-evidence.md, FAILED with a ConnectError. It also cannot prove the chunking fix: it runs a 120-day window, which is a single chunk under the 365-day chunk size and only about 120 daily vintages, far under the vintage cap, so chunking against the real API is never exercised. It also swaps out both the recipe and persist_board. There is no proof it has passed against the real API."
+      "note": "Nothing has changed since attempt 2. Attempt 3 exited 1 having used 0 tokens. The test is still marked @pytest.mark.integration, and pyproject.toml:33 (addopts '-m not integration') deselects it: the gates report 386 passed, 74 deselected. Its only recorded live run failed with a ConnectError (attempt-2-local-evidence.md). It uses a 120-day window (line 218), which is a single chunk under the 365-day chunk size and far below the vintage cap, so it could not show chunking working against the real API even if it ran. It also swaps out both the recipe and persist_board."
     },
     {
       "criterionId": "US-906-C5",
@@ -60,10 +60,10 @@
         "testName": null,
         "exitCode": 0
       },
-      "note": "The `uv run pytest -q` gate exited 0 with 386 passed and 74 deselected. mypy --strict also exited 0."
+      "note": "The `uv run pytest -q` gate exited 0 (386 passed, 74 deselected). The mypy --strict typecheck also exited 0."
     }
   ],
   "tripwires": [],
-  "note": "C1–C3 are real offline MockTransport assertions and are not faked. C4 is still not met: the live test is deselected by the default marker filter, its only recorded run failed with a ConnectError, and its 120-day window is a single chunk, so it could not show chunking beating the vintage cap even if it passed.",
-  "at": "2026-09-28T20:06:37.087Z"
+  "note": "C1–C3 have real offline assertions against MockTransport and are not faked. C4 is still not met: attempt 3 failed with no changes, the live DFF test is deselected by the marker filter, its only recorded run failed, and its 120-day single-chunk window cannot show that chunking gets past the vintage cap.",
+  "at": "2026-09-28T20:19:15.960Z"
 }
