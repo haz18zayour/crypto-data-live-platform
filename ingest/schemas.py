@@ -377,15 +377,20 @@ class FredSeriesObservationsResponse(BaseModel):
 
 
 class SosoValueEtfSummaryHistoryEntry(BaseModel):
-    """One aggregate row from SoSoValue's ETF summary-history endpoint."""
+    """One aggregate row from SoSoValue's ETF summary-history endpoint.
+
+    Confirmed live, 2026-09-28: money fields arrive as JSON floats, not the long-decimal
+    strings the original research (and docs examples) described — StrictFloat here, parsed
+    via Decimal(str(value)) in the fetcher to avoid float-to-Decimal binary imprecision.
+    """
 
     model_config = ConfigDict(extra="forbid", frozen=True)
 
     date: StrictStr
-    total_net_inflow: StrictStr
-    total_value_traded: StrictStr
-    total_net_assets: StrictStr
-    cum_net_inflow: StrictStr
+    total_net_inflow: StrictFloat
+    total_value_traded: StrictFloat
+    total_net_assets: StrictFloat
+    cum_net_inflow: StrictFloat
 
 
 class SosoValueEtfSummaryHistoryResponse(BaseModel):
@@ -396,3 +401,6 @@ class SosoValueEtfSummaryHistoryResponse(BaseModel):
     code: StrictInt
     message: StrictStr
     data: tuple[SosoValueEtfSummaryHistoryEntry, ...]
+    # Present on every real response (confirmed live, 2026-09-28), always null so far, but
+    # extra="forbid" rejects it if undeclared.
+    details: object | None = None

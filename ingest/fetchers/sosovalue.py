@@ -50,9 +50,12 @@ def _api_key() -> str | None:
     return token.strip()
 
 
-def _parse_money(value: str) -> Decimal:
+def _parse_money(value: float) -> Decimal:
+    # Convert via str(), never Decimal(float) directly - the latter preserves the float's
+    # own binary imprecision (e.g. Decimal(0.1) != Decimal("0.1")), which would drift
+    # PRD-002's determinism golden files despite the source value being unchanged.
     try:
-        return Decimal(value)
+        return Decimal(str(value))
     except InvalidOperation as error:
         raise ValueError(f"SoSoValue money field is not numeric: {value}") from error
 

@@ -7,7 +7,6 @@ import pytest
 from pydantic import ValidationError
 
 from ingest.fetchers.sosovalue import (
-    SOSOVALUE_SUMMARY_HISTORY_ENDPOINT,
     SosoValueEtfFlowOk,
     fetch_etf_net_flow,
 )
@@ -16,7 +15,7 @@ from ingest.status import Error, Reason
 
 
 def sosovalue_payload(
-    rows: list[dict[str, str]],
+    rows: list[dict[str, object]],
     *,
     code: int = 0,
     message: str = "success",
@@ -27,14 +26,16 @@ def sosovalue_payload(
 def summary_row(
     *,
     date: str = "2026-09-25",
-    total_net_inflow: str = "-55066297.0000000000000000",
-) -> dict[str, str]:
+    total_net_inflow: float = -55066297.155,
+) -> dict[str, object]:
+    # Confirmed live, 2026-09-28: SoSoValue returns these as JSON floats, not the
+    # long-decimal strings originally assumed from research/docs examples.
     return {
         "date": date,
         "total_net_inflow": total_net_inflow,
-        "total_value_traded": "13534833596.0950000000000000",
-        "total_net_assets": "152000000000.0000000000000000",
-        "cum_net_inflow": "44000000000.0000000000000000",
+        "total_value_traded": 13534833596.095,
+        "total_net_assets": 152000000000.0,
+        "cum_net_inflow": 44000000000.0,
     }
 
 
@@ -88,7 +89,7 @@ def test_btc_eth_and_sol_return_real_decimal_net_flow_values(symbol: str) -> Non
         [
             summary_row(
                 date="2026-09-25",
-                total_net_inflow="-55066297.0000000000000000",
+                total_net_inflow=-55066297.155,
             )
         ]
     )
@@ -100,15 +101,18 @@ def test_btc_eth_and_sol_return_real_decimal_net_flow_values(symbol: str) -> Non
         result = fetch_etf_net_flow(symbol, client=client, api_key="test-key")
 
     assert isinstance(result, SosoValueEtfFlowOk)
-    assert result.value == Decimal("-55066297.0000000000000000")
+    assert result.value == Decimal("-55066297.155")
     assert not isinstance(result.value, float)
     assert result.source_timestamp == datetime(2026, 9, 25, tzinfo=UTC)
     assert result.reference_period == "2026-09-25"
     assert result.published_at == datetime(2026, 9, 25, tzinfo=UTC)
 
 
-def test_long_decimal_money_round_trips_without_float_precision_loss() -> None:
-    money = "12345678901234567890.1234567890123456"
+def test_money_round_trips_via_str_conversion_without_binary_float_noise() -> None:
+    # Decimal(str(value)) must be used, never Decimal(value) directly on a float - the
+    # latter preserves the float's own binary imprecision. 0.1 is the canonical example:
+    # Decimal(0.1) != Decimal("0.1") because 0.1 has no exact binary representation.
+    money = 190646110.255
 
     def handler(request: httpx.Request) -> httpx.Response:
         return httpx.Response(
@@ -121,17 +125,15 @@ def test_long_decimal_money_round_trips_without_float_precision_loss() -> None:
         result = fetch_etf_net_flow("BTC", client=client, api_key="test-key")
 
     assert isinstance(result, SosoValueEtfFlowOk)
-    assert result.value == Decimal(money)
-    assert format(result.value, "f") == money
+    assert result.value == Decimal("190646110.255")
+    assert result.value != Decimal(money)  # proves str() conversion is load-bearing
 
 
 def test_reported_zero_persists_as_real_ok_zero_not_unavailable() -> None:
     def handler(request: httpx.Request) -> httpx.Response:
         return httpx.Response(
             200,
-            json=sosovalue_payload(
-                [summary_row(total_net_inflow="0.0000000000000000")]
-            ),
+            json=sosovalue_payload([summary_row(total_net_inflow=0.0)]),
             request=request,
         )
 
@@ -140,7 +142,7 @@ def test_reported_zero_persists_as_real_ok_zero_not_unavailable() -> None:
 
     assert isinstance(result, SosoValueEtfFlowOk)
     assert result.status == "OK"
-    assert result.value == Decimal("0.0000000000000000")
+    assert result.value == Decimal(0)
 
 
 def test_bnb_returns_not_definable_with_sosovalue_enum_reason() -> None:
@@ -203,8 +205,8 @@ def test_response_model_rejects_added_renamed_or_retyped_fields() -> None:
         SosoValueEtfSummaryHistoryResponse.model_validate(renamed)
 
     retyped = sosovalue_payload([summary_row()])
-    retyped["data"][0]["total_net_inflow"] = 0.0  # type: ignore[index]
-    with pytest.raises(ValidationError, match="string_type"):
+    retyped["data"][0]["total_net_inflow"] = "not-a-number"  # type: ignore[index]
+    with pytest.raises(ValidationError, match="float_type"):
         SosoValueEtfSummaryHistoryResponse.model_validate(retyped)
 
 
@@ -231,5 +233,10 @@ def test_live_sosovalue_request_returns_real_etf_flow_data_for_one_asset() -> No
     result = fetch_etf_net_flow("BTC")
 
     assert isinstance(result, SosoValueEtfFlowOk), result
-    assert result.value == result.value
+    assert isinstance(result.value, Decimal)
     assert result.reference_period
+    # A real trading-day date string (YYYY-MM-DD), not an empty/placeholder value.
+    assert len(result.reference_period) == 10
+    assert result.reference_period[4] == "-" and result.reference_period[7] == "-"
+    assert result.published_at.tzinfo is not None
+    assert result.published_at <= datetime.now(UTC)

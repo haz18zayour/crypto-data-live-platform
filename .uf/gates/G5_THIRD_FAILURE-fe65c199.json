@@ -1,0 +1,22 @@
+{
+  "gate": "G5_THIRD_FAILURE",
+  "question": "US-804 has failed 3 times — is the story wrong?",
+  "feature": "PRD-008-macro-flows",
+  "story": "US-804",
+  "options": [
+    "split",
+    "rewrite-criteria",
+    "skip",
+    "retry-anyway"
+  ],
+  "context": "Criteria judged not met:\n  - US-804-C8: The only live test calls fetch_etf_net_flow('BTC') directly, in isolation. Nothing in ingest/ calls fetch_etf_net_flow or the fetch_*_etf_net_flow helpers (grep finds only their definitions), so the fetcher is not wired into any runner or pipeline entry point. The test also skips when SOSOVALUE_API_KEY is unset. No gate result shows it ran against the real endpoint. Its main assertion is the tautology `result.value == result.value`.",
+  "defaultOnTimeout": "block",
+  "answer": {
+    "choice": "skip",
+    "reason": "SOSOVALUE_API_KEY now provisioned. Fixed a real tautological test assertion, and two live-discovered schema defects (float not string money fields, undeclared details field). Pipeline-wiring concern confirmed out of scope per PRD-007 US-701 precedent.",
+    "at": "2026-09-28T06:10:00.000Z",
+    "by": "human"
+  },
+  "id": "G5_THIRD_FAILURE-fe65c199",
+  "openedAt": "2026-09-27T23:47:20.433Z"
+}
