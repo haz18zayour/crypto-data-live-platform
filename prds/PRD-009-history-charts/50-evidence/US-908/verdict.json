@@ -1,0 +1,56 @@
+{
+  "storyId": "US-908",
+  "passes": false,
+  "verifier": {
+    "agent": "claude",
+    "sandbox": "not-run"
+  },
+  "implementer": "claude",
+  "results": [
+    {
+      "criterionId": "US-908-C1",
+      "met": false,
+      "note": "not judged — a cheaper layer already failed"
+    },
+    {
+      "criterionId": "US-908-C2",
+      "met": false,
+      "note": "not judged — a cheaper layer already failed"
+    },
+    {
+      "criterionId": "US-908-C3",
+      "met": false,
+      "note": "not judged — a cheaper layer already failed"
+    },
+    {
+      "criterionId": "US-908-C4",
+      "met": false,
+      "note": "not judged — a cheaper layer already failed"
+    },
+    {
+      "criterionId": "US-908-C5",
+      "met": false,
+      "note": "not judged — a cheaper layer already failed"
+    },
+    {
+      "criterionId": "US-908-C6",
+      "met": false,
+      "note": "not judged — a cheaper layer already failed"
+    },
+    {
+      "criterionId": "US-908-C7",
+      "met": false,
+      "note": "not judged — a cheaper layer already failed"
+    },
+    {
+      "criterionId": "US-908-C8",
+      "met": false,
+      "note": "not judged — a cheaper layer already failed"
+    }
+  ],
+  "tripwires": [
+    "criterion US-908-C7 requires a screenshot at the sparkline is visible on the rendered board for at least one real cell with sufficient history, with axis labels legible at the board's existing cell size — it does not exist"
+  ],
+  "note": "gates failed: test, US-908-C8 | tripwires: criterion US-908-C7 requires a screenshot at the sparkline is visible on the rendered board for at least one real cell with sufficient history, with axis labels legible at the board's existing cell size — it does not exist",
+  "at": "2026-09-28T23:57:56.556Z"
+}

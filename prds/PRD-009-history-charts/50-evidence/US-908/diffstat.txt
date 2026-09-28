@@ -1,0 +1,9 @@
+.uf/events.ndjson                                  |   2 +
+ SESSION.md                                         |   5 +-
+ .../50-evidence/US-908/capture-sparkline.mjs       |  76 +++++
+ web/src/CellDetail.tsx                             |  55 ++-
+ web/src/Sparkline.test.tsx                         | 372 +++++++++++++++++++++
+ web/src/Sparkline.tsx                              |  99 ++++++
+ web/src/history.ts                                 |  52 +++
+ web/src/styles.css                                 |  72 ++++
+ 8 files changed, 730 insertions(+), 3 deletions(-)
