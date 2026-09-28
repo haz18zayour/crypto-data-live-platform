@@ -1,9 +1,15 @@
+import os
+from collections.abc import Iterator
 from datetime import UTC, datetime, timedelta
+from pathlib import Path
+from uuid import uuid4
 
 import httpx
+import psycopg
 import pytest
+from psycopg import sql
 
-from ingest.backfill import BACKFILL_RECIPES
+from ingest.backfill import BACKFILL_RECIPES, run_backfill
 from ingest.fetchers.coinmetrics import (
     BACKFILL_PAGE_SIZE,
     COINMETRICS_ASSET_METRICS_ENDPOINT,
@@ -16,10 +22,81 @@ from ingest.fetchers.coinmetrics import (
 from ingest.registry import load_registry
 
 NOW = datetime(2026, 9, 28, 12, tzinfo=UTC)
+MIGRATIONS = Path(__file__).resolve().parents[1] / "supabase" / "migrations"
+ENV_FILE = MIGRATIONS.parents[1] / ".env.local"
 
 
 def definition(key: str):
     return next(entry for entry in load_registry().root if entry.key == key)
+
+
+def _database_url() -> str:
+    database_url = os.environ.get("TEST_DATABASE_URL") or os.environ.get("DATABASE_URL")
+    if database_url:
+        return database_url
+
+    if ENV_FILE.exists():
+        for line in ENV_FILE.read_text(encoding="utf-8").splitlines():
+            key, separator, value = line.partition("=")
+            if separator and key.strip() == "DATABASE_URL" and value.strip():
+                return value.strip().strip("'\"")
+
+    raise RuntimeError(
+        "Live Coin Metrics backfill persistence test requires TEST_DATABASE_URL, "
+        "DATABASE_URL, or DATABASE_URL in .env.local"
+    )
+
+
+@pytest.fixture(scope="module")
+def postgres() -> Iterator[psycopg.Connection[tuple[object, ...]]]:
+    schema = f"test_backfill_coinmetrics_{uuid4().hex}"
+    try:
+        connection = psycopg.connect(_database_url(), autocommit=True)
+    except psycopg.OperationalError:
+        raise RuntimeError(
+            "Live Coin Metrics backfill persistence test could not connect; check "
+            "TEST_DATABASE_URL, DATABASE_URL, or DATABASE_URL in .env.local"
+        ) from None
+
+    with connection:
+        with connection.transaction():
+            connection.execute(
+                """
+                DO $$
+                BEGIN
+                  IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'anon') THEN
+                    CREATE ROLE anon NOLOGIN;
+                  END IF;
+                  IF NOT EXISTS (
+                    SELECT FROM pg_roles WHERE rolname = 'authenticated'
+                  ) THEN
+                    CREATE ROLE authenticated NOLOGIN;
+                  END IF;
+                END
+                $$;
+                """
+            )
+            connection.execute(
+                sql.SQL("create schema {}").format(sql.Identifier(schema))
+            )
+            schema_name = sql.Identifier(schema).as_string(connection)
+            for migration in sorted(MIGRATIONS.glob("*.sql")):
+                migration_sql = migration.read_text(encoding="utf-8").replace(
+                    "public.", f"{schema_name}."
+                )
+                connection.execute(migration_sql)
+        connection.execute(
+            sql.SQL("set search_path to {}").format(sql.Identifier(schema))
+        )
+
+        try:
+            yield connection
+        finally:
+            connection.execute(
+                sql.SQL("drop schema if exists {} cascade").format(
+                    sql.Identifier(schema)
+                )
+            )
 
 
 def catalog_payload(
@@ -281,16 +358,57 @@ def test_pagination_next_page_url_is_followed_unmodified_without_losing_rows() -
 
 
 @pytest.mark.integration
-def test_live_coinmetrics_backfill_earliest_btc_active_addresses_matches_catalog_min_time() -> (
-    None
-):
+def test_live_coinmetrics_run_backfill_persists_earliest_btc_active_addresses_at_catalog_min_time(
+    postgres: psycopg.Connection[tuple[object, ...]],
+) -> None:
     entry = definition("btc_active_addresses")
     catalog_min_times = _catalog_metric_min_times("BTC", ("AdrActCnt",))
 
-    runs = backfill_coinmetrics_asset_metrics(entry)
+    live_runs = ()
 
-    assert runs
-    earliest = min(
-        run.indicators["btc_active_addresses"].source_timestamp for run in runs
+    def earliest_live_recipe(recipe_entry):
+        nonlocal live_runs
+        assert recipe_entry.key == entry.key
+        live_runs = backfill_coinmetrics_asset_metrics(recipe_entry)
+        assert live_runs
+        return (
+            min(
+                live_runs,
+                key=lambda run: run.indicators[
+                    "btc_active_addresses"
+                ].source_timestamp,
+            ),
+        )
+
+    row_ids = run_backfill(
+        postgres,
+        indicator_key="btc_active_addresses",
+        recipes={
+            **BACKFILL_RECIPES,
+            "coinmetrics_asset_metrics": earliest_live_recipe,
+        },
     )
-    assert earliest == catalog_min_times["AdrActCnt"]
+
+    assert row_ids
+    assert live_runs
+    earliest_run = min(
+        live_runs,
+        key=lambda run: run.indicators["btc_active_addresses"].source_timestamp,
+    )
+    earliest_result = earliest_run.indicators["btc_active_addresses"]
+    persisted = postgres.execute(
+        """
+        select value, source_timestamp, endpoint, source_field, origin
+        from datapoints
+        where id = any(%s)
+        """,
+        (list(row_ids),),
+    ).fetchone()
+    assert persisted is not None
+    value, source_timestamp, endpoint, source_field, origin = persisted
+    assert float(value) == earliest_result.value
+    assert source_timestamp == catalog_min_times["AdrActCnt"]
+    assert source_timestamp == earliest_result.source_timestamp
+    assert COINMETRICS_ASSET_METRICS_ENDPOINT in endpoint
+    assert "catalog-v2 min_time AdrActCnt=" in source_field
+    assert origin == "backfill"

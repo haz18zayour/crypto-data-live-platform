@@ -33,10 +33,10 @@ open prds/PRD-005-dashboard/20-decisions.yaml
 | PRD-006-derivatives | 7 | 7 | **all green** |
 | PRD-007-onchain | 8 | 8 | **all green** |
 | PRD-008-macro-flows | 8 | 8 | **all green** |
-| PRD-009-history-charts | 9 | 3 | 3/9 |
+| PRD-009-history-charts | 9 | 4 | 4/9 |
 | PRD-012-cadence-split | 6 | 6 | **all green** |
 
-Spend to date: **$99.76** Claude · **262976k** Codex tokens.
+Spend to date: **$100.10** Claude · **264886k** Codex tokens.
 
 ## What happened
 
@@ -771,6 +771,12 @@ Spend to date: **$99.76** Claude · **262976k** Codex tokens.
 - 18:41  US-904 started, attempt 3 (codex)
 - 18:44  US-904 — codex finished `a87ee8b3` · 1199k tok
 - 18:46  US-904 **rejected** — 5/7 criteria, judged by claude · $0.47
+- 18:46  ⏸ **gate opened** — US-904 has failed 3 times — is the story wrong?
+- 22:35  US-904 **PASSED** — 7/7 criteria, judged by human
+- 22:35  ▶ gate answered **skip** — Attempt 3 added the missing live tests; running them directly surfaced 3 real bugs in the TESTS themselves (an off-by-one pagination cursor, a premature raise_for_status() crash, and a float64-precision-impossible tolerance) - each fixed after independently verifying production code was correct (a from-scratch MACD recomputation matched production exactly). A fourth apparent failure (funding-rate StopIteration) was confirmed transient via two independent non-reproductions. All 7 criteria now pass against real live OKX data. See verdict.json overrideReason.
+- 19:35  US-905 started, attempt 1 (codex)
+- 19:41  US-905 — codex finished `85fb9e93` · 1910k tok
+- 19:43  US-905 **rejected** — 5/6 criteria, judged by claude · $0.34
 
 <!-- uf:generated:end -->
 
