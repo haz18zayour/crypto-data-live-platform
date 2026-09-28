@@ -229,7 +229,6 @@ def test_backfill_writes_through_persist_board_with_backfill_origin(
     assert origins == ["backfill"]
 
 
-@pytest.mark.integration
 def test_backfill_rerun_persists_once_through_real_datapoint_identity(
     postgres: psycopg.Connection[tuple[object, ...]],
 ) -> None:
