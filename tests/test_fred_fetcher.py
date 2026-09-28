@@ -1,20 +1,24 @@
 import os
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 
 import httpx
 import pytest
 from pydantic import ValidationError
 
 from ingest.fetchers.fred import (
-    EARLIEST_REALTIME_START,
     FRED_SERIES_OBSERVATIONS_ENDPOINT,
     LATEST_REALTIME_END,
+    REALTIME_WINDOW_DAYS,
     FredOk,
     FredSeries,
     fetch_fred_series,
 )
 from ingest.schemas import FredSeriesObservationsResponse
 from ingest.status import Error, Reason
+
+# Arbitrary fixture value for building mock payloads - not the fetcher's real request
+# window, which is computed dynamically (see REALTIME_WINDOW_DAYS in ingest/fetchers/fred.py).
+FIXTURE_REALTIME_START = "1776-07-04"
 
 
 def fred_payload(
@@ -23,7 +27,7 @@ def fred_payload(
     output_type: int = 4,
 ) -> dict[str, object]:
     return {
-        "realtime_start": EARLIEST_REALTIME_START,
+        "realtime_start": FIXTURE_REALTIME_START,
         "realtime_end": LATEST_REALTIME_END,
         "observation_start": "1776-07-04",
         "observation_end": "9999-12-31",
@@ -115,7 +119,10 @@ def test_reference_period_is_observation_date_not_request_date() -> None:
     assert result.reference_period != "2026-09-27"
     request = requested[0]
     assert request.url.params["output_type"] == "4"
-    assert request.url.params["realtime_start"] == EARLIEST_REALTIME_START
+    expected_realtime_start = (
+        datetime.now(UTC) - timedelta(days=REALTIME_WINDOW_DAYS)
+    ).strftime("%Y-%m-%d")
+    assert request.url.params["realtime_start"] == expected_realtime_start
     assert request.url.params["realtime_end"] == LATEST_REALTIME_END
 
 
@@ -267,6 +274,28 @@ def test_malformed_response_becomes_fetch_failed_error() -> None:
 
 
 @pytest.mark.integration
+@pytest.mark.parametrize("series_id", ("VIXCLS", "DFF", "T10Y2Y", "DFII10"))
+def test_live_high_frequency_daily_series_do_not_exceed_frds_vintage_cap(
+    series_id: str,
+) -> None:
+    # Confirmed live, 2026-09-28: a realtime_start of 1776-07-04 makes FRED enumerate
+    # every vintage date in the window before it can filter to output_type=4's initial
+    # release, and a daily series (unlike CPIAUCSL/M2SL/DTWEXBGS, which are low-frequency
+    # enough to fit) has thousands of vintage dates - FRED 400s with "exceeds the maximum
+    # number of vintage dates allowed for this file type (2000)". This was invisible in
+    # US-802 because its only live test used CPIAUCSL, a monthly series that happens to
+    # fit under the cap even with the full historical range.
+    if not os.environ.get("FRED_API_KEY"):
+        pytest.skip("FRED_API_KEY is required for the live FRED vintage-cap probe")
+
+    result = fetch_fred_series(FredSeries(series_id=series_id))
+
+    assert isinstance(result, FredOk), result
+    assert result.reference_period
+    assert result.published_at.tzinfo is not None
+
+
+@pytest.mark.integration
 def test_live_fred_output_type_4_realtime_start_is_true_publication_date() -> None:
     api_key = os.environ.get("FRED_API_KEY")
     if not api_key:
@@ -292,7 +321,7 @@ def test_live_fred_output_type_4_realtime_start_is_true_publication_date() -> No
                 "api_key": api_key,
                 "file_type": "json",
                 "output_type": "4",
-                "realtime_start": EARLIEST_REALTIME_START,
+                "realtime_start": FIXTURE_REALTIME_START,
                 "realtime_end": LATEST_REALTIME_END,
                 "order_by": "observation_date",
                 "sort_order": "desc",

@@ -123,7 +123,7 @@ def test_us_708_registry_not_definable_reasons_are_unique() -> None:
 
 
 def test_us_808_rendered_board_and_source_never_label_the_fed_broad_index_with_proprietary_ice_name() -> None:
-    forbidden = "".join(("D", "X", "Y"))
+    forbidden = "".join(("D", "X", "Y"))  # noqa: FLY002 (must not appear as a literal below)
     offenders: list[str] = []
 
     for root in SOURCE_GREP_PATHS:

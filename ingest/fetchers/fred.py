@@ -2,7 +2,7 @@
 
 import os
 from dataclasses import dataclass, field
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from decimal import Decimal, InvalidOperation
 from typing import Literal
 
@@ -16,7 +16,15 @@ FRED_SERIES_OBSERVATIONS_ENDPOINT = (
     "https://api.stlouisfed.org/fred/series/observations"
 )
 REQUEST_TIMEOUT_SECONDS = 10
-EARLIEST_REALTIME_START = "1776-07-04"
+# Confirmed live, 2026-09-28: a realtime_start this far back makes FRED enumerate every
+# vintage date in the window before it can filter to the initial release. For a daily
+# series (VIXCLS, DFF, T10Y2Y, DFII10) that history exceeds 3000 vintage dates and FRED
+# 400s with "exceeds the maximum number of vintage dates allowed (2000)". We only ever
+# want the initial release of the newest few observations (limit=10, sort_order=desc), so
+# a window of a couple of years comfortably covers any revision to a recent observation
+# while staying far under the cap - verified to return identical values to the full
+# 1776-9999 range for the three low-frequency series that happened to fit under it.
+REALTIME_WINDOW_DAYS = 730
 LATEST_REALTIME_END = "9999-12-31"
 FRED_VALUE_FIELD = "FRED series/observations value; output_type=4 realtime_start"
 
@@ -121,12 +129,15 @@ def fetch_fred_series(
             detail="FRED_API_KEY is not configured",
         )
 
+    realtime_start = (
+        datetime.now(UTC) - timedelta(days=REALTIME_WINDOW_DAYS)
+    ).strftime("%Y-%m-%d")
     params = {
         "series_id": series.series_id,
         "api_key": token,
         "file_type": "json",
         "output_type": "4",
-        "realtime_start": EARLIEST_REALTIME_START,
+        "realtime_start": realtime_start,
         "realtime_end": LATEST_REALTIME_END,
         "order_by": "observation_date",
         "sort_order": "desc",
