@@ -1,0 +1,8 @@
+.uf/events.ndjson                                  |  2 +
+ SESSION.md                                         |  3 ++
+ .../50-evidence/US-808/adversarial-case.md         | 10 ++++
+ tests/test_registry_not_definable.py               | 55 ++++++++++++++++++++++
+ web/src/CellFace.test.tsx                          | 25 ++++++++++
+ web/src/CellFace.tsx                               |  7 +++
+ web/src/styles.css                                 |  7 +++
+ 7 files changed, 109 insertions(+)

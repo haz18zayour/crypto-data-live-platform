@@ -20,6 +20,8 @@ def persist_datapoint(
     asset: str,
     measured_on: str,
     result: Result,
+    reference_period: str | None = None,
+    published_at: datetime | None = None,
 ) -> int:
     """Persist one result and return its row id."""
 
@@ -40,6 +42,11 @@ def persist_datapoint(
         reason = result.reason.value
         source_timestamp = None
 
+    if published_at is not None and (
+        published_at.tzinfo is None or published_at.utcoffset() is None
+    ):
+        raise ValueError("published_at must be timezone-aware")
+
     identity = (
         f"{definition.key}\x1f{asset}\x1f{definition.vendor}\x1f"
         f"{source_timestamp.isoformat() if source_timestamp else '<NULL>'}"
@@ -54,6 +61,8 @@ def persist_datapoint(
         definition.source_field,
         fetched_at,
         source_timestamp,
+        reference_period,
+        published_at,
     )
 
     with connection.transaction():
@@ -78,9 +87,10 @@ def persist_datapoint(
                 """
                 insert into datapoints (
                   indicator_key, asset, measured_on, value, status, reason,
-                  source_vendor, endpoint, source_field, fetched_at, source_timestamp
+                  source_vendor, endpoint, source_field, fetched_at, source_timestamp,
+                  reference_period, published_at
                 ) values (
-                  %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s
+                  %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s
                 )
                 returning id
                 """,
@@ -98,7 +108,9 @@ def persist_datapoint(
                     endpoint = %s,
                     source_field = %s,
                     fetched_at = %s,
-                    source_timestamp = %s
+                    source_timestamp = %s,
+                    reference_period = %s,
+                    published_at = %s
                 where id = %s
                 returning id
                 """,

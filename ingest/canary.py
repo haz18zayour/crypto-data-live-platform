@@ -13,13 +13,17 @@ from pydantic import BaseModel, ValidationError
 from ingest.heartbeat import _ping
 from ingest.registry import IndicatorDefinition, load_registry
 from ingest.schemas import (
+    AlternativeMeFearGreedResponse,
     CoinMetricsAssetMetricsResponse,
+    DefiLlamaStablecoinChainsResponse,
+    FredSeriesObservationsResponse,
     OkxCandleResponse,
     OkxFundingRateHistoryResponse,
     OkxLongShortRatioResponse,
     OkxOpenInterestResponse,
     OkxTakerVolumeResponse,
     SolanaGetBlockResponse,
+    SosoValueEtfSummaryHistoryResponse,
     ValidatorsAppValidatorsResponse,
 )
 
@@ -31,6 +35,10 @@ RESPONSE_MODEL_TYPES: dict[str, type[BaseModel]] = {
     "okx_long_short_ratio": OkxLongShortRatioResponse,
     "okx_taker_volume": OkxTakerVolumeResponse,
     "coinmetrics_asset_metrics": CoinMetricsAssetMetricsResponse,
+    "fred_series_observations": FredSeriesObservationsResponse,
+    "sosovalue_etf_summary_history": SosoValueEtfSummaryHistoryResponse,
+    "defillama_stablecoinchains": DefiLlamaStablecoinChainsResponse,
+    "alternative_me_fear_greed": AlternativeMeFearGreedResponse,
     "solana_get_block": SolanaGetBlockResponse,
     "validators_app_validators": ValidatorsAppValidatorsResponse,
 }
@@ -146,6 +154,10 @@ def _check_endpoint(
                 token = os.environ.get("VALIDATORS_APP_API_TOKEN")
                 if token:
                     headers["Token"] = token
+            if definition.vendor == "sosovalue":
+                token = os.environ.get("SOSOVALUE_API_KEY")
+                if token:
+                    headers["x-soso-api-key"] = token
             response = client.get(
                 definition.endpoint,
                 headers=headers,

@@ -1,0 +1,10 @@
+.uf/config.json                                    |   4 +-
+ .uf/events.ndjson                                  |   8 +
+ SESSION.md                                         |  16 +-
+ ingest/fetchers/fred.py                            | 197 +++++++++++++
+ ingest/schemas.py                                  |  31 ++
+ .../50-evidence/US-802/diffstat.txt                |   9 +
+ .../50-evidence/US-802/gates.json                  |  20 ++
+ .../50-evidence/US-802/verdict.json                |  49 ++++
+ tests/test_fred_fetcher.py                         | 315 +++++++++++++++++++++
+ 9 files changed, 645 insertions(+), 4 deletions(-)

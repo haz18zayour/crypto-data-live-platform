@@ -32,9 +32,10 @@ open prds/PRD-005-dashboard/20-decisions.yaml
 | PRD-005-dashboard | 9 | 9 | **all green** |
 | PRD-006-derivatives | 7 | 7 | **all green** |
 | PRD-007-onchain | 8 | 8 | **all green** |
-| PRD-012-cadence-split | 6 | 5 | 5/6 |
+| PRD-008-macro-flows | 8 | 6 | 6/8 |
+| PRD-012-cadence-split | 6 | 6 | **all green** |
 
-Spend to date: **$80.52** Claude · **201164k** Codex tokens.
+Spend to date: **$86.33** Claude · **243558k** Codex tokens.
 
 ## What happened
 
@@ -618,6 +619,104 @@ Spend to date: **$80.52** Claude · **201164k** Codex tokens.
 - 12:21  US-1206 started, attempt 2 (codex)
 - 12:33  US-1206 — codex finished `b8bfc3b5` · 1715k tok
 - 12:48  US-1206 **rejected** — 0/3 criteria, judged by claude
+- 12:48  US-1206 started, attempt 3 (codex)
+- 13:00  US-1206 — codex finished `23c648f5` · 1200k tok
+- 13:15  US-1206 **rejected** — 0/3 criteria, judged by claude
+- 13:15  ⏸ **gate opened** — US-1206 has failed 3 times — is the story wrong?
+- 13:22  US-1206 **awaiting your judgement** — 2/3 criteria, judged by human
+- 13:22  ▶ gate answered **skip** — All 3 attempts failed on a poisoned pytest-of-user directory unrelated to this story (fixed). Verified both test-based criteria directly - both pass. Remaining [human] criterion opens G6_HUMAN-c5a6fc3d instead.
+- 13:22  ⏸ **gate opened** — US-1206: The demonstration item the acceptance protocol calls for, not a machine check
+- 13:34  ▶ gate answered **met** — Confirmed from real Healthchecks.io dashboard: crypto-data-ingest, ingest-medium, and ingest-fast each show as separate checks with their own distinct, recent last-ping timestamps and their own period/grace settings - not one shared heartbeat.
+- 13:34  👤 you judged US-1206 **met** — Confirmed from real Healthchecks.io dashboard: crypto-data-ingest, ingest-medium, and ingest-fast each show as separate checks with their own distinct, recent last-ping timestamps and their own period/grace settings - not one shared heartbeat.
+- 16:03  researched PRD-008-macro-flows — 24 sources · $2.25
+- 16:15  **PRD-008-macro-flows** compiled — 8 stories
+- 16:51  US-801 started, attempt 1 (codex)
+- 16:54  US-801 — codex finished `af424c24` · 794k tok
+- 17:24  US-801 **rejected** — 0/6 criteria, judged by claude
+- 17:24  US-801 started, attempt 2 (codex)
+- 17:30  US-801 — codex finished `ba3f20fd` · 1744k tok
+- 18:00  US-801 **rejected** — 0/6 criteria, judged by claude
+- 18:00  US-801 started, attempt 3 (codex)
+- 18:03  US-801 — codex finished `0248f3a0` · 1106k tok
+- 18:33  US-801 **rejected** — 0/6 criteria, judged by claude
+- 18:33  ⏸ **gate opened** — US-801 has failed 3 times — is the story wrong?
+- 18:40  US-801 **PASSED** — 6/6 criteria, judged by human
+- 18:40  ▶ gate answered **skip** — Root cause: implementer added an out-of-scope pyproject.toml change that overrode PRD-012s existing TEMP/TMP fix, recreating the poisoned-pytest-temp-dir class of failure. Reverted; verified clean (292/292 offline tests). Migration/persist.py/tests content independently verified correct. See verdict.json overrideReason.
+- 18:38  US-802 started, attempt 1 (codex)
+- 18:43  US-802 — codex finished `4ff8de75` · 1538k tok
+- 19:13  US-802 **rejected** — 0/7 criteria, judged by claude
+- 19:13  US-802 started, attempt 2 (codex)
+- 19:16  US-802 — codex finished `eda67269` · 573k tok
+- 19:46  US-802 **rejected** — 0/7 criteria, judged by claude
+- 19:46  US-802 started, attempt 3 (codex)
+- 19:53  US-802 — codex finished `684e54ec` · 2020k tok
+- 20:17  US-802 **rejected** — 0/7 criteria, judged by claude
+- 20:17  ⏸ **gate opened** — US-802 has failed 3 times — is the story wrong?
+- 19:35  US-802 **PASSED** — 7/7 criteria, judged by human
+- 19:35  ▶ gate answered **skip** — Root cause: story own [cmd:] criterion bypassed the existing env-injection wrapper, hitting the raw poisoned pytest-of-user dir. Fixed durably via a tests/conftest.py pytest_configure hook overriding tempfile.tempdir directly. Also corrected a flawed live-test assertion found via genuine live-probing. See verdict.json overrideReason.
+- 20:32  US-803 started, attempt 1 (codex)
+- 20:37  US-803 — codex finished `042453cc` · 2018k tok
+- 21:07  US-803 **rejected** — 0/6 criteria, judged by claude
+- 21:07  US-803 started, attempt 2 (codex)
+- 21:08  US-803 — codex finished `1457161b` · 441k tok
+- 21:19  US-803 **rejected** — 0/6 criteria, judged by claude
+- 21:19  US-803 started, attempt 3 (codex)
+- 21:26  US-803 — codex finished `e7845c89` · 1797k tok
+- 21:56  US-803 **rejected** — 0/6 criteria, judged by claude
+- 21:56  ⏸ **gate opened** — US-803 has failed 3 times — is the story wrong?
+
+### 2026-09-28
+
+- 01:15  US-803 **PASSED** — 6/6 criteria, judged by human
+- 01:15  ▶ gate answered **skip** — Real architecture gap: board model had no representation for market-wide data. Owner decided (via AskUserQuestion) on a 5th MACRO pseudo-asset column. Implemented: BOARD_ASSETS extended, registry keys renamed fred_*->macro_*, hardcoded board-cell-count tests updated to new real totals. See verdict.json overrideReason.
+
+### 2026-09-27
+
+- 22:10  US-804 started, attempt 1 (codex)
+- 22:15  US-804 — codex finished `fdf0ee2f` · 1777k tok
+- 22:45  US-804 **rejected** — 0/9 criteria, judged by claude
+- 22:45  US-804 started, attempt 2 (codex)
+- 22:51  US-804 — codex finished `926df031` · 1677k tok
+- 23:21  US-804 **rejected** — 0/9 criteria, judged by claude
+- 23:21  US-804 started, attempt 3 (codex)
+- 23:30  US-804 — codex finished `12735fed` · 4210k tok
+- 23:47  US-804 **rejected** — 8/9 criteria, judged by claude · $1.17
+- 23:47  ⏸ **gate opened** — US-804 has failed 3 times — is the story wrong?
+
+### 2026-09-28
+
+- 06:10  US-804 **PASSED** — 9/9 criteria, judged by human
+- 06:10  ▶ gate answered **skip** — SOSOVALUE_API_KEY now provisioned. Fixed a real tautological test assertion, and two live-discovered schema defects (float not string money fields, undeclared details field). Pipeline-wiring concern confirmed out of scope per PRD-007 US-701 precedent. See verdict.json overrideReason.
+- 05:55  US-805 started, attempt 1 (codex)
+- 06:01  US-805 — codex finished `9237f45a` · 2633k tok
+- 06:31  US-805 **rejected** — 0/8 criteria, judged by claude
+- 06:31  US-805 started, attempt 2 (codex)
+- 06:37  US-805 — codex finished `5b855c49` · 1763k tok
+- 07:07  US-805 **rejected** — 0/8 criteria, judged by claude
+- 07:07  US-805 started, attempt 3 (codex)
+- 07:13  US-805 — codex finished `e63cd602` · 1690k tok
+- 07:43  US-805 **rejected** — 0/8 criteria, judged by claude
+- 07:43  ⏸ **gate opened** — US-805 has failed 3 times — is the story wrong?
+- 08:05  US-805 **PASSED** — 8/8 criteria, judged by human
+- 08:05  ▶ gate answered **skip** — Root cause found and fixed: a real, live-discovered schema defect in ingest/schemas.py (DefiLlamaStablecoinChain.gecko_id/token_symbol and DefiLlamaPeggedAmounts.pegged_usd lacked defaults, so DefiLlama's real /stablecoinchains response omits these keys for many chains and failed validation for every request). Undiscoverable by codex's own sandbox, which has no live network access. Fixed and verified live. See verdict.json overrideReason.
+- 08:04  US-806 started, attempt 1 (codex)
+- 08:08  US-806 — codex finished `4c00e7c4` · 1972k tok
+- 08:08  US-806 **rejected** — 0/7 criteria, judged by claude
+- 08:08  US-806 started, attempt 2 (codex)
+- 08:18  US-806 — codex finished `51666355` · 1153k tok
+- 08:19  US-806 **rejected** — 6/7 criteria, judged by claude · $1.11
+- 08:19  US-806 started, attempt 3 (codex)
+- 08:26  US-806 — codex finished `d6eccf18` · 3360k tok
+- 08:27  US-806 **PASSED** — 7/7 criteria, judged by claude · $1.28
+- 08:27  US-807 started, attempt 1 (codex)
+- 08:39  US-807 — codex finished `307b08b6` · 8928k tok
+- 08:40  US-807 **rejected** — 0/6 criteria, judged by claude
+- 08:40  US-807 started, attempt 2 (codex)
+- 08:40  US-807 — codex finished `efe58d3f`
+- 08:40  US-807 **rejected** — 0/6 criteria, judged by claude
+- 08:40  US-807 started, attempt 3 (codex)
+- 08:41  US-807 — codex finished `a0a54a71`
+- 08:41  US-807 **rejected** — 0/6 criteria, judged by claude
 
 <!-- uf:generated:end -->
 

@@ -343,3 +343,129 @@ class ValidatorsAppValidatorsResponse(RootModel[tuple[ValidatorsAppValidator, ..
     """The response contract for Validators.app's validators-list endpoint."""
 
     model_config = ConfigDict(frozen=True)
+
+
+class FredObservation(BaseModel):
+    """One observation row from FRED's series/observations endpoint."""
+
+    model_config = ConfigDict(extra="forbid", frozen=True)
+
+    realtime_start: StrictStr
+    realtime_end: StrictStr
+    date: StrictStr
+    value: StrictStr
+
+
+class FredSeriesObservationsResponse(BaseModel):
+    """The response contract for FRED's series/observations endpoint."""
+
+    model_config = ConfigDict(extra="forbid", frozen=True)
+
+    realtime_start: StrictStr
+    realtime_end: StrictStr
+    observation_start: StrictStr
+    observation_end: StrictStr
+    units: StrictStr
+    output_type: StrictInt
+    file_type: StrictStr
+    order_by: StrictStr
+    sort_order: StrictStr
+    count: StrictInt
+    offset: StrictInt
+    limit: StrictInt
+    observations: tuple[FredObservation, ...]
+
+
+class SosoValueEtfSummaryHistoryEntry(BaseModel):
+    """One aggregate row from SoSoValue's ETF summary-history endpoint.
+
+    Confirmed live, 2026-09-28: money fields arrive as JSON floats, not the long-decimal
+    strings the original research (and docs examples) described — StrictFloat here, parsed
+    via Decimal(str(value)) in the fetcher to avoid float-to-Decimal binary imprecision.
+    """
+
+    model_config = ConfigDict(extra="forbid", frozen=True)
+
+    date: StrictStr
+    total_net_inflow: StrictFloat
+    total_value_traded: StrictFloat
+    total_net_assets: StrictFloat
+    cum_net_inflow: StrictFloat
+
+
+class SosoValueEtfSummaryHistoryResponse(BaseModel):
+    """The response contract for SoSoValue's ETF summary-history endpoint."""
+
+    model_config = ConfigDict(extra="forbid", frozen=True)
+
+    code: StrictInt
+    message: StrictStr
+    data: tuple[SosoValueEtfSummaryHistoryEntry, ...]
+    # Present on every real response (confirmed live, 2026-09-28), always null so far, but
+    # extra="forbid" rejects it if undeclared.
+    details: object | None = None
+
+
+class AlternativeMeFearGreedEntry(BaseModel):
+    """One row from alternative.me's Fear & Greed API."""
+
+    model_config = ConfigDict(extra="forbid", frozen=True)
+
+    value: StrictStr
+    value_classification: StrictStr
+    timestamp: StrictStr
+    time_until_update: StrictStr | None = None
+
+
+class AlternativeMeFearGreedMetadata(BaseModel):
+    """Metadata wrapper returned by alternative.me's Fear & Greed API."""
+
+    model_config = ConfigDict(extra="forbid", frozen=True)
+
+    error: object | None
+
+
+class AlternativeMeFearGreedResponse(BaseModel):
+    """The response contract for alternative.me's Fear & Greed endpoint."""
+
+    model_config = ConfigDict(extra="forbid", frozen=True)
+
+    name: StrictStr
+    data: tuple[AlternativeMeFearGreedEntry, ...]
+    metadata: AlternativeMeFearGreedMetadata
+
+
+class DefiLlamaPeggedAmounts(BaseModel):
+    """Stablecoin totals grouped by the fiat/asset peg tracked by DefiLlama."""
+
+    model_config = ConfigDict(extra="allow", frozen=True)
+
+    # Confirmed live, 2026-09-28: chains with no USD-pegged stablecoin at all (only
+    # EUR/CHF/VAR-pegged, etc.) omit this key entirely rather than sending peggedUSD: 0.
+    # Defaulting to 0 here is the true value, not a proxy for missing data - a chain that
+    # genuinely has no USD-pegged stablecoin genuinely has a zero USD-pegged supply.
+    pegged_usd: StrictFloat | StrictInt = Field(alias="peggedUSD", default=0)
+
+
+class DefiLlamaStablecoinChain(BaseModel):
+    """One current stablecoin-supply total from DefiLlama's chain list."""
+
+    model_config = ConfigDict(extra="forbid", frozen=True)
+
+    # Confirmed live, 2026-09-28: DefiLlama omits these keys entirely for many chains
+    # (e.g. Manta, ThunderCore) rather than sending an explicit null, so both need a
+    # default or every real response fails validation.
+    gecko_id: StrictStr | None = None
+    total_circulating_usd: DefiLlamaPeggedAmounts = Field(
+        alias="totalCirculatingUSD"
+    )
+    token_symbol: StrictStr | None = Field(default=None, alias="tokenSymbol")
+    name: StrictStr
+
+
+class DefiLlamaStablecoinChainsResponse(
+    RootModel[tuple[DefiLlamaStablecoinChain, ...]]
+):
+    """The response contract for DefiLlama's stablecoinchains endpoint."""
+
+    model_config = ConfigDict(frozen=True)

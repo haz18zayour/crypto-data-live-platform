@@ -1,0 +1,22 @@
+{
+  "gate": "G5_THIRD_FAILURE",
+  "question": "US-805 has failed 3 times — is the story wrong?",
+  "feature": "PRD-008-macro-flows",
+  "story": "US-805",
+  "options": [
+    "split",
+    "rewrite-criteria",
+    "skip",
+    "retry-anyway"
+  ],
+  "context": "Criteria judged not met:\n  - US-805-C1: not judged — a cheaper layer already failed\n  - US-805-C2: not judged — a cheaper layer already failed\n  - US-805-C3: not judged — a cheaper layer already failed\n  - US-805-C4: not judged — a cheaper layer already failed\n  - US-805-C5: not judged — a cheaper layer already failed\n  - US-805-C6: not judged — a cheaper layer already failed\n  - US-805-C7: not judged — a cheaper layer already failed\n  - US-805-C8: not judged — a cheaper layer already failed",
+  "defaultOnTimeout": "block",
+  "answer": {
+    "choice": "skip",
+    "reason": "Root cause found and fixed: a real, live-discovered schema defect in ingest/schemas.py (DefiLlamaStablecoinChain.gecko_id/token_symbol and DefiLlamaPeggedAmounts.pegged_usd lacked defaults, so DefiLlama's real /stablecoinchains response - which omits these keys for many chains - failed validation for every request). Undiscoverable by codex's own sandbox, which has no live network access. Fixed and verified live: all three tracked chains (ETH/SOL/BNB) now return real Decimal values, BTC still correctly NOT_DEFINABLE. Full suite green on current HEAD.",
+    "at": "2026-09-28T08:05:00.000Z",
+    "by": "human"
+  },
+  "id": "G5_THIRD_FAILURE-22c943d6",
+  "openedAt": "2026-09-28T07:43:13.543Z"
+}

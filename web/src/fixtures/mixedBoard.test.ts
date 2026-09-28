@@ -22,6 +22,10 @@ type FixtureRegistryEntry = BoardRegistryEntry & {
 };
 
 const registry = parse(registryYaml) as FixtureRegistryEntry[];
+const boardAssetSet: ReadonlySet<string> = new Set(BOARD_ASSETS);
+const boardRegistry = registry.filter((definition) =>
+  definition.definable_for.some((asset) => boardAssetSet.has(asset)),
+);
 
 describe("mixed board fixture", () => {
   test("the fixture contains at least one cell in each of OK STALE NOT_DEFINABLE and FETCH_FAILED", () => {
@@ -43,7 +47,7 @@ describe("mixed board fixture", () => {
         cell.state.status === "UNAVAILABLE" &&
         cell.state.reason === "NOT_DEFINABLE",
     );
-    expect(notDefinableCells).toHaveLength(9);
+    expect(notDefinableCells).toHaveLength(11);
     for (const cell of notDefinableCells) {
       expect(cell.state).toHaveProperty("detail");
       expect("detail" in cell.state && cell.state.detail.trim()).toBeTruthy();
@@ -87,11 +91,11 @@ describe("mixed board fixture", () => {
       .filter((state): state is Datapoint => "indicatorKey" in state);
     const [calledRegistry, calledRows, calledAssets] = fixtureBuild.calls[0];
 
-    expect(fixtureDatapoints).toHaveLength(registry.length);
+    expect(fixtureDatapoints).toHaveLength(boardRegistry.length);
     expect(calledRegistry).toEqual(registry);
-    expect(calledRows).toHaveLength(registry.length);
+    expect(calledRows).toHaveLength(boardRegistry.length);
     expect(calledRows.map((row) => row.indicatorKey)).toEqual(
-      registry.map((definition) => definition.key),
+      boardRegistry.map((definition) => definition.key),
     );
     expect(calledAssets).toEqual(BOARD_ASSETS);
     expect(fixtureBuild.results[0]?.value).toBe(mixedBoard);
@@ -107,7 +111,7 @@ describe("mixed board fixture", () => {
         "indicatorKey" in cell.state,
     );
 
-    expect(populatedCells).toHaveLength(registry.length);
+    expect(populatedCells).toHaveLength(boardRegistry.length);
     for (const cell of populatedCells) {
       const definition = registryByKey.get(cell.indicatorKey);
       expect(definition).toBeDefined();

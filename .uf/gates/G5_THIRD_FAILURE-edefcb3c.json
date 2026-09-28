@@ -1,0 +1,22 @@
+{
+  "gate": "G5_THIRD_FAILURE",
+  "question": "US-802 has failed 3 times — is the story wrong?",
+  "feature": "PRD-008-macro-flows",
+  "story": "US-802",
+  "options": [
+    "split",
+    "rewrite-criteria",
+    "skip",
+    "retry-anyway"
+  ],
+  "context": "Criteria judged not met:\n  - US-802-C1: not judged — a cheaper layer already failed\n  - US-802-C2: not judged — a cheaper layer already failed\n  - US-802-C3: not judged — a cheaper layer already failed\n  - US-802-C4: not judged — a cheaper layer already failed\n  - US-802-C5: not judged — a cheaper layer already failed\n  - US-802-C6: not judged — a cheaper layer already failed\n  - US-802-C7: not judged — a cheaper layer already failed",
+  "defaultOnTimeout": "block",
+  "answer": {
+    "choice": "skip",
+    "reason": "Root cause: story's own [cmd:] criterion bypassed the existing env-injection wrapper, hitting the raw poisoned pytest-of-user dir. Fixed durably via a tests/conftest.py pytest_configure hook overriding tempfile.tempdir directly. Also corrected a flawed live-test assertion found via genuine live-probing.",
+    "at": "2026-09-27T19:35:00.000Z",
+    "by": "human"
+  },
+  "id": "G5_THIRD_FAILURE-edefcb3c",
+  "openedAt": "2026-09-27T20:17:25.319Z"
+}

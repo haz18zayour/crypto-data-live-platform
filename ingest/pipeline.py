@@ -7,12 +7,32 @@ from dataclasses import dataclass, replace
 from datetime import UTC, date, datetime, timedelta
 from functools import partial
 from typing import Literal, cast
+from urllib.parse import parse_qs, urlparse
 
 import httpx
 import psycopg
 
 from ingest.compute import compute_indicator, daily_close
-from ingest.fetchers import coinbase, coinmetrics, okx, solana_rpc, validators_app
+from ingest.fetchers import (
+    alternative_me,
+    coinbase,
+    coinmetrics,
+    defillama_stablecoins,
+    fred,
+    okx,
+    solana_rpc,
+    sosovalue,
+    validators_app,
+)
+from ingest.fetchers.alternative_me import (
+    AlternativeMeFearGreedOk,
+    AlternativeMeFearGreedResult,
+)
+from ingest.fetchers.defillama_stablecoins import (
+    DefiLlamaStablecoinSupplyOk,
+    DefiLlamaStablecoinSupplyResult,
+)
+from ingest.fetchers.fred import FredOk, FredResult, FredSeries
 from ingest.fetchers.okx import INDICATOR_KEY, MEASURED_ON, fetch_btc_daily_close
 from ingest.fetchers.okx_derivatives import (
     FundingRateOk,
@@ -28,6 +48,7 @@ from ingest.fetchers.okx_derivatives import (
     fetch_open_interest,
     fetch_taker_ratio,
 )
+from ingest.fetchers.sosovalue import SosoValueEtfFlowOk, SosoValueEtfFlowResult
 from ingest.indicators import atr, bollinger_bands, ema, macd, obv, rsi, stochrsi
 from ingest.persist import persist_datapoint
 from ingest.registry import (
@@ -50,11 +71,24 @@ type MvrvFetcher = Callable[[str], Result]
 type ActiveAddressesFetcher = Callable[[str], Result]
 type ExchangeFlowFetcher = Callable[[str], Result]
 type StakingFetcher = Callable[[str], Result]
+type FredFetcher = Callable[[FredSeries], FredResult]
+type EtfFlowFetcher = Callable[[str], SosoValueEtfFlowResult]
+type StablecoinSupplyFetcher = Callable[[str], DefiLlamaStablecoinSupplyResult]
+type FearGreedFetcher = Callable[[], AlternativeMeFearGreedResult]
 type BoardResult = (
-    Result | FundingRateOk | OpenInterestOk | LongShortRatioOk | TakerRatioOk
+    Result
+    | FundingRateOk
+    | OpenInterestOk
+    | LongShortRatioOk
+    | TakerRatioOk
+    | FredOk
+    | SosoValueEtfFlowOk
+    | DefiLlamaStablecoinSupplyOk
+    | AlternativeMeFearGreedOk
 )
 
 SOL_ACTIVE_ADDRESSES_KEY = "sol_active_addresses"
+_MULTI_ASSET_RESULT_SEPARATOR = "\x1f"
 
 _HISTORY_NOTE = re.compile(
     r"^History availability measured (?P<date>\d{4}-\d{2}-\d{2}): "
@@ -301,6 +335,54 @@ def _fetch_asset_staking(asset: str) -> Result:
     return Unavailable(reason=Reason.NOT_DEFINABLE)
 
 
+def _fetch_fear_greed_index() -> AlternativeMeFearGreedResult:
+    return alternative_me.fetch_fear_greed_index()
+
+
+def _fetch_fred_series(series: FredSeries) -> FredResult:
+    return fred.fetch_fred_series(series)
+
+
+def _fetch_etf_net_flow(asset: str) -> SosoValueEtfFlowResult:
+    return sosovalue.fetch_etf_net_flow(asset)
+
+
+def _fetch_stablecoin_supply(asset: str) -> DefiLlamaStablecoinSupplyResult:
+    return defillama_stablecoins.fetch_stablecoin_supply(asset)
+
+
+def _series_id_from_endpoint(endpoint: str) -> str:
+    values = parse_qs(urlparse(endpoint).query).get("series_id")
+    if not values or not values[0].strip():
+        raise ValueError(f"FRED endpoint is missing series_id: {endpoint}")
+    return values[0]
+
+
+def _result_key(definition: IndicatorDefinition, asset: str) -> str:
+    if definition.definable_for == (asset,):
+        return definition.key
+    return f"{definition.key}{_MULTI_ASSET_RESULT_SEPARATOR}{asset}"
+
+
+def _definition_and_asset_for_result_key(
+    result_key: str,
+    definitions_by_key: Mapping[str, IndicatorDefinition],
+) -> tuple[IndicatorDefinition, str]:
+    if result_key in definitions_by_key:
+        definition = definitions_by_key[result_key]
+        return definition, definition.definable_for[0]
+
+    definition_key, separator, asset = result_key.partition(
+        _MULTI_ASSET_RESULT_SEPARATOR
+    )
+    if not separator:
+        raise KeyError(result_key)
+    definition = definitions_by_key[definition_key]
+    if asset not in definition.definable_for:
+        raise ValueError(f"{asset} is not declared for {definition.key}")
+    return definition, asset
+
+
 def _calculate(definition: IndicatorDefinition, bars: Sequence[Bar]) -> float:
     parameters = definition.parameters or {}
     if definition.key == INDICATOR_KEY:
@@ -356,6 +438,10 @@ def run_all_assets(
     fetch_active_addresses: ActiveAddressesFetcher | None = None,
     fetch_exchange_flow: ExchangeFlowFetcher | None = None,
     fetch_staking: StakingFetcher | None = None,
+    fetch_fred: FredFetcher | None = None,
+    fetch_etf_flow: EtfFlowFetcher | None = None,
+    fetch_stablecoin_supply: StablecoinSupplyFetcher | None = None,
+    fetch_fear_greed: FearGreedFetcher | None = None,
     excluded_indicator_keys: Collection[str] = (),
 ) -> FullAssetRun:
     """Fetch both venues and compute every registered board cell."""
@@ -419,6 +505,30 @@ def run_all_assets(
         for definition in registered
         if definition.key not in excluded_keys and definition.key.endswith("_staking")
     )
+    fred_definitions = tuple(
+        definition
+        for definition in registered
+        if definition.key not in excluded_keys
+        and definition.response_model == "fred_series_observations"
+    )
+    etf_flow_definitions = tuple(
+        definition
+        for definition in registered
+        if definition.key not in excluded_keys
+        and definition.response_model == "sosovalue_etf_summary_history"
+    )
+    stablecoin_supply_definitions = tuple(
+        definition
+        for definition in registered
+        if definition.key not in excluded_keys
+        and definition.response_model == "defillama_stablecoinchains"
+    )
+    fear_greed_definitions = tuple(
+        definition
+        for definition in registered
+        if definition.key not in excluded_keys
+        and definition.response_model == "alternative_me_fear_greed"
+    )
     by_asset = {
         asset: tuple(
             definition
@@ -464,6 +574,20 @@ def run_all_assets(
     )
     fetch_validators_app_staking: StakingFetcher = (
         _fetch_asset_staking if fetch_staking is None else fetch_staking
+    )
+    fetch_fred_macro: FredFetcher = (
+        _fetch_fred_series if fetch_fred is None else fetch_fred
+    )
+    fetch_sosovalue_etf_flow: EtfFlowFetcher = (
+        _fetch_etf_net_flow if fetch_etf_flow is None else fetch_etf_flow
+    )
+    fetch_defillama_stablecoin_supply: StablecoinSupplyFetcher = (
+        _fetch_stablecoin_supply
+        if fetch_stablecoin_supply is None
+        else fetch_stablecoin_supply
+    )
+    fetch_alternative_me_fear_greed: FearGreedFetcher = (
+        _fetch_fear_greed_index if fetch_fear_greed is None else fetch_fear_greed
     )
     history: dict[tuple[str, Venue], HistoryAssessment] = {}
     indicators: dict[str, BoardResult] = {}
@@ -556,6 +680,26 @@ def run_all_assets(
             definition.definable_for[0]
         )
 
+    for definition in fred_definitions:
+        series = FredSeries(
+            series_id=_series_id_from_endpoint(definition.endpoint),
+            source_field=definition.source_field,
+        )
+        indicators[definition.key] = fetch_fred_macro(series)
+
+    for definition in etf_flow_definitions:
+        for asset in definition.definable_for:
+            indicators[_result_key(definition, asset)] = fetch_sosovalue_etf_flow(asset)
+
+    for definition in stablecoin_supply_definitions:
+        for asset in definition.definable_for:
+            indicators[_result_key(definition, asset)] = (
+                fetch_defillama_stablecoin_supply(asset)
+            )
+
+    for definition in fear_greed_definitions:
+        indicators[definition.key] = fetch_alternative_me_fear_greed()
+
     return FullAssetRun(indicators=indicators, history=history)
 
 
@@ -585,27 +729,25 @@ def persist_board(
 ) -> tuple[int, ...]:
     """Persist one visible datapoint for every result in a full board run."""
 
-    definitions = tuple(
-        definition
-        for definition in load_registry().root
-        if definition.key in run.indicators
-    )
+    definitions_by_key = {
+        definition.key: definition for definition in load_registry().root
+    }
     row_ids: list[int] = []
-    for definition in definitions:
-        result = run.indicators.get(
-            definition.key, Unavailable(reason=Reason.NOT_FETCHED)
+    for result_key, result in run.indicators.items():
+        definition, asset = _definition_and_asset_for_result_key(
+            result_key, definitions_by_key
         )
         persisted_definition = definition
         persisted_result: Result
-        if isinstance(result, FundingRateOk):
-            persisted_definition = definition.model_copy(
-                update={"source_field": result.source_field}
-            )
-            persisted_result = Ok(result.value, result.source_timestamp)
-        elif isinstance(result, (OpenInterestOk, LongShortRatioOk, TakerRatioOk)):
-            persisted_result = Ok(result.value, result.source_timestamp)
-        else:
+        if isinstance(result, (Ok, Stale, Unavailable, Error)):
             persisted_result = result
+        else:
+            source_field = getattr(result, "source_field", None)
+            if source_field is not None:
+                persisted_definition = definition.model_copy(
+                    update={"source_field": source_field}
+                )
+            persisted_result = Ok(float(result.value), result.source_timestamp)
         if (
             isinstance(persisted_result, Ok)
             and (_utc_now() - persisted_result.source_timestamp).total_seconds()
@@ -616,13 +758,21 @@ def persist_board(
                 persisted_result.source_timestamp,
             )
 
+        reference_period = getattr(result, "reference_period", None)
+        published_at = getattr(result, "published_at", None)
         row_ids.append(
             persist_datapoint(
                 connection,
                 definition=persisted_definition,
-                asset=definition.definable_for[0],
-                measured_on=definition.definable_for[0],
+                asset=asset,
+                measured_on=asset,
                 result=persisted_result,
+                reference_period=(
+                    reference_period if isinstance(reference_period, str) else None
+                ),
+                published_at=(
+                    published_at if isinstance(published_at, datetime) else None
+                ),
             ),
         )
     return tuple(row_ids)

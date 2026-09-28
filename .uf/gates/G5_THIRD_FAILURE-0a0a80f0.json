@@ -1,0 +1,22 @@
+{
+  "gate": "G5_THIRD_FAILURE",
+  "question": "US-807 has failed 3 times — is the story wrong?",
+  "feature": "PRD-008-macro-flows",
+  "story": "US-807",
+  "options": [
+    "split",
+    "rewrite-criteria",
+    "skip",
+    "retry-anyway"
+  ],
+  "context": "Criteria judged not met:\n  - US-807-C1: not judged — a cheaper layer already failed\n  - US-807-C2: not judged — a cheaper layer already failed\n  - US-807-C3: not judged — a cheaper layer already failed\n  - US-807-C4: not judged — a cheaper layer already failed\n  - US-807-C5: not judged — a cheaper layer already failed\n  - US-807-C6: not judged — a cheaper layer already failed",
+  "defaultOnTimeout": "block",
+  "answer": {
+    "choice": "skip",
+    "reason": "All 3 attempts verified the same attempt-1 diff (2-3 hit codex's own usage quota before running). Fixed a real test whitelist gap (test_assets.py missing FredOk/SosoValueEtfFlowOk/DefiLlamaStablecoinSupplyOk), a real CI workflow gap (ingest.yml never passed FRED_API_KEY/SOSOVALUE_API_KEY to the daily job), and a real production gap (US-801's migration was written and checksummed but never applied to the live database) - applied with explicit owner authorization. Re-dispatched real CI (run 36425805380): succeeded in 2m17s. See verdict.json overrideReason.",
+    "at": "2026-09-28T13:10:00.000Z",
+    "by": "human"
+  },
+  "id": "G5_THIRD_FAILURE-0a0a80f0",
+  "openedAt": "2026-09-28T08:41:47.532Z"
+}

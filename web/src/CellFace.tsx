@@ -25,6 +25,10 @@ function isSourced(state: BoardCell["state"]): state is Datapoint {
   return "sourceVendor" in state;
 }
 
+function needsFaceDisclosure(state: BoardCell["state"]): state is Datapoint {
+  return isSourced(state) && state.indicatorKey === "fear_greed_index";
+}
+
 // Every state, OK included, goes through this one switch, so no value reaches the page without
 // passing the absence logic. Each face carries a glyph and a word as well as its colour class.
 function faceOf(state: BoardCell["state"], now: Date): Face {
@@ -135,6 +139,9 @@ export function CellFace({ cell, now }: { cell: BoardCell; now: Date }) {
                 {formatUtcTimestamp(cell.state.publishedAt)}
               </time>
             </span>
+          ) : null}
+          {needsFaceDisclosure(cell.state) ? (
+            <span className="cell-face-disclosure">{cell.state.sourceField}</span>
           ) : null}
         </>
       ) : null}

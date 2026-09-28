@@ -12,6 +12,22 @@ from ingest.registry import (
 
 GOLDEN_DIRECTORY = Path(__file__).with_name("goldens")
 FIXTURE_DIRECTORY = Path(__file__).with_name("fixtures")
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+SOURCE_GREP_PATHS = (
+    PROJECT_ROOT / "ingest",
+    PROJECT_ROOT / "web" / "src",
+    PROJECT_ROOT / "tests",
+)
+SOURCE_GREP_SUFFIXES = {
+    ".css",
+    ".json",
+    ".md",
+    ".py",
+    ".ts",
+    ".tsx",
+    ".yaml",
+    ".yml",
+}
 
 
 def definition_data() -> dict[str, object]:
@@ -106,10 +122,49 @@ def test_us_708_registry_not_definable_reasons_are_unique() -> None:
             seen[reason] = (entry.key, asset)
 
 
-def test_registry_coverage_still_passes_for_all_71_entries() -> None:
+def test_us_808_rendered_board_and_source_never_label_the_fed_broad_index_with_proprietary_ice_name() -> None:
+    forbidden = "".join(("D", "X", "Y"))  # noqa: FLY002 (must not appear as a literal below)
+    offenders: list[str] = []
+
+    for root in SOURCE_GREP_PATHS:
+        for path in root.rglob("*"):
+            if path.suffix not in SOURCE_GREP_SUFFIXES:
+                continue
+            text = path.read_text(encoding="utf-8", errors="ignore")
+            if forbidden in text:
+                offenders.append(str(path.relative_to(PROJECT_ROOT)))
+
+    assert offenders == []
+
+
+def test_us_808_macro_flow_not_definable_reasons_do_not_collapse_into_existing_board_reasons() -> None:
+    prd_reasons: dict[tuple[str, str], str] = {}
+    existing_reasons: dict[tuple[str, str], str] = {}
+
+    for entry in load_registry().root:
+        if entry.not_definable is None:
+            continue
+        for asset in entry.not_definable.assets:
+            destination = (
+                prd_reasons
+                if (entry.key, asset)
+                in {("spot_etf_net_flow", "BNB"), ("stablecoin_supply", "BTC")}
+                else existing_reasons
+            )
+            destination[(entry.key, asset)] = entry.not_definable.reason_for(asset)
+
+    assert set(prd_reasons) == {
+        ("spot_etf_net_flow", "BNB"),
+        ("stablecoin_supply", "BTC"),
+    }
+    assert len(set(prd_reasons.values())) == len(prd_reasons)
+    assert not (set(prd_reasons.values()) & set(existing_reasons.values()))
+
+
+def test_registry_coverage_still_passes_for_all_81_entries() -> None:
     registry = load_registry()
 
-    assert len(registry.root) == 71
+    assert len(registry.root) == 81
     assert_registry_coverage(
         registry,
         golden_keys={
@@ -122,3 +177,34 @@ def test_registry_coverage_still_passes_for_all_71_entries() -> None:
         },
         response_models=RESPONSE_MODELS,
     )
+
+
+def test_bnb_etf_flow_declares_sosovalue_enum_not_definable_reason() -> None:
+    etf_flow = next(
+        entry for entry in load_registry().root if entry.key == "spot_etf_net_flow"
+    )
+
+    assert etf_flow.definable_for == ("BTC", "ETH", "SOL")
+    assert etf_flow.not_definable is not None
+    assert etf_flow.not_definable.assets == ("BNB",)
+    reason = etf_flow.not_definable.reason_for("BNB")
+    assert "SoSoValue" in reason
+    assert "/etfs/summary-history" in reason
+    assert "does not include BNB" in reason
+
+
+def test_btc_stablecoin_supply_declares_defillama_chain_list_absence() -> None:
+    stablecoin_supply = next(
+        entry for entry in load_registry().root if entry.key == "stablecoin_supply"
+    )
+
+    assert stablecoin_supply.definable_for == ("ETH", "SOL", "BNB")
+    assert stablecoin_supply.not_definable is not None
+    assert stablecoin_supply.not_definable.assets == ("BTC",)
+    reason = stablecoin_supply.not_definable.reason_for("BTC")
+    assert "DefiLlama" in reason
+    assert "/stablecoinchains" in reason
+    assert "no Bitcoin entry" in reason
+    assert "Bitcoin has no stablecoin-supply concept" in reason
+    assert "SoSoValue" not in reason
+    assert "does not include BNB" not in reason

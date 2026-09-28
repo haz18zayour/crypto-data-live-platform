@@ -27,6 +27,8 @@ jobs:
     env:
       DATABASE_URL: ${{ secrets.DATABASE_URL }}
       HEALTHCHECKS_PING_URL: ${{ secrets.HEALTHCHECKS_PING_URL }}
+      FRED_API_KEY: ${{ secrets.FRED_API_KEY }}
+      SOSOVALUE_API_KEY: ${{ secrets.SOSOVALUE_API_KEY }}
     steps:
       - name: Check out repository
         uses: actions/checkout@v4

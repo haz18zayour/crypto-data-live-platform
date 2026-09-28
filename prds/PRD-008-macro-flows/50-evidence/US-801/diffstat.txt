@@ -1,0 +1,11 @@
+.uf/events.ndjson                                  |   8 +
+ SESSION.md                                         |  22 ++-
+ ingest/persist.py                                  |  18 +-
+ .../50-evidence/US-801/diffstat.txt                |  10 ++
+ .../50-evidence/US-801/gates.json                  |  20 +++
+ .../50-evidence/US-801/verdict.json                |  44 +++++
+ pyproject.toml                                     |   8 +-
+ ...datapoint_reference_period_and_published_at.sql |  50 ++++++
+ supabase/migrations/checksums.sha256               |   1 +
+ tests/test_persist.py                              | 199 +++++++++++++++++++++
+ 10 files changed, 374 insertions(+), 6 deletions(-)

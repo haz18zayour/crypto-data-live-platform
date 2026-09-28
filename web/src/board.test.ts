@@ -44,8 +44,8 @@ describe("buildBoard", () => {
   test("the board model built from the parsed registry and the four assets yields one cell per family and asset", () => {
     const board = buildBoard(registry, [], BOARD_ASSETS);
 
-    expect(board.families).toHaveLength(20);
-    expect(board.assets).toHaveLength(4);
+    expect(board.families).toHaveLength(30);
+    expect(board.assets).toHaveLength(5);
     expect(board.cells).toHaveLength(
       board.families.length * board.assets.length,
     );
@@ -91,6 +91,7 @@ describe("buildBoard", () => {
         reason: "NOT_DEFINABLE",
         detail: declaration ? declaredReason(declaration, "BNB") : undefined,
       },
+      { status: "UNAVAILABLE", reason: "NOT_FETCHED" },
     ]);
   });
 
@@ -133,6 +134,7 @@ describe("buildBoard", () => {
       { status: "UNAVAILABLE", reason: "NOT_FETCHED" },
       { status: "UNAVAILABLE", reason: "NOT_FETCHED" },
       { status: "UNAVAILABLE", reason: "NOT_FETCHED" },
+      { status: "UNAVAILABLE", reason: "NOT_FETCHED" },
     ]);
   });
 
@@ -144,6 +146,33 @@ describe("buildBoard", () => {
     expect(() => buildBoard(malformedRegistry, [], BOARD_ASSETS)).toThrow(
       /btc_daily_close.*bnb_/,
     );
+  });
+
+  test("a shared registry key with no asset prefix can define the same family for multiple assets", () => {
+    const sharedRegistry: BoardRegistryEntry[] = [
+      { key: "spot_etf_net_flow", definable_for: ["BTC", "ETH", "SOL"] },
+    ];
+    const rows = [
+      {
+        ...provenance("spot_etf_net_flow", "ETH"),
+        status: "OK",
+        value: 0,
+      },
+    ] satisfies Datapoint[];
+
+    const board = buildBoard(sharedRegistry, rows, BOARD_ASSETS);
+    const cellsByAsset = Object.fromEntries(
+      board.cells.map((cell) => [cell.asset, cell]),
+    );
+
+    expect(board.families).toEqual(["spot_etf_net_flow"]);
+    expect(cellsByAsset.BTC.indicatorKey).toBe("spot_etf_net_flow");
+    expect(cellsByAsset.ETH.state).toEqual(rows[0]);
+    expect(cellsByAsset.SOL.indicatorKey).toBe("spot_etf_net_flow");
+    expect(cellsByAsset.BNB.state).toEqual({
+      status: "UNAVAILABLE",
+      reason: "NOT_FETCHED",
+    });
   });
 
   test("a cell whose registry entry exists but whose board row is missing is also NOT_FETCHED", () => {
@@ -186,8 +215,13 @@ describe("buildBoard", () => {
       "STALE",
       "UNAVAILABLE",
       "ERROR",
+      "UNAVAILABLE",
     ]);
-    expect(board.cells.map((cell) => cell.state)).toEqual(rows);
+    expect(board.cells.slice(0, 4).map((cell) => cell.state)).toEqual(rows);
+    expect(board.cells[4].state).toEqual({
+      status: "UNAVAILABLE",
+      reason: "NOT_FETCHED",
+    });
     expect(board.cells[0].state).toHaveProperty("value", 12.25);
     expect(board.cells[1].state).toHaveProperty("value", -4.5);
   });

@@ -1,6 +1,9 @@
 import type { Datapoint } from "./datapoint";
 
-export const BOARD_ASSETS = ["BTC", "ETH", "SOL", "BNB"] as const;
+// MACRO is not a tracked crypto asset — it is the board's pseudo-asset column for
+// market-wide indicators (FRED macro series, Fear & Greed) that have no per-asset value.
+// Owner decision, 2026-09-28: represent it as a 5th column rather than a separate panel.
+export const BOARD_ASSETS = ["BTC", "ETH", "SOL", "BNB", "MACRO"] as const;
 
 export type BoardRegistryEntry = {
   key: string;
@@ -36,14 +39,23 @@ export type BoardModel = {
 
 // The strip is asserted, never defaulted: a key that does not begin with its own asset would
 // otherwise be filed quietly under the wrong row.
-function familyOf(key: string, asset: string): string {
+function familyOf(key: string, asset: string, assets: readonly string[]): string {
   const prefix = `${asset.toLowerCase()}_`;
-  if (!key.startsWith(prefix)) {
+  if (key.startsWith(prefix)) {
+    return key.slice(prefix.length);
+  }
+
+  const otherAssetPrefix = assets
+    .filter((candidate) => candidate !== asset)
+    .map((candidate) => `${candidate.toLowerCase()}_`)
+    .find((candidate) => key.startsWith(candidate));
+  if (otherAssetPrefix !== undefined) {
     throw new Error(
       `Registry key ${key} does not begin with its asset prefix ${prefix}`,
     );
   }
-  return key.slice(prefix.length);
+
+  return key;
 }
 
 export function buildBoard(
@@ -56,7 +68,10 @@ export function buildBoard(
   const notDefinableByCell = new Map<string, string>();
   for (const definition of definitions) {
     for (const asset of definition.definable_for) {
-      const family = familyOf(definition.key, asset);
+      if (!assets.includes(asset)) {
+        continue;
+      }
+      const family = familyOf(definition.key, asset, assets);
       families.add(family);
       definitionsByCell.set(`${family}:${asset}`, definition);
       const notDefinable = definition.not_definable;

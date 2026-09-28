@@ -1,0 +1,20 @@
+[
+  {
+    "name": "typecheck",
+    "run": "node -e \"const f=require('fs'),c=require('child_process');let r=0;const run=(cmd)=>{try{c.execSync(cmd,{stdio:'inherit'})}catch(e){r=1}};if(f.existsSync('web/package.json'))run('npm --prefix web run typecheck');if(f.existsSync('pyproject.toml'))run('uv run mypy ingest --strict');process.exit(r)\"",
+    "exitCode": 0,
+    "output": "\n> crypto-data-live-web@0.0.0 typecheck\n> tsc -b --pretty false\n\nSuccess: no issues found in 19 source files\r\n"
+  },
+  {
+    "name": "test",
+    "run": "node -e \"const f=require('fs'),c=require('child_process'),p=require('path');const tmp=p.join(process.cwd(),'.tmp','systemtemp');f.mkdirSync(tmp,{recursive:true});const env={...process.env,TEMP:tmp,TMP:tmp};let r=0;const run=(cmd)=>{try{c.execSync(cmd,{stdio:'inherit',env})}catch(e){r=1}};if(f.existsSync('web/package.json'))run('npm --prefix web test');if(f.existsSync('tests'))run('uv run pytest -q');process.exit(r)\"",
+    "exitCode": 1,
+    "output": "\n> crypto-data-live-web@0.0.0 pretest\n> playwright install chromium chromium-headless-shell\n\n\n> crypto-data-live-web@0.0.0 test\n> vitest run --configLoader runner\n\n\n RUN  v4.1.9 C:/Users/user/Desktop/Projects/crypto-data-live-platform/web\n\n\n Test Files  11 passed (11)\n      Tests  52 passed (52)\n   Start at  21:03:14\n   Duration  3.92s (transform 573ms, setup 1.73s, import 1.78s, tests 6.46s, environment 5.44s)\n\n.....E..................................EEEE.............E.............. [ 24%]\r\n........................................................................ [ 49%]\r\n.............\n"
+  },
+  {
+    "name": "US-801-C6",
+    "run": "uv run pytest -q",
+    "exitCode": 1,
+    "output": ".....E..................................EEEE.............E.............. [ 24%]\r\n........................................................................ [ 49%]\r\n.............\n"
+  }
+]

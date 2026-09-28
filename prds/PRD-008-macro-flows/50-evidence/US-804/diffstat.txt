@@ -1,0 +1,21 @@
+.env.example                                       |   3 +
+ .uf/events.ndjson                                  |   8 +
+ SESSION.md                                         |  22 +-
+ ingest/canary.py                                   |   6 +
+ ingest/fetchers/sosovalue.py                       | 158 ++++++++++++++
+ ingest/registry.yaml                               |  17 ++
+ ingest/schemas.py                                  |  22 ++
+ .../50-evidence/US-804/diffstat.txt                |  21 ++
+ .../50-evidence/US-804/gates.json                  |  20 ++
+ .../50-evidence/US-804/verdict.json                | 113 ++++++++++
+ tests/fixtures/sosovalue_etf_summary_history.json  |  13 ++
+ tests/test_coverage.py                             |   2 +-
+ tests/test_registry.py                             |   9 +-
+ tests/test_registry_not_definable.py               |  18 +-
+ tests/test_sosovalue_fetcher.py                    | 235 +++++++++++++++++++++
+ web/src/BoardMatrix.test.tsx                       |   2 +-
+ web/src/CoverageHeadline.test.tsx                  |  12 +-
+ web/src/board.test.ts                              |  29 ++-
+ web/src/board.ts                                   |  17 +-
+ web/src/fixtures/mixedBoard.test.ts                |   2 +-
+ 20 files changed, 708 insertions(+), 21 deletions(-)
