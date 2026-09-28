@@ -1,14 +1,19 @@
 import json
+import os
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
+from uuid import uuid4
 
 import httpx
+import psycopg
 import pytest
+from psycopg import sql
 from talib import abstract
 
 from ingest import pipeline
-from ingest.backfill import BACKFILL_RECIPES
+from ingest.backfill import BACKFILL_RECIPES, run_backfill
 from ingest.fetchers.okx import (
+    HISTORY_ENDPOINT,
     _backfill_seed_bars,
     backfill_okx_candle_indicator,
 )
@@ -20,6 +25,7 @@ from ingest.fetchers.okx_derivatives import (
     OKX_OPEN_INTEREST_ENDPOINT,
     OKX_OPEN_INTEREST_HISTORY_ENDPOINT,
     OKX_TAKER_VOLUME_ENDPOINT,
+    RUBIK_DAILY_PERIOD_PROVENANCE,
     backfill_okx_funding_rate,
     backfill_okx_long_short_ratio,
     backfill_okx_open_interest,
@@ -29,6 +35,8 @@ from ingest.registry import load_registry
 
 NOW = datetime(2026, 9, 28, 12, tzinfo=UTC)
 DAY_MS = 86_400_000
+MIGRATIONS = Path(__file__).resolve().parents[1] / "supabase" / "migrations"
+ENV_FILE = MIGRATIONS.parents[1] / ".env.local"
 
 
 def milliseconds(value: datetime) -> str:
@@ -65,6 +73,75 @@ def candle_client(rows_newest_first: list[list[str]]) -> httpx.Client:
 
 def definition(key: str):
     return next(entry for entry in load_registry().root if entry.key == key)
+
+
+def _database_url() -> str:
+    database_url = os.environ.get("TEST_DATABASE_URL") or os.environ.get("DATABASE_URL")
+    if database_url:
+        return database_url
+
+    if ENV_FILE.exists():
+        for line in ENV_FILE.read_text(encoding="utf-8").splitlines():
+            key, separator, value = line.partition("=")
+            if separator and key.strip() == "DATABASE_URL" and value.strip():
+                return value.strip().strip("'\"")
+
+    raise RuntimeError(
+        "Live OKX backfill persistence tests require TEST_DATABASE_URL, DATABASE_URL, "
+        "or DATABASE_URL in .env.local"
+    )
+
+
+@pytest.fixture(scope="module")
+def postgres() -> psycopg.Connection[tuple[object, ...]]:
+    schema = f"test_backfill_okx_{uuid4().hex}"
+    try:
+        connection = psycopg.connect(_database_url(), autocommit=True)
+    except psycopg.OperationalError:
+        raise RuntimeError(
+            "Live OKX backfill persistence tests could not connect; check "
+            "TEST_DATABASE_URL, DATABASE_URL, or DATABASE_URL in .env.local"
+        ) from None
+
+    with connection:
+        with connection.transaction():
+            connection.execute(
+                """
+                DO $$
+                BEGIN
+                  IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'anon') THEN
+                    CREATE ROLE anon NOLOGIN;
+                  END IF;
+                  IF NOT EXISTS (
+                    SELECT FROM pg_roles WHERE rolname = 'authenticated'
+                  ) THEN
+                    CREATE ROLE authenticated NOLOGIN;
+                  END IF;
+                END
+                $$;
+                """
+            )
+            connection.execute(
+                sql.SQL("create schema {}").format(sql.Identifier(schema))
+            )
+            schema_name = sql.Identifier(schema).as_string(connection)
+            for migration in sorted(MIGRATIONS.glob("*.sql")):
+                migration_sql = migration.read_text(encoding="utf-8").replace(
+                    "public.", f"{schema_name}."
+                )
+                connection.execute(migration_sql)
+        connection.execute(
+            sql.SQL("set search_path to {}").format(sql.Identifier(schema))
+        )
+
+        try:
+            yield connection
+        finally:
+            connection.execute(
+                sql.SQL("drop schema if exists {} cascade").format(
+                    sql.Identifier(schema)
+                )
+            )
 
 
 def test_okx_registry_entries_are_wired_to_real_backfill_recipes() -> None:
@@ -289,31 +366,184 @@ def test_long_short_and_taker_backfills_request_raw_1d_points_without_resampling
     assert taker.source_timestamp == NOW - timedelta(days=1)
     assert "no resampling" in long_short.source_field
     assert "no resampling" in taker.source_field
+    assert RUBIK_DAILY_PERIOD_PROVENANCE in long_short.source_field
+    assert RUBIK_DAILY_PERIOD_PROVENANCE in taker.source_field
     assert taker.value == 3.0
 
 
 @pytest.mark.integration
-def test_live_okx_open_interest_backfill_cross_checks_one_returned_history_row() -> None:
-    runs = backfill_okx_open_interest(definition("btc_open_interest"))
+def test_live_okx_candle_backfill_seed_matches_project_calculation_at_historical_bar() -> (
+    None
+):
+    entry = definition("btc_macd")
+    runs = backfill_okx_candle_indicator(entry, plotted_points=3)
 
     assert runs
-    returned = runs[-1].indicators["btc_open_interest"]
+    returned = runs[-1].indicators["btc_macd"]
+    assert f"backfill_seed_bars={_backfill_seed_bars(250, 'MACD', entry.parameters)}" in (
+        returned.source_field
+    )
+
+    target_open = returned.source_timestamp - timedelta(days=1)
     response = httpx.get(
-        OKX_OPEN_INTEREST_HISTORY_ENDPOINT,
+        HISTORY_ENDPOINT,
         params={
-            "instId": "BTC-USDT-SWAP",
-            "period": BACKFILL_PERIOD,
-            "limit": str(BACKFILL_PAGE_LIMIT),
+            "instId": "BTC-USDT",
+            "bar": "1Dutc",
+            "after": str(int((returned.source_timestamp + timedelta(days=1)).timestamp() * 1000)),
+            "limit": "100",
         },
         timeout=10,
     )
+    response.raise_for_status()
+    direct_rows = response.json()["data"]
+    assert any(
+        datetime.fromtimestamp(int(row[0]) / 1000, tz=UTC) == target_open
+        for row in direct_rows
+    )
+
+    seed_bars = _backfill_seed_bars(250, "MACD", entry.parameters)
+    raw_rows = []
+    cursor = int((returned.source_timestamp + timedelta(days=1)).timestamp() * 1000)
+    while len(raw_rows) < seed_bars:
+        page = httpx.get(
+            HISTORY_ENDPOINT,
+            params={
+                "instId": "BTC-USDT",
+                "bar": "1Dutc",
+                "after": str(cursor),
+                "limit": str(min(100, seed_bars - len(raw_rows))),
+            },
+            timeout=10,
+        )
+        page.raise_for_status()
+        rows = page.json()["data"]
+        assert rows
+        raw_rows.extend(rows)
+        cursor = int(rows[-1][0])
+
+    bars = tuple(
+        {
+            "high": float(row[2]),
+            "low": float(row[3]),
+            "close": float(row[4]),
+            "volume": float(row[5]),
+        }
+        for row in reversed(raw_rows[:seed_bars])
+    )
+    expected = pipeline._calculate(entry, bars)
+
+    assert returned.source_timestamp == target_open + timedelta(days=1)
+    assert returned.value == pytest.approx(expected, abs=1e-9, rel=0.0)
+
+
+@pytest.mark.integration
+def test_live_okx_rubik_rejects_or_fails_to_commit_to_1dutc_period() -> None:
+    probes = [
+        (
+            OKX_LONG_SHORT_RATIO_ENDPOINT,
+            {"ccy": "BTC", "period": "1Dutc"},
+        ),
+        (
+            OKX_TAKER_VOLUME_ENDPOINT,
+            {"ccy": "BTC", "instType": "CONTRACTS", "period": "1Dutc"},
+        ),
+    ]
+
+    for endpoint, params in probes:
+        response = httpx.get(endpoint, params=params, timeout=10)
+        response.raise_for_status()
+        payload = response.json()
+        assert payload.get("code") != "0" or not payload.get("data"), (
+            f"OKX now appears to accept {endpoint} period=1Dutc; "
+            "switch the backfill recipe off period=1D before shipping."
+        )
+
+
+@pytest.mark.integration
+@pytest.mark.parametrize(
+    ("indicator_key", "endpoint", "params", "value_from_row", "timestamp_from_row"),
+    (
+        (
+            "btc_daily_close",
+            HISTORY_ENDPOINT,
+            {"instId": "BTC-USDT", "bar": "1Dutc", "limit": "100"},
+            lambda row: float(row[4]),
+            lambda row: datetime.fromtimestamp(int(row[0]) / 1000, tz=UTC)
+            + timedelta(days=1),
+        ),
+        (
+            "btc_funding_rate",
+            BTC_FUNDING_RATE_HISTORY_ENDPOINT,
+            {
+                "instId": "BTC-USDT-SWAP",
+                "limit": str(BACKFILL_PAGE_LIMIT),
+                "before": "1",
+            },
+            lambda row: float(row["realizedRate"]),
+            lambda row: datetime.fromtimestamp(int(row["fundingTime"]) / 1000, tz=UTC),
+        ),
+        (
+            "btc_open_interest",
+            OKX_OPEN_INTEREST_HISTORY_ENDPOINT,
+            {
+                "instId": "BTC-USDT-SWAP",
+                "period": BACKFILL_PERIOD,
+                "limit": str(BACKFILL_PAGE_LIMIT),
+            },
+            lambda row: float(row[3]),
+            lambda row: datetime.fromtimestamp(int(row[0]) / 1000, tz=UTC),
+        ),
+        (
+            "btc_long_short_ratio",
+            OKX_LONG_SHORT_RATIO_ENDPOINT,
+            {"ccy": "BTC", "period": BACKFILL_PERIOD},
+            lambda row: float(row[1]),
+            lambda row: datetime.fromtimestamp(int(row[0]) / 1000, tz=UTC),
+        ),
+        (
+            "btc_taker_ratio",
+            OKX_TAKER_VOLUME_ENDPOINT,
+            {"ccy": "BTC", "instType": "CONTRACTS", "period": BACKFILL_PERIOD},
+            lambda row: float(row[2]) / float(row[1]),
+            lambda row: datetime.fromtimestamp(int(row[0]) / 1000, tz=UTC),
+        ),
+    ),
+)
+def test_live_okx_run_backfill_persists_real_rows_cross_checked_against_fresh_vendor_read(
+    postgres: psycopg.Connection[tuple[object, ...]],
+    indicator_key: str,
+    endpoint: str,
+    params: dict[str, str],
+    value_from_row,
+    timestamp_from_row,
+) -> None:
+    row_ids = run_backfill(postgres, indicator_key=indicator_key)
+
+    assert row_ids
+    persisted = postgres.execute(
+        """
+        select value, source_timestamp, endpoint, source_field, origin
+        from datapoints
+        where id = any(%s)
+        order by source_timestamp asc
+        limit 1
+        """,
+        (list(row_ids),),
+    ).fetchone()
+    assert persisted is not None
+    value, source_timestamp, persisted_endpoint, source_field, origin = persisted
+    assert origin == "backfill"
+
+    response = httpx.get(endpoint, params=params, timeout=10)
     response.raise_for_status()
     rows = response.json()["data"]
     direct = next(
         row
         for row in rows
-        if datetime.fromtimestamp(int(row[0]) / 1000, tz=UTC)
-        == returned.source_timestamp
+        if timestamp_from_row(row) == source_timestamp
     )
 
-    assert returned.value == float(direct[3])
+    assert float(value) == pytest.approx(value_from_row(direct), abs=1e-9, rel=0.0)
+    assert endpoint in persisted_endpoint
+    assert source_field

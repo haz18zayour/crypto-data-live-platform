@@ -37,6 +37,10 @@ REQUEST_TIMEOUT_SECONDS = 10
 LIVE_SOURCE_CLOCK_WAIT_SECONDS = 5
 BACKFILL_PAGE_LIMIT = 100
 BACKFILL_PERIOD = "1D"
+RUBIK_DAILY_PERIOD_PROVENANCE = (
+    "period=1D raw daily history; OKX rubik exposes no committed 1Dutc "
+    "parameter here, so bucket timestamps are persisted exactly as returned"
+)
 
 
 @dataclass(frozen=True, slots=True)
@@ -259,7 +263,7 @@ def backfill_okx_long_short_ratio(
                 ),
                 source_field=(
                     "OKX rubik/stat/contracts/long-short-account-ratio "
-                    f"period={BACKFILL_PERIOD} raw daily history; no resampling"
+                    f"{RUBIK_DAILY_PERIOD_PROVENANCE}; no resampling"
                 ),
             )
             for row in rows
@@ -290,7 +294,8 @@ def backfill_okx_taker_ratio(
                     f"&period={BACKFILL_PERIOD}"
                 ),
                 source_field=(
-                    "OKX rubik/stat/taker-volume period=1D raw daily history "
+                    "OKX rubik/stat/taker-volume "
+                    f"{RUBIK_DAILY_PERIOD_PROVENANCE} "
                     "[ts, sellVol, buyVol]; ratio = buyVol / sellVol; no resampling"
                 ),
             )
