@@ -58,7 +58,7 @@
     note: No second venue's derivatives public endpoints were confirmed to exist or be reachable; Binance's futures API returns HTTP 451 to US IPs on public endpoints.
 - key: btc_mvrv
   vendor: coinmetrics
-  backfill_recipe: noop
+  backfill_recipe: coinmetrics_asset_metrics
   endpoint: https://community-api.coinmetrics.io/v4/timeseries/asset-metrics?assets=btc&metrics=CapMVRVCur&limit_per_asset=1&page_size=1
   source_field: data[].CapMVRVCur
   definable_for: [BTC]
@@ -76,7 +76,7 @@
     note: Coin Metrics is the only researched source for CapMVRVCur in this PRD, so this MVRV value has no independent corroborating venue.
 - key: btc_active_addresses
   vendor: coinmetrics
-  backfill_recipe: noop
+  backfill_recipe: coinmetrics_asset_metrics
   endpoint: https://community-api.coinmetrics.io/v4/timeseries/asset-metrics?assets=btc&metrics=AdrActCnt&limit_per_asset=1&page_size=1
   source_field: data[].AdrActCnt
   definable_for: [BTC]
@@ -91,7 +91,7 @@
     note: Coin Metrics is the only researched source for AdrActCnt in this PRD, so this active-addresses value has no independent corroborating venue.
 - key: btc_exchange_flow
   vendor: coinmetrics
-  backfill_recipe: noop
+  backfill_recipe: coinmetrics_asset_metrics
   endpoint: https://community-api.coinmetrics.io/v4/timeseries/asset-metrics?assets=btc&metrics=FlowInExNtv,FlowOutExNtv&limit_per_asset=1&page_size=1
   source_field: data[].FlowInExNtv - data[].FlowOutExNtv
   definable_for: [BTC]
@@ -372,7 +372,7 @@
     note: No second venue's derivatives public endpoints were confirmed to exist or be reachable; Binance's futures API returns HTTP 451 to US IPs on public endpoints.
 - key: eth_mvrv
   vendor: coinmetrics
-  backfill_recipe: noop
+  backfill_recipe: coinmetrics_asset_metrics
   endpoint: https://community-api.coinmetrics.io/v4/timeseries/asset-metrics?assets=eth&metrics=CapMVRVCur&limit_per_asset=1&page_size=1
   source_field: data[].CapMVRVCur
   definable_for: [ETH]
@@ -390,7 +390,7 @@
     note: Coin Metrics is the only researched source for CapMVRVCur in this PRD, so this MVRV value has no independent corroborating venue.
 - key: eth_active_addresses
   vendor: coinmetrics
-  backfill_recipe: noop
+  backfill_recipe: coinmetrics_asset_metrics
   endpoint: https://community-api.coinmetrics.io/v4/timeseries/asset-metrics?assets=eth&metrics=AdrActCnt&limit_per_asset=1&page_size=1
   source_field: data[].AdrActCnt
   definable_for: [ETH]
@@ -405,7 +405,7 @@
     note: Coin Metrics is the only researched source for AdrActCnt in this PRD, so this active-addresses value has no independent corroborating venue.
 - key: eth_exchange_flow
   vendor: coinmetrics
-  backfill_recipe: noop
+  backfill_recipe: coinmetrics_asset_metrics
   endpoint: https://community-api.coinmetrics.io/v4/timeseries/asset-metrics?assets=eth&metrics=FlowInExNtv,FlowOutExNtv&limit_per_asset=1&page_size=1
   source_field: data[].FlowInExNtv - data[].FlowOutExNtv
   definable_for: [ETH]
@@ -984,7 +984,7 @@
     note: No second venue's derivatives public endpoints were confirmed to exist or be reachable; Binance's futures API returns HTTP 451 to US IPs on public endpoints.
 - key: bnb_mvrv
   vendor: coinmetrics
-  backfill_recipe: noop
+  backfill_recipe: coinmetrics_asset_metrics
   endpoint: https://community-api.coinmetrics.io/v4/timeseries/asset-metrics?assets=bnb&metrics=CapMVRVCur&limit_per_asset=1&page_size=1
   source_field: data[].CapMVRVCur
   definable_for: [BNB]
@@ -1002,7 +1002,7 @@
     note: Coin Metrics is the only researched source for CapMVRVCur in this PRD, so this MVRV value has no independent corroborating venue.
 - key: bnb_active_addresses
   vendor: coinmetrics
-  backfill_recipe: noop
+  backfill_recipe: coinmetrics_asset_metrics
   endpoint: https://community-api.coinmetrics.io/v4/timeseries/asset-metrics?assets=bnb&metrics=AdrActCnt&limit_per_asset=1&page_size=1
   source_field: data[].AdrActCnt
   definable_for: [BNB]
