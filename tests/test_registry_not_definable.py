@@ -106,10 +106,10 @@ def test_us_708_registry_not_definable_reasons_are_unique() -> None:
             seen[reason] = (entry.key, asset)
 
 
-def test_registry_coverage_still_passes_for_all_79_entries() -> None:
+def test_registry_coverage_still_passes_for_all_80_entries() -> None:
     registry = load_registry()
 
-    assert len(registry.root) == 79
+    assert len(registry.root) == 80
     assert_registry_coverage(
         registry,
         golden_keys={
@@ -136,3 +136,20 @@ def test_bnb_etf_flow_declares_sosovalue_enum_not_definable_reason() -> None:
     assert "SoSoValue" in reason
     assert "/etfs/summary-history" in reason
     assert "does not include BNB" in reason
+
+
+def test_btc_stablecoin_supply_declares_defillama_chain_list_absence() -> None:
+    stablecoin_supply = next(
+        entry for entry in load_registry().root if entry.key == "stablecoin_supply"
+    )
+
+    assert stablecoin_supply.definable_for == ("ETH", "SOL", "BNB")
+    assert stablecoin_supply.not_definable is not None
+    assert stablecoin_supply.not_definable.assets == ("BTC",)
+    reason = stablecoin_supply.not_definable.reason_for("BTC")
+    assert "DefiLlama" in reason
+    assert "/stablecoinchains" in reason
+    assert "no Bitcoin entry" in reason
+    assert "Bitcoin has no stablecoin-supply concept" in reason
+    assert "SoSoValue" not in reason
+    assert "does not include BNB" not in reason

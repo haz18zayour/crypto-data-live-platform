@@ -1287,3 +1287,20 @@
   freshness_stale_seconds: 172800
   uncorroborated:
     note: SoSoValue is the researched source for US spot ETF flow aggregates in this PRD; BNB is not in its API enum.
+- key: stablecoin_supply
+  vendor: defillama
+  endpoint: https://stablecoins.llama.fi/stablecoinchains
+  source_field: DefiLlama /stablecoinchains totalCirculatingUSD.peggedUSD (USD-pegged only) for chain Ethereum/Solana/BSC
+  definable_for: [ETH, SOL, BNB]
+  not_definable:
+    assets: [BTC]
+    reason: "DefiLlama's own /stablecoinchains chain list has no Bitcoin entry; Bitcoin has no stablecoin-supply concept to source here."
+  golden: fixtures/defillama_stablecoinchains.json
+  response_model: defillama_stablecoinchains
+  required_bars: 1
+  parameters:
+  expected_update_interval_seconds: 86400
+  freshness_warn_seconds: 108000
+  freshness_stale_seconds: 172800
+  uncorroborated:
+    note: DefiLlama is the researched free, keyless source for per-chain stablecoin supply in this PRD; Bitcoin is a structural absence in its chain list.

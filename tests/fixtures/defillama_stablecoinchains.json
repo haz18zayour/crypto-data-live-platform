@@ -1,0 +1,35 @@
+[
+  {
+    "gecko_id": null,
+    "totalCirculatingUSD": {
+      "peggedUSD": 146938000000.25,
+      "peggedEUR": 1200.5
+    },
+    "tokenSymbol": null,
+    "name": "Ethereum"
+  },
+  {
+    "gecko_id": null,
+    "totalCirculatingUSD": {
+      "peggedUSD": 16511000000.0
+    },
+    "tokenSymbol": null,
+    "name": "Solana"
+  },
+  {
+    "gecko_id": null,
+    "totalCirculatingUSD": {
+      "peggedUSD": 13316000000.0
+    },
+    "tokenSymbol": null,
+    "name": "BSC"
+  },
+  {
+    "gecko_id": null,
+    "totalCirculatingUSD": {
+      "peggedUSD": 94394000000.0
+    },
+    "tokenSymbol": null,
+    "name": "Tron"
+  }
+]

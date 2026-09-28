@@ -404,3 +404,32 @@ class SosoValueEtfSummaryHistoryResponse(BaseModel):
     # Present on every real response (confirmed live, 2026-09-28), always null so far, but
     # extra="forbid" rejects it if undeclared.
     details: object | None = None
+
+
+class DefiLlamaPeggedAmounts(BaseModel):
+    """Stablecoin totals grouped by the fiat/asset peg tracked by DefiLlama."""
+
+    model_config = ConfigDict(extra="allow", frozen=True)
+
+    pegged_usd: StrictFloat | StrictInt = Field(alias="peggedUSD")
+
+
+class DefiLlamaStablecoinChain(BaseModel):
+    """One current stablecoin-supply total from DefiLlama's chain list."""
+
+    model_config = ConfigDict(extra="forbid", frozen=True)
+
+    gecko_id: StrictStr | None
+    total_circulating_usd: DefiLlamaPeggedAmounts = Field(
+        alias="totalCirculatingUSD"
+    )
+    token_symbol: StrictStr | None = Field(alias="tokenSymbol")
+    name: StrictStr
+
+
+class DefiLlamaStablecoinChainsResponse(
+    RootModel[tuple[DefiLlamaStablecoinChain, ...]]
+):
+    """The response contract for DefiLlama's stablecoinchains endpoint."""
+
+    model_config = ConfigDict(frozen=True)

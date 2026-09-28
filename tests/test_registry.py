@@ -131,7 +131,7 @@ def test_definable_for_requires_a_nonempty_asset_list(
 def test_shipped_registry_definitions_cover_four_assets_at_scale() -> None:
     registry = load_registry()
 
-    assert len(registry.root) == 79
+    assert len(registry.root) == 80
     crypto_entries = tuple(
         entry for entry in registry.root if entry.definable_for != ("MACRO",)
     )
@@ -142,7 +142,8 @@ def test_shipped_registry_definitions_cover_four_assets_at_scale() -> None:
         "BNB",
     }
     assert all(
-        len(entry.definable_for) == 1 or entry.key == "spot_etf_net_flow"
+        len(entry.definable_for) == 1
+        or entry.key in {"spot_etf_net_flow", "stablecoin_supply"}
         for entry in crypto_entries
     )
 
@@ -162,7 +163,7 @@ def test_registry_cadence_intervals_partition_the_shipped_entries() -> None:
     assert {tier: len(keys) for tier, keys in by_tier.items()} == {
         "fast": 12,
         "medium": 4,
-        "daily": 59,
+        "daily": 60,
     }
     assert set().union(*by_tier.values()) == {
         entry.key
@@ -297,6 +298,47 @@ def test_fred_entries_pass_registry_coverage() -> None:
         golden_keys=golden_keys(),
         response_models=RESPONSE_MODELS,
     )
+
+
+def test_stablecoin_supply_is_registered_for_eth_sol_and_bsc_only() -> None:
+    entry = next(entry for entry in load_registry().root if entry.key == "stablecoin_supply")
+
+    assert entry.vendor == "defillama"
+    assert entry.endpoint == "https://stablecoins.llama.fi/stablecoinchains"
+    assert "/stablecoin/" not in entry.endpoint
+    assert entry.definable_for == ("ETH", "SOL", "BNB")
+    assert entry.response_model == "defillama_stablecoinchains"
+    assert entry.golden == "fixtures/defillama_stablecoinchains.json"
+    assert entry.required_bars == 1
+    assert entry.parameters == {}
+    assert "totalCirculatingUSD.peggedUSD" in entry.source_field
+    assert "USD-pegged only" in entry.source_field
+    assert "all pegs" not in entry.source_field.casefold()
+
+
+def test_btc_stablecoin_supply_declares_bitcoin_chain_list_absence() -> None:
+    entry = next(entry for entry in load_registry().root if entry.key == "stablecoin_supply")
+
+    assert entry.not_definable is not None
+    assert entry.not_definable.assets == ("BTC",)
+    reason = entry.not_definable.reason_for("BTC")
+    assert "DefiLlama" in reason
+    assert "/stablecoinchains" in reason
+    assert "no Bitcoin entry" in reason
+    assert "Bitcoin has no stablecoin-supply concept" in reason
+    assert "SoSoValue" not in reason
+    assert "BNB" not in reason
+
+
+def test_no_global_stablecoin_supply_total_is_registered() -> None:
+    entries = tuple(entry for entry in load_registry().root if "stablecoin" in entry.key)
+
+    assert {entry.key for entry in entries} == {"stablecoin_supply"}
+    stablecoin_entry = entries[0]
+    assert stablecoin_entry.endpoint.endswith("/stablecoinchains")
+    assert stablecoin_entry.definable_for == ("ETH", "SOL", "BNB")
+    assert "global" not in stablecoin_entry.key
+    assert "global" not in stablecoin_entry.source_field.casefold()
 
 
 def test_registry_rejects_unsupported_cadence_interval_at_load_time(
