@@ -1,0 +1,255 @@
+# GATE G1 — scope lock.
+#
+# Produced by /pre-prd-research interrogating the owner, then confirmed by the owner. The
+# research agent commits to a hypothesis for every question so the owner is correcting a
+# draft rather than answering a blank form: skim, override what is wrong, confirm the
+# out-of-scope list.
+#
+# Anything not answered becomes an `assumptions:` row below — an explicit assumption with
+# a tripwire, never a silent guess. That is the whole point of this file.
+
+decisions:
+  - q: >
+      What is the exact "distribution context" mechanism, given the project's
+      absolute no-signal rule?
+    hypothesis: >
+      A sparkline plus min/max value labels (with their dates) at the axis
+      ends, the last point marked, no colour change based on position. No
+      band, no percentile, no shading, no "range position" bar. The time
+      window is fixed per cadence tier (e.g. 90d daily, 7d fast) and printed
+      as text next to the chart. This is Tufte's own prior art minus the one
+      element (a "normal range" band) that is itself an external judgement,
+      which this project forbids everywhere else.
+    answer: >
+      Confirmed — sparkline + min/max value labels only, no band, no
+      percentile, no colour-coded position. 2026-09-28.
+
+  - q: >
+      Does DefiLlama's /stablecoincharts/{chain} endpoint (a different
+      endpoint from the same vendor already used for the live stablecoin-
+      supply cell, confirmed live to hold daily history back to 2017 for
+      Ethereum) count as "no new vendor" for backfill purposes?
+    hypothesis: >
+      Yes. Same vendor, new endpoint, same peggedUSD field the live fetcher
+      already reads. This removes stablecoin supply from the "cannot be
+      backfilled" list the brief assumed, and from the "fifth honest-absence
+      case" candidate slot — that slot moves to Solana on-chain history
+      instead (see assumptions below).
+    answer: Confirmed — use /stablecoincharts/{chain} for backfill. 2026-09-28.
+
+  - q: >
+      FRED backfill semantics: initial-release vintage (output_type=4,
+      chunked to avoid the ~2000-vintage-date cap that already broke
+      VIXCLS/DFF/T10Y2Y/DFII10 once in PRD-008), or current/latest-revision
+      vintage?
+    hypothesis: >
+      Initial release, chunked. Matches what the live rows already persist
+      (see ingest/fetchers/fred.py). Splicing current-vintage historical
+      values next to initial-release live values would silently redefine
+      what the series means partway through its own history — the "wrong
+      number looks right" failure this project exists to prevent.
+    answer: Confirmed — initial release, chunked realtime_start windows. 2026-09-28.
+
+  - q: >
+      Is backfill a one-off job run once for today's ~150 registered
+      indicators, or an ongoing requirement every future registry addition
+      must satisfy?
+    hypothesis: >
+      Ongoing. A workflow_dispatch job accepting an indicator_key input,
+      idempotent through the existing (indicator_key, asset, source_vendor,
+      source_timestamp) unique index, plus a coverage-style test that fails
+      if a registry row has neither a backfill recipe nor an explicit
+      "not backfillable: <reason>" declaration. Otherwise every future PRD's
+      new indicators silently ship with "not enough history" forever, and
+      nobody notices because nothing fails loud about it.
+    answer: Confirmed — ongoing, enforced by a coverage test. 2026-09-28.
+
+  - q: >
+      Minimum points required before a sparkline draws at all?
+    hypothesis: >
+      Tiered by cadence: >= 7 points and >= 2 distinct values for
+      daily-or-faster series; a lower bar (>= 4-6 points) for monthly series
+      (CPI, M2), since a universal threshold sized for daily data would mean
+      monthly macro series never draw within any practical backfill window.
+      Below the threshold: an explicit "not enough history yet (n points
+      since <date>)" state — never a fake flat line, and never reusing the
+      NOT_DEFINABLE/UNAVAILABLE vocabulary, since this is a fact about how
+      long we've been collecting, not an absence of the underlying data.
+    answer: Confirmed — tiered by cadence, explicit insufficient-history state. 2026-09-28.
+
+  - q: >
+      Fast-tier indicators (5-minute open interest/taker ratio) have far
+      denser recent history than their daily-backfilled past. Real time axis
+      with raw points (density change visible), or resample everything to
+      one point per day (smooth, but hides the backfill/live seam)?
+    hypothesis: >
+      Real time axis, raw points, no resampling. Resampling would hide
+      exactly where backfilled daily data ends and live 5-minute data
+      begins — the seam research's own blind-spot analysis flags as the
+      likeliest place a real defect (a value splice) could hide undetected.
+    answer: Confirmed — real time axis, raw points, no resampling. 2026-09-28.
+
+  - q: >
+      board_read currently picks "latest row per cell" by fetched_at, so an
+      inserted backfill row with today's fetched_at and a historical
+      source_timestamp would become the board's displayed "current" value —
+      flagged as the single most likely first-implementation bug in this
+      PRD. Should the board_read fix (an origin column, filtered to
+      origin='live') ship as its own reviewed, owner-approved migration
+      BEFORE any backfill job is allowed to run at all?
+    hypothesis: >
+      Yes. Fix-then-backfill, gated. Ship the origin column and the
+      board_read fix as their own migration, get explicit owner sign-off
+      applying it to production (this project's established, blast-radius
+      process for every migration this session — see PRD-008's US-801
+      lesson), and only then allow any backfill job to write historical
+      rows. The alternative (ship together, verify after) risks the exact
+      defect research already identified as the likeliest bug, landing in
+      production before anyone looks.
+    answer: Confirmed — board_read fix ships and is applied to production first; no backfill job runs before that. 2026-09-28.
+
+# The one field with no default.
+out_of_scope:
+  - No score, percentile rank, z-score, "overbought/oversold" label, or any
+    colour-coded significance badge on a value relative to its own history —
+    permanent, project-wide rule; this PRD adds a visual scale, never a
+    verdict.
+  - No cross-indicator or cross-asset comparison charts (e.g. "RSI vs MVRV",
+    "BTC vs ETH") — one indicator's own history only.
+  - No new vendor — every backfill source is an existing vendor's own
+    additional endpoint (DefiLlama's /stablecoincharts is the one new
+    endpoint, from an already-integrated vendor).
+  - No candlestick or full OHLC charting — sparklines are single-value-over-
+    time; OHLC charting is a materially bigger UI surface not implied by the
+    roadmap line.
+  - No Solana on-chain history backfill via Helius getBlock — confirmed
+    live in a prior session that a single hour of block scanning took ~2.5h
+    wall-clock; this is now the genuine fifth honest-absence case research
+    surfaced (not DefiLlama, which research overturned). Solana history
+    cells render "not backfillable: RPC block-scan cost is prohibitive",
+    distinct from "not enough history yet".
+  - No validators.app historical backfill — no history endpoint is known to
+    exist for it (UNVERIFIED by research, not confirmed either way); treated
+    as not-backfillable unless a future story confirms otherwise live.
+  - No downsampled/materialized rollup table (research's Option C) — the row
+    counts involved do not justify the added staleness-risk surface of a
+    refresh job that could itself go silently stale.
+  - No client-side vendor fetching for history (research's Option D
+    rejected outright) — would put vendor keys in the browser and lose
+    provenance.
+
+assumptions:
+  - claim: >
+      SoSoValue's ETF flow history endpoint (etfs/summary-history) actually
+      supports a meaningful backfill window and rate limit compatible with a
+      one-time backfill job; research could not fetch SoSoValue's own docs
+      and only found an unrelated third party's claim of "20 req/min."
+    tripwire: >
+      Live-probe the actual response shape, date range, and real rate limit
+      before any story commits to a specific backfill window or pagination
+      approach for SoSoValue — do not trust the unfetched search-result
+      number.
+    acceptedBy: default
+
+  - claim: >
+      OKX's daily (1D) candles/rubik-series buckets align to UTC+8 midnight
+      (confirmed live for candles), and a "1Dutc" bar parameter exists for
+      the rubik long/short and taker-volume history endpoints the same way
+      it does for candles.
+    tripwire: >
+      Research flagged the existence of a 1Dutc-equivalent parameter for the
+      rubik endpoints as UNVERIFIED. If no UTC-aligned bar option exists for
+      those endpoints, the story must either accept and disclose the UTC+8
+      offset on the cell face, or find another way to align — silently
+      mixing UTC+8-bucketed history with UTC-bucketed FRED/Coin Metrics
+      history on a shared time axis would be exactly the kind of quiet
+      misalignment this project exists to prevent.
+    acceptedBy: default
+
+  - claim: >
+      Recomputing historical technical-indicator values (RSI, ATR, and other
+      Wilder-smoothed indicators) from backfilled candles, seeded with a
+      sufficient multiple of the indicator's own warm-up period, produces
+      values that agree with PRD-002's existing golden-file harness rather
+      than diverging on early backfilled bars.
+    tripwire: >
+      Research flagged TA-Lib's unstable-period behavior as UNVERIFIED for
+      the backfill case specifically (PRD-002 already proved it for the
+      live, fixed-N-bar case). Before any story ships backfilled technical
+      indicators, confirm live that a sufficiently long seed window produces
+      values matching what the live pipeline would have computed at that
+      historical bar — do not assume the existing golden fixtures cover this.
+    acceptedBy: default
+
+  - claim: >
+      A single RPC/view returning at most N points per cell as one JSON
+      array keeps every board-wide history read under PostgREST's default
+      1,000-row response cap, without needing the cap itself raised.
+    tripwire: >
+      Research's evidence for the 1,000-row cap and its configurability was
+      search-results-only, not confirmed by directly reading Supabase's own
+      docs page. Confirm the real current cap and the RPC's actual response
+      size live before assuming this approach avoids truncation at the
+      board's real ~150-indicator, multi-asset scale.
+    acceptedBy: default
+
+  - claim: >
+      A workflow_dispatch backfill job, run per-indicator against Coin
+      Metrics (10 req/6s), FRED, and SoSoValue's real rate limits, completes
+      within a GitHub Actions job's practical wall-clock budget without
+      needing its own separate scheduled workflow or Healthchecks check.
+    tripwire: >
+      Research flagged this as unmeasured. If a full-registry or
+      even single-indicator backfill runs long against Coin Metrics'
+      sliding-window rate limit, give it its own workflow_dispatch job with
+      its own timeout, separate from the existing daily/medium/fast ingest
+      workflows, rather than risk it silently timing out inside one of
+      those.
+    acceptedBy: default
+
+# Options the research agent surfaced, and which the owner picked.
+chosen_approach:
+  option: >
+    Reuse the existing `datapoints` table for backfilled rows (Option A):
+    add an `origin` column (`live` | `backfill`), fix `board_read` to filter
+    to `origin = 'live'` so a backfilled historical row can never become the
+    board's displayed "current" value, and serve sparkline reads through an
+    RPC that returns at most N points per cell as one JSON array, ordered by
+    the existing unique index on (indicator_key, asset, source_vendor,
+    source_timestamp).
+  because: >
+    Keeps one table and one provenance model — the verifier can cross-check
+    backfilled rows with the same queries already used for live rows,
+    exactly as this project's live-testing discipline requires everywhere
+    else. The one required migration (adding `origin`, fixing `board_read`)
+    is a genuine blast-radius change and is gated on explicit owner sign-off
+    applied to production before any backfill job runs, per the decision
+    above.
+  rejected:
+    - option: >
+        Dedicated history_points table for backfill only, live rows staying
+        in datapoints, UNIONed for sparkline reads (Option B)
+      because: >
+        Two provenance models instead of one, a UNION with dedup rules
+        wherever live and backfilled timestamps overlap, and every
+        honest-absence rule (NOT_DEFINABLE, UNAVAILABLE, PAYWALLED,
+        FETCH_FAILED, and this PRD's new "not enough history yet") would
+        need to be written and tested twice.
+    - option: >
+        A materialized per-key rollup table (sparkline_mv) holding a
+        downsampled array of the last N points, refreshed after each ingest
+        (Option C)
+      because: >
+        Adds refresh scheduling — one more thing that can silently go
+        stale, exactly the failure class this project exists to prevent —
+        and downsampling risks smoothing away the real extreme the
+        adversarial case specifically asks this PRD to preserve. Not
+        justified at this project's real row count.
+    - option: >
+        Fetch history from vendors client-side at render time, no backfill
+        or new storage at all (Option D)
+      because: >
+        Puts FRED/SoSoValue API keys in the browser, moves OKX/geo-
+        reachability issues onto the end user's own IP instead of the
+        GitHub-hosted runner's, and loses provenance entirely — rejected
+        outright, not a real option for this project.
