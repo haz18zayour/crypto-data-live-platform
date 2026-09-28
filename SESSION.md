@@ -33,7 +33,7 @@ open prds/PRD-005-dashboard/20-decisions.yaml
 | PRD-006-derivatives | 7 | 7 | **all green** |
 | PRD-007-onchain | 8 | 8 | **all green** |
 | PRD-008-macro-flows | 8 | 8 | **all green** |
-| PRD-009-history-charts | 9 | 5 | 5/9 |
+| PRD-009-history-charts | 9 | 6 | 6/9 |
 | PRD-012-cadence-split | 6 | 6 | **all green** |
 
 Spend to date: **$102.40** Claude · **269965k** Codex tokens.
@@ -792,6 +792,18 @@ Spend to date: **$102.40** Claude · **269965k** Codex tokens.
 - 20:06  US-906 started, attempt 3 (codex)
 - 20:17  US-906 — codex finished `baca38af`
 - 20:19  US-906 **rejected** — 4/5 criteria, judged by claude · $0.26
+- 20:19  ⏸ **gate opened** — US-906 has failed 3 times — is the story wrong?
+
+### 2026-09-29
+
+- 00:05  US-906 **PASSED** — 5/5 criteria, judged by human
+- 00:05  ▶ gate answered **skip** — Attempt 3 exhausted on codex's own usage quota. Investigating attempt 2's diff directly against a real multi-decade live window found a genuine production defect: FRED's ALFRED vintage archive does not extend as far back as the code's default 1947 start for every series (VIXCLS's real archive starts 2010-11-22), which would have crashed any real backfill using the default range. Fixed by catching this specific FRED error and skipping the unavailable chunk rather than aborting. Verified live across three series (VIXCLS/DFF/T10Y2Y, each with a distinct real boundary). Also rewrote the story's weak live test to use a real postgres fixture and a genuine multi-chunk window - it passed against the real API and real Postgres. See verdict.json overrideReason.
+
+### 2026-09-28
+
+- 21:04  US-907 started, attempt 1 (codex)
+- 21:13  US-907 — codex finished `44537d6c`
+- 21:15  US-907 **rejected** — 0/6 criteria, judged by claude
 
 <!-- uf:generated:end -->
 
