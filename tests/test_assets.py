@@ -9,12 +9,15 @@ import pytest
 
 from ingest import pipeline
 from ingest.fetchers.alternative_me import AlternativeMeFearGreedOk
+from ingest.fetchers.defillama_stablecoins import DefiLlamaStablecoinSupplyOk
+from ingest.fetchers.fred import FredOk, FredResult, FredSeries
 from ingest.fetchers.okx_derivatives import (
     FundingRateOk,
     LongShortRatioOk,
     OpenInterestOk,
     TakerRatioOk,
 )
+from ingest.fetchers.sosovalue import SosoValueEtfFlowOk, SosoValueEtfFlowResult
 from ingest.pipeline import (
     FetchedBars,
     FundingRateResult,
@@ -112,6 +115,37 @@ def synthetic_staking(asset: str) -> Ok:
     return Ok(value=390_383_623.78255165, source_timestamp=SOURCE_TIMESTAMP)
 
 
+def synthetic_fred(series: FredSeries) -> FredResult:
+    return FredOk(
+        value=1.0,
+        source_timestamp=SOURCE_TIMESTAMP,
+        reference_period=SOURCE_TIMESTAMP.date().isoformat(),
+        published_at=SOURCE_TIMESTAMP,
+        source_field=series.source_field,
+    )
+
+
+def synthetic_etf_flow(asset: str) -> SosoValueEtfFlowResult:
+    assert asset in {"BTC", "ETH", "SOL"}
+    return SosoValueEtfFlowOk(
+        value=1.0,
+        source_timestamp=SOURCE_TIMESTAMP,
+        reference_period=SOURCE_TIMESTAMP.date().isoformat(),
+        published_at=SOURCE_TIMESTAMP,
+    )
+
+
+def synthetic_stablecoin_supply(asset: str) -> pipeline.DefiLlamaStablecoinSupplyResult:
+    assert asset in {"ETH", "SOL", "BNB"}
+    return DefiLlamaStablecoinSupplyOk(
+        value=1.0,
+        source_timestamp=SOURCE_TIMESTAMP,
+        reference_period="current",
+        published_at=SOURCE_TIMESTAMP,
+        chain={"ETH": "Ethereum", "SOL": "Solana", "BNB": "BSC"}[asset],
+    )
+
+
 def synthetic_fear_greed() -> AlternativeMeFearGreedOk:
     return AlternativeMeFearGreedOk(
         value=70,
@@ -174,6 +208,9 @@ def test_asset_with_fewer_available_bars_than_required_is_declared_uncorroborate
         fetch_active_addresses=synthetic_active_addresses,
         fetch_exchange_flow=synthetic_exchange_flow,
         fetch_staking=synthetic_staking,
+        fetch_fred=synthetic_fred,
+        fetch_etf_flow=synthetic_etf_flow,
+        fetch_stablecoin_supply=synthetic_stablecoin_supply,
         fetch_fear_greed=synthetic_fear_greed,
     )
     assessment = run.history[("BNB", "coinbase")]
@@ -236,6 +273,9 @@ def test_all_four_assets_produce_an_indicator_value_or_explicit_status() -> None
         fetch_active_addresses=synthetic_active_addresses,
         fetch_exchange_flow=synthetic_exchange_flow,
         fetch_staking=synthetic_staking,
+        fetch_fred=synthetic_fred,
+        fetch_etf_flow=synthetic_etf_flow,
+        fetch_stablecoin_supply=synthetic_stablecoin_supply,
         fetch_fear_greed=synthetic_fear_greed,
     )
     technical_definitions = tuple(
@@ -293,9 +333,28 @@ def test_all_four_assets_produce_an_indicator_value_or_explicit_status() -> None
         for definition in load_registry().root
         if definition.response_model == "alternative_me_fear_greed"
     )
+    fred_definitions = tuple(
+        definition
+        for definition in load_registry().root
+        if definition.response_model == "fred_series_observations"
+    )
+    etf_flow_definitions = tuple(
+        definition
+        for definition in load_registry().root
+        if definition.response_model == "sosovalue_etf_summary_history"
+    )
+    stablecoin_supply_definitions = tuple(
+        definition
+        for definition in load_registry().root
+        if definition.response_model == "defillama_stablecoinchains"
+    )
 
     assert set(run.indicators) == {
-        definition.key
+        (
+            definition.key
+            if definition.definable_for == (asset,)
+            else f"{definition.key}\x1f{asset}"
+        )
         for definition in (
             *technical_definitions,
             *funding_definitions,
@@ -303,8 +362,12 @@ def test_all_four_assets_produce_an_indicator_value_or_explicit_status() -> None
             *long_short_definitions,
             *taker_ratio_definitions,
             *onchain_definitions,
+            *fred_definitions,
+            *etf_flow_definitions,
+            *stablecoin_supply_definitions,
             *fear_greed_definitions,
         )
+        for asset in definition.definable_for
     }
     assert Counter(
         definition.definable_for[0] for definition in technical_definitions
@@ -333,6 +396,17 @@ def test_all_four_assets_produce_an_indicator_value_or_explicit_status() -> None
     assert Counter(
         definition.definable_for[0] for definition in fear_greed_definitions
     ) == Counter({"MACRO": 1})
+    assert Counter(
+        definition.definable_for[0] for definition in fred_definitions
+    ) == Counter({"MACRO": 7})
+    assert Counter(
+        asset for definition in etf_flow_definitions for asset in definition.definable_for
+    ) == Counter({"BTC": 1, "ETH": 1, "SOL": 1})
+    assert Counter(
+        asset
+        for definition in stablecoin_supply_definitions
+        for asset in definition.definable_for
+    ) == Counter({"ETH": 1, "SOL": 1, "BNB": 1})
     assert all(
         result.status in {"OK", "STALE", "UNAVAILABLE", "ERROR"}
         for result in run.indicators.values()
@@ -447,6 +521,9 @@ def test_full_run_routes_each_asset_to_its_actual_pair_at_both_venues(
         fetch_active_addresses=synthetic_active_addresses,
         fetch_exchange_flow=synthetic_exchange_flow,
         fetch_staking=synthetic_staking,
+        fetch_fred=synthetic_fred,
+        fetch_etf_flow=synthetic_etf_flow,
+        fetch_stablecoin_supply=synthetic_stablecoin_supply,
         fetch_fear_greed=synthetic_fear_greed,
     )
 
@@ -464,6 +541,9 @@ def test_full_run_routes_each_asset_to_its_actual_pair_at_both_venues(
                 OpenInterestOk,
                 LongShortRatioOk,
                 TakerRatioOk,
+                FredOk,
+                SosoValueEtfFlowOk,
+                DefiLlamaStablecoinSupplyOk,
                 AlternativeMeFearGreedOk,
             ),
         )
@@ -488,6 +568,9 @@ def test_full_run_computes_indicators_for_btc_eth_sol_bnb_against_live_venues() 
         OpenInterestOk,
         LongShortRatioOk,
         TakerRatioOk,
+        FredOk,
+        SosoValueEtfFlowOk,
+        DefiLlamaStablecoinSupplyOk,
         AlternativeMeFearGreedOk,
         Stale,
     )

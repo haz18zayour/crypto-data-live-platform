@@ -1237,7 +1237,7 @@
   response_model: fred_series_observations
   required_bars: 1
   parameters:
-  expected_update_interval_seconds: 604800
+  expected_update_interval_seconds: 86400
   freshness_warn_seconds: 864000
   freshness_stale_seconds: 1209600
   uncorroborated:
@@ -1251,7 +1251,7 @@
   response_model: fred_series_observations
   required_bars: 1
   parameters:
-  expected_update_interval_seconds: 2678400
+  expected_update_interval_seconds: 86400
   freshness_warn_seconds: 3888000
   freshness_stale_seconds: 5184000
   uncorroborated:
@@ -1265,7 +1265,7 @@
   response_model: fred_series_observations
   required_bars: 1
   parameters:
-  expected_update_interval_seconds: 2678400
+  expected_update_interval_seconds: 86400
   freshness_warn_seconds: 3888000
   freshness_stale_seconds: 5184000
   uncorroborated:

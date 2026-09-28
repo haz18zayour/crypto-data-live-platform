@@ -163,20 +163,14 @@ def test_registry_cadence_intervals_partition_the_shipped_entries() -> None:
     assert {tier: len(keys) for tier, keys in by_tier.items()} == {
         "fast": 12,
         "medium": 4,
-        "daily": 61,
+        "daily": 64,
     }
     assert set().union(*by_tier.values()) == {
         entry.key
         for entry in registry.root
-        if entry.key
-        not in {
-            "sol_active_addresses",
-            "macro_dtwexbgs",
-            "macro_cpiaucsl",
-            "macro_m2sl",
-        }
+        if entry.key != "sol_active_addresses"
     }
-    assert sum(len(keys) for keys in by_tier.values()) == len(registry.root) - 4
+    assert sum(len(keys) for keys in by_tier.values()) == len(registry.root) - 1
 
 
 def test_sol_active_addresses_declares_its_real_weekly_schedule() -> None:
@@ -191,7 +185,7 @@ def test_sol_active_addresses_declares_its_real_weekly_schedule() -> None:
     assert entry.freshness_stale_seconds == 777600
 
 
-def test_only_weekly_and_monthly_entries_use_non_tier_freshness_fields() -> None:
+def test_only_declared_slow_release_entries_use_non_tier_freshness_fields() -> None:
     freshness_by_interval = {
         300: (450, 600),
         28800: (43200, 57600),
@@ -254,17 +248,16 @@ def test_seven_confirmed_fred_series_are_registered_with_shared_fetcher_contract
         assert "output_type=4 realtime_start" in entry.source_field
 
 
-def test_dtwexbgs_uses_weekly_release_cadence_freshness_thresholds() -> None:
+def test_dtwexbgs_runs_on_daily_tier_with_weekly_release_staleness_thresholds() -> None:
     entry = next(entry for entry in load_registry().root if entry.key == "macro_dtwexbgs")
 
-    assert entry.expected_update_interval_seconds == 604800
+    assert entry.expected_update_interval_seconds == 86400
     assert entry.freshness_warn_seconds == 864000
     assert entry.freshness_stale_seconds == 1209600
     assert entry.freshness_stale_seconds > 3 * 86400
-    assert entry.freshness_stale_seconds >= 2 * entry.expected_update_interval_seconds
 
 
-def test_cpiaucsl_and_m2sl_use_monthly_release_cadence_freshness_thresholds() -> None:
+def test_cpiaucsl_and_m2sl_run_on_daily_tier_with_monthly_staleness_thresholds() -> None:
     entries = {
         entry.key: entry
         for entry in load_registry().root
@@ -273,7 +266,7 @@ def test_cpiaucsl_and_m2sl_use_monthly_release_cadence_freshness_thresholds() ->
 
     assert set(entries) == {"macro_cpiaucsl", "macro_m2sl"}
     for entry in entries.values():
-        assert entry.expected_update_interval_seconds == 2678400
+        assert entry.expected_update_interval_seconds == 86400
         assert entry.freshness_warn_seconds == 3888000
         assert entry.freshness_stale_seconds == 5184000
         assert entry.freshness_stale_seconds > 30 * 86400
