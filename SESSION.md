@@ -32,10 +32,10 @@ open prds/PRD-005-dashboard/20-decisions.yaml
 | PRD-005-dashboard | 9 | 9 | **all green** |
 | PRD-006-derivatives | 7 | 7 | **all green** |
 | PRD-007-onchain | 8 | 8 | **all green** |
-| PRD-008-macro-flows | 8 | 4 | 4/8 |
+| PRD-008-macro-flows | 8 | 5 | 5/8 |
 | PRD-012-cadence-split | 6 | 6 | **all green** |
 
-Spend to date: **$83.94** Claude · **228146k** Codex tokens.
+Spend to date: **$83.94** Claude · **230118k** Codex tokens.
 
 ## What happened
 
@@ -696,6 +696,12 @@ Spend to date: **$83.94** Claude · **228146k** Codex tokens.
 - 07:07  US-805 started, attempt 3 (codex)
 - 07:13  US-805 — codex finished `e63cd602` · 1690k tok
 - 07:43  US-805 **rejected** — 0/8 criteria, judged by claude
+- 07:43  ⏸ **gate opened** — US-805 has failed 3 times — is the story wrong?
+- 08:05  US-805 **PASSED** — 8/8 criteria, judged by human
+- 08:05  ▶ gate answered **skip** — Root cause found and fixed: a real, live-discovered schema defect in ingest/schemas.py (DefiLlamaStablecoinChain.gecko_id/token_symbol and DefiLlamaPeggedAmounts.pegged_usd lacked defaults, so DefiLlama's real /stablecoinchains response omits these keys for many chains and failed validation for every request). Undiscoverable by codex's own sandbox, which has no live network access. Fixed and verified live. See verdict.json overrideReason.
+- 08:04  US-806 started, attempt 1 (codex)
+- 08:08  US-806 — codex finished `4c00e7c4` · 1972k tok
+- 08:08  US-806 **rejected** — 0/7 criteria, judged by claude
 
 <!-- uf:generated:end -->
 

@@ -76,7 +76,7 @@ describe("completeness matrix", () => {
         .getAllByRole("rowheader")
         .map((header) => header.textContent),
     ).toEqual(mixedBoard.families.map((family) => family.replaceAll("_", " ")));
-    expect(mixedBoard.families).toHaveLength(29);
+    expect(mixedBoard.families).toHaveLength(30);
 
     const bodyRows = within(table).getAllByRole("row").slice(1);
     expect(bodyRows).toHaveLength(mixedBoard.families.length);
