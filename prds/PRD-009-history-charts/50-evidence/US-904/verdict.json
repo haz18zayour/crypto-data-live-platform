@@ -12,66 +12,66 @@
       "met": true,
       "evidence": {
         "file": "tests/test_backfill_okx.py",
-        "line": 154,
+        "line": 231,
         "testName": "test_backfilled_macd_matches_existing_golden_at_the_same_history_depth",
         "exitCode": 0
       },
-      "note": "backfill_okx_candle_indicator in ingest/fetchers/okx.py sizes its seed window with _backfill_seed_bars as max(required_bars, TA-Lib lookback*4+1). It computes each plotted point from its own seed_bars window ending at that bar. The golden test shows the backfilled MACD matching PRD-002's golden value. The parametrized test at line 115 checks that the seed covers 4x the lookback for all 11 TA-Lib keys and that the plotted timestamps are correct. It asserts nothing about the values. Both tests run in the offline gate."
+      "note": "_backfill_seed_bars in ingest/fetchers/okx.py sets the seed to max(required_bars, TA-Lib lookback*4+1), and every plotted point is computed from its own full seed window. The golden test shows backfilled MACD equals PRD-002's golden value. The parametrized test at line 192 checks seed size and timestamps for all 11 TA-Lib keys. Both run in the offline gate."
     },
     {
       "criterionId": "US-904-C2",
       "met": false,
       "evidence": {
         "file": "tests/test_backfill_okx.py",
-        "line": 295,
-        "testName": "test_live_okx_open_interest_backfill_cross_checks_one_returned_history_row",
+        "line": 374,
+        "testName": "test_live_okx_candle_backfill_seed_matches_project_calculation_at_historical_bar",
         "exitCode": null
       },
-      "note": "The 30-spec.md tripwire asks for a live check that a long seed window reproduces what the live pipeline computed at that historical bar. No such live test exists for candles or TA-Lib. The rubik UTC+8 vs 1Dutc tripwire (20-decisions.yaml:154-167) is not probed or disclosed either: the code uses period=1D silently. The one live test covers only open interest and re-queries the same history endpoint, a same-endpoint replay. It is marked @pytest.mark.integration, so the gate deselects it (374 passed, 67 deselected), and there is no evidence it ever ran."
+      "note": "The live checks now exist: a TA-Lib seed replay at line 374 and a rubik 1Dutc probe at line 440. Both are @pytest.mark.integration, and pyproject.toml:33 ('-m not integration') deselects them from the gate. No evidence file records a live run, so the live verification has not been shown to happen."
     },
     {
       "criterionId": "US-904-C3",
       "met": true,
       "evidence": {
         "file": "tests/test_backfill_okx.py",
-        "line": 189,
+        "line": 266,
         "testName": "test_funding_backfill_persists_only_the_vendor_returned_history_window",
         "exitCode": 0
       },
-      "note": "The funding recipe emits exactly one run per row the vendor returned, with no synthetic rows. The test asserts the run count equals the vendor row count and that the oldest timestamp equals the vendor's oldest row. Candle backfill raises if OKX returns fewer bars than requested (fetch_asset_daily_history_bars). One caveat: funding and open interest fetch only one page of 100 rows (~33 days of 8h funding). That understates the ~3 months OKX has, but it never overstates it."
+      "note": "Funding emits exactly one run per row the vendor returned, and the oldest timestamp equals the vendor's oldest row. Candle backfill errors if OKX returns fewer bars than requested. Funding and OI fetch only one 100-row page, which understates the depth OKX has but never overstates it."
     },
     {
       "criterionId": "US-904-C4",
       "met": true,
       "evidence": {
         "file": "tests/test_backfill_okx.py",
-        "line": 224,
+        "line": 301,
         "testName": "test_open_interest_backfill_uses_history_endpoint_and_persists_its_provenance",
         "exitCode": 0
       },
-      "note": "persist_board in ingest/pipeline.py now overrides the definition's endpoint and source_field from the result. persist_datapoint writes definition.endpoint and definition.source_field to the row (ingest/persist.py:61-62). The test runs the real persist_board with only persist_datapoint captured. It asserts the persisted endpoint and source_field name open-interest-history and not public/open-interest. Live rows keep the registry's public/open-interest endpoint, so the two sources stay distinguishable."
+      "note": "persist_board (ingest/pipeline.py) now takes endpoint and source_field from the result. The test runs the real persist_board and asserts the persisted endpoint is open-interest-history, not public/open-interest. Live rows keep the registry's live endpoint, and backfill rows also carry origin='backfill'."
     },
     {
       "criterionId": "US-904-C5",
       "met": true,
       "evidence": {
         "file": "tests/test_backfill_okx.py",
-        "line": 257,
+        "line": 334,
         "testName": "test_long_short_and_taker_backfills_request_raw_1d_points_without_resampling",
         "exitCode": 0
       },
-      "note": "The G1 decision (20-decisions.yaml:80-90) calls for a real time axis with raw points and no resampling. The long/short and taker recipes request period=1D and emit one run per vendor row with that row's own timestamp. The live 5m registry endpoints are unchanged. The test asserts the 1D request URLs, preserved source timestamps and the buy/sell ratio. It uses a single row, and part of it only checks for a 'no resampling' string in source_field. The UTC+8 bucket disclosure is not handled (see C2)."
+      "note": "Long/short and taker backfill request period=1D and keep each vendor row's own timestamp with no resampling. The rubik 1D bucket caveat is disclosed in source_field (RUBIK_DAILY_PERIOD_PROVENANCE). Backfill rows stay distinguishable by origin and endpoint, so the seam is not hidden."
     },
     {
       "criterionId": "US-904-C6",
       "met": false,
       "evidence": {
         "file": "tests/test_backfill_okx.py",
-        "line": 295,
-        "testName": "test_live_okx_open_interest_backfill_cross_checks_one_returned_history_row",
+        "line": 513,
+        "testName": "test_live_okx_run_backfill_persists_real_rows_cross_checked_against_fresh_vendor_read",
         "exitCode": null
       },
-      "note": "Every executed test uses httpx.MockTransport fixtures. The only real-data test is marked integration and deselected by the gate, with no evidence it ran. It also calls one recipe in isolation, not the assembled run_backfill entry point with persistence. No test drives run_backfill against real OKX data for candles, funding, long/short or taker."
+      "note": "This test drives the public run_backfill entry point against real OKX and Postgres for all five recipe kinds, which is the right shape. But it is @pytest.mark.integration, so the gate deselects it, and no evidence shows it ever ran. Every executed test uses httpx.MockTransport."
     },
     {
       "criterionId": "US-904-C7",
@@ -82,10 +82,10 @@
         "testName": null,
         "exitCode": 0
       },
-      "note": "The US-904-C7 gate `uv run pytest -q` exited 0. The re-run typecheck gate (mypy --strict) also exited 0, which fixes the attempt-1 failure."
+      "note": "The US-904-C7 gate `uv run pytest -q` exited 0, and the typecheck gate also exited 0."
     }
   ],
   "tripwires": [],
-  "note": "Not faked: the recipes are real and wired into the registry and BACKFILL_RECIPES, and the provenance and warm-up logic are tested. But every executed test uses mocks. The only live test is deselected by the gate and replays the same endpoint. No live check covers the seeded TA-Lib values, and nothing probes or discloses the rubik UTC+8 alignment tripwire, so C2 and C6 fail. Funding and open interest also fetch only a single 100-row page, which likely understates the ~3 months OKX actually has.",
-  "at": "2026-09-28T18:41:29.203Z"
+  "note": "Not faked. Attempt 3 added real live tests: a TA-Lib seed replay, a rubik 1Dutc probe, and run_backfill into Postgres cross-checked against a fresh vendor read. But all three are @pytest.mark.integration, which pyproject.toml:33 deselects from the gate, and the 50-evidence/US-904 folder has no record of a live run. So C2 and C6 still have no executed evidence. The gates.json and verdict.json in that folder are left over from attempt 2.",
+  "at": "2026-09-28T18:46:42.358Z"
 }
