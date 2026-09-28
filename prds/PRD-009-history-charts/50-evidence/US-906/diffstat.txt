@@ -1,0 +1,8 @@
+.uf/events.ndjson           |   3 +
+ SESSION.md                  |   7 +-
+ ingest/backfill.py          |   2 +
+ ingest/fetchers/fred.py     | 242 +++++++++++++++++++++++++++++++++++++++++---
+ ingest/pipeline.py          |   3 +-
+ ingest/registry.yaml        |  14 +--
+ tests/test_backfill_fred.py | 196 +++++++++++++++++++++++++++++++++++
+ 7 files changed, 444 insertions(+), 23 deletions(-)
