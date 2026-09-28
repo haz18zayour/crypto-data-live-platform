@@ -22,7 +22,7 @@ SOSOVALUE_SUMMARY_HISTORY_ENDPOINT = (
 REQUEST_TIMEOUT_SECONDS = 10
 SOSOVALUE_SOURCE_FIELD = "SoSoValue /etfs/summary-history total_net_inflow"
 SUPPORTED_SYMBOLS = frozenset({"BTC", "ETH", "SOL"})
-BACKFILL_LIMIT = 200
+BACKFILL_LIMIT = 300
 
 
 @dataclass(frozen=True, slots=True)
@@ -53,12 +53,23 @@ class SosoValueHistoryProbe:
     """Measured shape, range, and rate-limit behavior for summary-history."""
 
     symbol: str
+    requested_limit: int
     rows: int
     newest_date: str
     oldest_date: str
     fields: tuple[str, ...]
     rate_limit_status: int
     rate_limit_detail: str
+    rate_limit_limit: int | None = None
+    rate_limit_remaining: int | None = None
+    rate_limit_reset: str | None = None
+
+
+@dataclass(frozen=True, slots=True)
+class _SosoValueSummaryHistory:
+    payload: SosoValueEtfSummaryHistoryResponse
+    headers: httpx.Headers
+    status_code: int
 
 
 def _api_key() -> str | None:
@@ -94,7 +105,7 @@ def _get_summary_history(
     limit: int,
     client: httpx.Client | None = None,
     api_key: str | None = None,
-) -> SosoValueEtfSummaryHistoryResponse:
+) -> _SosoValueSummaryHistory:
     token = _api_key() if api_key is None else api_key.strip()
     if not token:
         raise RuntimeError("SOSOVALUE_API_KEY is not configured")
@@ -118,7 +129,44 @@ def _get_summary_history(
     payload = SosoValueEtfSummaryHistoryResponse.model_validate(response.json())
     if payload.code != 0:
         raise RuntimeError(f"SoSoValue returned code {payload.code}: {payload.message}")
-    return payload
+    return _SosoValueSummaryHistory(
+        payload=payload,
+        headers=response.headers,
+        status_code=response.status_code,
+    )
+
+
+def _header_int(headers: httpx.Headers, name: str) -> int | None:
+    value = headers.get(name)
+    if value is None:
+        return None
+    try:
+        return int(value)
+    except ValueError:
+        return None
+
+
+def _rate_limit_detail(
+    response: _SosoValueSummaryHistory,
+) -> tuple[int, str, int | None, int | None, str | None]:
+    limit = _header_int(response.headers, "X-RateLimit-Limit")
+    remaining = _header_int(response.headers, "X-RateLimit-Remaining")
+    reset = response.headers.get("X-RateLimit-Reset")
+    if limit is None and remaining is None and reset is None:
+        return (
+            response.status_code,
+            "no rate-limit headers on first response",
+            None,
+            None,
+            None,
+        )
+    return (
+        response.status_code,
+        f"headers report limit={limit}, remaining={remaining}, reset={reset}",
+        limit,
+        remaining,
+        reset,
+    )
 
 
 def probe_sosovalue_summary_history(
@@ -132,42 +180,59 @@ def probe_sosovalue_summary_history(
     """Live-probe the endpoint's real row shape, date range, and rate limit."""
 
     normalized_symbol = symbol.upper()
-    payload = _get_summary_history(
+    response = _get_summary_history(
         normalized_symbol,
         limit=sample_limit,
         client=client,
         api_key=api_key,
     )
+    payload = response.payload
     if not payload.data:
         raise RuntimeError(f"SoSoValue returned no {normalized_symbol} rows")
 
     dates = sorted(row.date for row in payload.data)
     fields = tuple(payload.data[0].model_dump().keys())
-    rate_limit_status = 200
-    rate_limit_detail = f"no 429 across {rate_probe_requests} immediate probe requests"
-    for index in range(rate_probe_requests):
-        try:
-            _get_summary_history(
-                normalized_symbol,
-                limit=1,
-                client=client,
-                api_key=api_key,
-            )
-        except httpx.HTTPStatusError as error:
-            rate_limit_status = error.response.status_code
-            rate_limit_detail = (
-                f"request {index + 1} returned HTTP {error.response.status_code}"
-            )
-            break
+    (
+        rate_limit_status,
+        rate_limit_detail,
+        rate_limit_limit,
+        rate_limit_remaining,
+        rate_limit_reset,
+    ) = _rate_limit_detail(response)
+    if (
+        rate_limit_limit is None
+        and rate_limit_remaining is None
+        and rate_limit_reset is None
+    ):
+        rate_limit_status = 200
+        rate_limit_detail = f"no 429 across {rate_probe_requests} immediate probe requests"
+        for index in range(rate_probe_requests):
+            try:
+                _get_summary_history(
+                    normalized_symbol,
+                    limit=1,
+                    client=client,
+                    api_key=api_key,
+                )
+            except httpx.HTTPStatusError as error:
+                rate_limit_status = error.response.status_code
+                rate_limit_detail = (
+                    f"request {index + 1} returned HTTP {error.response.status_code}"
+                )
+                break
 
     return SosoValueHistoryProbe(
         symbol=normalized_symbol,
+        requested_limit=sample_limit,
         rows=len(payload.data),
         newest_date=dates[-1],
         oldest_date=dates[0],
         fields=fields,
         rate_limit_status=rate_limit_status,
         rate_limit_detail=rate_limit_detail,
+        rate_limit_limit=rate_limit_limit,
+        rate_limit_remaining=rate_limit_remaining,
+        rate_limit_reset=rate_limit_reset,
     )
 
 
@@ -201,11 +266,21 @@ def backfill_sosovalue_etf_flows(
         for asset in definition.definable_for:
             if asset not in SUPPORTED_SYMBOLS:
                 continue
-            payload = _get_summary_history(
+            response = _get_summary_history(
                 asset,
                 limit=limit,
                 client=client,
                 api_key=api_key,
+            )
+            payload = response.payload
+            dates = sorted(row.date for row in payload.data)
+            range_detail = (
+                f"observed rows={len(payload.data)}"
+                if not dates
+                else (
+                    f"observed rows={len(payload.data)} "
+                    f"range={dates[0]}..{dates[-1]}"
+                )
             )
             for row in payload.data:
                 flow_date = _parse_date(row.date)
@@ -218,7 +293,8 @@ def backfill_sosovalue_etf_flows(
                             reference_period=row.date,
                             published_at=flow_date,
                             source_field=(
-                                f"{SOSOVALUE_SOURCE_FIELD}; backfill limit={limit}"
+                                f"{SOSOVALUE_SOURCE_FIELD}; request limit={limit}; "
+                                f"{range_detail}"
                             ),
                         ),
                     )

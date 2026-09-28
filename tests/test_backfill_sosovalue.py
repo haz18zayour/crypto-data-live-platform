@@ -149,6 +149,11 @@ def test_sosovalue_backfill_persists_decimal_values_via_str_conversion() -> None
     assert values[0].value != Decimal.from_float(190646110.255)
     assert values[0].source_timestamp == datetime(2026, 9, 25, tzinfo=UTC)
     assert requests[0].url.params["limit"] == str(BACKFILL_LIMIT)
+    assert "request limit=300" in values[0].source_field
+    assert (
+        "observed rows=1 range=2026-09-25..2026-09-25"
+        in values[0].source_field
+    )
 
 
 def test_sosovalue_probe_records_shape_date_range_and_measured_rate_limit() -> None:
@@ -183,6 +188,45 @@ def test_sosovalue_probe_records_shape_date_range_and_measured_rate_limit() -> N
     assert "total_net_inflow" in probe.fields
     assert probe.rate_limit_status == 429
     assert "request 3" in probe.rate_limit_detail
+    assert probe.requested_limit == BACKFILL_LIMIT
+
+
+def test_sosovalue_probe_reads_rate_limit_headers_without_assuming_third_party_claim() -> None:
+    requests = 0
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        nonlocal requests
+        requests += 1
+        return httpx.Response(
+            200,
+            headers={
+                "X-RateLimit-Limit": "20",
+                "X-RateLimit-Remaining": "19",
+                "X-RateLimit-Reset": "1790553600000",
+            },
+            json=_payload(
+                [
+                    _row("2024-01-02", 0.1),
+                    _row("2026-09-25", -55066297.155),
+                ]
+            ),
+            request=request,
+        )
+
+    with httpx.Client(transport=httpx.MockTransport(handler)) as client:
+        probe = probe_sosovalue_summary_history(
+            "BTC",
+            client=client,
+            api_key="test-key",
+            rate_probe_requests=25,
+        )
+
+    assert requests == 1
+    assert probe.rate_limit_status == 200
+    assert probe.rate_limit_limit == 20
+    assert probe.rate_limit_remaining == 19
+    assert probe.rate_limit_reset == "1790553600000"
+    assert "headers report limit=20" in probe.rate_limit_detail
 
 
 def test_bnb_etf_flow_remains_not_definable_and_not_backfilled() -> None:
@@ -222,7 +266,8 @@ def test_live_sosovalue_run_backfill_persists_real_vendor_rows_after_probe(
         sample_limit=BACKFILL_LIMIT,
         rate_probe_requests=0,
     )
-    assert probe.rows == BACKFILL_LIMIT
+    assert 1 < probe.rows <= probe.requested_limit
+    assert probe.requested_limit == BACKFILL_LIMIT
     assert probe.oldest_date < probe.newest_date
     assert probe.rate_limit_status in {200, 429}
 
@@ -243,8 +288,12 @@ def test_live_sosovalue_run_backfill_persists_real_vendor_rows_after_probe(
     assert persisted
     assert {row[0] for row in persisted} == {"BTC", "ETH", "SOL"}
     assert all(row[6] == "backfill" for row in persisted)
-    assert all(str(row[4]).startswith(SOSOVALUE_SUMMARY_HISTORY_ENDPOINT) for row in persisted)
-    assert all(f"backfill limit={BACKFILL_LIMIT}" in str(row[5]) for row in persisted)
+    assert all(
+        str(row[4]).startswith(SOSOVALUE_SUMMARY_HISTORY_ENDPOINT)
+        for row in persisted
+    )
+    assert all(f"request limit={BACKFILL_LIMIT}" in str(row[5]) for row in persisted)
+    assert all("observed rows=" in str(row[5]) for row in persisted)
     assert any(row[0] == "BTC" and row[3] == probe.oldest_date for row in persisted)
 
 
@@ -261,3 +310,8 @@ def test_live_sosovalue_history_probe_confirms_real_shape_range_and_rate_limit()
     assert "total_net_inflow" in probe.fields
     assert probe.rate_limit_status in {200, 429}
     assert probe.rate_limit_detail
+    assert (
+        probe.rate_limit_limit is not None
+        or probe.rate_limit_status == 429
+        or "no 429 across" in probe.rate_limit_detail
+    )
