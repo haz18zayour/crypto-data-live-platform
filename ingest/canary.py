@@ -150,6 +150,7 @@ def _check_endpoint(
             payload = _check_helius_get_block(client)
         else:
             headers = {}
+            url = httpx.URL(definition.endpoint)
             if definition.vendor == "validators_app":
                 token = os.environ.get("VALIDATORS_APP_API_TOKEN")
                 if token:
@@ -158,8 +159,14 @@ def _check_endpoint(
                 token = os.environ.get("SOSOVALUE_API_KEY")
                 if token:
                     headers["x-soso-api-key"] = token
+            if definition.vendor == "fred":
+                token = os.environ.get("FRED_API_KEY")
+                if token:
+                    # url.params kwarg replaces rather than merges an existing query
+                    # string, so the api_key must be merged onto it explicitly.
+                    url = url.copy_merge_params({"api_key": token})
             response = client.get(
-                definition.endpoint,
+                url,
                 headers=headers,
                 timeout=REQUEST_TIMEOUT_SECONDS,
             )
