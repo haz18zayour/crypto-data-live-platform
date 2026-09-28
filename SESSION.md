@@ -32,10 +32,10 @@ open prds/PRD-005-dashboard/20-decisions.yaml
 | PRD-005-dashboard | 9 | 9 | **all green** |
 | PRD-006-derivatives | 7 | 7 | **all green** |
 | PRD-007-onchain | 8 | 8 | **all green** |
-| PRD-008-macro-flows | 8 | 3 | 3/8 |
+| PRD-008-macro-flows | 8 | 4 | 4/8 |
 | PRD-012-cadence-split | 6 | 6 | **all green** |
 
-Spend to date: **$83.94** Claude · **222059k** Codex tokens.
+Spend to date: **$83.94** Claude · **224692k** Codex tokens.
 
 ## What happened
 
@@ -681,6 +681,15 @@ Spend to date: **$83.94** Claude · **222059k** Codex tokens.
 - 23:21  US-804 started, attempt 3 (codex)
 - 23:30  US-804 — codex finished `12735fed` · 4210k tok
 - 23:47  US-804 **rejected** — 8/9 criteria, judged by claude · $1.17
+- 23:47  ⏸ **gate opened** — US-804 has failed 3 times — is the story wrong?
+
+### 2026-09-28
+
+- 06:10  US-804 **PASSED** — 9/9 criteria, judged by human
+- 06:10  ▶ gate answered **skip** — SOSOVALUE_API_KEY now provisioned. Fixed a real tautological test assertion, and two live-discovered schema defects (float not string money fields, undeclared details field). Pipeline-wiring concern confirmed out of scope per PRD-007 US-701 precedent. See verdict.json overrideReason.
+- 05:55  US-805 started, attempt 1 (codex)
+- 06:01  US-805 — codex finished `9237f45a` · 2633k tok
+- 06:31  US-805 **rejected** — 0/8 criteria, judged by claude
 
 <!-- uf:generated:end -->
 

@@ -43,11 +43,11 @@ describe("coverage headline", () => {
 
   test("the mixed fixture reports every state separately", () => {
     expect(countCoverage(mixedBoard)).toEqual({
-      total: 140,
-      ok: 75,
+      total: 145,
+      ok: 76,
       stale: 1,
-      unavailable: 52,
-      notDefinable: 10,
+      unavailable: 55,
+      notDefinable: 11,
       paywalled: 1,
       fetchFailed: 1,
     });
@@ -65,10 +65,10 @@ describe("coverage headline", () => {
     render(<CoverageHeadline board={mixedBoard} />);
 
     const status = screen.getByRole("status");
-    expect(status).toHaveTextContent("10 not definable");
+    expect(status).toHaveTextContent("11 not definable");
     expect(status).toHaveTextContent("1 paywalled");
     expect(status).toHaveTextContent("1 fetch failed");
-    expect(status).not.toHaveTextContent(/5 (missing|unavailable)/i);
+    expect(status).not.toHaveTextContent(/(^|\D)5 (missing|unavailable)/i);
   });
 
   test("an all-OK board still shows its denominator and every zero count", () => {
@@ -94,7 +94,7 @@ describe("coverage headline", () => {
     expect(statuses).toHaveLength(1);
     expect(statuses[0]).toHaveAttribute("aria-atomic", "true");
     expect(statuses[0]).toHaveTextContent(
-      "75 of 140 indicators OK · 1 stale · 52 unavailable 10 not definable · 1 paywalled · 1 fetch failed",
+      "76 of 145 indicators OK · 1 stale · 55 unavailable 11 not definable · 1 paywalled · 1 fetch failed",
     );
     expect(statuses[0]).toHaveStyle({ fontVariantNumeric: "tabular-nums" });
   });
