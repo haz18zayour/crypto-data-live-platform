@@ -1,0 +1,8 @@
+.uf/events.ndjson                                  |  2 +
+ ingest/persist.py                                  |  7 ++-
+ ..._add_datapoint_origin_and_filter_live_reads.sql | 53 ++++++++++++++++
+ supabase/migrations/checksums.sha256               |  1 +
+ tests/test_board_read.py                           | 65 ++++++++++++++++++-
+ tests/test_migration.py                            | 60 ++++++++++++++++++
+ tests/test_persist.py                              | 73 ++++++++++++++++++++++
+ 7 files changed, 256 insertions(+), 5 deletions(-)
