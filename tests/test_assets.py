@@ -421,6 +421,9 @@ def test_all_four_assets_produce_an_indicator_value_or_explicit_status() -> None
                 LongShortRatioOk,
                 TakerRatioOk,
                 AlternativeMeFearGreedOk,
+                FredOk,
+                SosoValueEtfFlowOk,
+                DefiLlamaStablecoinSupplyOk,
             ),
         )
         for result in run.indicators.values()
@@ -437,6 +440,9 @@ def test_all_four_assets_produce_an_indicator_value_or_explicit_status() -> None
                 LongShortRatioOk,
                 TakerRatioOk,
                 AlternativeMeFearGreedOk,
+                FredOk,
+                SosoValueEtfFlowOk,
+                DefiLlamaStablecoinSupplyOk,
             ),
         )
     )
