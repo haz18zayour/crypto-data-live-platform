@@ -13,6 +13,7 @@ from pydantic import BaseModel, ValidationError
 from ingest.heartbeat import _ping
 from ingest.registry import IndicatorDefinition, load_registry
 from ingest.schemas import (
+    AlternativeMeFearGreedResponse,
     CoinMetricsAssetMetricsResponse,
     DefiLlamaStablecoinChainsResponse,
     FredSeriesObservationsResponse,
@@ -37,6 +38,7 @@ RESPONSE_MODEL_TYPES: dict[str, type[BaseModel]] = {
     "fred_series_observations": FredSeriesObservationsResponse,
     "sosovalue_etf_summary_history": SosoValueEtfSummaryHistoryResponse,
     "defillama_stablecoinchains": DefiLlamaStablecoinChainsResponse,
+    "alternative_me_fear_greed": AlternativeMeFearGreedResponse,
     "solana_get_block": SolanaGetBlockResponse,
     "validators_app_validators": ValidatorsAppValidatorsResponse,
 }

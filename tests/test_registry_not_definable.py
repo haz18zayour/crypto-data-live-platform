@@ -106,10 +106,10 @@ def test_us_708_registry_not_definable_reasons_are_unique() -> None:
             seen[reason] = (entry.key, asset)
 
 
-def test_registry_coverage_still_passes_for_all_80_entries() -> None:
+def test_registry_coverage_still_passes_for_all_81_entries() -> None:
     registry = load_registry()
 
-    assert len(registry.root) == 80
+    assert len(registry.root) == 81
     assert_registry_coverage(
         registry,
         golden_keys={

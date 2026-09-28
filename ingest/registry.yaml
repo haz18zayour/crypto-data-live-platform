@@ -1304,3 +1304,17 @@
   freshness_stale_seconds: 172800
   uncorroborated:
     note: DefiLlama is the researched free, keyless source for per-chain stablecoin supply in this PRD; Bitcoin is a structural absence in its chain list.
+- key: fear_greed_index
+  vendor: alternative.me
+  endpoint: https://api.alternative.me/fng/?limit=1
+  source_field: "alternative.me Crypto Fear & Greed Index value; vendor's own six-weight composite: volatility 25%, momentum/volume 25%, social 15%, surveys 15% currently paused, dominance 10%, Google Trends 10%; attribution: Data provided by alternative.me"
+  definable_for: [MACRO]
+  golden: fixtures/alternative_me_fng.json
+  response_model: alternative_me_fear_greed
+  required_bars: 1
+  parameters:
+  expected_update_interval_seconds: 86400
+  freshness_warn_seconds: 108000
+  freshness_stale_seconds: 172800
+  uncorroborated:
+    note: alternative.me is the researched free, keyless source for this vendor-owned Fear & Greed composite; this project displays it as vendor data, not an independent validated market signal.

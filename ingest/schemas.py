@@ -406,6 +406,35 @@ class SosoValueEtfSummaryHistoryResponse(BaseModel):
     details: object | None = None
 
 
+class AlternativeMeFearGreedEntry(BaseModel):
+    """One row from alternative.me's Fear & Greed API."""
+
+    model_config = ConfigDict(extra="forbid", frozen=True)
+
+    value: StrictStr
+    value_classification: StrictStr
+    timestamp: StrictStr
+    time_until_update: StrictStr | None = None
+
+
+class AlternativeMeFearGreedMetadata(BaseModel):
+    """Metadata wrapper returned by alternative.me's Fear & Greed API."""
+
+    model_config = ConfigDict(extra="forbid", frozen=True)
+
+    error: object | None
+
+
+class AlternativeMeFearGreedResponse(BaseModel):
+    """The response contract for alternative.me's Fear & Greed endpoint."""
+
+    model_config = ConfigDict(extra="forbid", frozen=True)
+
+    name: StrictStr
+    data: tuple[AlternativeMeFearGreedEntry, ...]
+    metadata: AlternativeMeFearGreedMetadata
+
+
 class DefiLlamaPeggedAmounts(BaseModel):
     """Stablecoin totals grouped by the fiat/asset peg tracked by DefiLlama."""
 

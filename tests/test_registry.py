@@ -131,7 +131,7 @@ def test_definable_for_requires_a_nonempty_asset_list(
 def test_shipped_registry_definitions_cover_four_assets_at_scale() -> None:
     registry = load_registry()
 
-    assert len(registry.root) == 80
+    assert len(registry.root) == 81
     crypto_entries = tuple(
         entry for entry in registry.root if entry.definable_for != ("MACRO",)
     )
@@ -163,7 +163,7 @@ def test_registry_cadence_intervals_partition_the_shipped_entries() -> None:
     assert {tier: len(keys) for tier, keys in by_tier.items()} == {
         "fast": 12,
         "medium": 4,
-        "daily": 60,
+        "daily": 61,
     }
     assert set().union(*by_tier.values()) == {
         entry.key
