@@ -12,11 +12,11 @@
       "met": false,
       "evidence": {
         "file": "tests/test_backfill_sosovalue.py",
-        "line": 214,
+        "line": 258,
         "testName": "test_live_sosovalue_run_backfill_persists_real_vendor_rows_after_probe",
         "exitCode": null
       },
-      "note": "The integration test does drive run_backfill end to end against the real vendor, but it is marked @pytest.mark.integration and was deselected in the gate run (396 passed, 75 deselected). The committed evidence file sosovalue-live-probe-local-attempt.md records that the live probe was blocked by WinError 10013 before any HTTP response came back. So no real shape, date range, or rate limit was ever observed. BACKFILL_LIMIT=200 is still hard-coded, and the live test even asserts probe.rows == BACKFILL_LIMIT, which assumes the window instead of settling it. The tripwire in 30-spec.md:6 is still open."
+      "note": "Not met on attempt 3 either. The only tests that hit the real vendor (lines 258 and 301) are marked @pytest.mark.integration, and the gate run deselected them (396 passed, 76 deselected). The committed probe note, sosovalue-live-probe-local-attempt.md, admits the live call failed with WinError 10013 before any HTTP response came back. So the real response shape, date range and rate limit were never observed. BACKFILL_LIMIT was changed to 300 (ingest/fetchers/sosovalue.py:25) because a documentation page said so. That is the same kind of unconfirmed documentation-based assumption the 30-spec.md:6 tripwire says to replace with a live probe, so the tripwire is still open."
     },
     {
       "criterionId": "US-910-C2",
@@ -27,7 +27,7 @@
         "testName": "test_sosovalue_backfill_persists_decimal_values_via_str_conversion",
         "exitCode": 0
       },
-      "note": "The backfill reuses _parse_money, which does Decimal(str(value)) (ingest/fetchers/sosovalue.py:76). The test asserts value == Decimal('190646110.255') and != Decimal.from_float(...)."
+      "note": "The backfill reuses _parse_money, which does Decimal(str(value)) (ingest/fetchers/sosovalue.py:87). The test asserts value == Decimal('190646110.255') and != Decimal.from_float(190646110.255)."
     },
     {
       "criterionId": "US-910-C3",
@@ -38,7 +38,7 @@
         "testName": "test_defillama_latest_backfill_matches_current_live_endpoint_same_day",
         "exitCode": 0
       },
-      "note": "The backfill path (/stablecoincharts/{chain}) and the live path (/stablecoinchains) are parsed separately for ETH/SOL/BNB. The test asserts the same reference_period and the same Decimal value. Weakness: both mocked endpoints are given identical numbers, so this proves the parsers and chain mappings agree, not that the real vendor endpoints agree."
+      "note": "The backfill endpoint (/stablecoincharts/{chain}) and the live endpoint (/stablecoinchains) each go through their own parser for ETH, SOL and BNB. The test asserts both give the same reference_period and the same Decimal value. Weakness: the mock feeds both endpoints identical numbers, so this proves the two parsers and the chain mapping agree, not that the real endpoints agree."
     },
     {
       "criterionId": "US-910-C4",
@@ -49,18 +49,18 @@
         "testName": "test_alternative_me_backfill_reads_history_limit_zero_without_verdict_label",
         "exitCode": 0
       },
-      "note": "The backfill emits BackfilledAlternativeMeFearGreedOk, a slots dataclass with no classification field. The test feeds value_classification='Greed', asserts no persisted value has that attribute, and asserts the limit=0 history URL."
+      "note": "The backfill emits BackfilledAlternativeMeFearGreedOk, a slots dataclass with no classification field. The test feeds value_classification='Greed' and asserts no persisted value carries that attribute. It also asserts the request used the limit=0 history URL."
     },
     {
       "criterionId": "US-910-C5",
       "met": true,
       "evidence": {
         "file": "tests/test_backfill_sosovalue.py",
-        "line": 188,
+        "line": 232,
         "testName": "test_bnb_etf_flow_remains_not_definable_and_not_backfilled",
         "exitCode": 0
       },
-      "note": "Asserts BNB stays NOT_DEFINABLE for live and that the backfill only requests BTC/ETH/SOL. The companion test test_btc_stablecoin_supply_remains_not_definable_and_not_backfilled (tests/test_backfill_defillama.py:109) asserts no /Bitcoin chart request is made."
+      "note": "The test asserts BNB stays NOT_DEFINABLE for live fetches and that the backfill only requests BTC, ETH and SOL. The companion test test_btc_stablecoin_supply_remains_not_definable_and_not_backfilled (tests/test_backfill_defillama.py:109) asserts no /Bitcoin chart request is made."
     },
     {
       "criterionId": "US-910-C6",
@@ -71,10 +71,10 @@
         "testName": null,
         "exitCode": 0
       },
-      "note": "The `uv run pytest -q` gate exited 0 (396 passed). The mypy --strict typecheck gate also exited 0."
+      "note": "The `uv run pytest -q` gate exited 0 (396 passed). The typecheck gate (mypy --strict) also exited 0."
     }
   ],
   "tripwires": [],
-  "note": "5 of 6 criteria met, and nothing looks faked. Attempt 2 still leaves C1 unmet: it only added an integration test that is deselected in the gate, plus a note admitting the live probe was blocked by the sandbox socket policy. No real SoSoValue shape, range, or limit was observed, and BACKFILL_LIMIT=200 is still assumed.",
-  "at": "2026-09-28T23:29:57.077Z"
+  "note": "5 of 6 criteria met, and nothing looks faked. C1 is still unmet on attempt 3: the live SoSoValue probe never got a response (sandbox socket block), the integration tests were deselected, and the window moved from an assumed 200 to a documentation-derived 300 without any live confirmation. The C3 seam test runs on identical mock values, so it only proves the two parsers agree.",
+  "at": "2026-09-28T23:36:34.949Z"
 }
