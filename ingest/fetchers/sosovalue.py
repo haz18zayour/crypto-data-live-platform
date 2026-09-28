@@ -4,13 +4,17 @@ import os
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from decimal import Decimal, InvalidOperation
-from typing import Literal
+from typing import TYPE_CHECKING, Literal, NoReturn
 
 import httpx
 from pydantic import ValidationError
 
+from ingest.registry import IndicatorDefinition
 from ingest.schemas import SosoValueEtfSummaryHistoryResponse
 from ingest.status import Error, Reason
+
+if TYPE_CHECKING:
+    from ingest.pipeline import FullAssetRun
 
 SOSOVALUE_SUMMARY_HISTORY_ENDPOINT = (
     "https://openapi.sosovalue.com/openapi/v1/etfs/summary-history"
@@ -18,6 +22,7 @@ SOSOVALUE_SUMMARY_HISTORY_ENDPOINT = (
 REQUEST_TIMEOUT_SECONDS = 10
 SOSOVALUE_SOURCE_FIELD = "SoSoValue /etfs/summary-history total_net_inflow"
 SUPPORTED_SYMBOLS = frozenset({"BTC", "ETH", "SOL"})
+BACKFILL_LIMIT = 200
 
 
 @dataclass(frozen=True, slots=True)
@@ -43,6 +48,19 @@ class SosoValueEtfFlowOk:
 type SosoValueEtfFlowResult = SosoValueEtfFlowOk | Error
 
 
+@dataclass(frozen=True, slots=True)
+class SosoValueHistoryProbe:
+    """Measured shape, range, and rate-limit behavior for summary-history."""
+
+    symbol: str
+    rows: int
+    newest_date: str
+    oldest_date: str
+    fields: tuple[str, ...]
+    rate_limit_status: int
+    rate_limit_detail: str
+
+
 def _api_key() -> str | None:
     token = os.environ.get("SOSOVALUE_API_KEY")
     if token is None or not token.strip():
@@ -62,6 +80,159 @@ def _parse_money(value: float) -> Decimal:
 
 def _parse_date(value: str) -> datetime:
     return datetime.fromisoformat(value).replace(tzinfo=UTC)
+
+
+def _run_key(definition: IndicatorDefinition, asset: str) -> str:
+    if definition.definable_for == (asset,):
+        return definition.key
+    return f"{definition.key}\x1f{asset}"
+
+
+def _get_summary_history(
+    symbol: str,
+    *,
+    limit: int,
+    client: httpx.Client | None = None,
+    api_key: str | None = None,
+) -> SosoValueEtfSummaryHistoryResponse:
+    token = _api_key() if api_key is None else api_key.strip()
+    if not token:
+        raise RuntimeError("SOSOVALUE_API_KEY is not configured")
+
+    response = (
+        httpx.get(
+            SOSOVALUE_SUMMARY_HISTORY_ENDPOINT,
+            headers={"x-soso-api-key": token},
+            params={"symbol": symbol, "country_code": "US", "limit": str(limit)},
+            timeout=REQUEST_TIMEOUT_SECONDS,
+        )
+        if client is None
+        else client.get(
+            SOSOVALUE_SUMMARY_HISTORY_ENDPOINT,
+            headers={"x-soso-api-key": token},
+            params={"symbol": symbol, "country_code": "US", "limit": str(limit)},
+            timeout=REQUEST_TIMEOUT_SECONDS,
+        )
+    )
+    response.raise_for_status()
+    payload = SosoValueEtfSummaryHistoryResponse.model_validate(response.json())
+    if payload.code != 0:
+        raise RuntimeError(f"SoSoValue returned code {payload.code}: {payload.message}")
+    return payload
+
+
+def probe_sosovalue_summary_history(
+    symbol: Literal["BTC", "ETH", "SOL"] | str = "BTC",
+    *,
+    client: httpx.Client | None = None,
+    api_key: str | None = None,
+    sample_limit: int = BACKFILL_LIMIT,
+    rate_probe_requests: int = 25,
+) -> SosoValueHistoryProbe:
+    """Live-probe the endpoint's real row shape, date range, and rate limit."""
+
+    normalized_symbol = symbol.upper()
+    payload = _get_summary_history(
+        normalized_symbol,
+        limit=sample_limit,
+        client=client,
+        api_key=api_key,
+    )
+    if not payload.data:
+        raise RuntimeError(f"SoSoValue returned no {normalized_symbol} rows")
+
+    dates = sorted(row.date for row in payload.data)
+    fields = tuple(payload.data[0].model_dump().keys())
+    rate_limit_status = 200
+    rate_limit_detail = f"no 429 across {rate_probe_requests} immediate probe requests"
+    for index in range(rate_probe_requests):
+        try:
+            _get_summary_history(
+                normalized_symbol,
+                limit=1,
+                client=client,
+                api_key=api_key,
+            )
+        except httpx.HTTPStatusError as error:
+            rate_limit_status = error.response.status_code
+            rate_limit_detail = (
+                f"request {index + 1} returned HTTP {error.response.status_code}"
+            )
+            break
+
+    return SosoValueHistoryProbe(
+        symbol=normalized_symbol,
+        rows=len(payload.data),
+        newest_date=dates[-1],
+        oldest_date=dates[0],
+        fields=fields,
+        rate_limit_status=rate_limit_status,
+        rate_limit_detail=rate_limit_detail,
+    )
+
+
+def _runs_for(
+    definition: IndicatorDefinition,
+    values: list[tuple[str, SosoValueEtfFlowOk]],
+) -> tuple["FullAssetRun", ...]:
+    from ingest.pipeline import FullAssetRun
+
+    return tuple(
+        FullAssetRun(indicators={_run_key(definition, asset): value}, history={})
+        for asset, value in values
+    )
+
+
+def _raise_backfill_fetch_error(error: Exception) -> NoReturn:
+    raise RuntimeError(str(error)) from error
+
+
+def backfill_sosovalue_etf_flows(
+    definition: IndicatorDefinition,
+    *,
+    client: httpx.Client | None = None,
+    api_key: str | None = None,
+    limit: int = BACKFILL_LIMIT,
+) -> tuple["FullAssetRun", ...]:
+    """Backfill US spot ETF net flows from SoSoValue's own summary history."""
+
+    values: list[tuple[str, SosoValueEtfFlowOk]] = []
+    try:
+        for asset in definition.definable_for:
+            if asset not in SUPPORTED_SYMBOLS:
+                continue
+            payload = _get_summary_history(
+                asset,
+                limit=limit,
+                client=client,
+                api_key=api_key,
+            )
+            for row in payload.data:
+                flow_date = _parse_date(row.date)
+                values.append(
+                    (
+                        asset,
+                        SosoValueEtfFlowOk(
+                            value=_parse_money(row.total_net_inflow),
+                            source_timestamp=flow_date,
+                            reference_period=row.date,
+                            published_at=flow_date,
+                            source_field=(
+                                f"{SOSOVALUE_SOURCE_FIELD}; backfill limit={limit}"
+                            ),
+                        ),
+                    )
+                )
+    except (
+        RuntimeError,
+        ValidationError,
+        httpx.HTTPError,
+        TypeError,
+        ValueError,
+        OverflowError,
+    ) as error:
+        _raise_backfill_fetch_error(error)
+    return _runs_for(definition, values)
 
 
 def fetch_etf_net_flow(

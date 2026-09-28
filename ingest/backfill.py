@@ -8,7 +8,9 @@ from collections.abc import Callable, Mapping, Sequence
 
 import psycopg
 
+from ingest.fetchers.alternative_me import backfill_alternative_me_fear_greed
 from ingest.fetchers.coinmetrics import backfill_coinmetrics_asset_metrics
+from ingest.fetchers.defillama_stablecoins import backfill_defillama_stablecoin_supply
 from ingest.fetchers.fred import backfill_fred_initial_release
 from ingest.fetchers.okx import backfill_okx_candle_indicator
 from ingest.fetchers.okx_derivatives import (
@@ -17,6 +19,7 @@ from ingest.fetchers.okx_derivatives import (
     backfill_okx_open_interest,
     backfill_okx_taker_ratio,
 )
+from ingest.fetchers.sosovalue import backfill_sosovalue_etf_flows
 from ingest.pipeline import FullAssetRun, persist_board
 from ingest.registry import (
     IndicatorDefinition,
@@ -44,6 +47,9 @@ BACKFILL_RECIPES: Mapping[str, BackfillRecipe] = {
     "okx_taker_volume_1d": backfill_okx_taker_ratio,
     "coinmetrics_asset_metrics": backfill_coinmetrics_asset_metrics,
     "fred_initial_release": backfill_fred_initial_release,
+    "sosovalue_etf_flows": backfill_sosovalue_etf_flows,
+    "defillama_stablecoincharts": backfill_defillama_stablecoin_supply,
+    "alternative_me_fng_history": backfill_alternative_me_fear_greed,
 }
 
 

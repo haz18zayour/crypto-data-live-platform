@@ -3,20 +3,34 @@
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from decimal import Decimal, InvalidOperation
-from typing import Literal
+from typing import TYPE_CHECKING, Literal, NoReturn
 
 import httpx
 from pydantic import ValidationError
 
-from ingest.schemas import DefiLlamaStablecoinChainsResponse
+from ingest.registry import IndicatorDefinition
+from ingest.schemas import (
+    DefiLlamaStablecoinChainsResponse,
+    DefiLlamaStablecoinChartsResponse,
+)
 from ingest.status import Error, Reason
+
+if TYPE_CHECKING:
+    from ingest.pipeline import FullAssetRun
 
 DEFILLAMA_STABLECOINCHAINS_ENDPOINT = (
     "https://stablecoins.llama.fi/stablecoinchains"
 )
+DEFILLAMA_STABLECOINCHARTS_ENDPOINT = (
+    "https://stablecoins.llama.fi/stablecoincharts/{chain}"
+)
 REQUEST_TIMEOUT_SECONDS = 10
 DEFILLAMA_SOURCE_FIELD = (
     "DefiLlama /stablecoinchains totalCirculatingUSD.peggedUSD "
+    "(USD-pegged only)"
+)
+DEFILLAMA_CHARTS_SOURCE_FIELD = (
+    "DefiLlama /stablecoincharts/{chain} totalCirculatingUSD.peggedUSD "
     "(USD-pegged only)"
 )
 ASSET_TO_CHAIN = {
@@ -62,6 +76,102 @@ def _parse_amount(value: object) -> Decimal:
         return Decimal(str(value))
     except InvalidOperation as error:
         raise ValueError(f"DefiLlama peggedUSD value is not numeric: {value}") from error
+
+
+def _parse_unix_seconds(value: str) -> datetime:
+    return datetime.fromtimestamp(int(value), tz=UTC)
+
+
+def _run_key(definition: IndicatorDefinition, asset: str) -> str:
+    if definition.definable_for == (asset,):
+        return definition.key
+    return f"{definition.key}\x1f{asset}"
+
+
+def _get_json(
+    endpoint: str,
+    *,
+    client: httpx.Client | None = None,
+) -> object:
+    try:
+        response = (
+            httpx.get(endpoint, timeout=REQUEST_TIMEOUT_SECONDS)
+            if client is None
+            else client.get(endpoint, timeout=REQUEST_TIMEOUT_SECONDS)
+        )
+        response.raise_for_status()
+        return response.json()
+    except httpx.RequestError as error:
+        raise RuntimeError(
+            f"DefiLlama request failed: {error.__class__.__name__}"
+        ) from error
+    except httpx.HTTPStatusError as error:
+        raise RuntimeError(
+            f"DefiLlama returned HTTP {error.response.status_code}"
+        ) from error
+
+
+def _runs_for(
+    definition: IndicatorDefinition,
+    values: list[tuple[str, DefiLlamaStablecoinSupplyOk]],
+) -> tuple["FullAssetRun", ...]:
+    from ingest.pipeline import FullAssetRun
+
+    return tuple(
+        FullAssetRun(indicators={_run_key(definition, asset): value}, history={})
+        for asset, value in values
+    )
+
+
+def _raise_backfill_fetch_error(error: Exception) -> NoReturn:
+    raise RuntimeError(str(error)) from error
+
+
+def backfill_defillama_stablecoin_supply(
+    definition: IndicatorDefinition,
+    *,
+    client: httpx.Client | None = None,
+) -> tuple["FullAssetRun", ...]:
+    """Backfill per-chain stablecoin supply from DefiLlama's chart endpoint."""
+
+    values: list[tuple[str, DefiLlamaStablecoinSupplyOk]] = []
+    try:
+        for asset in definition.definable_for:
+            chain = ASSET_TO_CHAIN.get(asset.upper())
+            if chain is None:
+                continue
+            endpoint = DEFILLAMA_STABLECOINCHARTS_ENDPOINT.format(chain=chain)
+            rows = DefiLlamaStablecoinChartsResponse.model_validate(
+                _get_json(endpoint, client=client)
+            ).root
+            for row in rows:
+                source_timestamp = _parse_unix_seconds(row.date)
+                values.append(
+                    (
+                        asset,
+                        DefiLlamaStablecoinSupplyOk(
+                            value=_parse_amount(
+                                row.total_circulating_usd.pegged_usd
+                            ),
+                            source_timestamp=source_timestamp,
+                            reference_period=source_timestamp.date().isoformat(),
+                            published_at=source_timestamp,
+                            chain=chain,
+                            source_field=DEFILLAMA_CHARTS_SOURCE_FIELD.format(
+                                chain=chain
+                            ),
+                        ),
+                    )
+                )
+    except (
+        RuntimeError,
+        ValidationError,
+        TypeError,
+        ValueError,
+        OverflowError,
+    ) as error:
+        _raise_backfill_fetch_error(error)
+    return _runs_for(definition, values)
 
 
 def fetch_stablecoin_supply(

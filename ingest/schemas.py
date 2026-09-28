@@ -487,3 +487,22 @@ class DefiLlamaStablecoinChainsResponse(
     """The response contract for DefiLlama's stablecoinchains endpoint."""
 
     model_config = ConfigDict(frozen=True)
+
+
+class DefiLlamaStablecoinChartEntry(BaseModel):
+    """One historical stablecoin-supply total from DefiLlama."""
+
+    model_config = ConfigDict(extra="forbid", frozen=True)
+
+    date: StrictStr
+    total_circulating_usd: DefiLlamaPeggedAmounts = Field(
+        alias="totalCirculatingUSD"
+    )
+
+
+class DefiLlamaStablecoinChartsResponse(
+    RootModel[tuple[DefiLlamaStablecoinChartEntry, ...]]
+):
+    """The response contract for DefiLlama's stablecoincharts endpoint."""
+
+    model_config = ConfigDict(frozen=True)

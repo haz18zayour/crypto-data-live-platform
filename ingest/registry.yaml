@@ -1352,7 +1352,7 @@
     note: FRED mirrors the Fed/BLS directly; a second source would check the mirror against its origin rather than provide genuine independent corroboration.
 - key: spot_etf_net_flow
   vendor: sosovalue
-  backfill_recipe: noop
+  backfill_recipe: sosovalue_etf_flows
   endpoint: https://openapi.sosovalue.com/openapi/v1/etfs/summary-history?symbol=BTC&country_code=US&limit=1
   source_field: SoSoValue /etfs/summary-history total_net_inflow for US spot ETFs
   definable_for: [BTC, ETH, SOL]
@@ -1370,7 +1370,7 @@
     note: SoSoValue is the researched source for US spot ETF flow aggregates in this PRD; BNB is not in its API enum.
 - key: stablecoin_supply
   vendor: defillama
-  backfill_recipe: noop
+  backfill_recipe: defillama_stablecoincharts
   endpoint: https://stablecoins.llama.fi/stablecoinchains
   source_field: DefiLlama /stablecoinchains totalCirculatingUSD.peggedUSD (USD-pegged only) for chain Ethereum/Solana/BSC
   definable_for: [ETH, SOL, BNB]
@@ -1388,7 +1388,7 @@
     note: DefiLlama is the researched free, keyless source for per-chain stablecoin supply in this PRD; Bitcoin is a structural absence in its chain list.
 - key: fear_greed_index
   vendor: alternative.me
-  backfill_recipe: noop
+  backfill_recipe: alternative_me_fng_history
   endpoint: https://api.alternative.me/fng/?limit=1
   source_field: "alternative.me Crypto Fear & Greed Index value; vendor's own six-weight composite: volatility 25%, momentum/volume 25%, social 15%, surveys 15% currently paused, dominance 10%, Google Trends 10%; attribution: Data provided by alternative.me"
   definable_for: [MACRO]

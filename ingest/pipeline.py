@@ -27,6 +27,7 @@ from ingest.fetchers import (
 from ingest.fetchers.alternative_me import (
     AlternativeMeFearGreedOk,
     AlternativeMeFearGreedResult,
+    BackfilledAlternativeMeFearGreedOk,
 )
 from ingest.fetchers.coinmetrics import BackfilledCoinMetricsOk
 from ingest.fetchers.defillama_stablecoins import (
@@ -93,6 +94,7 @@ type BoardResult = (
     | SosoValueEtfFlowOk
     | DefiLlamaStablecoinSupplyOk
     | AlternativeMeFearGreedOk
+    | BackfilledAlternativeMeFearGreedOk
     | BackfilledCoinMetricsOk
     | BackfilledOkxValue
     | BackfilledOkxDerivativeOk
