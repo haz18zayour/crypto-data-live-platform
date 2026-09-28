@@ -726,6 +726,8 @@ def run_sol_active_addresses() -> FullAssetRun:
 def persist_board(
     connection: psycopg.Connection[tuple[object, ...]],
     run: FullAssetRun,
+    *,
+    origin: str = "live",
 ) -> tuple[int, ...]:
     """Persist one visible datapoint for every result in a full board run."""
 
@@ -760,6 +762,7 @@ def persist_board(
 
         reference_period = getattr(result, "reference_period", None)
         published_at = getattr(result, "published_at", None)
+        origin_kwargs = {} if origin == "live" else {"origin": origin}
         row_ids.append(
             persist_datapoint(
                 connection,
@@ -773,6 +776,7 @@ def persist_board(
                 published_at=(
                     published_at if isinstance(published_at, datetime) else None
                 ),
+                **origin_kwargs,
             ),
         )
     return tuple(row_ids)
