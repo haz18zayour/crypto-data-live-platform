@@ -165,6 +165,18 @@ def test_migration_adds_nullable_reference_period_and_published_at_columns() -> 
     assert "not null" not in migration.lower().split(";", maxsplit=1)[0]
 
 
+def test_migration_adds_not_null_origin_defaulting_to_live_and_filters_read_views() -> None:
+    migration = (
+        MIGRATIONS / "20260928120000_add_datapoint_origin_and_filter_live_reads.sql"
+    ).read_text(encoding="utf-8")
+
+    assert "alter table public.datapoints" in migration
+    assert "add column origin text not null default 'live'" in migration
+    assert "create or replace view public.datapoints_read" in migration
+    assert "create or replace view public.board_read" in migration
+    assert migration.count("where origin = 'live'") == 2
+
+
 def test_existing_call_pattern_writes_null_reference_period_and_published_at_offline(
     definition: IndicatorDefinition,
 ) -> None:
@@ -182,6 +194,26 @@ def test_existing_call_pattern_writes_null_reference_period_and_published_at_off
     assert row_id == 123
     assert "reference_period, published_at" in statement
     assert params[-2:] == (None, None)
+    assert params[-3] == "live"
+
+
+def test_origin_is_written_when_provided_offline(
+    definition: IndicatorDefinition,
+) -> None:
+    connection = RecordingConnection()
+
+    persist_datapoint(
+        connection,  # type: ignore[arg-type]
+        definition=definition,
+        asset="BTC",
+        measured_on="BTC",
+        result=Ok(value=42.5, source_timestamp=SOURCE_TIMESTAMP),
+        origin="backfill",
+    )
+
+    statement, params = _persisted_write(connection)
+    assert "origin, reference_period, published_at" in statement
+    assert params[-3:] == ("backfill", None, None)
 
 
 def test_reference_period_and_published_at_are_written_when_provided_offline(
@@ -312,6 +344,47 @@ def test_writer_sets_fetched_at_and_uses_fetcher_source_timestamp(
 
     assert row == (FETCHED_AT, result.source_timestamp)
     assert row[0] != row[1]
+
+
+@pytest.mark.integration
+def test_existing_call_pattern_defaults_origin_to_live(
+    postgres: psycopg.Connection[tuple[object, ...]],
+    definition: IndicatorDefinition,
+) -> None:
+    row_id = persist_datapoint(
+        postgres,
+        definition=definition,
+        asset="BTC",
+        measured_on="BTC",
+        result=Ok(value=42.5, source_timestamp=SOURCE_TIMESTAMP),
+    )
+
+    row = postgres.execute(
+        "select origin from datapoints where id = %s", (row_id,)
+    ).fetchone()
+
+    assert row == ("live",)
+
+
+@pytest.mark.integration
+def test_origin_is_written_when_provided(
+    postgres: psycopg.Connection[tuple[object, ...]],
+    definition: IndicatorDefinition,
+) -> None:
+    row_id = persist_datapoint(
+        postgres,
+        definition=definition,
+        asset="BTC",
+        measured_on="BTC",
+        result=Ok(value=42.5, source_timestamp=SOURCE_TIMESTAMP),
+        origin="backfill",
+    )
+
+    row = postgres.execute(
+        "select origin from datapoints where id = %s", (row_id,)
+    ).fetchone()
+
+    assert row == ("backfill",)
 
 
 @pytest.mark.integration

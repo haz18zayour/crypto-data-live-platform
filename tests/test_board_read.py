@@ -98,17 +98,22 @@ def _insert(
     asset: str,
     value: float,
     fetched_at: datetime,
+    source_timestamp: datetime | None = None,
     source_vendor: str = "okx",
+    origin: str = "live",
 ) -> int:
+    if source_timestamp is None:
+        source_timestamp = fetched_at - timedelta(hours=1)
     row = connection.execute(
         """
         insert into datapoints (
           indicator_key, asset, measured_on, value, status, reason,
-          source_vendor, endpoint, source_field, fetched_at, source_timestamp
+          source_vendor, endpoint, source_field, fetched_at, source_timestamp,
+          origin
         ) values (
           %s, %s, %s, %s, 'OK', null,
           %s, 'https://www.okx.com/api/v5/market/candles',
-          'candle[4] where candle[8] = 1', %s, %s
+          'candle[4] where candle[8] = 1', %s, %s, %s
         )
         returning id
         """,
@@ -119,7 +124,8 @@ def _insert(
             value,
             source_vendor,
             fetched_at,
-            fetched_at - timedelta(hours=1),
+            source_timestamp,
+            origin,
         ),
     ).fetchone()
     assert row is not None
@@ -213,6 +219,59 @@ def test_given_two_rows_for_one_cell_the_view_returns_the_one_with_the_later_fet
 
     assert older_id > newer_id
     assert rows == [(newer_id, 79_111.8, FETCHED_AT)]
+
+
+def test_board_read_and_datapoints_read_ignore_backfill_even_when_it_was_fetched_later(
+    postgres: tuple[psycopg.Connection[tuple[object, ...]], str],
+) -> None:
+    connection, _ = postgres
+    key = f"origin_guard_{uuid4().hex}"
+    live_id = _insert(
+        connection,
+        indicator_key=key,
+        asset="BTC",
+        value=79_111.8,
+        fetched_at=FETCHED_AT,
+        source_timestamp=datetime(2026, 9, 12, tzinfo=UTC),
+        origin="live",
+    )
+    backfill_id = _insert(
+        connection,
+        indicator_key=key,
+        asset="BTC",
+        value=42_024.0,
+        fetched_at=FETCHED_AT + timedelta(minutes=1),
+        source_timestamp=datetime(2024, 1, 1, tzinfo=UTC),
+        origin="backfill",
+    )
+    other_origin_id = _insert(
+        connection,
+        indicator_key=key,
+        asset="BTC",
+        value=42_025.0,
+        fetched_at=FETCHED_AT + timedelta(minutes=2),
+        source_timestamp=datetime(2025, 1, 1, tzinfo=UTC),
+        origin="shadow",
+    )
+
+    board_rows = connection.execute(
+        "select id, value, origin from board_read where indicator_key = %s",
+        (key,),
+    ).fetchall()
+    read_rows = connection.execute(
+        """
+        select id, value, origin
+        from datapoints_read
+        where indicator_key = %s
+        order by id
+        """,
+        (key,),
+    ).fetchall()
+
+    assert backfill_id > live_id
+    assert other_origin_id > backfill_id
+    assert board_rows == [(live_id, 79_111.8, "live")]
+    assert read_rows == [(live_id, 79_111.8, "live")]
 
 
 def test_board_read_exposes_every_column_the_page_needs_including_status_reason_source_vendor_and_source_timestamp(
