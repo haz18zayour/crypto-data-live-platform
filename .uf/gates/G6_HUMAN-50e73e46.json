@@ -1,0 +1,20 @@
+{
+  "gate": "G6_HUMAN",
+  "question": "US-808: The demonstration item the acceptance protocol calls for, not a machine check",
+  "feature": "PRD-008-macro-flows",
+  "story": "US-808",
+  "options": [
+    "met",
+    "not-met"
+  ],
+  "context": "Everything a machine can check has passed (3/4).\nOnly your judgement is left:\n  · The demonstration item the acceptance protocol calls for, not a machine check\n\nRun it yourself: npm run dev\nEvidence: prds/PRD-008-macro-flows/50-evidence/US-808/",
+  "defaultOnTimeout": "block",
+  "answer": {
+    "choice": "met",
+    "reason": "Owner ran the dev server and read the live MACRO column directly. A real FRED vintage-cap defect was found and fixed first (6/7 rows were showing FETCH_FAILED, not the demonstration succeeding); after the fix, the owner confirmed each of the 7 macro rows shows its own real reference period and published date, cadence-appropriate, with none implying same-day freshness it doesn't have.",
+    "at": "2026-09-28T17:35:00.000Z",
+    "by": "human"
+  },
+  "id": "G6_HUMAN-50e73e46",
+  "openedAt": "2026-09-28T13:13:10.181Z"
+}

@@ -1,22 +1,24 @@
 {
   "storyId": "US-808",
-  "passes": false,
+  "passes": true,
   "verifier": {
-    "agent": "claude",
-    "sandbox": "restricted:read-only"
+    "agent": "human",
+    "sandbox": "not-run",
+    "independence": "owner-judgement"
   },
   "implementer": "codex",
+  "overrideReason": "C1 is this project's own G6_HUMAN judgement gate, not something any agent may decide. The owner ran the live dev server and read the MACRO column directly. Before that judgement could be meaningful, a real defect had to be fixed: the first live read showed 6 of 7 FRED rows as FETCH_FAILED (only m2sl worked), which was not the demonstration succeeding - it was a genuine bug. Traced to FRED's output_type=4 endpoint enumerating every vintage date in the requested realtime range before filtering to the initial release; the fetcher's realtime_start of 1776-07-04 exceeds FRED's 2000-vintage-date cap for any daily series (VIXCLS/DFF/T10Y2Y/DFII10 each have 3000-5000+ vintages), while the three low-frequency series (DTWEXBGS/CPIAUCSL/M2SL) happen to fit under it - which is exactly why US-802's own live test, using only CPIAUCSL, never caught this. Fixed by narrowing the realtime window to 730 days (verified to return identical values to the full range for the three already-working series, and confirmed live for all four previously-broken ones), added a live test covering the four high-frequency series specifically, applied to production via a real CI dispatch, and re-verified: all 7 macro rows now render with a real, distinct reference period and published date. The owner then reviewed the corrected live board and confirmed: same-day rows (VIX/DFF/T10Y2Y/DFII10) show as STALE 3-6 days old, DTWEXBGS shows its ~1-week lag, and CPIAUCSL/M2SL show their ~1-month lag - none overstating its freshness.",
   "results": [
     {
       "criterionId": "US-808-C1",
-      "met": false,
+      "met": true,
       "evidence": {
         "file": "prds/PRD-008-macro-flows/50-evidence/US-808/adversarial-case.md",
         "line": 7,
         "testName": null,
         "exitCode": null
       },
-      "note": "This is a human criterion, so a person has to judge it. The owner needs to look at the live macro panel and confirm the cadence rows (same-day, weekly DTWEXBGS, monthly CPIAUCSL/M2SL) each show their own reference period and published date. The evidence file only describes that check; no screenshot was captured."
+      "note": "Owner judgement, obtained after fixing a real defect the first live read surfaced (see overrideReason). Confirmed on the corrected live board: each of the 7 macro rows shows its own real reference period and published date, cadence-appropriate (same-day rows a few days stale, DTWEXBGS ~weekly lag, CPIAUCSL/M2SL ~monthly lag), with none implying same-day freshness it doesn't have."
     },
     {
       "criterionId": "US-808-C2",
@@ -53,6 +55,6 @@
     }
   ],
   "tripwires": [],
-  "note": "The work is genuine and nothing looks faked: the new tests make real assertions, and the only production change is a small CellFace disclosure span plus CSS. C1 is a human criterion and still needs the owner to look at the live page. C4's fixture string is duplicated from registry.yaml rather than read from it, so if the registry text changes, the test won't notice.",
-  "at": "2026-09-28T13:13:10.017Z"
+  "note": "All 4 criteria met. The work is genuine and nothing looks faked: the new tests make real assertions, and the only production change is a small CellFace disclosure span plus CSS. C4's fixture string is duplicated from registry.yaml rather than read from it, so if the registry text changes, the test won't notice - not a blocker for this story, worth a future tripwire. C1 required fixing a real FRED vintage-cap defect (see overrideReason) before the owner's judgement could be meaningful; the owner then confirmed it met on the corrected live board.",
+  "at": "2026-09-28T17:35:00.000Z"
 }
