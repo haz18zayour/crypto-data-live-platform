@@ -4,10 +4,11 @@ from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from itertools import pairwise
 from time import sleep
-from typing import Literal, NoReturn
+from typing import TYPE_CHECKING, Literal, NoReturn, cast
 
 import httpx
 
+from ingest.registry import IndicatorDefinition
 from ingest.schemas import (
     OkxFundingRateHistoryResponse,
     OkxLongShortRatioResponse,
@@ -16,6 +17,9 @@ from ingest.schemas import (
     OkxTakerVolumeResponse,
 )
 from ingest.status import Error, Reason
+
+if TYPE_CHECKING:
+    from ingest.pipeline import FullAssetRun
 
 BTC_FUNDING_RATE_HISTORY_ENDPOINT = (
     "https://www.okx.com/api/v5/public/funding-rate-history"
@@ -132,7 +136,7 @@ def _get_okx_json(
             else client.get(endpoint, params=params, timeout=REQUEST_TIMEOUT_SECONDS)
         )
         response.raise_for_status()
-        return response.json()
+        return cast(object, response.json())
     except httpx.HTTPStatusError as error:
         return Error(
             reason=Reason.FETCH_FAILED,
@@ -143,9 +147,9 @@ def _get_okx_json(
 
 
 def _runs_for(
-    definition,
+    definition: IndicatorDefinition,
     values: list[BackfilledOkxDerivativeOk],
-):
+) -> tuple["FullAssetRun", ...]:
     from ingest.pipeline import FullAssetRun
 
     return tuple(
@@ -159,10 +163,10 @@ def _raise_backfill_fetch_error(error: Error) -> NoReturn:
 
 
 def backfill_okx_funding_rate(
-    definition,
+    definition: IndicatorDefinition,
     *,
     client: httpx.Client | None = None,
-):
+) -> tuple["FullAssetRun", ...]:
     asset = definition.definable_for[0]
     params = {
         "instId": f"{asset}-USDT-SWAP",
@@ -198,10 +202,10 @@ def backfill_okx_funding_rate(
 
 
 def backfill_okx_open_interest(
-    definition,
+    definition: IndicatorDefinition,
     *,
     client: httpx.Client | None = None,
-):
+) -> tuple["FullAssetRun", ...]:
     asset = definition.definable_for[0]
     params = {
         "instId": f"{asset}-USDT-SWAP",
@@ -234,10 +238,10 @@ def backfill_okx_open_interest(
 
 
 def backfill_okx_long_short_ratio(
-    definition,
+    definition: IndicatorDefinition,
     *,
     client: httpx.Client | None = None,
-):
+) -> tuple["FullAssetRun", ...]:
     asset = definition.definable_for[0]
     params = {"ccy": asset, "period": BACKFILL_PERIOD}
     payload = _get_okx_json(OKX_LONG_SHORT_RATIO_ENDPOINT, params, client)
@@ -266,10 +270,10 @@ def backfill_okx_long_short_ratio(
 
 
 def backfill_okx_taker_ratio(
-    definition,
+    definition: IndicatorDefinition,
     *,
     client: httpx.Client | None = None,
-):
+) -> tuple["FullAssetRun", ...]:
     asset = definition.definable_for[0]
     params = {"ccy": asset, "instType": "CONTRACTS", "period": BACKFILL_PERIOD}
     payload = _get_okx_json(OKX_TAKER_VOLUME_ENDPOINT, params, client)

@@ -3,14 +3,17 @@
 from dataclasses import dataclass, field
 from datetime import UTC, datetime, timedelta
 from itertools import pairwise
-from typing import Literal, NoReturn, cast
+from typing import TYPE_CHECKING, Literal, NoReturn, cast
 
 import httpx
 from talib import abstract
 
-from ingest.registry import load_registry
+from ingest.registry import IndicatorDefinition, load_registry
 from ingest.schemas import OkxCandle, OkxCandleResponse
 from ingest.status import Error, Ok, Reason, Result, Unavailable
+
+if TYPE_CHECKING:
+    from ingest.pipeline import FullAssetRun
 
 INDICATOR_KEY = "btc_daily_close"
 MEASURED_ON = "BTC"
@@ -271,12 +274,12 @@ def _normalise_candles(rows: tuple[OkxCandle, ...]) -> tuple[dict[str, float], .
 
 
 def backfill_okx_candle_indicator(
-    definition,
+    definition: IndicatorDefinition,
     *,
     plotted_points: int = BACKFILL_PLOTTED_POINTS,
     client: httpx.Client | None = None,
     now: datetime | None = None,
-):
+) -> tuple["FullAssetRun", ...]:
     """Build one seeded historical backfill run per plotted candle."""
 
     from ingest.pipeline import FullAssetRun, _calculate
