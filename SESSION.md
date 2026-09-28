@@ -36,7 +36,7 @@ open prds/PRD-005-dashboard/20-decisions.yaml
 | PRD-009-history-charts | 9 | 0 | 0/9 |
 | PRD-012-cadence-split | 6 | 6 | **all green** |
 
-Spend to date: **$90.49** Claude · **245791k** Codex tokens.
+Spend to date: **$91.40** Claude · **246132k** Codex tokens.
 
 ## What happened
 
@@ -735,6 +735,9 @@ Spend to date: **$90.49** Claude · **245791k** Codex tokens.
 - 15:33  US-901 started, attempt 1 (codex)
 - 15:37  US-901 — codex finished `301d43d1` · 1232k tok
 - 15:38  US-901 **rejected** — 5/6 criteria, judged by claude · $0.91
+- 15:38  US-901 started, attempt 2 (codex)
+- 15:39  US-901 — codex finished `28a438c9` · 341k tok
+- 15:40  US-901 **rejected** — 5/6 criteria, judged by claude · $0.92
 
 <!-- uf:generated:end -->
 

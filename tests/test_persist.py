@@ -177,52 +177,88 @@ def test_migration_adds_not_null_origin_defaulting_to_live_and_filters_read_view
     assert migration.count("where origin = 'live'") == 2
 
 
-def test_adversarial_backfill_row_fetched_now_is_excluded_from_live_read_views_offline() -> None:
-    migration = (
-        MIGRATIONS / "20260928120000_add_datapoint_origin_and_filter_live_reads.sql"
-    ).read_text(encoding="utf-8")
-    rows = [
-        {
-            "id": 1,
-            "value": 79_111.8,
-            "origin": "live",
-            "fetched_at": FETCHED_AT,
-            "source_timestamp": datetime(2026, 9, 8, tzinfo=UTC),
-        },
-        {
-            "id": 2,
-            "value": 42_024.0,
-            "origin": "backfill",
-            "fetched_at": FETCHED_AT + timedelta(minutes=1),
-            "source_timestamp": datetime(2024, 1, 1, tzinfo=UTC),
-        },
-        {
-            "id": 3,
-            "value": 42_025.0,
-            "origin": "shadow",
-            "fetched_at": FETCHED_AT + timedelta(minutes=2),
-            "source_timestamp": datetime(2025, 1, 1, tzinfo=UTC),
-        },
+def test_adversarial_backfill_row_fetched_now_is_excluded_from_live_read_views(
+    postgres: psycopg.Connection[tuple[object, ...]],
+) -> None:
+    key = f"origin_guard_{uuid4().hex}"
+    live_timestamp = datetime(2026, 9, 8, tzinfo=UTC)
+    backfill_timestamp = datetime(2024, 1, 1, tzinfo=UTC)
+
+    live_row = postgres.execute(
+        """
+        insert into datapoints (
+          indicator_key, asset, measured_on, value, status, reason,
+          source_vendor, endpoint, source_field, fetched_at, source_timestamp,
+          origin
+        ) values (
+          %s, 'BTC', 'BTC', 79111.8, 'OK', null,
+          'okx', 'https://www.okx.com/api/v5/market/candles',
+          'candle[4] where candle[8] = 1', %s, %s, 'live'
+        )
+        returning id
+        """,
+        (key, FETCHED_AT, live_timestamp),
+    ).fetchone()
+    backfill_row = postgres.execute(
+        """
+        insert into datapoints (
+          indicator_key, asset, measured_on, value, status, reason,
+          source_vendor, endpoint, source_field, fetched_at, source_timestamp,
+          origin
+        ) values (
+          %s, 'BTC', 'BTC', 42024.0, 'OK', null,
+          'okx', 'https://www.okx.com/api/v5/market/candles',
+          'candle[4] where candle[8] = 1',
+          %s, %s, 'backfill'
+        )
+        returning id
+        """,
+        (key, FETCHED_AT + timedelta(minutes=1), backfill_timestamp),
+    ).fetchone()
+    assert live_row is not None
+    assert backfill_row is not None
+    live_id = int(live_row[0])
+    backfill_id = int(backfill_row[0])
+
+    board_rows = postgres.execute(
+        """
+        select id, value, origin, fetched_at, source_timestamp
+        from board_read
+        where indicator_key = %s
+        """,
+        (key,),
+    ).fetchall()
+    read_rows = postgres.execute(
+        """
+        select id, value, origin, fetched_at, source_timestamp
+        from datapoints_read
+        where indicator_key = %s
+        order by id
+        """,
+        (key,),
+    ).fetchall()
+    raw_rows = postgres.execute(
+        """
+        select id, origin, fetched_at, source_timestamp
+        from datapoints
+        where indicator_key = %s
+        order by id
+        """,
+        (key,),
+    ).fetchall()
+
+    assert backfill_id > live_id
+    assert raw_rows == [
+        (live_id, "live", FETCHED_AT, live_timestamp),
+        (
+            backfill_id,
+            "backfill",
+            FETCHED_AT + timedelta(minutes=1),
+            backfill_timestamp,
+        ),
     ]
-
-    assert "from public.datapoints\nwhere origin = 'live';" in migration
-    assert (
-        "from public.datapoints\nwhere origin = 'live'\norder by "
-        "indicator_key, asset, fetched_at desc, id desc;"
-    ) in migration
-
-    datapoints_read = [row for row in rows if row["origin"] == "live"]
-    board_read = sorted(
-        datapoints_read,
-        key=lambda row: (row["fetched_at"], row["id"]),
-        reverse=True,
-    )[:1]
-
-    assert rows[1]["fetched_at"] > rows[0]["fetched_at"]
-    assert rows[1]["source_timestamp"] == datetime(2024, 1, 1, tzinfo=UTC)
-    assert rows[1]["origin"] == "backfill"
-    assert datapoints_read == [rows[0]]
-    assert board_read == [rows[0]]
+    assert board_rows == [(live_id, 79111.8, "live", FETCHED_AT, live_timestamp)]
+    assert read_rows == [(live_id, 79111.8, "live", FETCHED_AT, live_timestamp)]
 
 
 def test_existing_call_pattern_writes_null_reference_period_and_published_at_offline(
