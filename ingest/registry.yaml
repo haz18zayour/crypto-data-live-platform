@@ -5,7 +5,7 @@
 # The 32 technical rows are the eight already-verified outputs for each of four assets.
 - key: btc_daily_close
   vendor: okx
-  backfill_recipe: noop
+  backfill_recipe: okx_candles
   endpoint: https://www.okx.com/api/v5/market/candles?instId=BTC-USDT&bar=1Dutc
   source_field: 'okx candle[4] (close), where candle[8] == "1"; coinbase.close after mapping [time, low, high, open, close, volume] by venue; both use a 00:00 UTC boundary'
   definable_for: [BTC]
@@ -25,7 +25,7 @@
     tolerance_bps: 25
 - key: btc_rsi
   vendor: okx
-  backfill_recipe: noop
+  backfill_recipe: okx_candles
   endpoint: https://www.okx.com/api/v5/market/candles?instId=BTC-USDT&bar=1Dutc
   source_field: 'TA-Lib RSI from closed okx candle[4] values where candle[8] == "1"'
   definable_for: [BTC]
@@ -43,7 +43,7 @@
     note: The derived output is not cross-venue corroborated; its OKX input bars are corroborated against Coinbase.
 - key: btc_funding_rate
   vendor: okx
-  backfill_recipe: noop
+  backfill_recipe: okx_funding
   endpoint: https://www.okx.com/api/v5/public/funding-rate-history?instId=BTC-USDT-SWAP&limit=2
   source_field: 'OKX funding-rate-history realizedRate; interval derived from consecutive fundingTime deltas at fetch time'
   definable_for: [BTC]
@@ -109,7 +109,7 @@
     note: Coin Metrics is the only researched source for FlowInExNtv and FlowOutExNtv in this PRD, so this exchange-flow value has no independent corroborating venue.
 - key: btc_open_interest
   vendor: okx
-  backfill_recipe: noop
+  backfill_recipe: okx_open_interest_history
   endpoint: https://www.okx.com/api/v5/public/open-interest?instType=SWAP&instId=BTC-USDT-SWAP
   source_field: 'OKX public/open-interest oiUsd for BTC-USDT-SWAP linear USDT-margined perpetual; ts'
   definable_for: [BTC]
@@ -124,7 +124,7 @@
     note: No second venue's derivatives public endpoints were confirmed to exist or be reachable; Binance's futures API returns HTTP 451 to US IPs on public endpoints.
 - key: btc_long_short_ratio
   vendor: okx
-  backfill_recipe: noop
+  backfill_recipe: okx_long_short_1d
   endpoint: https://www.okx.com/api/v5/rubik/stat/contracts/long-short-account-ratio?ccy=BTC&period=5m
   source_field: 'OKX rubik/stat/contracts/long-short-account-ratio data newest [timestamp, longShortRatio] for BTC'
   definable_for: [BTC]
@@ -139,7 +139,7 @@
     note: No second venue's derivatives public endpoints were confirmed to exist or be reachable; Binance's futures API returns HTTP 451 to US IPs on public endpoints.
 - key: btc_taker_ratio
   vendor: okx
-  backfill_recipe: noop
+  backfill_recipe: okx_taker_volume_1d
   endpoint: https://www.okx.com/api/v5/rubik/stat/taker-volume?ccy=BTC&instType=CONTRACTS&period=5m
   source_field: 'OKX rubik/stat/taker-volume data newest [timestamp, sellVol, buyVol] for BTC; ratio = buyVol / sellVol'
   definable_for: [BTC]
@@ -154,7 +154,7 @@
     note: No second venue's derivatives public endpoints were confirmed to exist or be reachable; Binance's futures API returns HTTP 451 to US IPs on public endpoints.
 - key: btc_ema_20
   vendor: okx
-  backfill_recipe: noop
+  backfill_recipe: okx_candles
   endpoint: https://www.okx.com/api/v5/market/candles?instId=BTC-USDT&bar=1Dutc
   source_field: 'TA-Lib EMA(20) from closed okx candle[4] values where candle[8] == "1"'
   definable_for: [BTC]
@@ -171,7 +171,7 @@
     note: The derived output is not cross-venue corroborated; its OKX input bars are corroborated against Coinbase.
 - key: btc_ema_50
   vendor: okx
-  backfill_recipe: noop
+  backfill_recipe: okx_candles
   endpoint: https://www.okx.com/api/v5/market/candles?instId=BTC-USDT&bar=1Dutc
   source_field: 'TA-Lib EMA(50) from closed okx candle[4] values where candle[8] == "1"'
   definable_for: [BTC]
@@ -188,7 +188,7 @@
     note: The derived output is not cross-venue corroborated; its OKX input bars are corroborated against Coinbase.
 - key: btc_ema_200
   vendor: okx
-  backfill_recipe: noop
+  backfill_recipe: okx_candles
   endpoint: https://www.okx.com/api/v5/market/candles?instId=BTC-USDT&bar=1Dutc
   source_field: 'TA-Lib EMA(200) from closed okx candle[4] values where candle[8] == "1"'
   definable_for: [BTC]
@@ -205,7 +205,7 @@
     note: The derived output is not cross-venue corroborated; its OKX input bars are corroborated against Coinbase.
 - key: btc_atr
   vendor: okx
-  backfill_recipe: noop
+  backfill_recipe: okx_candles
   endpoint: https://www.okx.com/api/v5/market/candles?instId=BTC-USDT&bar=1Dutc
   source_field: 'TA-Lib ATR from closed okx candle[2] high, candle[3] low, and candle[4] close values where candle[8] == "1"'
   definable_for: [BTC]
@@ -222,7 +222,7 @@
     note: The derived output is not cross-venue corroborated; its OKX input bars are corroborated against Coinbase.
 - key: btc_bollinger_upper
   vendor: okx
-  backfill_recipe: noop
+  backfill_recipe: okx_candles
   endpoint: https://www.okx.com/api/v5/market/candles?instId=BTC-USDT&bar=1Dutc
   source_field: 'TA-Lib BBANDS upper output from closed okx candle[4] values where candle[8] == "1"'
   definable_for: [BTC]
@@ -242,7 +242,7 @@
     note: The derived output is not cross-venue corroborated; its OKX input bars are corroborated against Coinbase.
 - key: btc_bollinger_middle
   vendor: okx
-  backfill_recipe: noop
+  backfill_recipe: okx_candles
   endpoint: https://www.okx.com/api/v5/market/candles?instId=BTC-USDT&bar=1Dutc
   source_field: 'TA-Lib BBANDS middle output from closed okx candle[4] values where candle[8] == "1"'
   definable_for: [BTC]
@@ -262,7 +262,7 @@
     note: The derived output is not cross-venue corroborated; its OKX input bars are corroborated against Coinbase.
 - key: btc_bollinger_lower
   vendor: okx
-  backfill_recipe: noop
+  backfill_recipe: okx_candles
   endpoint: https://www.okx.com/api/v5/market/candles?instId=BTC-USDT&bar=1Dutc
   source_field: 'TA-Lib BBANDS lower output from closed okx candle[4] values where candle[8] == "1"'
   definable_for: [BTC]
@@ -282,7 +282,7 @@
     note: The derived output is not cross-venue corroborated; its OKX input bars are corroborated against Coinbase.
 - key: btc_obv
   vendor: okx
-  backfill_recipe: noop
+  backfill_recipe: okx_candles
   endpoint: https://www.okx.com/api/v5/market/candles?instId=BTC-USDT&bar=1Dutc
   source_field: 'TA-Lib OBV from closed okx candle[4] close and candle[5] base volume where candle[8] == "1"'
   definable_for: [BTC]
@@ -299,7 +299,7 @@
     note: The derived output is not cross-venue corroborated; its OKX input bars are corroborated against Coinbase.
 - key: btc_macd
   vendor: okx
-  backfill_recipe: noop
+  backfill_recipe: okx_candles
   endpoint: https://www.okx.com/api/v5/market/candles?instId=BTC-USDT&bar=1Dutc
   source_field: 'TA-Lib MACD outputs from closed okx candle[4] values where candle[8] == "1"'
   definable_for: [BTC]
@@ -318,7 +318,7 @@
     note: The derived output is not cross-venue corroborated; its OKX input bars are corroborated against Coinbase.
 - key: btc_stochrsi
   vendor: okx
-  backfill_recipe: noop
+  backfill_recipe: okx_candles
   endpoint: https://www.okx.com/api/v5/market/candles?instId=BTC-USDT&bar=1Dutc
   source_field: 'TA-Lib STOCHRSI fastd from closed okx candle[4] values where candle[8] == "1"'
   definable_for: [BTC]
@@ -339,7 +339,7 @@
     note: The derived output is not cross-venue corroborated; its OKX input bars are corroborated against Coinbase.
 - key: eth_rsi
   vendor: okx
-  backfill_recipe: noop
+  backfill_recipe: okx_candles
   endpoint: https://www.okx.com/api/v5/market/candles?instId=ETH-USDT&bar=1Dutc
   source_field: 'TA-Lib RSI from closed okx candle[4] values where candle[8] == "1"'
   definable_for: [ETH]
@@ -357,7 +357,7 @@
     note: The derived output is not cross-venue corroborated; its OKX input bars are corroborated against Coinbase.
 - key: eth_funding_rate
   vendor: okx
-  backfill_recipe: noop
+  backfill_recipe: okx_funding
   endpoint: https://www.okx.com/api/v5/public/funding-rate-history?instId=ETH-USDT-SWAP&limit=2
   source_field: 'OKX funding-rate-history realizedRate; interval derived from consecutive fundingTime deltas at fetch time'
   definable_for: [ETH]
@@ -423,7 +423,7 @@
     note: Coin Metrics is the only researched source for FlowInExNtv and FlowOutExNtv in this PRD, so this exchange-flow value has no independent corroborating venue.
 - key: eth_open_interest
   vendor: okx
-  backfill_recipe: noop
+  backfill_recipe: okx_open_interest_history
   endpoint: https://www.okx.com/api/v5/public/open-interest?instType=SWAP&instId=ETH-USDT-SWAP
   source_field: 'OKX public/open-interest oiUsd for ETH-USDT-SWAP linear USDT-margined perpetual; ts'
   definable_for: [ETH]
@@ -438,7 +438,7 @@
     note: No second venue's derivatives public endpoints were confirmed to exist or be reachable; Binance's futures API returns HTTP 451 to US IPs on public endpoints.
 - key: eth_long_short_ratio
   vendor: okx
-  backfill_recipe: noop
+  backfill_recipe: okx_long_short_1d
   endpoint: https://www.okx.com/api/v5/rubik/stat/contracts/long-short-account-ratio?ccy=ETH&period=5m
   source_field: 'OKX rubik/stat/contracts/long-short-account-ratio data newest [timestamp, longShortRatio] for ETH'
   definable_for: [ETH]
@@ -453,7 +453,7 @@
     note: No second venue's derivatives public endpoints were confirmed to exist or be reachable; Binance's futures API returns HTTP 451 to US IPs on public endpoints.
 - key: eth_taker_ratio
   vendor: okx
-  backfill_recipe: noop
+  backfill_recipe: okx_taker_volume_1d
   endpoint: https://www.okx.com/api/v5/rubik/stat/taker-volume?ccy=ETH&instType=CONTRACTS&period=5m
   source_field: 'OKX rubik/stat/taker-volume data newest [timestamp, sellVol, buyVol] for ETH; ratio = buyVol / sellVol'
   definable_for: [ETH]
@@ -468,7 +468,7 @@
     note: No second venue's derivatives public endpoints were confirmed to exist or be reachable; Binance's futures API returns HTTP 451 to US IPs on public endpoints.
 - key: eth_ema_20
   vendor: okx
-  backfill_recipe: noop
+  backfill_recipe: okx_candles
   endpoint: https://www.okx.com/api/v5/market/candles?instId=ETH-USDT&bar=1Dutc
   source_field: 'TA-Lib EMA(20) from closed okx candle[4] values where candle[8] == "1"'
   definable_for: [ETH]
@@ -485,7 +485,7 @@
     note: The derived output is not cross-venue corroborated; its OKX input bars are corroborated against Coinbase.
 - key: eth_ema_50
   vendor: okx
-  backfill_recipe: noop
+  backfill_recipe: okx_candles
   endpoint: https://www.okx.com/api/v5/market/candles?instId=ETH-USDT&bar=1Dutc
   source_field: 'TA-Lib EMA(50) from closed okx candle[4] values where candle[8] == "1"'
   definable_for: [ETH]
@@ -502,7 +502,7 @@
     note: The derived output is not cross-venue corroborated; its OKX input bars are corroborated against Coinbase.
 - key: eth_ema_200
   vendor: okx
-  backfill_recipe: noop
+  backfill_recipe: okx_candles
   endpoint: https://www.okx.com/api/v5/market/candles?instId=ETH-USDT&bar=1Dutc
   source_field: 'TA-Lib EMA(200) from closed okx candle[4] values where candle[8] == "1"'
   definable_for: [ETH]
@@ -519,7 +519,7 @@
     note: The derived output is not cross-venue corroborated; its OKX input bars are corroborated against Coinbase.
 - key: eth_atr
   vendor: okx
-  backfill_recipe: noop
+  backfill_recipe: okx_candles
   endpoint: https://www.okx.com/api/v5/market/candles?instId=ETH-USDT&bar=1Dutc
   source_field: 'TA-Lib ATR from closed okx candle[2] high, candle[3] low, and candle[4] close values where candle[8] == "1"'
   definable_for: [ETH]
@@ -536,7 +536,7 @@
     note: The derived output is not cross-venue corroborated; its OKX input bars are corroborated against Coinbase.
 - key: eth_bollinger_upper
   vendor: okx
-  backfill_recipe: noop
+  backfill_recipe: okx_candles
   endpoint: https://www.okx.com/api/v5/market/candles?instId=ETH-USDT&bar=1Dutc
   source_field: 'TA-Lib BBANDS upper output from closed okx candle[4] values where candle[8] == "1"'
   definable_for: [ETH]
@@ -556,7 +556,7 @@
     note: The derived output is not cross-venue corroborated; its OKX input bars are corroborated against Coinbase.
 - key: eth_bollinger_middle
   vendor: okx
-  backfill_recipe: noop
+  backfill_recipe: okx_candles
   endpoint: https://www.okx.com/api/v5/market/candles?instId=ETH-USDT&bar=1Dutc
   source_field: 'TA-Lib BBANDS middle output from closed okx candle[4] values where candle[8] == "1"'
   definable_for: [ETH]
@@ -576,7 +576,7 @@
     note: The derived output is not cross-venue corroborated; its OKX input bars are corroborated against Coinbase.
 - key: eth_bollinger_lower
   vendor: okx
-  backfill_recipe: noop
+  backfill_recipe: okx_candles
   endpoint: https://www.okx.com/api/v5/market/candles?instId=ETH-USDT&bar=1Dutc
   source_field: 'TA-Lib BBANDS lower output from closed okx candle[4] values where candle[8] == "1"'
   definable_for: [ETH]
@@ -596,7 +596,7 @@
     note: The derived output is not cross-venue corroborated; its OKX input bars are corroborated against Coinbase.
 - key: eth_obv
   vendor: okx
-  backfill_recipe: noop
+  backfill_recipe: okx_candles
   endpoint: https://www.okx.com/api/v5/market/candles?instId=ETH-USDT&bar=1Dutc
   source_field: 'TA-Lib OBV from closed okx candle[4] close and candle[5] base volume where candle[8] == "1"'
   definable_for: [ETH]
@@ -613,7 +613,7 @@
     note: The derived output is not cross-venue corroborated; its OKX input bars are corroborated against Coinbase.
 - key: eth_macd
   vendor: okx
-  backfill_recipe: noop
+  backfill_recipe: okx_candles
   endpoint: https://www.okx.com/api/v5/market/candles?instId=ETH-USDT&bar=1Dutc
   source_field: 'TA-Lib MACD outputs from closed okx candle[4] values where candle[8] == "1"'
   definable_for: [ETH]
@@ -632,7 +632,7 @@
     note: The derived output is not cross-venue corroborated; its OKX input bars are corroborated against Coinbase.
 - key: eth_stochrsi
   vendor: okx
-  backfill_recipe: noop
+  backfill_recipe: okx_candles
   endpoint: https://www.okx.com/api/v5/market/candles?instId=ETH-USDT&bar=1Dutc
   source_field: 'TA-Lib STOCHRSI fastd from closed okx candle[4] values where candle[8] == "1"'
   definable_for: [ETH]
@@ -653,7 +653,7 @@
     note: The derived output is not cross-venue corroborated; its OKX input bars are corroborated against Coinbase.
 - key: sol_rsi
   vendor: okx
-  backfill_recipe: noop
+  backfill_recipe: okx_candles
   endpoint: https://www.okx.com/api/v5/market/candles?instId=SOL-USDT&bar=1Dutc
   source_field: 'TA-Lib RSI from closed okx candle[4] values where candle[8] == "1"'
   definable_for: [SOL]
@@ -671,7 +671,7 @@
     note: The derived output is not cross-venue corroborated; its OKX input bars are corroborated against Coinbase.
 - key: sol_funding_rate
   vendor: okx
-  backfill_recipe: noop
+  backfill_recipe: okx_funding
   endpoint: https://www.okx.com/api/v5/public/funding-rate-history?instId=SOL-USDT-SWAP&limit=2
   source_field: 'OKX funding-rate-history realizedRate; interval derived from consecutive fundingTime deltas at fetch time'
   definable_for: [SOL]
@@ -721,7 +721,7 @@
     note: Validators.app is the only researched free source used for SOL staking in this PRD, so this staking value has no independent corroborating venue.
 - key: sol_open_interest
   vendor: okx
-  backfill_recipe: noop
+  backfill_recipe: okx_open_interest_history
   endpoint: https://www.okx.com/api/v5/public/open-interest?instType=SWAP&instId=SOL-USDT-SWAP
   source_field: 'OKX public/open-interest oiUsd for SOL-USDT-SWAP linear USDT-margined perpetual; ts'
   definable_for: [SOL]
@@ -736,7 +736,7 @@
     note: No second venue's derivatives public endpoints were confirmed to exist or be reachable; Binance's futures API returns HTTP 451 to US IPs on public endpoints.
 - key: sol_long_short_ratio
   vendor: okx
-  backfill_recipe: noop
+  backfill_recipe: okx_long_short_1d
   endpoint: https://www.okx.com/api/v5/rubik/stat/contracts/long-short-account-ratio?ccy=SOL&period=5m
   source_field: 'OKX rubik/stat/contracts/long-short-account-ratio data newest [timestamp, longShortRatio] for SOL'
   definable_for: [SOL]
@@ -751,7 +751,7 @@
     note: No second venue's derivatives public endpoints were confirmed to exist or be reachable; Binance's futures API returns HTTP 451 to US IPs on public endpoints.
 - key: sol_taker_ratio
   vendor: okx
-  backfill_recipe: noop
+  backfill_recipe: okx_taker_volume_1d
   endpoint: https://www.okx.com/api/v5/rubik/stat/taker-volume?ccy=SOL&instType=CONTRACTS&period=5m
   source_field: 'OKX rubik/stat/taker-volume data newest [timestamp, sellVol, buyVol] for SOL; ratio = buyVol / sellVol'
   definable_for: [SOL]
@@ -766,7 +766,7 @@
     note: No second venue's derivatives public endpoints were confirmed to exist or be reachable; Binance's futures API returns HTTP 451 to US IPs on public endpoints.
 - key: sol_ema_20
   vendor: okx
-  backfill_recipe: noop
+  backfill_recipe: okx_candles
   endpoint: https://www.okx.com/api/v5/market/candles?instId=SOL-USDT&bar=1Dutc
   source_field: 'TA-Lib EMA(20) from closed okx candle[4] values where candle[8] == "1"'
   definable_for: [SOL]
@@ -783,7 +783,7 @@
     note: The derived output is not cross-venue corroborated; its OKX input bars are corroborated against Coinbase.
 - key: sol_ema_50
   vendor: okx
-  backfill_recipe: noop
+  backfill_recipe: okx_candles
   endpoint: https://www.okx.com/api/v5/market/candles?instId=SOL-USDT&bar=1Dutc
   source_field: 'TA-Lib EMA(50) from closed okx candle[4] values where candle[8] == "1"'
   definable_for: [SOL]
@@ -800,7 +800,7 @@
     note: The derived output is not cross-venue corroborated; its OKX input bars are corroborated against Coinbase.
 - key: sol_ema_200
   vendor: okx
-  backfill_recipe: noop
+  backfill_recipe: okx_candles
   endpoint: https://www.okx.com/api/v5/market/candles?instId=SOL-USDT&bar=1Dutc
   source_field: 'TA-Lib EMA(200) from closed okx candle[4] values where candle[8] == "1"'
   definable_for: [SOL]
@@ -817,7 +817,7 @@
     note: The derived output is not cross-venue corroborated; its OKX input bars are corroborated against Coinbase.
 - key: sol_atr
   vendor: okx
-  backfill_recipe: noop
+  backfill_recipe: okx_candles
   endpoint: https://www.okx.com/api/v5/market/candles?instId=SOL-USDT&bar=1Dutc
   source_field: 'TA-Lib ATR from closed okx candle[2] high, candle[3] low, and candle[4] close values where candle[8] == "1"'
   definable_for: [SOL]
@@ -834,7 +834,7 @@
     note: The derived output is not cross-venue corroborated; its OKX input bars are corroborated against Coinbase.
 - key: sol_bollinger_upper
   vendor: okx
-  backfill_recipe: noop
+  backfill_recipe: okx_candles
   endpoint: https://www.okx.com/api/v5/market/candles?instId=SOL-USDT&bar=1Dutc
   source_field: 'TA-Lib BBANDS upper output from closed okx candle[4] values where candle[8] == "1"'
   definable_for: [SOL]
@@ -854,7 +854,7 @@
     note: The derived output is not cross-venue corroborated; its OKX input bars are corroborated against Coinbase.
 - key: sol_bollinger_middle
   vendor: okx
-  backfill_recipe: noop
+  backfill_recipe: okx_candles
   endpoint: https://www.okx.com/api/v5/market/candles?instId=SOL-USDT&bar=1Dutc
   source_field: 'TA-Lib BBANDS middle output from closed okx candle[4] values where candle[8] == "1"'
   definable_for: [SOL]
@@ -874,7 +874,7 @@
     note: The derived output is not cross-venue corroborated; its OKX input bars are corroborated against Coinbase.
 - key: sol_bollinger_lower
   vendor: okx
-  backfill_recipe: noop
+  backfill_recipe: okx_candles
   endpoint: https://www.okx.com/api/v5/market/candles?instId=SOL-USDT&bar=1Dutc
   source_field: 'TA-Lib BBANDS lower output from closed okx candle[4] values where candle[8] == "1"'
   definable_for: [SOL]
@@ -894,7 +894,7 @@
     note: The derived output is not cross-venue corroborated; its OKX input bars are corroborated against Coinbase.
 - key: sol_obv
   vendor: okx
-  backfill_recipe: noop
+  backfill_recipe: okx_candles
   endpoint: https://www.okx.com/api/v5/market/candles?instId=SOL-USDT&bar=1Dutc
   source_field: 'TA-Lib OBV from closed okx candle[4] close and candle[5] base volume where candle[8] == "1"'
   definable_for: [SOL]
@@ -911,7 +911,7 @@
     note: The derived output is not cross-venue corroborated; its OKX input bars are corroborated against Coinbase.
 - key: sol_macd
   vendor: okx
-  backfill_recipe: noop
+  backfill_recipe: okx_candles
   endpoint: https://www.okx.com/api/v5/market/candles?instId=SOL-USDT&bar=1Dutc
   source_field: 'TA-Lib MACD outputs from closed okx candle[4] values where candle[8] == "1"'
   definable_for: [SOL]
@@ -930,7 +930,7 @@
     note: The derived output is not cross-venue corroborated; its OKX input bars are corroborated against Coinbase.
 - key: sol_stochrsi
   vendor: okx
-  backfill_recipe: noop
+  backfill_recipe: okx_candles
   endpoint: https://www.okx.com/api/v5/market/candles?instId=SOL-USDT&bar=1Dutc
   source_field: 'TA-Lib STOCHRSI fastd from closed okx candle[4] values where candle[8] == "1"'
   definable_for: [SOL]
@@ -951,7 +951,7 @@
     note: The derived output is not cross-venue corroborated; its OKX input bars are corroborated against Coinbase.
 - key: bnb_rsi
   vendor: okx
-  backfill_recipe: noop
+  backfill_recipe: okx_candles
   endpoint: https://www.okx.com/api/v5/market/candles?instId=BNB-USDT&bar=1Dutc
   source_field: 'TA-Lib RSI from closed okx candle[4] values where candle[8] == "1"'
   definable_for: [BNB]
@@ -969,7 +969,7 @@
     note: The derived output is not cross-venue corroborated; its OKX input bars are corroborated against Coinbase.
 - key: bnb_funding_rate
   vendor: okx
-  backfill_recipe: noop
+  backfill_recipe: okx_funding
   endpoint: https://www.okx.com/api/v5/public/funding-rate-history?instId=BNB-USDT-SWAP&limit=2
   source_field: 'OKX funding-rate-history realizedRate; interval derived from consecutive fundingTime deltas at fetch time'
   definable_for: [BNB]
@@ -1017,7 +1017,7 @@
     note: Coin Metrics is the only researched source for AdrActCnt in this PRD, so this active-addresses value has no independent corroborating venue.
 - key: bnb_open_interest
   vendor: okx
-  backfill_recipe: noop
+  backfill_recipe: okx_open_interest_history
   endpoint: https://www.okx.com/api/v5/public/open-interest?instType=SWAP&instId=BNB-USDT-SWAP
   source_field: 'OKX public/open-interest oiUsd for BNB-USDT-SWAP linear USDT-margined perpetual; ts'
   definable_for: [BNB]
@@ -1032,7 +1032,7 @@
     note: No second venue's derivatives public endpoints were confirmed to exist or be reachable; Binance's futures API returns HTTP 451 to US IPs on public endpoints.
 - key: bnb_long_short_ratio
   vendor: okx
-  backfill_recipe: noop
+  backfill_recipe: okx_long_short_1d
   endpoint: https://www.okx.com/api/v5/rubik/stat/contracts/long-short-account-ratio?ccy=BNB&period=5m
   source_field: 'OKX rubik/stat/contracts/long-short-account-ratio data newest [timestamp, longShortRatio] for BNB'
   definable_for: [BNB]
@@ -1047,7 +1047,7 @@
     note: No second venue's derivatives public endpoints were confirmed to exist or be reachable; Binance's futures API returns HTTP 451 to US IPs on public endpoints.
 - key: bnb_taker_ratio
   vendor: okx
-  backfill_recipe: noop
+  backfill_recipe: okx_taker_volume_1d
   endpoint: https://www.okx.com/api/v5/rubik/stat/taker-volume?ccy=BNB&instType=CONTRACTS&period=5m
   source_field: 'OKX rubik/stat/taker-volume data newest [timestamp, sellVol, buyVol] for BNB; ratio = buyVol / sellVol'
   definable_for: [BNB]
@@ -1062,7 +1062,7 @@
     note: No second venue's derivatives public endpoints were confirmed to exist or be reachable; Binance's futures API returns HTTP 451 to US IPs on public endpoints.
 - key: bnb_ema_20
   vendor: okx
-  backfill_recipe: noop
+  backfill_recipe: okx_candles
   endpoint: https://www.okx.com/api/v5/market/candles?instId=BNB-USDT&bar=1Dutc
   source_field: 'TA-Lib EMA(20) from closed okx candle[4] values where candle[8] == "1"'
   definable_for: [BNB]
@@ -1079,7 +1079,7 @@
     note: The derived output is not cross-venue corroborated; its OKX input bars are corroborated against Coinbase.
 - key: bnb_ema_50
   vendor: okx
-  backfill_recipe: noop
+  backfill_recipe: okx_candles
   endpoint: https://www.okx.com/api/v5/market/candles?instId=BNB-USDT&bar=1Dutc
   source_field: 'TA-Lib EMA(50) from closed okx candle[4] values where candle[8] == "1"'
   definable_for: [BNB]
@@ -1096,7 +1096,7 @@
     note: The derived output is not cross-venue corroborated; its OKX input bars are corroborated against Coinbase.
 - key: bnb_ema_200
   vendor: okx
-  backfill_recipe: noop
+  backfill_recipe: okx_candles
   endpoint: https://www.okx.com/api/v5/market/candles?instId=BNB-USDT&bar=1Dutc
   source_field: 'TA-Lib EMA(200) from closed okx candle[4] values where candle[8] == "1"'
   definable_for: [BNB]
@@ -1113,7 +1113,7 @@
     note: The derived output is not cross-venue corroborated; its OKX input bars are corroborated against Coinbase.
 - key: bnb_atr
   vendor: okx
-  backfill_recipe: noop
+  backfill_recipe: okx_candles
   endpoint: https://www.okx.com/api/v5/market/candles?instId=BNB-USDT&bar=1Dutc
   source_field: 'TA-Lib ATR from closed okx candle[2] high, candle[3] low, and candle[4] close values where candle[8] == "1"'
   definable_for: [BNB]
@@ -1130,7 +1130,7 @@
     note: The derived output is not cross-venue corroborated; its OKX input bars are corroborated against Coinbase.
 - key: bnb_bollinger_upper
   vendor: okx
-  backfill_recipe: noop
+  backfill_recipe: okx_candles
   endpoint: https://www.okx.com/api/v5/market/candles?instId=BNB-USDT&bar=1Dutc
   source_field: 'TA-Lib BBANDS upper output from closed okx candle[4] values where candle[8] == "1"'
   definable_for: [BNB]
@@ -1150,7 +1150,7 @@
     note: The derived output is not cross-venue corroborated; its OKX input bars are corroborated against Coinbase.
 - key: bnb_bollinger_middle
   vendor: okx
-  backfill_recipe: noop
+  backfill_recipe: okx_candles
   endpoint: https://www.okx.com/api/v5/market/candles?instId=BNB-USDT&bar=1Dutc
   source_field: 'TA-Lib BBANDS middle output from closed okx candle[4] values where candle[8] == "1"'
   definable_for: [BNB]
@@ -1170,7 +1170,7 @@
     note: The derived output is not cross-venue corroborated; its OKX input bars are corroborated against Coinbase.
 - key: bnb_bollinger_lower
   vendor: okx
-  backfill_recipe: noop
+  backfill_recipe: okx_candles
   endpoint: https://www.okx.com/api/v5/market/candles?instId=BNB-USDT&bar=1Dutc
   source_field: 'TA-Lib BBANDS lower output from closed okx candle[4] values where candle[8] == "1"'
   definable_for: [BNB]
@@ -1190,7 +1190,7 @@
     note: The derived output is not cross-venue corroborated; its OKX input bars are corroborated against Coinbase.
 - key: bnb_obv
   vendor: okx
-  backfill_recipe: noop
+  backfill_recipe: okx_candles
   endpoint: https://www.okx.com/api/v5/market/candles?instId=BNB-USDT&bar=1Dutc
   source_field: 'TA-Lib OBV from closed okx candle[4] close and candle[5] base volume where candle[8] == "1"'
   definable_for: [BNB]
@@ -1207,7 +1207,7 @@
     note: The derived output is not cross-venue corroborated; its OKX input bars are corroborated against Coinbase.
 - key: bnb_macd
   vendor: okx
-  backfill_recipe: noop
+  backfill_recipe: okx_candles
   endpoint: https://www.okx.com/api/v5/market/candles?instId=BNB-USDT&bar=1Dutc
   source_field: 'TA-Lib MACD outputs from closed okx candle[4] values where candle[8] == "1"'
   definable_for: [BNB]
@@ -1226,7 +1226,7 @@
     note: The derived output is not cross-venue corroborated; its OKX input bars are corroborated against Coinbase.
 - key: bnb_stochrsi
   vendor: okx
-  backfill_recipe: noop
+  backfill_recipe: okx_candles
   endpoint: https://www.okx.com/api/v5/market/candles?instId=BNB-USDT&bar=1Dutc
   source_field: 'TA-Lib STOCHRSI fastd from closed okx candle[4] values where candle[8] == "1"'
   definable_for: [BNB]

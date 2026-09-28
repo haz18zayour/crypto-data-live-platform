@@ -33,8 +33,14 @@ from ingest.fetchers.defillama_stablecoins import (
     DefiLlamaStablecoinSupplyResult,
 )
 from ingest.fetchers.fred import FredOk, FredResult, FredSeries
-from ingest.fetchers.okx import INDICATOR_KEY, MEASURED_ON, fetch_btc_daily_close
+from ingest.fetchers.okx import (
+    INDICATOR_KEY,
+    MEASURED_ON,
+    BackfilledOkxValue,
+    fetch_btc_daily_close,
+)
 from ingest.fetchers.okx_derivatives import (
+    BackfilledOkxDerivativeOk,
     FundingRateOk,
     FundingRateResult,
     LongShortRatioOk,
@@ -85,6 +91,8 @@ type BoardResult = (
     | SosoValueEtfFlowOk
     | DefiLlamaStablecoinSupplyOk
     | AlternativeMeFearGreedOk
+    | BackfilledOkxValue
+    | BackfilledOkxDerivativeOk
 )
 
 SOL_ACTIVE_ADDRESSES_KEY = "sol_active_addresses"
@@ -745,10 +753,14 @@ def persist_board(
             persisted_result = result
         else:
             source_field = getattr(result, "source_field", None)
+            endpoint = getattr(result, "endpoint", None)
+            updates: dict[str, str] = {}
             if source_field is not None:
-                persisted_definition = definition.model_copy(
-                    update={"source_field": source_field}
-                )
+                updates["source_field"] = source_field
+            if endpoint is not None:
+                updates["endpoint"] = endpoint
+            if updates:
+                persisted_definition = definition.model_copy(update=updates)
             persisted_result = Ok(float(result.value), result.source_timestamp)
         if (
             isinstance(persisted_result, Ok)

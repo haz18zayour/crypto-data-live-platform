@@ -8,6 +8,13 @@ from collections.abc import Callable, Mapping, Sequence
 
 import psycopg
 
+from ingest.fetchers.okx import backfill_okx_candle_indicator
+from ingest.fetchers.okx_derivatives import (
+    backfill_okx_funding_rate,
+    backfill_okx_long_short_ratio,
+    backfill_okx_open_interest,
+    backfill_okx_taker_ratio,
+)
 from ingest.pipeline import FullAssetRun, persist_board
 from ingest.registry import (
     IndicatorDefinition,
@@ -16,7 +23,8 @@ from ingest.registry import (
     load_registry,
 )
 
-type BackfillRecipe = Callable[[IndicatorDefinition], FullAssetRun]
+type BackfillRecipeResult = FullAssetRun | Sequence[FullAssetRun]
+type BackfillRecipe = Callable[[IndicatorDefinition], BackfillRecipeResult]
 
 
 def _not_implemented_recipe(_: IndicatorDefinition) -> FullAssetRun:
@@ -27,7 +35,18 @@ def _not_implemented_recipe(_: IndicatorDefinition) -> FullAssetRun:
 
 BACKFILL_RECIPES: Mapping[str, BackfillRecipe] = {
     "noop": _not_implemented_recipe,
+    "okx_candles": backfill_okx_candle_indicator,
+    "okx_funding": backfill_okx_funding_rate,
+    "okx_open_interest_history": backfill_okx_open_interest,
+    "okx_long_short_1d": backfill_okx_long_short_ratio,
+    "okx_taker_volume_1d": backfill_okx_taker_ratio,
 }
+
+
+def _recipe_runs(result: BackfillRecipeResult) -> tuple[FullAssetRun, ...]:
+    if isinstance(result, FullAssetRun):
+        return (result,)
+    return tuple(result)
 
 
 def _selected_entries(
@@ -70,8 +89,8 @@ def run_backfill(
         if entry.backfill_recipe is None:
             raise AssertionError(f"{entry.key} is missing backfill_recipe")
 
-        run = recipes[entry.backfill_recipe](entry)
-        row_ids.extend(persist_board(connection, run, origin="backfill"))
+        for run in _recipe_runs(recipes[entry.backfill_recipe](entry)):
+            row_ids.extend(persist_board(connection, run, origin="backfill"))
     return tuple(row_ids)
 
 

@@ -81,6 +81,24 @@ class OkxOpenInterestResponse(BaseModel):
     data: tuple[OkxOpenInterestEntry, ...]
 
 
+type OkxOpenInterestHistoryEntry = tuple[
+    StrictStr,
+    StrictStr,
+    StrictStr,
+    StrictStr,
+]
+
+
+class OkxOpenInterestHistoryResponse(BaseModel):
+    """The response contract for OKX's open-interest-history endpoint."""
+
+    model_config = ConfigDict(extra="forbid", frozen=True)
+
+    code: StrictStr
+    msg: StrictStr
+    data: tuple[OkxOpenInterestHistoryEntry, ...]
+
+
 type OkxLongShortRatioEntry = tuple[StrictStr, StrictStr]
 
 

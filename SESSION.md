@@ -33,10 +33,10 @@ open prds/PRD-005-dashboard/20-decisions.yaml
 | PRD-006-derivatives | 7 | 7 | **all green** |
 | PRD-007-onchain | 8 | 8 | **all green** |
 | PRD-008-macro-flows | 8 | 8 | **all green** |
-| PRD-009-history-charts | 9 | 2 | 2/9 |
+| PRD-009-history-charts | 9 | 3 | 3/9 |
 | PRD-012-cadence-split | 6 | 6 | **all green** |
 
-Spend to date: **$97.20** Claude · **255409k** Codex tokens.
+Spend to date: **$97.65** Claude · **255805k** Codex tokens.
 
 ## What happened
 
@@ -759,6 +759,9 @@ Spend to date: **$97.20** Claude · **255409k** Codex tokens.
 - 18:19  US-903 started, attempt 2 (codex)
 - 18:22  US-903 — codex finished `8db49606` · 1015k tok
 - 18:23  US-903 **rejected** — 4/6 criteria, judged by claude · $0.42
+- 18:23  US-903 started, attempt 3 (codex)
+- 18:24  US-903 — codex finished `ae499f18` · 396k tok
+- 18:27  US-903 **PASSED** — 6/6 criteria, judged by claude · $0.45
 
 <!-- uf:generated:end -->
 
