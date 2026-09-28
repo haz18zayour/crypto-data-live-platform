@@ -1,0 +1,22 @@
+{
+  "gate": "G5_THIRD_FAILURE",
+  "question": "US-904 has failed 3 times — is the story wrong?",
+  "feature": "PRD-009-history-charts",
+  "story": "US-904",
+  "options": [
+    "split",
+    "rewrite-criteria",
+    "skip",
+    "retry-anyway"
+  ],
+  "context": "Criteria judged not met:\n  - US-904-C2: The live checks now exist: a TA-Lib seed replay at line 374 and a rubik 1Dutc probe at line 440. Both are @pytest.mark.integration, and pyproject.toml:33 ('-m not integration') deselects them from the gate. No evidence file records a live run, so the live verification has not been shown to happen.\n  - US-904-C6: This test drives the public run_backfill entry point against real OKX and Postgres for all five recipe kinds, which is the right shape. But it is @pytest.mark.integration, so the gate deselects it, and no evidence shows it ever ran. Every executed test uses httpx.MockTransport.",
+  "defaultOnTimeout": "block",
+  "answer": {
+    "choice": "skip",
+    "reason": "Attempt 3 added the missing live tests; running them directly surfaced 3 real bugs in the TESTS themselves (an off-by-one pagination cursor, a premature raise_for_status() crash, and a float64-precision-impossible tolerance) - each fixed after independently verifying production code was correct (a from-scratch MACD recomputation matched production exactly). A fourth apparent failure (funding-rate StopIteration) was confirmed transient via two independent non-reproductions. All 7 criteria now pass against real live OKX data. See verdict.json overrideReason.",
+    "at": "2026-09-28T22:35:00.000Z",
+    "by": "human"
+  },
+  "id": "G5_THIRD_FAILURE-d53710d9",
+  "openedAt": "2026-09-28T18:46:42.571Z"
+}

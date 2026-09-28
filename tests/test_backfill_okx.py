@@ -390,7 +390,12 @@ def test_live_okx_candle_backfill_seed_matches_project_calculation_at_historical
         params={
             "instId": "BTC-USDT",
             "bar": "1Dutc",
-            "after": str(int((returned.source_timestamp + timedelta(days=1)).timestamp() * 1000)),
+            # after=X returns bars strictly older than X. returned.source_timestamp is
+            # the seeded window's LAST bar's close (open + 1 day) - using that directly
+            # as the cursor excludes the not-yet-closed next day and lands exactly on
+            # the window the backfill actually used. Adding another +1 day here (the
+            # original bug) shifted the whole reconstructed window one day too new.
+            "after": str(int(returned.source_timestamp.timestamp() * 1000)),
             "limit": "100",
         },
         timeout=10,
@@ -404,7 +409,7 @@ def test_live_okx_candle_backfill_seed_matches_project_calculation_at_historical
 
     seed_bars = _backfill_seed_bars(250, "MACD", entry.parameters)
     raw_rows = []
-    cursor = int((returned.source_timestamp + timedelta(days=1)).timestamp() * 1000)
+    cursor = int(returned.source_timestamp.timestamp() * 1000)
     while len(raw_rows) < seed_bars:
         page = httpx.get(
             HISTORY_ENDPOINT,
@@ -451,13 +456,17 @@ def test_live_okx_rubik_rejects_or_fails_to_commit_to_1dutc_period() -> None:
     ]
 
     for endpoint, params in probes:
+        # OKX may reject an unsupported bar/period value outright with a non-2xx
+        # status (confirmed live: 400 Bad Request), not just a non-"0" body code -
+        # raise_for_status() here would crash before that could be asserted, so
+        # a 4xx/5xx response is itself the expected "rejected" outcome.
         response = httpx.get(endpoint, params=params, timeout=10)
-        response.raise_for_status()
-        payload = response.json()
-        assert payload.get("code") != "0" or not payload.get("data"), (
-            f"OKX now appears to accept {endpoint} period=1Dutc; "
-            "switch the backfill recipe off period=1D before shipping."
-        )
+        if response.is_success:
+            payload = response.json()
+            assert payload.get("code") != "0" or not payload.get("data"), (
+                f"OKX now appears to accept {endpoint} period=1Dutc; "
+                "switch the backfill recipe off period=1D before shipping."
+            )
 
 
 @pytest.mark.integration
@@ -544,6 +553,10 @@ def test_live_okx_run_backfill_persists_real_rows_cross_checked_against_fresh_ve
         if timestamp_from_row(row) == source_timestamp
     )
 
-    assert float(value) == pytest.approx(value_from_row(direct), abs=1e-9, rel=0.0)
+    # A fixed abs=1e-9 tolerance is below float64's own representable precision at
+    # open-interest-USD magnitude (billions) - guaranteed-flaky regardless of data
+    # correctness. A relative tolerance scales correctly across every parametrized
+    # value's real magnitude (ratios near 1 through USD values in the billions).
+    assert float(value) == pytest.approx(value_from_row(direct), rel=1e-9, abs=0.0)
     assert endpoint in persisted_endpoint
     assert source_field
