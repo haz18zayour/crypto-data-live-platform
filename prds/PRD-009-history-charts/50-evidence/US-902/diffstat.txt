@@ -1,12 +1,12 @@
-.uf/events.ndjson                                  |   6 +
- SESSION.md                                         |  10 +-
- .../50-evidence/US-902/diffstat.txt                |   8 +
- .../50-evidence/US-902/gates.json                  |  20 +
- .../50-evidence/US-902/verdict.json                |  80 ++++
- .../20260928130000_create_history_read_rpc.sql     |  41 ++
+.uf/events.ndjson                                  |   9 +
+ SESSION.md                                         |  13 +-
+ .../50-evidence/US-902/diffstat.txt                |  12 +
+ .../50-evidence/US-902/gates.json                  |  20 ++
+ .../50-evidence/US-902/verdict.json                |  44 +++
+ .../20260928130000_create_history_read_rpc.sql     |  41 +++
  supabase/migrations/checksums.sha256               |   1 +
- tests/test_history_read.py                         | 498 +++++++++++++++++++++
+ tests/test_history_read.py                         | 366 +++++++++++++++++++++
  tests/test_persist.py                              |   1 +
- web/src/history.test.ts                            |  72 +++
- web/src/history.ts                                 |  99 ++++
- 11 files changed, 834 insertions(+), 2 deletions(-)
+ web/src/history.test.ts                            |  72 ++++
+ web/src/history.ts                                 |  99 ++++++
+ 11 files changed, 676 insertions(+), 2 deletions(-)

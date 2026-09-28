@@ -10,71 +10,35 @@
     {
       "criterionId": "US-902-C1",
       "met": false,
-      "evidence": {
-        "file": "tests/test_history_read.py",
-        "line": 316,
-        "testName": "test_history_read_returns_at_most_the_requested_recent_live_or_backfill_points_newest_first",
-        "exitCode": null
-      },
-      "note": "The migration does bound the result with `limit greatest(coalesce(p_point_limit,0),0)`. But the only test that runs the real RPC is marked @pytest.mark.integration, and pyproject.toml:33 (`-m 'not integration'`) deselects it. The new offline test (line 80) calls `_contract_rows`, a Python copy of the SQL logic at lines 22-41. It asserts against that copy, not the function, so it proves nothing about the RPC."
+      "note": "verifier produced no parseable verdict"
     },
     {
       "criterionId": "US-902-C2",
       "met": false,
-      "evidence": {
-        "file": "tests/test_history_read.py",
-        "line": 338,
-        "testName": "test_history_read_orders_by_source_timestamp_and_excludes_null_timestamp_absences",
-        "exitCode": null
-      },
-      "note": "The SQL orders by source_timestamp desc, id desc and filters on status in ('OK','STALE') and source_timestamp not null. The DB test is integration-marked and was deselected. The offline tests at :108 (Python simulation) and :163 (SQL string match) do not execute the function."
+      "note": "verifier produced no parseable verdict"
     },
     {
       "criterionId": "US-902-C3",
       "met": false,
-      "evidence": {
-        "file": "tests/test_history_read.py",
-        "line": 391,
-        "testName": "test_history_read_pins_to_one_source_vendor_per_call",
-        "exitCode": null
-      },
-      "note": "The RPC takes a required p_source_vendor filter. The DB test that proves a call returns one vendor is integration-marked and was deselected. The offline test at :129 filters a Python list with `_contract_rows`, which is tautological."
+      "note": "verifier produced no parseable verdict"
     },
     {
       "criterionId": "US-902-C4",
       "met": false,
-      "evidence": {
-        "file": "tests/test_history_read.py",
-        "line": 418,
-        "testName": "test_history_read_returns_empty_array_for_a_cell_with_no_rows",
-        "exitCode": null
-      },
-      "note": "`coalesce(jsonb_agg(...), '[]'::jsonb)` should return []. The DB test is integration-marked and was not run. The offline test at :151 passes an empty list into the Python simulation and asserts []. That is trivially true and says nothing about the SQL, and no web test covers the empty state."
+      "note": "verifier produced no parseable verdict"
     },
     {
       "criterionId": "US-902-C5",
       "met": false,
-      "evidence": {
-        "file": "tests/test_history_read.py",
-        "line": 466,
-        "testName": "test_live_postgrest_history_read_for_a_real_cell_returns_one_bounded_array_under_the_default_row_cap",
-        "exitCode": null
-      },
-      "note": "The live PostgREST test is integration-marked and no gate ran it. Nothing shows the migration was applied to the live Supabase project, so the assumption research flagged (one JSON array under the PostgREST row cap) is still unverified."
+      "note": "verifier produced no parseable verdict"
     },
     {
       "criterionId": "US-902-C6",
-      "met": true,
-      "evidence": {
-        "file": "pyproject.toml",
-        "line": 33,
-        "testName": null,
-        "exitCode": 0
-      },
-      "note": "`uv run pytest -q` exited 0 (344 passed, 71 deselected), and the web test and typecheck gates also exited 0. The suite partly stays green because DB-backed tests are excluded, and this diff excluded one more (see note)."
+      "met": false,
+      "note": "verifier produced no parseable verdict"
     }
   ],
   "tripwires": [],
-  "note": "Attempt 2 did not add real execution evidence. The new 'offline' tests either string-match the SQL or run `_contract_rows`, a Python copy of the RPC's filter/sort/limit, and assert against that copy. That is tautological: the tests would pass even if the SQL were wrong. Worse, the diff adds @pytest.mark.integration to test_persist.py::test_adversarial_backfill_row_fetched_now_is_excluded_from_live_read_views, which was the key execution evidence for already-passed US-901-C5. That quietly removes it from the gate, a regression that looks like it was made to keep the suite green.",
-  "at": "2026-09-28T15:56:53.813Z"
+  "note": "verifier returned no usable JSON (exit 1)",
+  "at": "2026-09-28T16:01:49.617Z"
 }
