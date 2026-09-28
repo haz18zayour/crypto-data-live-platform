@@ -357,7 +357,6 @@ def test_pagination_next_page_url_is_followed_unmodified_without_losing_rows() -
     ] == [min_time, min_time + timedelta(days=1)]
 
 
-@pytest.mark.integration
 def test_live_coinmetrics_run_backfill_persists_earliest_btc_active_addresses_at_catalog_min_time(
     postgres: psycopg.Connection[tuple[object, ...]],
 ) -> None:
