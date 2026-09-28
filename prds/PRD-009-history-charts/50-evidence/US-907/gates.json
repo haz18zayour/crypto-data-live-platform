@@ -1,0 +1,20 @@
+[
+  {
+    "name": "typecheck",
+    "run": "node -e \"const f=require('fs'),c=require('child_process');let r=0;const run=(cmd)=>{try{c.execSync(cmd,{stdio:'inherit'})}catch(e){r=1}};if(f.existsSync('web/package.json'))run('npm --prefix web run typecheck');if(f.existsSync('pyproject.toml'))run('uv run mypy ingest --strict');process.exit(r)\"",
+    "exitCode": 0,
+    "output": "\n> crypto-data-live-web@0.0.0 typecheck\n> tsc -b --pretty false\n\nSuccess: no issues found in 24 source files\r\n"
+  },
+  {
+    "name": "test",
+    "run": "node -e \"const f=require('fs'),c=require('child_process'),p=require('path');const tmp=f.mkdtempSync(p.join(process.cwd(),'.tmp','systemtemp-'));const env={...process.env,TEMP:tmp,TMP:tmp};let r=0;const run=(cmd)=>{try{c.execSync(cmd,{stdio:'inherit',env})}catch(e){r=1}};if(f.existsSync('web/package.json'))run('npm --prefix web test');if(f.existsSync('tests'))run('uv run pytest -q');process.exit(r)\"",
+    "exitCode": 0,
+    "output": "\n> crypto-data-live-web@0.0.0 pretest\n> playwright install chromium chromium-headless-shell\n\n\n> crypto-data-live-web@0.0.0 test\n> vitest run --configLoader runner\n\n\n RUN  v4.1.9 C:/Users/user/Desktop/Projects/crypto-data-live-platform/web\n\n\n Test Files  12 passed (12)\n      Tests  55 passed (55)\n   Start at  00:13:48\n   Duration  5.01s (transform 779ms, setup 2.23s, import 2.38s, tests 8.04s, environment 7.30s)\n\n........................................................................ [ 18%]\r\n........................................................................ [ 37%]\r\n........................................................................ [ 55%]\r\n........................................................................ [ 74%]\r\n........................................................................ [ 93%]\r\n..........................                                               [100%]\r\n386 passed, 74 deselected in 58.47s\r\n"
+  },
+  {
+    "name": "US-907-C6",
+    "run": "uv run pytest -q",
+    "exitCode": 0,
+    "output": "........................................................................ [ 18%]\r\n........................................................................ [ 37%]\r\n........................................................................ [ 55%]\r\n........................................................................ [ 74%]\r\n........................................................................ [ 93%]\r\n..........................                                               [100%]\r\n386 passed, 74 deselected in 58.13s\r\n"
+  }
+]
