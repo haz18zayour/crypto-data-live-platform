@@ -1,0 +1,8 @@
+.uf/events.ndjson                  |   2 +
+ SESSION.md                         |   5 +-
+ ingest/backfill.py                 |   2 +
+ ingest/fetchers/coinmetrics.py     | 290 ++++++++++++++++++++++++++++++++++++
+ ingest/pipeline.py                 |   2 +
+ ingest/registry.yaml               |  16 +-
+ tests/test_backfill_coinmetrics.py | 296 +++++++++++++++++++++++++++++++++++++
+ 7 files changed, 604 insertions(+), 9 deletions(-)
