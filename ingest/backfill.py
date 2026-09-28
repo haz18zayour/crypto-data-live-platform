@@ -9,6 +9,7 @@ from collections.abc import Callable, Mapping, Sequence
 import psycopg
 
 from ingest.fetchers.coinmetrics import backfill_coinmetrics_asset_metrics
+from ingest.fetchers.fred import backfill_fred_initial_release
 from ingest.fetchers.okx import backfill_okx_candle_indicator
 from ingest.fetchers.okx_derivatives import (
     backfill_okx_funding_rate,
@@ -42,6 +43,7 @@ BACKFILL_RECIPES: Mapping[str, BackfillRecipe] = {
     "okx_long_short_1d": backfill_okx_long_short_ratio,
     "okx_taker_volume_1d": backfill_okx_taker_ratio,
     "coinmetrics_asset_metrics": backfill_coinmetrics_asset_metrics,
+    "fred_initial_release": backfill_fred_initial_release,
 }
 
 

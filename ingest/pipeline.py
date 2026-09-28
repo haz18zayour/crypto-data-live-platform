@@ -33,7 +33,7 @@ from ingest.fetchers.defillama_stablecoins import (
     DefiLlamaStablecoinSupplyOk,
     DefiLlamaStablecoinSupplyResult,
 )
-from ingest.fetchers.fred import FredOk, FredResult, FredSeries
+from ingest.fetchers.fred import BackfilledFredOk, FredOk, FredResult, FredSeries
 from ingest.fetchers.okx import (
     INDICATOR_KEY,
     MEASURED_ON,
@@ -89,6 +89,7 @@ type BoardResult = (
     | LongShortRatioOk
     | TakerRatioOk
     | FredOk
+    | BackfilledFredOk
     | SosoValueEtfFlowOk
     | DefiLlamaStablecoinSupplyOk
     | AlternativeMeFearGreedOk
