@@ -1,0 +1,80 @@
+{
+  "storyId": "US-903",
+  "passes": false,
+  "verifier": {
+    "agent": "claude",
+    "sandbox": "restricted:read-only"
+  },
+  "implementer": "codex",
+  "results": [
+    {
+      "criterionId": "US-903-C1",
+      "met": true,
+      "evidence": {
+        "file": "tests/test_backfill_coverage.py",
+        "line": 54,
+        "testName": "test_backfill_entry_point_dispatches_one_key_to_its_recipe",
+        "exitCode": 0
+      },
+      "note": "ingest/backfill.py:46 run_backfill takes indicator_key (None means all) and dispatches to recipes[entry.backfill_recipe] (line 73). One test proves that a single key reaches only its own recipe. test_backfill_entry_point_can_run_all_registered_backfillable_keys (line 91) proves the all-keys mode and that not_backfillable entries are skipped. The CLI (--indicator-key / --all) and .github/workflows/backfill.yml call the same function."
+    },
+    {
+      "criterionId": "US-903-C2",
+      "met": false,
+      "evidence": {
+        "file": "tests/test_backfill_coverage.py",
+        "line": 127,
+        "testName": "test_backfill_writes_through_persist_board_with_backfill_origin",
+        "exitCode": 0
+      },
+      "note": "Every test monkeypatches backfill.persist_board with a fake. So the tests only show that run_backfill calls a function named persist_board with origin='backfill'. The new forwarding at ingest/pipeline.py:765-779 (persist_board passing origin into persist_datapoint) is never run by any test, real or fake. No test shows a backfill write landing through persist_datapoint's (indicator_key, asset, source_vendor, source_timestamp) identity. By code reading the write path is shared, but the criterion's 'same unique index' half has no test behind it."
+    },
+    {
+      "criterionId": "US-903-C3",
+      "met": false,
+      "evidence": {
+        "file": "tests/test_backfill_coverage.py",
+        "line": 156,
+        "testName": "test_backfill_rerun_uses_one_identity_without_duplicate_rows",
+        "exitCode": 0
+      },
+      "note": "The test is circular. The fake persist_board it installs does its own dedup with rows.setdefault(identity, ...), and the test then asserts len(rows)==1. That only proves the test's own fake removes duplicates. No real persist_board/persist_datapoint runs against a Postgres fixture, so re-running backfill is never shown to leave the datapoints table without duplicates. That is not 'proven directly'."
+    },
+    {
+      "criterionId": "US-903-C4",
+      "met": true,
+      "evidence": {
+        "file": "tests/test_backfill_coverage.py",
+        "line": 195,
+        "testName": "test_backfill_coverage_fails_by_name_without_recipe_or_absence",
+        "exitCode": 0
+      },
+      "note": "An entry with neither backfill_recipe nor not_backfillable makes assert_backfill_coverage (ingest/registry.py, added in this diff) raise AssertionError matching the entry's key. test_backfill_coverage_fails_by_name_for_unknown_recipe (line 205) also covers an entry whose declared recipe isn't registered. run_backfill calls the same check before any write."
+    },
+    {
+      "criterionId": "US-903-C5",
+      "met": true,
+      "evidence": {
+        "file": "tests/test_backfill_coverage.py",
+        "line": 215,
+        "testName": "test_solana_and_validators_app_declare_distinct_not_backfillable_reasons",
+        "exitCode": 0
+      },
+      "note": "The test loads the real registry.yaml. It asserts that sol_active_addresses (Helius getBlock reason) and sol_staking (Validators.app reason) each declare not_backfillable, that the two reasons differ, and that assert_backfill_coverage passes on the full real registry against BACKFILL_RECIPES."
+    },
+    {
+      "criterionId": "US-903-C6",
+      "met": true,
+      "evidence": {
+        "file": null,
+        "line": null,
+        "testName": null,
+        "exitCode": 0
+      },
+      "note": "The US-903-C6 gate `uv run pytest -q` exited 0, and the typecheck gate (mypy --strict) also exited 0."
+    }
+  ],
+  "tripwires": [],
+  "note": "The entry point and the coverage guarantee are real and tested. The idempotency test (C3) is circular, though: its fake persist_board does the dedup the test then asserts. Also, no test runs the new persist_board→persist_datapoint origin forwarding (C2); every write-path test replaces persist_board with a fake. Every backfillable registry entry is mapped to a placeholder 'noop' recipe that returns nothing, which the story's notes explicitly allow.",
+  "at": "2026-09-28T18:19:03.423Z"
+}

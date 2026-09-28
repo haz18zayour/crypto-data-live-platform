@@ -1,0 +1,9 @@
+.github/workflows/backfill.yml  |  41 +++++++
+ .uf/events.ndjson               |   2 +
+ SESSION.md                      |   5 +-
+ ingest/backfill.py              |  94 +++++++++++++++++
+ ingest/pipeline.py              |   4 +
+ ingest/registry.py              |  48 +++++++++
+ ingest/registry.yaml            |  83 +++++++++++++++
+ tests/test_backfill_coverage.py | 229 ++++++++++++++++++++++++++++++++++++++++
+ 8 files changed, 505 insertions(+), 1 deletion(-)
