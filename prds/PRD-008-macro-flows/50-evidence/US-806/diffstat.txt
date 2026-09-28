@@ -1,12 +1,18 @@
-.uf/events.ndjson                      |   2 +
- SESSION.md                             |   5 +-
- ingest/canary.py                       |   2 +
- ingest/fetchers/alternative_me.py      | 114 ++++++++++++++++++++++++++
- ingest/registry.yaml                   |  14 ++++
- ingest/schemas.py                      |  29 +++++++
- tests/fixtures/alternative_me_fng.json |  14 ++++
- tests/test_alternative_me_fetcher.py   | 143 +++++++++++++++++++++++++++++++++
- tests/test_coverage.py                 |   2 +-
- tests/test_registry.py                 |   4 +-
- tests/test_registry_not_definable.py   |   4 +-
- 11 files changed, 327 insertions(+), 6 deletions(-)
+.uf/events.ndjson                                  |   5 +
+ SESSION.md                                         |  13 +-
+ ingest/canary.py                                   |   2 +
+ ingest/fetchers/alternative_me.py                  | 114 ++++++++++++++++
+ ingest/registry.yaml                               |  14 ++
+ ingest/schemas.py                                  |  29 +++++
+ .../50-evidence/US-806/diffstat.txt                |  12 ++
+ .../50-evidence/US-806/gates.json                  |  20 +++
+ .../50-evidence/US-806/verdict.json                |  91 +++++++++++++
+ tests/fixtures/alternative_me_fng.json             |  14 ++
+ tests/test_alternative_me_fetcher.py               | 143 +++++++++++++++++++++
+ tests/test_coverage.py                             |   2 +-
+ tests/test_registry.py                             |   4 +-
+ tests/test_registry_not_definable.py               |   4 +-
+ web/src/BoardMatrix.test.tsx                       |   2 +-
+ web/src/CoverageHeadline.test.tsx                  |   8 +-
+ web/src/board.test.ts                              |   2 +-
+ 17 files changed, 466 insertions(+), 13 deletions(-)
