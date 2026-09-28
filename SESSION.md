@@ -36,7 +36,7 @@ open prds/PRD-005-dashboard/20-decisions.yaml
 | PRD-009-history-charts | 9 | 6 | 6/9 |
 | PRD-012-cadence-split | 6 | 6 | **all green** |
 
-Spend to date: **$102.40** Claude · **269965k** Codex tokens.
+Spend to date: **$103.46** Claude · **272756k** Codex tokens.
 
 ## What happened
 
@@ -810,6 +810,19 @@ Spend to date: **$102.40** Claude · **269965k** Codex tokens.
 - 21:25  US-907 started, attempt 3 (codex)
 - 21:36  US-907 — codex finished `92c31126`
 - 21:38  US-907 **rejected** — 0/6 criteria, judged by claude
+- 21:38  ⏸ **gate opened** — US-907 has failed 3 times — is the story wrong?
+
+### 2026-09-29
+
+- 00:45  ▶ gate answered **rewrite-criteria** — All 3 attempts exhausted on codex's own account usage quota outage (confirmed directly via raw implementer stdout and a direct codex exec probe). Zero files were changed across all 3 attempts - no code exists to verify. Re-identified as US-910 (same content) for a fresh attempt budget once the quota window passes.
+
+### 2026-09-28
+
+- 21:43  **PRD-009-history-charts** compiled — 9 stories
+- 21:43  **PRD-009-history-charts** compiled — 9 stories
+- 23:14  US-910 started, attempt 1 (codex)
+- 23:20  US-910 — codex finished `f3df8d71` · 2791k tok
+- 23:23  US-910 **rejected** — 5/6 criteria, judged by claude · $1.06
 
 <!-- uf:generated:end -->
 
