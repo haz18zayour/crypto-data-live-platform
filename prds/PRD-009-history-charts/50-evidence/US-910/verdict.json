@@ -1,0 +1,80 @@
+{
+  "storyId": "US-910",
+  "passes": false,
+  "verifier": {
+    "agent": "claude",
+    "sandbox": "restricted:read-only"
+  },
+  "implementer": "codex",
+  "results": [
+    {
+      "criterionId": "US-910-C1",
+      "met": false,
+      "evidence": {
+        "file": "tests/test_backfill_sosovalue.py",
+        "line": 123,
+        "testName": "test_live_sosovalue_history_probe_confirms_real_shape_range_and_rate_limit",
+        "exitCode": null
+      },
+      "note": "The only live probe test skips when SOSOVALUE_API_KEY is absent, and no recorded probe output exists (there is no 50-evidence/US-910). The offline probe test is fed a mocked 429, so it proves nothing about SoSoValue's real date range or rate limit. The backfill still hard-codes BACKFILL_LIMIT=200 (ingest/fetchers/sosovalue.py) without a confirmed window. The assumption is not settled, and there is no integration test through the assembled entry point against the real vendor."
+    },
+    {
+      "criterionId": "US-910-C2",
+      "met": true,
+      "evidence": {
+        "file": "tests/test_backfill_sosovalue.py",
+        "line": 41,
+        "testName": "test_sosovalue_backfill_persists_decimal_values_via_str_conversion",
+        "exitCode": 0
+      },
+      "note": "backfill_sosovalue_etf_flows reuses _parse_money (ingest/fetchers/sosovalue.py:71-78, Decimal(str(value))). The test asserts value == Decimal('190646110.255') and != Decimal(190646110.255)."
+    },
+    {
+      "criterionId": "US-910-C3",
+      "met": true,
+      "evidence": {
+        "file": "tests/test_backfill_defillama.py",
+        "line": 75,
+        "testName": "test_defillama_latest_backfill_matches_current_live_endpoint_same_day",
+        "exitCode": 0
+      },
+      "note": "Backfill /stablecoincharts/{chain} and live /stablecoinchains are each parsed through their own code paths for ETH/SOL/BNB; the test asserts the same reference_period and the same Decimal value. Weak point: the mock gives both endpoints identical numbers, so this proves the two parsers and chain mappings agree, not that the real endpoints agree. Chain paths are asserted in the test at line 36."
+    },
+    {
+      "criterionId": "US-910-C4",
+      "met": true,
+      "evidence": {
+        "file": "tests/test_backfill_alternative_me.py",
+        "line": 41,
+        "testName": "test_alternative_me_backfill_reads_history_limit_zero_without_verdict_label",
+        "exitCode": 0
+      },
+      "note": "Backfill emits BackfilledAlternativeMeFearGreedOk, a slots dataclass with no classification field. The test feeds value_classification='Greed' and asserts no persisted value has the attribute. It also asserts the limit=0 history URL."
+    },
+    {
+      "criterionId": "US-910-C5",
+      "met": true,
+      "evidence": {
+        "file": "tests/test_backfill_sosovalue.py",
+        "line": 102,
+        "testName": "test_bnb_etf_flow_remains_not_definable_and_not_backfilled",
+        "exitCode": 0
+      },
+      "note": "Asserts BNB stays NOT_DEFINABLE for live and that backfill only requests BTC/ETH/SOL. The companion test test_btc_stablecoin_supply_remains_not_definable_and_not_backfilled (tests/test_backfill_defillama.py) asserts that no /Bitcoin chart request is made."
+    },
+    {
+      "criterionId": "US-910-C6",
+      "met": true,
+      "evidence": {
+        "file": null,
+        "line": null,
+        "testName": null,
+        "exitCode": 0
+      },
+      "note": "The gate `uv run pytest -q` exited 0; the typecheck gate (mypy --strict) also exited 0."
+    }
+  ],
+  "tripwires": [],
+  "note": "5 of 6 criteria met; nothing looks faked. C1 (live SoSoValue probe) is not met: the live test skips without an API key and no real probe result is recorded, yet the backfill hard-codes limit=200. The C3 seam test runs on identical mock values, so it only proves the two parsers agree.",
+  "at": "2026-09-28T23:23:01.155Z"
+}
