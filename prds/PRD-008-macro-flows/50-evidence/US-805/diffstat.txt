@@ -1,12 +1,19 @@
-.uf/events.ndjson                              |   2 +
- SESSION.md                                     |   5 +-
- ingest/canary.py                               |   2 +
- ingest/fetchers/defillama_stablecoins.py       | 145 +++++++++++++++++++++++++
- ingest/registry.yaml                           |  17 +++
- ingest/schemas.py                              |  29 +++++
- tests/fixtures/defillama_stablecoinchains.json |  35 ++++++
- tests/test_coverage.py                         |   2 +-
- tests/test_defillama_stablecoins_fetcher.py    | 137 +++++++++++++++++++++++
- tests/test_registry.py                         |  48 +++++++-
- tests/test_registry_not_definable.py           |  21 +++-
- 11 files changed, 436 insertions(+), 7 deletions(-)
+.uf/events.ndjson                                  |   5 +
+ SESSION.md                                         |  16 ++-
+ ingest/canary.py                                   |   2 +
+ ingest/fetchers/defillama_stablecoins.py           | 145 +++++++++++++++++++++
+ ingest/registry.yaml                               |  17 +++
+ ingest/schemas.py                                  |  36 +++++
+ .../50-evidence/US-805/diffstat.txt                |  12 ++
+ .../50-evidence/US-805/gates.json                  |  20 +++
+ .../50-evidence/US-805/verdict.json                |  54 ++++++++
+ tests/fixtures/defillama_stablecoinchains.json     |  35 +++++
+ tests/test_coverage.py                             |   2 +-
+ tests/test_defillama_stablecoins_fetcher.py        | 137 +++++++++++++++++++
+ tests/test_registry.py                             |  48 ++++++-
+ tests/test_registry_not_definable.py               |  21 ++-
+ web/src/BoardMatrix.test.tsx                       |   2 +-
+ web/src/CoverageHeadline.test.tsx                  |  14 +-
+ web/src/board.test.ts                              |   2 +-
+ web/src/fixtures/mixedBoard.test.ts                |   2 +-
+ 18 files changed, 552 insertions(+), 18 deletions(-)

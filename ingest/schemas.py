@@ -411,7 +411,11 @@ class DefiLlamaPeggedAmounts(BaseModel):
 
     model_config = ConfigDict(extra="allow", frozen=True)
 
-    pegged_usd: StrictFloat | StrictInt = Field(alias="peggedUSD")
+    # Confirmed live, 2026-09-28: chains with no USD-pegged stablecoin at all (only
+    # EUR/CHF/VAR-pegged, etc.) omit this key entirely rather than sending peggedUSD: 0.
+    # Defaulting to 0 here is the true value, not a proxy for missing data - a chain that
+    # genuinely has no USD-pegged stablecoin genuinely has a zero USD-pegged supply.
+    pegged_usd: StrictFloat | StrictInt = Field(alias="peggedUSD", default=0)
 
 
 class DefiLlamaStablecoinChain(BaseModel):
@@ -419,11 +423,14 @@ class DefiLlamaStablecoinChain(BaseModel):
 
     model_config = ConfigDict(extra="forbid", frozen=True)
 
-    gecko_id: StrictStr | None
+    # Confirmed live, 2026-09-28: DefiLlama omits these keys entirely for many chains
+    # (e.g. Manta, ThunderCore) rather than sending an explicit null, so both need a
+    # default or every real response fails validation.
+    gecko_id: StrictStr | None = None
     total_circulating_usd: DefiLlamaPeggedAmounts = Field(
         alias="totalCirculatingUSD"
     )
-    token_symbol: StrictStr | None = Field(alias="tokenSymbol")
+    token_symbol: StrictStr | None = Field(default=None, alias="tokenSymbol")
     name: StrictStr
 
 
