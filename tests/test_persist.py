@@ -177,6 +177,54 @@ def test_migration_adds_not_null_origin_defaulting_to_live_and_filters_read_view
     assert migration.count("where origin = 'live'") == 2
 
 
+def test_adversarial_backfill_row_fetched_now_is_excluded_from_live_read_views_offline() -> None:
+    migration = (
+        MIGRATIONS / "20260928120000_add_datapoint_origin_and_filter_live_reads.sql"
+    ).read_text(encoding="utf-8")
+    rows = [
+        {
+            "id": 1,
+            "value": 79_111.8,
+            "origin": "live",
+            "fetched_at": FETCHED_AT,
+            "source_timestamp": datetime(2026, 9, 8, tzinfo=UTC),
+        },
+        {
+            "id": 2,
+            "value": 42_024.0,
+            "origin": "backfill",
+            "fetched_at": FETCHED_AT + timedelta(minutes=1),
+            "source_timestamp": datetime(2024, 1, 1, tzinfo=UTC),
+        },
+        {
+            "id": 3,
+            "value": 42_025.0,
+            "origin": "shadow",
+            "fetched_at": FETCHED_AT + timedelta(minutes=2),
+            "source_timestamp": datetime(2025, 1, 1, tzinfo=UTC),
+        },
+    ]
+
+    assert "from public.datapoints\nwhere origin = 'live';" in migration
+    assert (
+        "from public.datapoints\nwhere origin = 'live'\norder by "
+        "indicator_key, asset, fetched_at desc, id desc;"
+    ) in migration
+
+    datapoints_read = [row for row in rows if row["origin"] == "live"]
+    board_read = sorted(
+        datapoints_read,
+        key=lambda row: (row["fetched_at"], row["id"]),
+        reverse=True,
+    )[:1]
+
+    assert rows[1]["fetched_at"] > rows[0]["fetched_at"]
+    assert rows[1]["source_timestamp"] == datetime(2024, 1, 1, tzinfo=UTC)
+    assert rows[1]["origin"] == "backfill"
+    assert datapoints_read == [rows[0]]
+    assert board_read == [rows[0]]
+
+
 def test_existing_call_pattern_writes_null_reference_period_and_published_at_offline(
     definition: IndicatorDefinition,
 ) -> None:

@@ -32,10 +32,11 @@ open prds/PRD-005-dashboard/20-decisions.yaml
 | PRD-005-dashboard | 9 | 9 | **all green** |
 | PRD-006-derivatives | 7 | 7 | **all green** |
 | PRD-007-onchain | 8 | 8 | **all green** |
-| PRD-008-macro-flows | 8 | 6 | 6/8 |
+| PRD-008-macro-flows | 8 | 8 | **all green** |
+| PRD-009-history-charts | 9 | 0 | 0/9 |
 | PRD-012-cadence-split | 6 | 6 | **all green** |
 
-Spend to date: **$86.33** Claude · **243558k** Codex tokens.
+Spend to date: **$90.49** Claude · **245791k** Codex tokens.
 
 ## What happened
 
@@ -717,6 +718,23 @@ Spend to date: **$86.33** Claude · **243558k** Codex tokens.
 - 08:40  US-807 started, attempt 3 (codex)
 - 08:41  US-807 — codex finished `a0a54a71`
 - 08:41  US-807 **rejected** — 0/6 criteria, judged by claude
+- 08:41  ⏸ **gate opened** — US-807 has failed 3 times — is the story wrong?
+- 13:10  US-807 **PASSED** — 6/6 criteria, judged by human
+- 13:10  ▶ gate answered **skip** — All 3 attempts verified the same attempt-1 diff (2-3 hit codex's own usage quota before running). Fixed a real test whitelist gap, a real CI workflow secrets gap, and a real production migration gap (applied with explicit owner authorization). Real CI dispatch (run 36425805380) succeeded in 2m17s. See verdict.json overrideReason.
+- 13:07  US-808 started, attempt 1 (codex)
+- 13:12  US-808 — codex finished `35feaacb` · 1001k tok
+- 13:13  US-808 **awaiting your judgement** — 3/4 criteria, judged by claude · $0.96
+- 13:13  ⏸ **gate opened** — US-808: The demonstration item the acceptance protocol calls for, not a machine check
+- 17:35  US-808 **PASSED** — 4/4 criteria, judged by human
+- 17:35  ▶ gate answered **met** — Owner ran the dev server and read the live MACRO column directly. A real FRED vintage-cap defect was found and fixed first (6/7 rows were showing FETCH_FAILED); after the fix, the owner confirmed each of the 7 macro rows shows its own real reference period and published date, cadence-appropriate, with none implying same-day freshness it doesn't have.
+- 17:35  👤 you judged US-808 **met** — Owner ran the dev server and read the live MACRO column directly. A real FRED vintage-cap defect was found and fixed first (6/7 rows were showing FETCH_FAILED); after the fix, the owner confirmed each of the 7 macro rows shows its own real reference period and published date, cadence-appropriate, with none implying same-day freshness it doesn't have.
+- 15:16  researched PRD-009-history-charts — 20 sources · $2.28
+- 15:28  **PRD-009-history-charts** compiled — 9 stories
+- 15:31  **PRD-009-history-charts** compiled — 9 stories
+- 15:32  **PRD-009-history-charts** compiled — 9 stories
+- 15:33  US-901 started, attempt 1 (codex)
+- 15:37  US-901 — codex finished `301d43d1` · 1232k tok
+- 15:38  US-901 **rejected** — 5/6 criteria, judged by claude · $0.91
 
 <!-- uf:generated:end -->
 
