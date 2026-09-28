@@ -1,8 +1,12 @@
-.uf/events.ndjson                                  |  2 +
- ingest/persist.py                                  |  7 ++-
- ..._add_datapoint_origin_and_filter_live_reads.sql | 53 ++++++++++++++++
- supabase/migrations/checksums.sha256               |  1 +
- tests/test_board_read.py                           | 65 ++++++++++++++++++-
- tests/test_migration.py                            | 60 ++++++++++++++++++
- tests/test_persist.py                              | 73 ++++++++++++++++++++++
- 7 files changed, 256 insertions(+), 5 deletions(-)
+.uf/events.ndjson                                  |   5 +
+ SESSION.md                                         |  22 +++-
+ ingest/persist.py                                  |   7 +-
+ .../50-evidence/US-901/diffstat.txt                |   8 ++
+ .../50-evidence/US-901/gates.json                  |  20 ++++
+ .../50-evidence/US-901/verdict.json                |  80 ++++++++++++++
+ ..._add_datapoint_origin_and_filter_live_reads.sql |  53 +++++++++
+ supabase/migrations/checksums.sha256               |   1 +
+ tests/test_board_read.py                           |  65 ++++++++++-
+ tests/test_migration.py                            |  60 ++++++++++
+ tests/test_persist.py                              | 121 +++++++++++++++++++++
+ 11 files changed, 435 insertions(+), 7 deletions(-)
