@@ -14,8 +14,162 @@ from psycopg import sql
 MIGRATIONS = Path(__file__).resolve().parents[1] / "supabase" / "migrations"
 ENV_FILE = MIGRATIONS.parents[1] / ".env.local"
 FETCHED_AT = datetime(2026, 9, 28, tzinfo=UTC)
+HISTORY_READ_SQL = (MIGRATIONS / "20260928130000_create_history_read_rpc.sql").read_text(
+    encoding="utf-8"
+)
 
-pytestmark = pytest.mark.integration
+
+def _contract_rows(
+    rows: list[dict[str, object]],
+    *,
+    indicator_key: str,
+    asset: str,
+    source_vendor: str,
+    point_limit: int | None,
+) -> list[dict[str, object]]:
+    filtered = [
+        row
+        for row in rows
+        if row["indicator_key"] == indicator_key
+        and row["asset"] == asset
+        and row["source_vendor"] == source_vendor
+        and row["origin"] in {"live", "backfill"}
+        and row["status"] in {"OK", "STALE"}
+        and row["source_timestamp"] is not None
+    ]
+    filtered.sort(key=lambda row: (row["source_timestamp"], row["id"]), reverse=True)
+    return filtered[: max(point_limit or 0, 0)]
+
+
+def _row(
+    *,
+    row_id: int,
+    indicator_key: str = "btc_daily_close",
+    asset: str = "BTC",
+    source_vendor: str = "okx",
+    source_timestamp: datetime | None,
+    value: float | None = 1.0,
+    status: str = "OK",
+    origin: str = "live",
+) -> dict[str, object]:
+    return {
+        "id": row_id,
+        "indicator_key": indicator_key,
+        "asset": asset,
+        "source_vendor": source_vendor,
+        "source_timestamp": source_timestamp,
+        "value": value,
+        "status": status,
+        "origin": origin,
+    }
+
+
+def test_history_read_sql_declares_bounded_rpc_signature_returning_one_json_array() -> None:
+    sql_text = HISTORY_READ_SQL.lower()
+
+    assert "create or replace function public.history_read(" in sql_text
+    assert "p_indicator_key text" in sql_text
+    assert "p_asset text" in sql_text
+    assert "p_source_vendor text" in sql_text
+    assert "p_point_limit integer" in sql_text
+    assert "returns jsonb" in sql_text
+    assert "coalesce(jsonb_agg(" in sql_text
+    assert "limit greatest(coalesce(p_point_limit, 0), 0)" in sql_text
+
+
+def test_history_read_contract_bounds_recent_live_or_backfill_points_newest_first() -> None:
+    rows = [
+        _row(row_id=1, source_timestamp=FETCHED_AT - timedelta(days=4), origin="live"),
+        _row(
+            row_id=2,
+            source_timestamp=FETCHED_AT - timedelta(days=3),
+            origin="backfill",
+        ),
+        _row(row_id=3, source_timestamp=FETCHED_AT - timedelta(days=2), origin="live"),
+        _row(
+            row_id=4,
+            source_timestamp=FETCHED_AT - timedelta(days=1),
+            origin="backfill",
+        ),
+    ]
+
+    points = _contract_rows(
+        rows,
+        indicator_key="btc_daily_close",
+        asset="BTC",
+        source_vendor="okx",
+        point_limit=3,
+    )
+
+    assert [point["id"] for point in points] == [4, 3, 2]
+    assert [point["origin"] for point in points] == ["backfill", "live", "backfill"]
+
+
+def test_history_read_contract_orders_by_timestamp_then_id_and_excludes_absences() -> None:
+    timestamp = FETCHED_AT - timedelta(days=1)
+    rows = [
+        _row(row_id=1, source_timestamp=FETCHED_AT - timedelta(days=2)),
+        _row(row_id=2, source_timestamp=timestamp),
+        _row(row_id=3, source_timestamp=timestamp),
+        _row(row_id=4, source_timestamp=None, value=None, status="UNAVAILABLE"),
+        _row(row_id=5, source_timestamp=FETCHED_AT, status="ERROR"),
+    ]
+
+    points = _contract_rows(
+        rows,
+        indicator_key="btc_daily_close",
+        asset="BTC",
+        source_vendor="okx",
+        point_limit=10,
+    )
+
+    assert [point["id"] for point in points] == [3, 2, 1]
+
+
+def test_history_read_contract_pins_each_call_to_one_source_vendor() -> None:
+    rows = [
+        _row(row_id=1, source_vendor="okx", source_timestamp=FETCHED_AT),
+        _row(
+            row_id=2,
+            source_vendor="coinbase",
+            source_timestamp=FETCHED_AT + timedelta(minutes=1),
+        ),
+    ]
+
+    points = _contract_rows(
+        rows,
+        indicator_key="btc_daily_close",
+        asset="BTC",
+        source_vendor="okx",
+        point_limit=10,
+    )
+
+    assert [point["source_vendor"] for point in points] == ["okx"]
+    assert [point["id"] for point in points] == [1]
+
+
+def test_history_read_contract_returns_empty_array_for_a_cell_with_zero_rows() -> None:
+    points = _contract_rows(
+        [],
+        indicator_key="brand_new_indicator",
+        asset="SOL",
+        source_vendor="okx",
+        point_limit=10,
+    )
+
+    assert points == []
+
+
+def test_history_read_sql_filters_the_exact_cell_and_single_vendor() -> None:
+    sql_text = " ".join(HISTORY_READ_SQL.lower().split())
+
+    assert "where indicator_key = p_indicator_key" in sql_text
+    assert "and asset = p_asset" in sql_text
+    assert "and source_vendor = p_source_vendor" in sql_text
+    assert "and origin in ('live', 'backfill')" in sql_text
+    assert "and status in ('ok', 'stale')" in sql_text
+    assert "and source_timestamp is not null" in sql_text
+    assert "order by source_timestamp desc, id desc" in sql_text
 
 
 def _database_url() -> str:
@@ -159,6 +313,7 @@ def _history_read(
     return points
 
 
+@pytest.mark.integration
 def test_history_read_returns_at_most_the_requested_recent_live_or_backfill_points_newest_first(
     postgres: tuple[psycopg.Connection[tuple[object, ...]], str],
 ) -> None:
@@ -180,6 +335,7 @@ def test_history_read_returns_at_most_the_requested_recent_live_or_backfill_poin
     assert len(points) == 3
 
 
+@pytest.mark.integration
 def test_history_read_orders_by_source_timestamp_and_excludes_null_timestamp_absences(
     postgres: tuple[psycopg.Connection[tuple[object, ...]], str],
 ) -> None:
@@ -211,6 +367,7 @@ def test_history_read_orders_by_source_timestamp_and_excludes_null_timestamp_abs
     assert [point["id"] for point in okx_points] == [newer_id, older_id]
 
 
+@pytest.mark.integration
 def test_history_read_defines_id_desc_as_the_equal_timestamp_tie_break(
     postgres: tuple[psycopg.Connection[tuple[object, ...]], str],
 ) -> None:
@@ -231,6 +388,7 @@ def test_history_read_defines_id_desc_as_the_equal_timestamp_tie_break(
     assert "order by source_timestamp desc, id desc" in str(definition[0]).lower()
 
 
+@pytest.mark.integration
 def test_history_read_pins_to_one_source_vendor_per_call(
     postgres: tuple[psycopg.Connection[tuple[object, ...]], str],
 ) -> None:
@@ -257,6 +415,7 @@ def test_history_read_pins_to_one_source_vendor_per_call(
     assert [point["value"] for point in points] == [78_900.0]
 
 
+@pytest.mark.integration
 def test_history_read_returns_empty_array_for_a_cell_with_no_rows(
     postgres: tuple[psycopg.Connection[tuple[object, ...]], str],
 ) -> None:
@@ -272,6 +431,7 @@ def test_history_read_returns_empty_array_for_a_cell_with_no_rows(
     assert points == []
 
 
+@pytest.mark.integration
 def test_anon_can_execute_history_read_and_receives_one_json_array_under_the_row_cap(
     postgres: tuple[psycopg.Connection[tuple[object, ...]], str],
 ) -> None:
@@ -303,6 +463,7 @@ def test_anon_can_execute_history_read_and_receives_one_json_array_under_the_row
     assert len(row[0]) == 60
 
 
+@pytest.mark.integration
 def test_live_postgrest_history_read_for_a_real_cell_returns_one_bounded_array_under_the_default_row_cap() -> None:
     supabase_url = _env_value("VITE_SUPABASE_URL") or _env_value("SUPABASE_URL")
     anon_key = _env_value("VITE_SUPABASE_ANON_KEY")

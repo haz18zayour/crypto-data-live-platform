@@ -177,6 +177,7 @@ def test_migration_adds_not_null_origin_defaulting_to_live_and_filters_read_view
     assert migration.count("where origin = 'live'") == 2
 
 
+@pytest.mark.integration
 def test_adversarial_backfill_row_fetched_now_is_excluded_from_live_read_views(
     postgres: psycopg.Connection[tuple[object, ...]],
 ) -> None:
