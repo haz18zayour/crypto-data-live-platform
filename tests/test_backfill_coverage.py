@@ -1,6 +1,12 @@
+import os
+from collections.abc import Iterator
 from datetime import UTC, datetime
+from pathlib import Path
+from uuid import uuid4
 
+import psycopg
 import pytest
+from psycopg import sql
 
 from ingest import backfill
 from ingest.pipeline import FullAssetRun
@@ -13,7 +19,77 @@ from ingest.registry import (
 )
 from ingest.status import Ok
 
+MIGRATIONS = Path(__file__).resolve().parents[1] / "supabase" / "migrations"
+ENV_FILE = MIGRATIONS.parents[1] / ".env.local"
 SOURCE_TIMESTAMP = datetime(2026, 9, 1, tzinfo=UTC)
+
+
+def _database_url() -> str:
+    database_url = os.environ.get("TEST_DATABASE_URL") or os.environ.get("DATABASE_URL")
+    if database_url:
+        return database_url
+
+    if ENV_FILE.exists():
+        for line in ENV_FILE.read_text(encoding="utf-8").splitlines():
+            key, separator, value = line.partition("=")
+            if separator and key.strip() == "DATABASE_URL" and value.strip():
+                return value.strip().strip("'\"")
+
+    raise RuntimeError(
+        "PostgreSQL backfill tests require TEST_DATABASE_URL, DATABASE_URL, "
+        "or DATABASE_URL in .env.local"
+    )
+
+
+@pytest.fixture(scope="module")
+def postgres() -> Iterator[psycopg.Connection[tuple[object, ...]]]:
+    schema = f"test_backfill_{uuid4().hex}"
+    try:
+        connection = psycopg.connect(_database_url(), autocommit=True)
+    except psycopg.OperationalError:
+        raise RuntimeError(
+            "PostgreSQL backfill tests could not connect; check TEST_DATABASE_URL, "
+            "DATABASE_URL, or DATABASE_URL in .env.local"
+        ) from None
+
+    with connection:
+        with connection.transaction():
+            connection.execute(
+                """
+                DO $$
+                BEGIN
+                  IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'anon') THEN
+                    CREATE ROLE anon NOLOGIN;
+                  END IF;
+                  IF NOT EXISTS (
+                    SELECT FROM pg_roles WHERE rolname = 'authenticated'
+                  ) THEN
+                    CREATE ROLE authenticated NOLOGIN;
+                  END IF;
+                END
+                $$;
+                """
+            )
+            connection.execute(
+                sql.SQL("create schema {}").format(sql.Identifier(schema))
+            )
+            for migration in sorted(MIGRATIONS.glob("*.sql")):
+                migration_sql = migration.read_text(encoding="utf-8").replace(
+                    "public.", f"{sql.Identifier(schema).as_string(connection)}."
+                )
+                connection.execute(migration_sql)
+        connection.execute(
+            sql.SQL("set search_path to {}").format(sql.Identifier(schema))
+        )
+
+        try:
+            yield connection
+        finally:
+            connection.execute(
+                sql.SQL("drop schema if exists {} cascade").format(
+                    sql.Identifier(schema)
+                )
+            )
 
 
 def definition(
@@ -153,43 +229,57 @@ def test_backfill_writes_through_persist_board_with_backfill_origin(
     assert origins == ["backfill"]
 
 
-def test_backfill_rerun_uses_one_identity_without_duplicate_rows(
-    monkeypatch: pytest.MonkeyPatch,
+@pytest.mark.integration
+def test_backfill_rerun_persists_once_through_real_datapoint_identity(
+    postgres: psycopg.Connection[tuple[object, ...]],
 ) -> None:
-    rows: dict[tuple[str, str, str, datetime], int] = {}
-
-    def persist_board(
-        connection: object,
-        run: FullAssetRun,
-        *,
-        origin: str = "live",
-    ) -> tuple[int, ...]:
-        assert origin == "backfill"
-        ids: list[int] = []
-        for result_key, result in run.indicators.items():
-            assert isinstance(result, Ok)
-            identity = (result_key, "BTC", "test_vendor", result.source_timestamp)
-            ids.append(rows.setdefault(identity, len(rows) + 1))
-        return tuple(ids)
-
-    monkeypatch.setattr(backfill, "persist_board", persist_board)
-    registry = registry_with(definition())
+    real_definition = next(
+        entry for entry in load_registry().root if entry.key == "btc_daily_close"
+    )
+    backfillable_definition = real_definition.model_copy(
+        update={"backfill_recipe": "test_recipe"}
+    )
+    registry = registry_with(backfillable_definition)
 
     first = backfill.run_backfill(
-        object(),  # type: ignore[arg-type]
-        indicator_key="test_indicator",
+        postgres,
+        indicator_key="btc_daily_close",
         registry=registry,
         recipes={"test_recipe": one_point_run},
     )
     second = backfill.run_backfill(
-        object(),  # type: ignore[arg-type]
-        indicator_key="test_indicator",
+        postgres,
+        indicator_key="btc_daily_close",
         registry=registry,
         recipes={"test_recipe": one_point_run},
     )
 
-    assert first == second == (1,)
+    rows = postgres.execute(
+        """
+        select id, indicator_key, asset, source_vendor, source_timestamp, origin
+        from datapoints
+        where indicator_key = %s
+          and asset = %s
+          and source_vendor = %s
+          and source_timestamp = %s
+        """,
+        (
+            real_definition.key,
+            "BTC",
+            real_definition.vendor,
+            SOURCE_TIMESTAMP,
+        ),
+    ).fetchall()
+
     assert len(rows) == 1
+    assert first == second == (rows[0][0],)
+    assert rows[0][1:] == (
+        "btc_daily_close",
+        "BTC",
+        real_definition.vendor,
+        SOURCE_TIMESTAMP,
+        "backfill",
+    )
 
 
 def test_backfill_coverage_fails_by_name_without_recipe_or_absence() -> None:

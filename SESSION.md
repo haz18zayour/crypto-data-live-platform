@@ -33,10 +33,10 @@ open prds/PRD-005-dashboard/20-decisions.yaml
 | PRD-006-derivatives | 7 | 7 | **all green** |
 | PRD-007-onchain | 8 | 8 | **all green** |
 | PRD-008-macro-flows | 8 | 8 | **all green** |
-| PRD-009-history-charts | 9 | 1 | 1/9 |
+| PRD-009-history-charts | 9 | 2 | 2/9 |
 | PRD-012-cadence-split | 6 | 6 | **all green** |
 
-Spend to date: **$95.32** Claude · **251523k** Codex tokens.
+Spend to date: **$96.78** Claude · **254395k** Codex tokens.
 
 ## What happened
 
@@ -750,6 +750,12 @@ Spend to date: **$95.32** Claude · **251523k** Codex tokens.
 - 15:56  US-902 started, attempt 3 (codex)
 - 16:00  US-902 — codex finished `c6e19e60` · 1420k tok
 - 16:01  US-902 **rejected** — 0/6 criteria, judged by claude · $0.99
+- 16:01  ⏸ **gate opened** — US-902 has failed 3 times — is the story wrong?
+- 21:12  US-902 **PASSED** — 6/6 criteria, judged by human
+- 21:12  ▶ gate answered **skip** — Attempts 1-2 failed on a real integration-marker misclassification, fixed correctly in attempt 3's own diff. Attempt 3's automated verdict ('no parseable verdict') was a verifier-tooling crash, not a real rejection. Verified directly: 8/8 offline tests pass against a real throwaway Postgres schema. The one live PostgREST test surfaced a second instance of PRD-008's US-807 pattern - the migration was written and tested but never applied to production. Applied with explicit owner authorization; live test now passes. See verdict.json overrideReason.
+- 18:11  US-903 started, attempt 1 (codex)
+- 18:17  US-903 — codex finished `5ebbc019` · 2872k tok
+- 18:19  US-903 **rejected** — 4/6 criteria, judged by claude · $1.46
 
 <!-- uf:generated:end -->
 
