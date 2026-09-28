@@ -1,3 +1,8 @@
+// Reads styles.css from disk, so it needs the node types tsconfig.app.json does not load.
+/// <reference types="node" />
+import { readFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
+
 import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { afterEach, describe, expect, test, vi } from "vitest";
 
@@ -6,7 +11,12 @@ import { CellFace } from "./CellFace";
 import type { Datapoint } from "./datapoint";
 import type { HistoryPoint } from "./history";
 import { Sparkline } from "./Sparkline";
-import styles from "./styles.css?raw";
+
+// Not a `?raw` import: vitest does not process CSS by default and hands that import back empty.
+const styles = readFileSync(
+  fileURLToPath(new URL("./styles.css", import.meta.url).href),
+  "utf8",
+);
 
 const DAY = 86_400_000;
 const MINUTE = 60_000;

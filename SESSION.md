@@ -33,10 +33,10 @@ open prds/PRD-005-dashboard/20-decisions.yaml
 | PRD-006-derivatives | 7 | 7 | **all green** |
 | PRD-007-onchain | 8 | 8 | **all green** |
 | PRD-008-macro-flows | 8 | 8 | **all green** |
-| PRD-009-history-charts | 9 | 6 | 6/9 |
+| PRD-009-history-charts | 9 | 7 | 7/9 |
 | PRD-012-cadence-split | 6 | 6 | **all green** |
 
-Spend to date: **$105.29** Claude · **277804k** Codex tokens.
+Spend to date: **$107.44** Claude · **277837k** Codex tokens.
 
 ## What happened
 
@@ -829,6 +829,18 @@ Spend to date: **$105.29** Claude · **277804k** Codex tokens.
 - 23:29  US-910 started, attempt 3 (codex)
 - 23:34  US-910 — codex finished `3d1d0bca` · 2607k tok
 - 23:36  US-910 **rejected** — 5/6 criteria, judged by claude · $0.94
+- 23:36  ⏸ **gate opened** — US-910 has failed 3 times — is the story wrong?
+
+### 2026-09-29
+
+- 02:52  US-910 **PASSED** — 6/6 criteria, judged by human
+- 02:52  ▶ gate answered **skip** — The real blocker was structural (codex's sandbox has no live network access), not a code defect. Live-probed SoSoValue directly: confirmed a hard 19-row history cap for BTC. The already-committed code and live tests were substantively correct; running them with real network access outside the blocked sandbox, both passed cleanly. See verdict.json overrideReason.
+
+### 2026-09-28
+
+- 23:51  US-908 started, attempt 1 (claude)
+- 23:57  US-908 — codex finished `9b16f759` · $2.15 · 33k tok
+- 23:57  US-908 **rejected** — 0/8 criteria, judged by claude
 
 <!-- uf:generated:end -->
 
