@@ -1,8 +1,12 @@
-.uf/events.ndjson           |   3 +
- SESSION.md                  |   7 +-
- ingest/backfill.py          |   2 +
- ingest/fetchers/fred.py     | 242 +++++++++++++++++++++++++++++++++++++++++---
- ingest/pipeline.py          |   3 +-
- ingest/registry.yaml        |  14 +--
- tests/test_backfill_fred.py | 196 +++++++++++++++++++++++++++++++++++
- 7 files changed, 444 insertions(+), 23 deletions(-)
+.uf/events.ndjson                                  |   6 +
+ SESSION.md                                         |  10 +-
+ ingest/backfill.py                                 |   2 +
+ ingest/fetchers/fred.py                            | 242 ++++++++++++++++++--
+ ingest/pipeline.py                                 |   3 +-
+ ingest/registry.yaml                               |  14 +-
+ .../50-evidence/US-906/attempt-2-local-evidence.md |  56 +++++
+ .../50-evidence/US-906/diffstat.txt                |   8 +
+ .../50-evidence/US-906/gates.json                  |  20 ++
+ .../50-evidence/US-906/verdict.json                |  69 ++++++
+ tests/test_backfill_fred.py                        | 248 +++++++++++++++++++++
+ 11 files changed, 655 insertions(+), 23 deletions(-)
