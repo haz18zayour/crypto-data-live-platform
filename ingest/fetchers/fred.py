@@ -200,6 +200,17 @@ def _fred_observation_params(
     }
 
 
+class FredAlfredUnavailableError(RuntimeError):
+    """FRED has no vintage archive at all for this realtime_start/end window.
+
+    Confirmed live, 2026-09-28: requesting output_type=4 for a chunk entirely before a
+    series' ALFRED (vintage) archive begins returns this exact 400, distinct from every
+    other failure mode - it is a real, permanent boundary of the series' own history, not
+    a transient error. VIXCLS's ALFRED archive does not reach back to 1990 even though the
+    live VIX index itself is far older.
+    """
+
+
 def _get_fred_observations(
     params: dict[str, str],
     *,
@@ -221,6 +232,16 @@ def _get_fred_observations(
         )
     except httpx.RequestError as error:
         raise RuntimeError(f"FRED request failed: {error.__class__.__name__}") from error
+
+    if response.status_code == 400:
+        try:
+            body = response.json()
+        except ValueError:
+            body = {}
+        if "does not exist in ALFRED" in str(body.get("error_message", "")):
+            raise FredAlfredUnavailableError(
+                "FRED has no ALFRED vintage archive for this realtime window"
+            )
 
     try:
         response.raise_for_status()
@@ -283,7 +304,14 @@ def backfill_fred_initial_release(
                 sort_order="asc",
                 limit=FRED_BACKFILL_LIMIT,
             )
-            payload = _get_fred_observations(params, client=client)
+            try:
+                payload = _get_fred_observations(params, client=client)
+            except FredAlfredUnavailableError:
+                # This chunk is entirely before the series' own ALFRED archive begins -
+                # a real, permanent boundary of the series' history, not an error to
+                # abort on. Chunks are oldest-to-newest, so later (more recent) chunks
+                # may still have real vintage data even though this one does not.
+                continue
             endpoint = (
                 f"{FRED_SERIES_OBSERVATIONS_ENDPOINT}?series_id={series_id}"
                 "&file_type=json&output_type=4"

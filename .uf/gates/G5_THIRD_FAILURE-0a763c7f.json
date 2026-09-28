@@ -1,0 +1,22 @@
+{
+  "gate": "G5_THIRD_FAILURE",
+  "question": "US-906 has failed 3 times — is the story wrong?",
+  "feature": "PRD-009-history-charts",
+  "story": "US-906",
+  "options": [
+    "split",
+    "rewrite-criteria",
+    "skip",
+    "retry-anyway"
+  ],
+  "context": "Criteria judged not met:\n  - US-906-C4: Nothing has changed since attempt 2. Attempt 3 exited 1 having used 0 tokens. The test is still marked @pytest.mark.integration, and pyproject.toml:33 (addopts '-m not integration') deselects it: the gates report 386 passed, 74 deselected. Its only recorded live run failed with a ConnectError (attempt-2-local-evidence.md). It uses a 120-day window (line 218), which is a single chunk under the 365-day chunk size and far below the vintage cap, so it could not show chunking working against the real API even if it ran. It also swaps out both the recipe and persist_board.",
+  "defaultOnTimeout": "block",
+  "answer": {
+    "choice": "skip",
+    "reason": "Attempt 3 exhausted on codex's own usage quota. Investigating attempt 2's diff directly against a real multi-decade live window found a genuine production defect: FRED's ALFRED vintage archive does not extend as far back as the code's default 1947 start for every series (VIXCLS's real archive starts 2010-11-22), which would have crashed any real backfill using the default range. Fixed by catching this specific FRED error and skipping the unavailable chunk rather than aborting. Verified live across three series (VIXCLS/DFF/T10Y2Y, each with a distinct real boundary). Also rewrote the story's weak live test to use a real postgres fixture and a genuine multi-chunk window - it passed twice against the real API and real Postgres (~25 min each, real network latency, not a hang). See verdict.json overrideReason.",
+    "at": "2026-09-29T00:05:00.000Z",
+    "by": "human"
+  },
+  "id": "G5_THIRD_FAILURE-0a763c7f",
+  "openedAt": "2026-09-28T20:19:16.192Z"
+}

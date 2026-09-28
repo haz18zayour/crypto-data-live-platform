@@ -1,11 +1,14 @@
 import os
+from collections.abc import Iterator
 from datetime import UTC, date, datetime, timedelta
 from pathlib import Path
+from uuid import uuid4
 
 import httpx
+import psycopg
 import pytest
+from psycopg import sql
 
-from ingest import backfill
 from ingest.backfill import BACKFILL_RECIPES, run_backfill
 from ingest.fetchers.fred import (
     FRED_BACKFILL_CHUNK_DAYS,
@@ -192,57 +195,124 @@ def test_revised_same_observation_date_backfills_with_live_revision_disclosure()
     assert second.source_timestamp == datetime(2026, 9, 18, tzinfo=UTC)
 
 
-@pytest.mark.integration
-def test_live_dff_run_backfill_persists_90_days_without_vintage_cap(
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
-    api_key = _env_value("FRED_API_KEY")
-    if not api_key:
-        raise RuntimeError(
-            "Live FRED backfill persistence test requires FRED_API_KEY "
-            "in the environment or .env.local"
+MIGRATIONS = Path(__file__).resolve().parents[1] / "supabase" / "migrations"
+
+
+def _database_url() -> str:
+    database_url = os.environ.get("TEST_DATABASE_URL") or _env_value("DATABASE_URL")
+    if database_url:
+        return database_url
+    raise RuntimeError(
+        "Live FRED backfill persistence tests require TEST_DATABASE_URL, DATABASE_URL, "
+        "or DATABASE_URL in .env.local"
+    )
+
+
+@pytest.fixture(scope="module")
+def postgres() -> Iterator[psycopg.Connection[tuple[object, ...]]]:
+    schema = f"test_backfill_fred_{uuid4().hex}"
+    connection = psycopg.connect(_database_url(), autocommit=True)
+
+    with connection:
+        with connection.transaction():
+            connection.execute(
+                """
+                DO $$
+                BEGIN
+                  IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'anon') THEN
+                    CREATE ROLE anon NOLOGIN;
+                  END IF;
+                  IF NOT EXISTS (
+                    SELECT FROM pg_roles WHERE rolname = 'authenticated'
+                  ) THEN
+                    CREATE ROLE authenticated NOLOGIN;
+                  END IF;
+                END
+                $$;
+                """
+            )
+            connection.execute(
+                sql.SQL("create schema {}").format(sql.Identifier(schema))
+            )
+            schema_name = sql.Identifier(schema).as_string(connection)
+            for migration in sorted(MIGRATIONS.glob("*.sql")):
+                migration_sql = migration.read_text(encoding="utf-8").replace(
+                    "public.", f"{schema_name}."
+                )
+                connection.execute(migration_sql)
+        connection.execute(
+            sql.SQL("set search_path to {}").format(sql.Identifier(schema))
         )
 
-    end = datetime.now(UTC).date()
+        try:
+            yield connection
+        finally:
+            connection.execute(
+                sql.SQL("drop schema if exists {} cascade").format(
+                    sql.Identifier(schema)
+                )
+            )
 
-    live_runs = ()
-    persisted_runs = []
-    persisted_origins = []
+
+@pytest.mark.integration
+def test_live_dff_run_backfill_persists_multi_year_span_without_vintage_cap(
+    postgres: psycopg.Connection[tuple[object, ...]],
+) -> None:
+    # A window spanning more than one FRED_BACKFILL_CHUNK_DAYS=365 chunk is required to
+    # actually exercise chunking - a 90-120 day window fits in a single chunk and would
+    # pass identically whether or not chunking worked at all. Kept just over 2 chunks
+    # (not 3+) so persisting real rows for a daily series stays fast enough to run
+    # reliably in CI.
+    end = datetime.now(UTC).date()
+    start = end - timedelta(days=380 * 2)
 
     def recent_live_dff_recipe(recipe_entry):
-        nonlocal live_runs
         assert recipe_entry.key == "macro_dff"
-        live_runs = backfill_fred_initial_release(
+        return backfill_fred_initial_release(
             recipe_entry,
-            api_key=api_key,
-            start_date=end - timedelta(days=120),
+            start_date=start,
             end_date=end,
         )
-        assert live_runs
-        return live_runs
-
-    def persist_board(connection, run, *, origin="live"):
-        persisted_runs.append(run)
-        persisted_origins.append(origin)
-        return (len(persisted_runs),)
-
-    monkeypatch.setattr(backfill, "persist_board", persist_board)
 
     row_ids = run_backfill(
-        object(),  # type: ignore[arg-type]
+        postgres,
         indicator_key="macro_dff",
         recipes={**BACKFILL_RECIPES, "fred_initial_release": recent_live_dff_recipe},
     )
 
     assert row_ids
-    assert len(row_ids) == len(persisted_runs)
-    assert persisted_origins == ["backfill"] * len(persisted_runs)
-    values = [
-        run.indicators["macro_dff"]
-        for run in live_runs
-        if isinstance(run.indicators["macro_dff"], BackfilledFredOk)
-    ]
-    assert values
-    reference_dates = [date.fromisoformat(value.reference_period) for value in values]
-    assert (max(reference_dates) - min(reference_dates)).days >= 90
-    assert all("output_type=4" in value.endpoint for value in values)
+    persisted = postgres.execute(
+        """
+        select value, source_timestamp, reference_period, endpoint, origin
+        from datapoints
+        where id = any(%s)
+        order by source_timestamp asc
+        """,
+        (list(row_ids),),
+    ).fetchall()
+    assert persisted
+    assert all(row[4] == "backfill" for row in persisted)
+    assert all("output_type=4" in row[3] for row in persisted)
+
+    reference_dates = [date.fromisoformat(row[2]) for row in persisted]
+    span_days = (max(reference_dates) - min(reference_dates)).days
+    assert span_days > 365, (
+        f"backfilled span was only {span_days} days - chunking across "
+        "FRED_BACKFILL_CHUNK_DAYS boundaries was not actually exercised"
+    )
+
+    # The endpoints used must span more than one distinct realtime_start/end chunk -
+    # otherwise this test could pass even if chunking silently stopped working.
+    distinct_chunks = {row[3] for row in persisted}
+    assert len(distinct_chunks) >= 2, (
+        f"only {len(distinct_chunks)} distinct chunk endpoint(s) were used for a "
+        f"{span_days}-day span - chunking is not actually happening"
+    )
+
+    # Cross-check the newest persisted value against a fresh, independent live call to
+    # FRED's default (non-chunked) query for the same observation date.
+    newest = persisted[-1]
+    fresh = fetch_fred_series(FredSeries(series_id="DFF"))
+    assert isinstance(fresh, FredOk)
+    if fresh.reference_period == newest[2]:
+        assert fresh.value == pytest.approx(float(newest[0]), rel=1e-9, abs=0.0)
