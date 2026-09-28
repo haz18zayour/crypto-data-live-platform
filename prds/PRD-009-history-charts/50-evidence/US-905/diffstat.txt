@@ -1,11 +1,11 @@
-.uf/events.ndjson                                  |   5 +
- SESSION.md                                         |  13 +-
+.uf/events.ndjson                                  |   8 +
+ SESSION.md                                         |  16 +-
  ingest/backfill.py                                 |   2 +
  ingest/fetchers/coinmetrics.py                     | 290 +++++++++++++++
  ingest/pipeline.py                                 |   2 +
  ingest/registry.yaml                               |  16 +-
- .../50-evidence/US-905/diffstat.txt                |   8 +
+ .../50-evidence/US-905/diffstat.txt                |  11 +
  .../50-evidence/US-905/gates.json                  |  20 +
  .../50-evidence/US-905/verdict.json                |  80 ++++
- tests/test_backfill_coinmetrics.py                 | 414 +++++++++++++++++++++
- 10 files changed, 840 insertions(+), 10 deletions(-)
+ tests/test_backfill_coinmetrics.py                 | 413 +++++++++++++++++++++
+ 10 files changed, 848 insertions(+), 10 deletions(-)
