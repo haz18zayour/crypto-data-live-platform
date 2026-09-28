@@ -32,6 +32,58 @@ type HistoryPointRow = {
   origin: "live" | "backfill";
 };
 
+// The RPC caps by count, not time, so a dense 5-minute series reaches back less far than a daily
+// one. That is why the sparkline prints the window its points actually cover.
+export const HISTORY_POINT_LIMIT = 500;
+
+const DAY_MS = 86_400_000;
+const MONTHLY_GAP_MS = 28 * DAY_MS;
+
+export type HistorySufficiency =
+  | { sufficient: true; points: HistoryPoint[] }
+  | { sufficient: false; count: number; since: string | null };
+
+function timeOf(point: HistoryPoint): number {
+  return Date.parse(point.sourceTimestamp);
+}
+
+function medianGap(points: readonly HistoryPoint[]): number {
+  const gaps = points
+    .slice(1)
+    .map((point, index) => timeOf(point) - timeOf(points[index]))
+    .sort((a, b) => a - b);
+  return gaps.length === 0 ? 0 : gaps[Math.floor(gaps.length / 2)];
+}
+
+// The threshold is tiered by the cadence the points themselves show, since the registry's
+// polling interval is daily even for monthly FRED series. With fewer than two points the cadence
+// is unknowable, but both tiers already call that insufficient.
+export function minimumPointsFor(points: readonly HistoryPoint[]): number {
+  return medianGap(points) >= MONTHLY_GAP_MS ? 4 : 7;
+}
+
+export function historySufficiency(
+  history: readonly HistoryPoint[],
+): HistorySufficiency {
+  const points = [...history].sort((a, b) => timeOf(a) - timeOf(b));
+  const distinctValues = new Set(points.map((point) => point.value)).size;
+  if (points.length >= minimumPointsFor(points) && distinctValues >= 2) {
+    return { sufficient: true, points };
+  }
+  return {
+    sufficient: false,
+    count: points.length,
+    since: points[0]?.sourceTimestamp ?? null,
+  };
+}
+
+export function formatWindow(fromTimestamp: string, toTimestamp: string): string {
+  const span = Date.parse(toTimestamp) - Date.parse(fromTimestamp);
+  if (span < 2 * DAY_MS) return `${Math.max(1, Math.round(span / 3_600_000))}h`;
+  const days = Math.round(span / DAY_MS);
+  return days < 730 ? `${days}d` : `${(days / 365.25).toFixed(1)}y`;
+}
+
 type SupabaseBrowserConfig = {
   supabaseUrl: string;
   anonKey: string;
