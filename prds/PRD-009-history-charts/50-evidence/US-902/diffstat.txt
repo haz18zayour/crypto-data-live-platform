@@ -1,0 +1,8 @@
+.uf/events.ndjson                                  |   3 +
+ SESSION.md                                         |   7 +-
+ .../20260928130000_create_history_read_rpc.sql     |  41 +++
+ supabase/migrations/checksums.sha256               |   1 +
+ tests/test_history_read.py                         | 337 +++++++++++++++++++++
+ web/src/history.test.ts                            |  72 +++++
+ web/src/history.ts                                 |  99 ++++++
+ 7 files changed, 558 insertions(+), 2 deletions(-)
