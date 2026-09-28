@@ -1,0 +1,58 @@
+{
+  "storyId": "US-808",
+  "passes": false,
+  "verifier": {
+    "agent": "claude",
+    "sandbox": "restricted:read-only"
+  },
+  "implementer": "codex",
+  "results": [
+    {
+      "criterionId": "US-808-C1",
+      "met": false,
+      "evidence": {
+        "file": "prds/PRD-008-macro-flows/50-evidence/US-808/adversarial-case.md",
+        "line": 7,
+        "testName": null,
+        "exitCode": null
+      },
+      "note": "This is a human criterion, so a person has to judge it. The owner needs to look at the live macro panel and confirm the cadence rows (same-day, weekly DTWEXBGS, monthly CPIAUCSL/M2SL) each show their own reference period and published date. The evidence file only describes that check; no screenshot was captured."
+    },
+    {
+      "criterionId": "US-808-C2",
+      "met": true,
+      "evidence": {
+        "file": "tests/test_registry_not_definable.py",
+        "line": 125,
+        "testName": "test_us_808_rendered_board_and_source_never_label_the_fed_broad_index_with_proprietary_ice_name",
+        "exitCode": 0
+      },
+      "note": "Walks ingest/ (including registry.yaml, the source of board labels), web/src/ and tests/ for the literal 'DXY' in .py/.ts/.tsx/.json/.yaml/.md/.css files and asserts there are no offenders. It builds the string with ''.join so the test doesn't flag itself. This is stricter than the criterion, which would allow 'DXY' inside a disclosure. Grep confirms registry.yaml uses only DTWEXBGS. The test gate exited 0."
+    },
+    {
+      "criterionId": "US-808-C3",
+      "met": true,
+      "evidence": {
+        "file": "tests/test_registry_not_definable.py",
+        "line": 140,
+        "testName": "test_us_808_macro_flow_not_definable_reasons_do_not_collapse_into_existing_board_reasons",
+        "exitCode": 0
+      },
+      "note": "Asserts that exactly (spot_etf_net_flow, BNB) and (stablecoin_supply, BTC) are this PRD's not_definable entries, that their two reason strings differ from each other, and that neither matches any existing NOT_DEFINABLE reason in the registry. The assertions are real and the test gate exited 0."
+    },
+    {
+      "criterionId": "US-808-C4",
+      "met": true,
+      "evidence": {
+        "file": "web/src/CellFace.test.tsx",
+        "line": 130,
+        "testName": "the Fear and Greed cell face shows alternative.me composite and paused-survey disclosure",
+        "exitCode": 0
+      },
+      "note": "Renders the real CellFace component for fear_greed_index and asserts that the closed <summary> face shows 'alternative.me', 'six-weight composite' and 'surveys 15% currently paused'. The face disclosure comes from a new production branch, needsFaceDisclosure (web/src/CellFace.tsx:28, 143). Caveat: the sourceField is a hand-copied duplicate of ingest/registry.yaml:1310 (currently identical), not loaded from the registry, and the component is rendered alone rather than inside the full Board."
+    }
+  ],
+  "tripwires": [],
+  "note": "The work is genuine and nothing looks faked: the new tests make real assertions, and the only production change is a small CellFace disclosure span plus CSS. C1 is a human criterion and still needs the owner to look at the live page. C4's fixture string is duplicated from registry.yaml rather than read from it, so if the registry text changes, the test won't notice.",
+  "at": "2026-09-28T13:13:10.017Z"
+}
