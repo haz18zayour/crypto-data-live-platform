@@ -1,13 +1,13 @@
-.uf/events.ndjson                                  |   6 +
- SESSION.md                                         |  10 +-
+.uf/events.ndjson                                  |   9 +
+ SESSION.md                                         |  13 +-
  ingest/pipeline.py                                 | 159 +++++++++--
  ingest/registry.py                                 |   2 +-
  ingest/registry.yaml                               |   6 +-
- .../50-evidence/US-807/diffstat.txt                |  10 +
+ .../50-evidence/US-807/diffstat.txt                |  13 +
  .../50-evidence/US-807/gates.json                  |  14 +
  .../50-evidence/US-807/verdict.json                |  44 +++
  tests/test_assets.py                               |  85 +++++-
  tests/test_okx_derivatives_fetcher.py              |  16 ++
  tests/test_persist_board.py                        | 311 +++++++++++++++++----
  tests/test_registry.py                             |  23 +-
- 12 files changed, 580 insertions(+), 106 deletions(-)
+ 12 files changed, 589 insertions(+), 106 deletions(-)
