@@ -1,18 +1,22 @@
-.uf/events.ndjson                                  |   5 +
- SESSION.md                                         |  13 +-
+.uf/events.ndjson                                  |   8 +
+ SESSION.md                                         |  16 +-
  ingest/canary.py                                   |   2 +
- ingest/fetchers/alternative_me.py                  | 114 ++++++++++++++++
+ ingest/fetchers/alternative_me.py                  | 114 +++++++++++++
+ ingest/pipeline.py                                 |  53 ++++++-
  ingest/registry.yaml                               |  14 ++
- ingest/schemas.py                                  |  29 +++++
- .../50-evidence/US-806/diffstat.txt                |  12 ++
+ ingest/schemas.py                                  |  29 ++++
+ .../50-evidence/US-806/diffstat.txt                |  18 +++
  .../50-evidence/US-806/gates.json                  |  20 +++
- .../50-evidence/US-806/verdict.json                |  91 +++++++++++++
+ .../50-evidence/US-806/verdict.json                |  91 +++++++++++
  tests/fixtures/alternative_me_fng.json             |  14 ++
- tests/test_alternative_me_fetcher.py               | 143 +++++++++++++++++++++
+ tests/test_alternative_me_fetcher.py               | 176 +++++++++++++++++++++
+ tests/test_assets.py                               |  60 ++++++-
  tests/test_coverage.py                             |   2 +-
+ tests/test_okx_derivatives_fetcher.py              |   1 +
+ tests/test_persist_board.py                        | 147 ++++++++++++++---
  tests/test_registry.py                             |   4 +-
  tests/test_registry_not_definable.py               |   4 +-
  web/src/BoardMatrix.test.tsx                       |   2 +-
  web/src/CoverageHeadline.test.tsx                  |   8 +-
  web/src/board.test.ts                              |   2 +-
- 17 files changed, 466 insertions(+), 13 deletions(-)
+ 21 files changed, 748 insertions(+), 37 deletions(-)
