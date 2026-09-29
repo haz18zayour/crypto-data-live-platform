@@ -27,3 +27,26 @@ All checks passed!
 ss [100%]
 2 skipped in 0.23s
 ```
+
+Attempt 3 fix:
+
+The previous default test gate reached
+`tests/test_backfill_seam.py::test_backfilled_overlap_matches_fresh_independent_live_endpoint_value`
+and failed before judging any criterion because the mocked DefiLlama payload used string values
+for `totalCirculatingUSD.peggedUSD`. The actual `DefiLlamaStablecoinChartsResponse` model accepts
+numeric JSON there, matching DefiLlama's live shape, so the seam fixture now emits numbers while
+preserving the same backfill/live endpoint distinction.
+
+```text
+.\.venv\Scripts\ruff.exe check tests/test_backfill_seam.py
+All checks passed!
+
+.\.venv\Scripts\python.exe -m pytest tests/test_backfill_seam.py -q -rs
+ss [100%]
+SKIPPED ... PostgreSQL backfill seam tests could not connect ... port 5432 failed: Permission denied
+2 skipped in 0.24s
+
+cmd /c "cd web && npx vitest run Sparkline.test.tsx --configLoader runner"
+Test Files  1 passed (1)
+Tests  15 passed (15)
+```

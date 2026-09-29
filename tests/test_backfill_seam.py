@@ -110,7 +110,7 @@ def _definition(key: str):
 def _stablecoin_chart_row(timestamp: datetime, value: Decimal) -> dict[str, object]:
     return {
         "date": str(int(timestamp.timestamp())),
-        "totalCirculatingUSD": {"peggedUSD": str(value)},
+        "totalCirculatingUSD": {"peggedUSD": float(value)},
     }
 
 
@@ -188,15 +188,15 @@ def test_backfilled_overlap_matches_fresh_independent_live_endpoint_value(
                 json=[
                     {
                         "name": "Ethereum",
-                        "totalCirculatingUSD": {"peggedUSD": str(seam_value)},
+                        "totalCirculatingUSD": {"peggedUSD": float(seam_value)},
                     },
                     {
                         "name": "Solana",
-                        "totalCirculatingUSD": {"peggedUSD": "16.0"},
+                        "totalCirculatingUSD": {"peggedUSD": 16.0},
                     },
                     {
                         "name": "BSC",
-                        "totalCirculatingUSD": {"peggedUSD": "13.0"},
+                        "totalCirculatingUSD": {"peggedUSD": 13.0},
                     },
                 ],
                 request=request,
