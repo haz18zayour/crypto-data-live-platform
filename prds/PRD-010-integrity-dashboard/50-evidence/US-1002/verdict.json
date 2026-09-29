@@ -3,62 +3,122 @@
   "passes": false,
   "verifier": {
     "agent": "claude",
-    "sandbox": "not-run"
+    "sandbox": "restricted:read-only"
   },
   "implementer": "codex",
   "results": [
     {
       "criterionId": "US-1002-C1",
-      "met": false,
-      "note": "not judged — a cheaper layer already failed"
+      "met": true,
+      "evidence": {
+        "file": "tests/test_integrity_read.py",
+        "line": 291,
+        "testName": "test_integrity_read_computes_freshness_and_frozen_states_from_real_registry_rows",
+        "exitCode": 0
+      },
+      "note": "Freshness is computed as computed_at minus max(source_timestamp), compared against the registry's warn and stale seconds. freshness_unmeasurable short-circuits to 'unmeasurable' (migration line 184). The test asserts fresh (line 267), warn (291), stale (292), and unmeasurable for stablecoin_supply even though its data is at NOW (283). Nothing reads run history."
     },
     {
       "criterionId": "US-1002-C2",
-      "met": false,
-      "note": "not judged — a cheaper layer already failed"
+      "met": true,
+      "evidence": {
+        "file": "tests/test_integrity_read.py",
+        "line": 322,
+        "testName": "test_integrity_read_counts_distinct_observations_and_clears_on_a_changed_latest_value",
+        "exitCode": 0
+      },
+      "note": "DISTINCT ON (key, asset, vendor, source_timestamp), ranked by source_timestamp. Re-fetching an existing timestamp still leaves only 2 distinct observations, so the cell stays not_frozen (line 322). A third distinct timestamp makes it frozen. A changed latest value clears it back to false (line 345)."
     },
     {
       "criterionId": "US-1002-C3",
-      "met": false,
-      "note": "not judged — a cheaper layer already failed"
+      "met": true,
+      "evidence": {
+        "file": "supabase/migrations/20260929120000_create_integrity_read_rpc.sql",
+        "line": 90,
+        "testName": "test_integrity_read_computes_freshness_and_frozen_states_from_real_registry_rows",
+        "exitCode": 0
+      },
+      "note": "expected_constant is the first CASE branch and returns false. The test seeds btc_funding_rate with 4 identical values and asserts frozen is False and frozen_state is 'expected_constant'."
     },
     {
       "criterionId": "US-1002-C4",
-      "met": false,
-      "note": "not judged — a cheaper layer already failed"
+      "met": true,
+      "evidence": {
+        "file": "tests/test_integrity_read.py",
+        "line": 275,
+        "testName": "test_integrity_read_computes_freshness_and_frozen_states_from_real_registry_rows",
+        "exitCode": 0
+      },
+      "note": "btc_rsi is seeded with differing values (55/54/53) yet reports frozen=True, taken from the frozen btc_daily_close root (migration line 143). This distinguishes propagation from an independent check, which would have reported not frozen."
     },
     {
       "criterionId": "US-1002-C5",
-      "met": false,
-      "note": "not judged — a cheaper layer already failed"
+      "met": true,
+      "evidence": {
+        "file": "tests/test_integrity_read.py",
+        "line": 288,
+        "testName": "test_integrity_read_computes_freshness_and_frozen_states_from_real_registry_rows",
+        "exitCode": 0
+      },
+      "note": "eth_rsi is seeded with 3 identical values. It returns frozen None (not False), frozen_state 'propagation_unavailable', and a reason. An independent check would have said frozen, so it was not applied."
     },
     {
       "criterionId": "US-1002-C6",
-      "met": false,
-      "note": "not judged — a cheaper layer already failed"
+      "met": true,
+      "evidence": {
+        "file": "supabase/migrations/20260929120000_create_integrity_read_rpc.sql",
+        "line": 7,
+        "testName": "test_integrity_read_computes_freshness_and_frozen_states_from_real_registry_rows",
+        "exitCode": 0
+      },
+      "note": "statement_timestamp() is cross-joined into every payload row. The test asserts computed_at is non-null only on the root row (line 271), which is weak coverage of 'every result', but the SQL structurally guarantees it."
     },
     {
       "criterionId": "US-1002-C7",
-      "met": false,
-      "note": "not judged — a cheaper layer already failed"
+      "met": true,
+      "evidence": {
+        "file": "tests/test_integrity_read.py",
+        "line": 172,
+        "testName": "test_integrity_read_migration_is_additive_rpc_only",
+        "exitCode": 0
+      },
+      "note": "The migration creates one function and grants on it; nothing else. The test is textual: it checks there is no ALTER TABLE on datapoints and no change to the datapoint_status type. Nothing renders the live board, but with no table, column or type changes the board cannot be affected."
     },
     {
       "criterionId": "US-1002-C8",
-      "met": false,
-      "note": "not judged — a cheaper layer already failed"
+      "met": true,
+      "evidence": {
+        "file": "tests/test_integrity_read.py",
+        "line": 189,
+        "testName": "test_integrity_read_computes_freshness_and_frozen_states_from_real_registry_rows",
+        "exitCode": 0
+      },
+      "note": "Unmarked tests apply every migration to a uuid-named throwaway schema on real Postgres and seed it from load_registry(). The fixture skips if it cannot connect, but the gate output ('418 passed, 77 deselected', no 's' markers) shows no skips, so they ran."
     },
     {
       "criterionId": "US-1002-C9",
       "met": false,
-      "note": "not judged — a cheaper layer already failed"
+      "evidence": {
+        "file": "tests/test_integrity_read.py",
+        "line": 377,
+        "testName": "test_live_postgrest_integrity_read_for_a_real_cell_returns_integrity_state",
+        "exitCode": null
+      },
+      "note": "The live PostgREST test exists and uses the anon key, but it is @pytest.mark.integration and pyproject addopts ('-m not integration') deselects it, so no gate ran it. Nothing shows the migration was applied to production, that the PostgREST schema was reloaded there, or that the owner signed off. The criterion is explicitly 'once applied to production', so it is unproven."
     },
     {
       "criterionId": "US-1002-C10",
-      "met": false,
-      "note": "not judged — a cheaper layer already failed"
+      "met": true,
+      "evidence": {
+        "file": null,
+        "line": null,
+        "testName": null,
+        "exitCode": 0
+      },
+      "note": "The gate `uv run pytest -q -m \"not integration\"` exited 0 (418 passed, 77 deselected)."
     }
   ],
   "tripwires": [],
-  "note": "gates failed: test",
-  "at": "2026-09-29T14:48:10.076Z"
+  "note": "The SQL and the throwaway-schema Postgres tests are real, and their assertions tell the cases apart (e.g. a derived series with differing values still reports frozen from its root, and a re-fetch is not counted as an observation). The production step is still unproven: the only live PostgREST test is deselected by default and never ran, and nothing shows production apply or owner sign-off. The diff also carries SESSION.md, events and evidence churn outside the declared files.",
+  "at": "2026-09-29T14:54:24.531Z"
 }

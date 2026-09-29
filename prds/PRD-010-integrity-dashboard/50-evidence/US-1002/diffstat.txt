@@ -1,9 +1,9 @@
-.uf/events.ndjson                                  |   6 +
- SESSION.md                                         |  10 +-
- .../50-evidence/US-1002/diffstat.txt               |   6 +
+.uf/events.ndjson                                  |   9 +
+ SESSION.md                                         |  13 +-
+ .../50-evidence/US-1002/diffstat.txt               |   9 +
  .../50-evidence/US-1002/gates.json                 |  20 +
- .../50-evidence/US-1002/verdict.json               |  64 ++++
- .../20260929120000_create_integrity_read_rpc.sql   | 193 ++++++++++
+ .../50-evidence/US-1002/verdict.json               | 124 ++++++
+ .../20260929120000_create_integrity_read_rpc.sql   | 216 +++++++++++
  supabase/migrations/checksums.sha256               |   1 +
- tests/test_integrity_read.py                       | 419 +++++++++++++++++++++
- 8 files changed, 717 insertions(+), 2 deletions(-)
+ tests/test_integrity_read.py                       | 421 +++++++++++++++++++++
+ 8 files changed, 811 insertions(+), 2 deletions(-)
