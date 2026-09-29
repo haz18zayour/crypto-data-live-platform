@@ -5,6 +5,7 @@
 //   node scripts/capture-board.mjs                    photograph the live and mixed boards
 //   node scripts/capture-board.mjs --check-semantics  Chromium's accessibility tree is a real table
 //   node scripts/capture-board.mjs --check-contrast   axe-core, both themes, both boards
+//   node scripts/capture-board.mjs --capture-sparkline  US-908: a real cell's drawn history
 import { mkdirSync } from "node:fs";
 import { createRequire } from "node:module";
 import { dirname, resolve } from "node:path";
@@ -26,7 +27,7 @@ const FACES = ["ok", "stale", "not-definable", "paywalled", "fetch-failed"];
 const BOARDS = { live: "/", mixed: "/mixed-board.html" };
 const mode = process.argv[2] ?? "--capture";
 
-if (!["--capture", "--check-semantics", "--check-contrast"].includes(mode)) {
+if (!["--capture", "--check-semantics", "--check-contrast", "--capture-sparkline"].includes(mode)) {
   console.error(`unknown mode ${mode}`);
   process.exit(2);
 }
@@ -76,6 +77,71 @@ async function capture(browser, baseUrl) {
     await page.context().close();
   }
   return [];
+}
+
+// US-908: open the live board's cells one by one until a real one draws its history, then
+// photograph that cell at the board's own size. A cell that shows "not enough history yet" is
+// skipped, never photographed as if it were the chart.
+async function captureSparkline(browser, baseUrl) {
+  const sparklineEvidence = resolve(root, "prds/PRD-009-history-charts/50-evidence/US-908");
+  mkdirSync(sparklineEvidence, { recursive: true });
+  const failures = [];
+  for (const colorScheme of ["light", "dark"]) {
+    const page = await openBoard(browser, baseUrl, "live", colorScheme);
+    const cells = page.locator("td.cell--ok");
+    const count = await cells.count();
+    let found = null;
+    for (let index = 0; index < count && !found; index += 1) {
+      const cell = cells.nth(index);
+      await cell.locator("summary").click();
+      const outcome = cell.locator(".sparkline polyline, .sparkline-insufficient, .cell-history-note:not(:has-text('Loading'))");
+      await outcome.first().waitFor({ timeout: 15_000 });
+      if ((await cell.locator(".sparkline polyline").count()) > 0) found = cell;
+      else await cell.locator("summary").click();
+    }
+    if (!found) {
+      failures.push(`${colorScheme}: none of ${count} OK cells on the live board drew a sparkline`);
+      await page.context().close();
+      continue;
+    }
+
+    // Legible at the board's own cell size: every label is inside the cell, not clipped, and
+    // set no smaller than 11px.
+    const labels = await found.evaluate((cell) => {
+      const box = cell.getBoundingClientRect();
+      return [...cell.querySelectorAll(".sparkline-max, .sparkline-min, .sparkline-window")].map(
+        (label) => {
+          const rect = label.getBoundingClientRect();
+          return {
+            name: label.className,
+            text: label.textContent,
+            fontSize: parseFloat(getComputedStyle(label).fontSize),
+            inside:
+              rect.width > 0 &&
+              rect.left >= box.left - 0.5 &&
+              rect.right <= box.right + 0.5 &&
+              label.scrollWidth <= Math.ceil(rect.width),
+          };
+        },
+      );
+    });
+    if (labels.length !== 3) failures.push(`${colorScheme}: expected max, min and window labels, found ${labels.length}`);
+    for (const label of labels) {
+      if (label.fontSize < 11) failures.push(`${colorScheme}: ${label.name} is ${label.fontSize}px`);
+      if (!label.inside) failures.push(`${colorScheme}: ${label.name} "${label.text}" overflows its cell`);
+    }
+
+    const heading = await found.evaluate(
+      (cell) => `${cell.closest("tr")?.querySelector("th")?.textContent} / ${cell.getAttribute("data-asset") ?? cell.cellIndex}`,
+    );
+    const path = resolve(sparklineEvidence, `sparkline-live-${colorScheme}.png`);
+    await found.scrollIntoViewIfNeeded();
+    await page.screenshot({ path, fullPage: true });
+    await found.screenshot({ path: resolve(sparklineEvidence, `sparkline-cell-${colorScheme}.png`) });
+    console.log(`captured ${path} (cell ${heading}): ${labels.map((label) => label.text).join(" | ")}`);
+    await page.context().close();
+  }
+  return failures;
 }
 
 // Read the accessibility tree Chromium builds, not the DOM: this is what a screen reader gets.
@@ -191,6 +257,7 @@ let failures;
 try {
   if (mode === "--check-semantics") failures = await checkSemantics(browser, baseUrl);
   else if (mode === "--check-contrast") failures = await checkContrast(browser, baseUrl);
+  else if (mode === "--capture-sparkline") failures = await captureSparkline(browser, baseUrl);
   else failures = await capture(browser, baseUrl);
 } finally {
   await browser.close();
