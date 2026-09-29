@@ -1,12 +1,18 @@
-.uf/events.ndjson            |   3 +
- SESSION.md                   |   7 ++-
- web/src/BoardMatrix.test.tsx |  21 +++++++
- web/src/CellDetail.tsx       |  38 +++++-------
- web/src/CellFace.tsx         |  12 +++-
- web/src/FrozenBadge.test.tsx | 145 +++++++++++++++++++++++++++++++++++++++++++
- web/src/FrozenBadge.tsx      |  41 ++++++++++++
- web/src/Sparkline.tsx        |   6 +-
- web/src/board.ts             |  36 +++++++++++
- web/src/data.ts              |  17 +++--
- web/src/styles.css           |   7 +++
- 11 files changed, 295 insertions(+), 38 deletions(-)
+.uf/events.ndjson                                  |   6 +
+ SESSION.md                                         |  10 +-
+ .../50-evidence/US-1004/capture-frozen-badge.mjs   | 155 +++++++++++++++++++++
+ .../50-evidence/US-1004/diffstat.txt               |  12 ++
+ .../50-evidence/US-1004/frozen-badge-cell-open.png | Bin 0 -> 12578 bytes
+ .../US-1004/frozen-badge-live-board-fixture.png    | Bin 0 -> 28157 bytes
+ .../50-evidence/US-1004/gates.json                 |  26 ++++
+ .../50-evidence/US-1004/verdict.json               |  51 +++++++
+ web/src/BoardMatrix.test.tsx                       |  21 +++
+ web/src/CellDetail.tsx                             |  38 ++---
+ web/src/CellFace.tsx                               |  12 +-
+ web/src/FrozenBadge.test.tsx                       | 145 +++++++++++++++++++
+ web/src/FrozenBadge.tsx                            |  41 ++++++
+ web/src/Sparkline.tsx                              |   6 +-
+ web/src/board.ts                                   |  36 +++++
+ web/src/data.ts                                    |  17 ++-
+ web/src/styles.css                                 |   7 +
+ 17 files changed, 545 insertions(+), 38 deletions(-)

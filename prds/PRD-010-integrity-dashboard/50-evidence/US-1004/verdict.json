@@ -47,5 +47,5 @@
     "criterion US-1004-C7 requires a screenshot at load the live board at http://localhost:5174, open a cell whose underlying data currently satisfies the frozen condition (or one manufactured via a short-lived test fixture against a throwaway schema if no live cell currently qualifies), and visually confirm the badge renders with a real date, with no colour or layout change implying a value judgement about the number — it does not exist"
   ],
   "note": "tripwires: criterion US-1004-C7 requires a screenshot at load the live board at http://localhost:5174, open a cell whose underlying data currently satisfies the frozen condition (or one manufactured via a short-lived test fixture against a throwaway schema if no live cell currently qualifies), and visually confirm the badge renders with a real date, with no colour or layout change implying a value judgement about the number — it does not exist",
-  "at": "2026-09-29T19:19:35.995Z"
+  "at": "2026-09-29T19:34:16.333Z"
 }
