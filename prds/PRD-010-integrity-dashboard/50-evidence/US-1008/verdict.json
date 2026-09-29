@@ -1,6 +1,6 @@
 {
   "storyId": "US-1008",
-  "passes": false,
+  "passes": true,
   "verifier": {
     "agent": "claude",
     "sandbox": "restricted:read-only"
@@ -12,110 +12,110 @@
       "met": true,
       "evidence": {
         "file": "tests/test_registry.py",
-        "line": 109,
+        "line": 192,
         "testName": "test_registry_rejects_an_entry_with_no_frozen_detection_declaration",
         "exitCode": 0
       },
-      "note": "Validator at ingest/registry.py:164-173 rejects entries with no declaration or with both. Tests at lines 109 and 119 cover both cases, and test_every_shipped_entry_declares_exactly_one_frozen_detection_contract (line 296) checks every shipped entry."
+      "note": "The validator require_one_frozen_detection_declaration (ingest/registry.py:165) rejects an entry that declares neither frozen_after_observations nor expected_constant, and one that declares both. Line 192 tests the neither case and line 202 tests the both case. Line 387 checks every shipped entry."
     },
     {
       "criterionId": "US-1008-C2",
       "met": true,
       "evidence": {
         "file": "tests/test_registry.py",
-        "line": 132,
+        "line": 215,
         "testName": "test_registry_rejects_a_talib_entry_without_frozen_propagation_declaration",
         "exitCode": 0
       },
-      "note": "Validator at ingest/registry.py:175-194 requires every TA-Lib entry to set exactly one of derives_from or frozen_propagation_unavailable. The neither case is tested at line 132 and the both case at line 160."
+      "note": "The validator at ingest/registry.py:176-194 requires every TA-Lib entry to set exactly one of derives_from or frozen_propagation_unavailable. Line 215 tests the neither case and line 243 tests the both case."
     },
     {
       "criterionId": "US-1008-C3",
       "met": true,
       "evidence": {
         "file": "tests/test_registry.py",
-        "line": 190,
+        "line": 273,
         "testName": "test_registry_rejects_derived_roots_that_are_unknown_or_self_referential",
         "exitCode": 0
       },
-      "note": "IndicatorRegistry.validate_derived_roots (ingest/registry.py:231-244) rejects a derives_from that points to itself or to an unknown key. The test at line 190 asserts both error messages."
+      "note": "IndicatorRegistry.validate_derived_roots (registry.py:232-244) rejects a derives_from that names an unknown key or the entry itself. The test asserts both error messages."
     },
     {
       "criterionId": "US-1008-C4",
       "met": true,
       "evidence": {
         "file": "ingest/registry.py",
-        "line": 128,
+        "line": 129,
         "testName": "test_every_shipped_entry_declares_exactly_one_frozen_detection_contract",
         "exitCode": 0
       },
-      "note": "The fields frozen_after_observations, expected_constant, derives_from, frozen_propagation_unavailable and freshness_unmeasurable are declared on IndicatorDefinition at lines 126-130."
+      "note": "IndicatorDefinition declares frozen_after_observations, expected_constant, derives_from, frozen_propagation_unavailable and freshness_unmeasurable at lines 126-130."
     },
     {
       "criterionId": "US-1008-C5",
       "met": true,
       "evidence": {
         "file": "tests/test_registry.py",
-        "line": 318,
-        "testName": "test_non_btc_talib_indicators_declare_frozen_propagation_unavailable",
+        "line": 387,
+        "testName": "test_every_shipped_entry_declares_exactly_one_frozen_detection_contract",
         "exitCode": 0
       },
-      "note": "The shipped registry.yaml has real values filled in (thresholds, expected_constant for funding rates, derives_from, unavailability reasons). Tests at lines 296, 306, 318 and 332 load the real registry and assert on those values."
+      "note": "registry.yaml is filled in with real values: thresholds, expected_constant on the funding rates, derives_from, the unavailability reason and the freshness_unmeasurable reasons. The tests at lines 387, 397, 409 and 423 load the shipped registry and assert on those values."
     },
     {
       "criterionId": "US-1008-C6",
       "met": true,
       "evidence": {
         "file": "tests/test_registry.py",
-        "line": 306,
+        "line": 397,
         "testName": "test_btc_talib_indicators_derive_from_the_registered_btc_close_cell",
         "exitCode": 0
       },
-      "note": "All BTC TA-Lib entries derive from the real registered btc_daily_close, and none of them sets frozen_propagation_unavailable."
+      "note": "All BTC TA-Lib entries have derives_from set to the real registered btc_daily_close, and none of them sets frozen_propagation_unavailable."
     },
     {
       "criterionId": "US-1008-C7",
       "met": true,
       "evidence": {
         "file": "tests/test_registry.py",
-        "line": 318,
+        "line": 409,
         "testName": "test_non_btc_talib_indicators_declare_frozen_propagation_unavailable",
         "exitCode": 0
       },
-      "note": "ETH/SOL/BNB TA-Lib entries leave derives_from unset and carry an exact documented reason. The fabricated eth/sol/bnb_daily_close rows were removed."
+      "note": "ETH/SOL/BNB TA-Lib entries leave derives_from unset and carry the exact documented reason as frozen_propagation_unavailable. The fabricated eth/sol/bnb_daily_close rows are removed."
     },
     {
       "criterionId": "US-1008-C8",
-      "met": false,
+      "met": true,
       "evidence": {
         "file": "tests/test_registry.py",
-        "line": 254,
-        "testName": "test_shipped_registry_definitions_cover_four_assets_at_scale",
+        "line": 354,
+        "testName": "test_shipped_registry_keys_and_definable_for_match_board_baseline",
         "exitCode": 0
       },
-      "note": "No test checks this directly. The only guard is a total row count (== 81) plus per-asset TA-Lib counts in test_assets.py. Nothing compares the registry's keys or each row's definable_for against a baseline, so a changed definable_for, or an added row offset by a removed one, would pass. This diff itself removes three rows relative to its base commit and rewrites the hard-coded counts from 84 to 81 across several test files. It also touches ingest/pipeline.py, which is outside the declared files."
+      "note": "A direct check: this test compares the full key→definable_for mapping against the hard-coded 81-row baseline SHIPPED_REGISTRY_DEFINABLE_FOR at line 40, which excludes eth/sol/bnb_daily_close. Adding, removing or changing definable_for on any row now fails the test. Relative to the base commit the diff removes three rows, but those were the fabricated cells from the earlier failed attempts, and removing them restores the true board."
     },
     {
       "criterionId": "US-1008-C9",
       "met": true,
       "evidence": {
         "file": "tests/test_registry.py",
-        "line": 332,
+        "line": 423,
         "testName": "test_wall_clock_fetchers_declare_freshness_unmeasurable_reasons",
         "exitCode": 0
       },
-      "note": "stablecoin_supply and sol_staking carry freshness_unmeasurable reasons naming the fetch wall clock, and the test asserts on both."
+      "note": "stablecoin_supply and sol_staking each carry a freshness_unmeasurable reason that names the fetch wall clock, and the test asserts on both."
     },
     {
       "criterionId": "US-1008-C10",
-      "met": false,
+      "met": true,
       "evidence": {
-        "file": "ingest/registry.py",
-        "line": 382,
-        "testName": null,
-        "exitCode": null
+        "file": "tests/test_coverage.py",
+        "line": 141,
+        "testName": "test_coverage_rejects_talib_entry_without_frozen_propagation",
+        "exitCode": 0
       },
-      "note": "The diff removes the frozen-detection and derives_from checks from assert_registry_coverage (registry.py:382-408 now checks only corroboration, golden, required_bars, response_model and parameters). tests/test_coverage.py has no case where a missing frozen or propagation declaration fails the coverage gate; its model_construct fixtures skip the validators entirely. Enforcement exists only at load time via pydantic validators, not in the coverage gate."
+      "note": "assert_registry_coverage (ingest/registry.py:399-427) now enforces the frozen-detection declaration, the TA-Lib propagation declaration, and self or unknown derives_from. test_coverage.py lines 110, 124, 141 and 155 drive each failure through the coverage gate, and line 226 runs it over the real registry."
     },
     {
       "criterionId": "US-1008-C11",
@@ -126,7 +126,7 @@
         "testName": null,
         "exitCode": 0
       },
-      "note": "Gate `uv run pytest -q` exited 0."
+      "note": "The gate `uv run pytest -q` exited 0 (408 passed)."
     },
     {
       "criterionId": "US-1008-C12",
@@ -137,10 +137,10 @@
         "testName": null,
         "exitCode": 0
       },
-      "note": "Gate `uv run mypy ingest --strict` exited 0."
+      "note": "The gate `uv run mypy ingest --strict` exited 0."
     }
   ],
   "tripwires": [],
-  "note": "Schema validators and registry data are real, and the tests make meaningful assertions. However, C8's regression check is only a total row count, not a direct per-key or definable_for comparison, and the diff weakened the coverage gate (C10) by removing its frozen and derives_from checks. The diff also churns many test files (84→81 count edits, reordered fields) and touches ingest/pipeline.py, which is outside the declared files.",
-  "at": "2026-09-29T14:10:12.560Z"
+  "note": "The validators, the registry data and the coverage-gate checks are real, and the tests make meaningful assertions. Three things are worth a look: the diff edits ingest/pipeline.py, which is outside the declared files (the `_daily_close` suffix match becomes an INDICATOR_KEY check); it churns field order across many test fixtures; and it drops the `@pytest.mark.integration` mark from the assembled coverage test.",
+  "at": "2026-09-29T14:19:03.893Z"
 }
