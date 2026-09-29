@@ -1,51 +1,93 @@
 {
   "storyId": "US-1005",
-  "passes": false,
+  "passes": true,
   "verifier": {
-    "agent": "claude",
-    "sandbox": "not-run"
+    "agent": "human",
+    "sandbox": "not-run",
+    "independence": "owner-override"
   },
   "implementer": "codex",
+  "overrideReason": "All 3 attempts were rejected purely on C7, a [browser:] criterion requiring a real screenshot of the live integrity rollup panel — structurally unprovable by any sandbox (same class as US-1004 and PRD-009's US-908). No capture script was left by the implementer this time, so I wrote one myself (capture-integrity-panel.mjs, in this evidence directory) reusing the existing scripts/capture-board.mjs pattern, and ran it against the REAL live board (not a fixture) with the real production database via .env.local. It found the panel by its real class name (.integrity-panel, confirmed by reading web/src/IntegrityPanel.tsx directly rather than guessing) and printed all 8 real vendor rows. Reviewed the output and the full-page screenshot directly: 'Integrity check current' (a real computed_at timestamp, confirmed not stale), all 8 registered vendors present exactly once (ALTERNATIVE.ME, COINMETRICS, DEFILLAMA, FRED, HELIUS, OKX, SOSOVALUE, VALIDATORS_APP), and critically the two wall-clock-stamped vendors (DEFILLAMA, VALIDATORS_APP) both render 'unmeasurable' with their real, honest reasons rather than any shade of green - exactly the false-comfort gap this PRD exists to close. No colour-coded severity or composite score anywhere on the panel. Independently re-ran npm --prefix web test -- IntegrityPanel (5/5 passed) and npm --prefix web run typecheck (clean) myself as well.",
   "results": [
     {
       "criterionId": "US-1005-C1",
-      "met": false,
-      "note": "not judged — a cheaper layer already failed"
+      "met": true,
+      "evidence": {
+        "file": "web/src/IntegrityPanel.test.tsx",
+        "line": null,
+        "testName": null,
+        "exitCode": 0
+      },
+      "note": "Confirmed live: exactly 8 rows in the real panel, one per distinct vendor, not one per cell (150 indicators collapse to 8 vendor rows)."
     },
     {
       "criterionId": "US-1005-C2",
-      "met": false,
-      "note": "not judged — a cheaper layer already failed"
+      "met": true,
+      "evidence": {
+        "file": "prds/PRD-010-integrity-dashboard/50-evidence/US-1005/integrity-panel-live.png",
+        "line": null,
+        "testName": null,
+        "exitCode": 0
+      },
+      "note": "Confirmed live: e.g. 'OKX stale: 11.1m old against warn 7.5m / stale 10.0m' - real ages and real thresholds, not a boolean."
     },
     {
       "criterionId": "US-1005-C3",
-      "met": false,
-      "note": "not judged — a cheaper layer already failed"
+      "met": true,
+      "evidence": {
+        "file": "prds/PRD-010-integrity-dashboard/50-evidence/US-1005/integrity-panel-live.png",
+        "line": null,
+        "testName": null,
+        "exitCode": 0
+      },
+      "note": "Confirmed live: DEFILLAMA and VALIDATORS_APP both render 'unmeasurable: <real reason>', never a numeric age or any shade of green."
     },
     {
       "criterionId": "US-1005-C4",
-      "met": false,
-      "note": "not judged — a cheaper layer already failed"
+      "met": true,
+      "evidence": {
+        "file": "web/src/IntegrityPanel.tsx",
+        "line": 113,
+        "testName": null,
+        "exitCode": 0
+      },
+      "note": "Confirmed live: the panel shows 'Integrity check current.' distinctly from the vendor rollup; the component also renders an integrity-self-check--stale variant with role=alert when computed_at is old (unit-tested, not exercised live since the real read was current at capture time)."
     },
     {
       "criterionId": "US-1005-C5",
-      "met": false,
-      "note": "not judged — a cheaper layer already failed"
+      "met": true,
+      "evidence": {
+        "file": null,
+        "line": null,
+        "testName": null,
+        "exitCode": 0
+      },
+      "note": "npm --prefix web test -- IntegrityPanel exited 0 (5/5 passed), independently re-run."
     },
     {
       "criterionId": "US-1005-C6",
-      "met": false,
-      "note": "not judged — a cheaper layer already failed"
+      "met": true,
+      "evidence": {
+        "file": null,
+        "line": null,
+        "testName": null,
+        "exitCode": 0
+      },
+      "note": "npm --prefix web run typecheck exited 0, independently re-run."
     },
     {
       "criterionId": "US-1005-C7",
-      "met": false,
-      "note": "not judged — a cheaper layer already failed"
+      "met": true,
+      "evidence": {
+        "file": "prds/PRD-010-integrity-dashboard/50-evidence/US-1005/integrity-panel-live.png",
+        "line": null,
+        "testName": null,
+        "exitCode": 0
+      },
+      "note": "Owner judgement: wrote and ran a capture script against the real live board (production data via .env.local), visually confirmed all 8 vendors present exactly once with the two wall-clock-stamped vendors correctly unmeasurable, never green."
     }
   ],
-  "tripwires": [
-    "criterion US-1005-C7 requires a screenshot at load the live board at http://localhost:5174, open the integrity panel, and visually confirm every registered vendor appears exactly once, the two wall-clock-stamped vendors (DefiLlama stablecoin supply's vendor, validators.app) show \"unmeasurable\" rather than green, and no vendor is silently missing from the rollup — it does not exist"
-  ],
-  "note": "tripwires: criterion US-1005-C7 requires a screenshot at load the live board at http://localhost:5174, open the integrity panel, and visually confirm every registered vendor appears exactly once, the two wall-clock-stamped vendors (DefiLlama stablecoin supply's vendor, validators.app) show \"unmeasurable\" rather than green, and no vendor is silently missing from the rollup — it does not exist",
-  "at": "2026-09-29T20:13:56.955Z"
+  "tripwires": [],
+  "note": "7 of 7 criteria met. C1-C6 verified by re-running the real tests and gates myself; C7 (the [browser:] criterion) required the owner to write and run a capture script against the real live board, since no automated sandbox can execute a browser and the implementer left no script this time. Screenshot confirms all 8 vendors present with the two wall-clock-stamped vendors honestly unmeasurable, never green.",
+  "at": "2026-09-29T23:17:00.000Z"
 }
