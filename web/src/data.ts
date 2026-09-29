@@ -7,6 +7,7 @@ import {
   isIndicatorKey,
   type IndicatorDefinition,
 } from "./registry";
+import { fetchIntegrityRead } from "./integrity";
 
 type DatapointRow = {
   id: number;
@@ -268,11 +269,15 @@ export function applyFreshness(
 // One request for the whole board: board_read already holds the latest row per cell, so the
 // page never fetches per cell. The cells themselves come from the registry, not the response.
 export async function fetchBoard(now: Date): Promise<BoardModel> {
-  const rows = await fetchRows<DatapointRow>(
-    "board_read",
-    new URLSearchParams({ select: "*" }),
-    browserConfig(),
-  );
+  const config = browserConfig();
+  const [rows, integrity] = await Promise.all([
+    fetchRows<DatapointRow>(
+      "board_read",
+      new URLSearchParams({ select: "*" }),
+      config,
+    ),
+    fetchIntegrityRead(config),
+  ]);
   const datapoints = rows.map((row) => {
     const datapoint = rowToDatapoint(row);
     const staleAfterSeconds = isIndicatorKey(row.indicator_key)
@@ -282,7 +287,7 @@ export async function fetchBoard(now: Date): Promise<BoardModel> {
       ? datapoint
       : applyFreshness(datapoint, staleAfterSeconds, now);
   });
-  return buildBoard(definitions, datapoints, BOARD_ASSETS);
+  return buildBoard(definitions, datapoints, BOARD_ASSETS, integrity.rows);
 }
 
 export async function fetchLatestDatapoint(

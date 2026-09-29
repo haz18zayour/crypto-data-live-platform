@@ -171,6 +171,26 @@ describe("completeness matrix", () => {
       const body =
         pathname === "/rest/v1/board_read"
           ? boardRows
+          : pathname === "/rest/v1/rpc/integrity_read"
+            ? boardRows.map((row) => ({
+                indicator_key: row.indicator_key,
+                asset: row.asset,
+                source_vendor: row.source_vendor,
+                computed_at: "2026-09-29T12:00:00Z",
+                latest_source_timestamp: row.source_timestamp,
+                source_timestamp_age_seconds: 0,
+                freshness_state: "fresh",
+                freshness_warn_seconds: 108_000,
+                freshness_stale_seconds: 172_800,
+                freshness_unmeasurable_reason: null,
+                frozen: false,
+                frozen_state: "not_frozen",
+                frozen_since_source_timestamp: null,
+                frozen_after_observations: 3,
+                expected_constant_reason: null,
+                derives_from: null,
+                frozen_propagation_unavailable_reason: null,
+              }))
           : pathname === "/rest/v1/datapoints_read"
             ? [boardRows[0]]
             : [
@@ -205,6 +225,7 @@ describe("completeness matrix", () => {
       "/rest/v1/board_read",
       "/rest/v1/corroborations_read",
       "/rest/v1/datapoints_read",
+      "/rest/v1/rpc/integrity_read",
     ]);
     expect(
       screen.getAllByRole("cell").filter((cell) => faceClass(cell) === "cell--ok"),

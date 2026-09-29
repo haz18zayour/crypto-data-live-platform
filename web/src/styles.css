@@ -215,6 +215,7 @@ h2 {
 .cell-provenance,
 .cell-reference-period,
 .cell-published-at,
+.frozen-badge,
 .cell-reason,
 .cell-detail-cue {
   display: block;
@@ -244,6 +245,7 @@ h2 {
 .cell-provenance,
 .cell-reference-period,
 .cell-published-at,
+.frozen-badge,
 .cell-face-disclosure,
 .cell-reason,
 .cell-detail-cue {
@@ -255,9 +257,14 @@ h2 {
 .cell-provenance,
 .cell-reference-period,
 .cell-published-at,
+.frozen-badge,
 .cell-face-disclosure,
 .cell-detail-cue {
   color: var(--label-secondary);
+}
+
+.frozen-badge {
+  font-weight: 600;
 }
 
 .cell-face-disclosure {

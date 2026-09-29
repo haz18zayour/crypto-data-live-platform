@@ -1,4 +1,5 @@
 import type { Datapoint } from "./datapoint";
+import type { IndicatorKey } from "./registry.generated";
 
 // MACRO is not a tracked crypto asset — it is the board's pseudo-asset column for
 // market-wide indicators (FRED macro series, Fear & Greed) that have no per-asset value.
@@ -24,11 +25,27 @@ export type DeclaredNotDefinable = {
   detail: string;
 };
 
+export type CellFrozenBadge = {
+  sinceSourceTimestamp: string;
+  rootIndicatorKey: IndicatorKey | null;
+};
+
+export type BoardIntegrityRow = {
+  indicatorKey: IndicatorKey;
+  asset: string;
+  sourceVendor: string;
+  frozen: boolean | null;
+  frozenState: string;
+  frozenSinceSourceTimestamp: string | null;
+  derivesFrom: IndicatorKey | null;
+};
+
 export type BoardCell = {
   family: string;
   asset: string;
   indicatorKey: string;
   state: Datapoint | NotFetched | DeclaredNotDefinable;
+  frozen?: CellFrozenBadge;
 };
 
 export type BoardModel = {
@@ -62,6 +79,7 @@ export function buildBoard(
   definitions: readonly BoardRegistryEntry[],
   datapoints: readonly Datapoint[],
   assets: readonly string[],
+  integrityRows: readonly BoardIntegrityRow[] = [],
 ): BoardModel {
   const families = new Set<string>();
   const definitionsByCell = new Map<string, BoardRegistryEntry>();
@@ -111,13 +129,31 @@ export function buildBoard(
           (candidate) =>
             candidate.indicatorKey === indicatorKey && candidate.asset === asset,
         );
+        const integrity = datapoint
+          ? integrityRows.find(
+              (candidate) =>
+                candidate.indicatorKey === indicatorKey &&
+                candidate.asset === asset &&
+                candidate.sourceVendor === datapoint.sourceVendor,
+            )
+          : undefined;
         const notDefinableReason = notDefinableByCell.get(
           `${family}:${asset}`,
         );
+        const frozen =
+          integrity?.frozen === true &&
+          integrity.frozenState === "frozen" &&
+          integrity.frozenSinceSourceTimestamp
+            ? {
+                sinceSourceTimestamp: integrity.frozenSinceSourceTimestamp,
+                rootIndicatorKey: integrity.derivesFrom,
+              }
+            : undefined;
         return {
           family,
           asset,
           indicatorKey,
+          frozen,
           state:
             datapoint ??
             (notDefinableReason === undefined

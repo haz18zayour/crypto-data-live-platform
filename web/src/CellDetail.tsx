@@ -1,31 +1,10 @@
 import { useEffect, useState, type KeyboardEvent, type ReactNode } from "react";
 
+import type { CellFrozenBadge } from "./board";
 import type { Datapoint } from "./datapoint";
+import { formatUtcTimestamp } from "./FrozenBadge";
 import { fetchHistory, HISTORY_POINT_LIMIT, type HistoryPoint } from "./history";
 import { Sparkline } from "./Sparkline";
-
-export function formatUtcTimestamp(timestamp: string): string {
-  const date = new Date(timestamp);
-  const months = [
-    "Jan",
-    "Feb",
-    "Mar",
-    "Apr",
-    "May",
-    "Jun",
-    "Jul",
-    "Aug",
-    "Sep",
-    "Oct",
-    "Nov",
-    "Dec",
-  ];
-  const day = String(date.getUTCDate()).padStart(2, "0");
-  const time = [date.getUTCHours(), date.getUTCMinutes(), date.getUTCSeconds()]
-    .map((part) => String(part).padStart(2, "0"))
-    .join(":");
-  return `${day} ${months[date.getUTCMonth()]} ${date.getUTCFullYear()}, ${time} UTC`;
-}
 
 function toggleWithKeyboard(event: KeyboardEvent<HTMLElement>) {
   if (event.key !== "Enter" && event.key !== " ") return;
@@ -80,9 +59,11 @@ function CellHistory({ datapoint }: { datapoint: Datapoint }) {
 
 export function CellDetail({
   datapoint,
+  frozen,
   children,
 }: {
   datapoint: Datapoint;
+  frozen?: CellFrozenBadge;
   children: ReactNode;
 }) {
   const [open, setOpen] = useState(false);
@@ -114,6 +95,17 @@ export function CellDetail({
               : "Not supplied"}
           </dd>
         </div>
+        {frozen ? (
+          <div>
+            <dt>Integrity</dt>
+            <dd>
+              Frozen value unchanged since{" "}
+              <time dateTime={frozen.sinceSourceTimestamp}>
+                {formatUtcTimestamp(frozen.sinceSourceTimestamp)}
+              </time>
+            </dd>
+          </div>
+        ) : null}
       </dl>
     </details>
   );
