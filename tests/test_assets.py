@@ -371,7 +371,7 @@ def test_all_four_assets_produce_an_indicator_value_or_explicit_status() -> None
     }
     assert Counter(
         definition.definable_for[0] for definition in technical_definitions
-    ) == Counter({"BTC": 12, "ETH": 11, "SOL": 11, "BNB": 11})
+    ) == Counter({asset: 12 for asset in ASSETS})
     assert Counter(
         definition.definable_for[0] for definition in funding_definitions
     ) == Counter({asset: 1 for asset in ASSETS})

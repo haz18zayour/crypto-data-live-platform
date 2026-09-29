@@ -162,10 +162,10 @@ def test_us_808_macro_flow_not_definable_reasons_do_not_collapse_into_existing_b
     assert not (set(prd_reasons.values()) & set(existing_reasons.values()))
 
 
-def test_registry_coverage_still_passes_for_all_81_entries() -> None:
+def test_registry_coverage_still_passes_for_all_84_entries() -> None:
     registry = load_registry()
 
-    assert len(registry.root) == 81
+    assert len(registry.root) == 84
     assert_registry_coverage(
         registry,
         golden_keys={

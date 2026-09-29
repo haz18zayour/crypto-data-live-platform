@@ -208,7 +208,7 @@ def test_definable_for_requires_a_nonempty_asset_list(
 def test_shipped_registry_definitions_cover_four_assets_at_scale() -> None:
     registry = load_registry()
 
-    assert len(registry.root) == 81
+    assert len(registry.root) == 84
     crypto_entries = tuple(
         entry for entry in registry.root if entry.definable_for != ("MACRO",)
     )
@@ -258,7 +258,14 @@ def test_shipped_talib_entries_declare_existing_dependency_roots() -> None:
 
     assert talib_entries
     for entry in talib_entries:
-        assert entry.derives_from in entries
+        asset = entry.definable_for[0].lower()
+        expected_root_key = f"{asset}_daily_close"
+        root = entries[expected_root_key]
+
+        assert entry.derives_from == expected_root_key
+        assert root.talib_function is None
+        assert root.response_model == "okx_candle"
+        assert root.definable_for == entry.definable_for
 
 
 def test_wall_clock_fetchers_declare_freshness_unmeasurable_reasons() -> None:
@@ -292,7 +299,7 @@ def test_registry_cadence_intervals_partition_the_shipped_entries() -> None:
     assert {tier: len(keys) for tier, keys in by_tier.items()} == {
         "fast": 12,
         "medium": 4,
-        "daily": 64,
+        "daily": 67,
     }
     assert set().union(*by_tier.values()) == {
         entry.key
