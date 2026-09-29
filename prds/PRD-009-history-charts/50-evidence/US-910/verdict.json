@@ -1,0 +1,46 @@
+{
+  "storyId": "US-910",
+  "passes": true,
+  "verifier": {
+    "agent": "human",
+    "sandbox": "not-run",
+    "independence": "owner-override"
+  },
+  "implementer": "codex",
+  "overrideReason": "All 3 attempts of this re-identified story (originally US-907, re-identified after codex's own account usage quota outage exhausted that id with zero diffs) failed on the same real, structural gap: the story's own tripwire in 30-spec.md requires SoSoValue's real history-endpoint shape, date range, and rate limit to be confirmed live rather than assumed from an unfetched third-party documentation claim - but codex's own sandbox has no live network access (confirmed across every prior story in this PRD that touched a live vendor: US-804, US-904, US-905, US-906 all hit the identical wall), so no automated attempt could ever settle this tripwire itself. Attempt 1 left the live probe entirely unrun. Attempt 2 and 3 each wrote genuinely well-constructed live tests (test_live_sosovalue_run_backfill_persists_real_vendor_rows_after_probe, test_live_sosovalue_history_probe_confirms_real_shape_range_and_rate_limit) but recorded their own sandbox failing with WinError 10013 before any real HTTP response came back, and attempt 3 additionally guessed BACKFILL_LIMIT=300 from an unfetched documentation page rather than a live measurement - exactly the kind of unconfirmed assumption the tripwire exists to catch. Investigated directly: live-probed SoSoValue's real /etfs/summary-history endpoint myself outside codex's sandbox. Confirmed live: the vendor hard-caps available history at exactly 19 rows for BTC regardless of the requested limit (tested limit=1/30/50/200, all correctly capped at 19, spanning 2026-08-31 to 2026-09-25) - matching this project's own research finding ('only the most recent 1 month of history') far more precisely than the 200 or 300 figures either attempt guessed. Critically, the actual backfill code (backfill_sosovalue_etf_flows) was already correct regardless of the exact constant's value: it requests limit=<constant>, persists whatever real rows the vendor actually returns, and honestly records the observed range in source_field - it never asserts the returned count equals the requested limit. The two already-committed live tests (attempt 3's diff) also assert only 1 < probe.rows <= probe.requested_limit, not equality, so they are correct regardless of the exact real cap. Ran both live tests myself with real credentials outside the blocked sandbox: both PASSED cleanly (61.86s total) against the real SoSoValue API and real Postgres. The DefiLlama and alternative.me criteria are offline-provable ([test:], not [integration:]) and were already passing. Full local suite verified clean on current HEAD: uv run mypy ingest --strict clean, uv run ruff check clean, uv run pytest -q -m \"not integration\" 397 passed, npm --prefix web run typecheck clean, npm --prefix web test 55/55 passed.",
+  "results": [
+    {
+      "criterionId": "US-910-C1",
+      "met": true,
+      "note": "tests/test_backfill_sosovalue.py::test_live_sosovalue_history_probe_confirms_real_shape_range_and_rate_limit and test_live_sosovalue_run_backfill_persists_real_vendor_rows_after_probe both PASSED against the real live SoSoValue API and real Postgres, run directly outside codex's network-restricted sandbox. Independently confirmed live: SoSoValue's real available history is hard-capped at 19 rows for BTC (spanning 2026-08-31 to 2026-09-25) regardless of the requested limit - the tripwire in 30-spec.md is genuinely settled, not assumed."
+    },
+    {
+      "criterionId": "US-910-C2",
+      "met": true,
+      "note": "tests/test_backfill_sosovalue.py::test_sosovalue_backfill_persists_decimal_values_via_str_conversion passes offline, confirming the same Decimal(str(value)) discipline PRD-008 already established is reused for backfilled rows."
+    },
+    {
+      "criterionId": "US-910-C3",
+      "met": true,
+      "note": "tests/test_backfill_defillama.py's offline tests confirm the /stablecoincharts/{chain} backfill for Ethereum/Solana/BSC and its cross-check against the live /stablecoinchains snapshot within the same day."
+    },
+    {
+      "criterionId": "US-910-C4",
+      "met": true,
+      "note": "tests/test_backfill_alternative_me.py's offline tests confirm historical Fear & Greed values backfill correctly while never persisting or rendering the vendor's own value_classification verdict label."
+    },
+    {
+      "criterionId": "US-910-C5",
+      "met": true,
+      "note": "tests/test_backfill_sosovalue.py::test_bnb_etf_flow_remains_not_definable_and_not_backfilled confirms BNB's ETF-flow and BTC's stablecoin-supply cells stay NOT_DEFINABLE for backfill exactly as they are for live - no backfill attempt against a settled absence."
+    },
+    {
+      "criterionId": "US-910-C6",
+      "met": true,
+      "note": "`uv run pytest -q -m \"not integration\"` re-run fresh against current HEAD: 397 passed, 76 deselected, exit 0. mypy --strict and ruff both clean."
+    }
+  ],
+  "tripwires": [],
+  "note": "All 6 criteria independently verified. This story's real blocker across all 3 attempts (under both its US-907 and US-910 identities) was structural, not a code defect: codex's sandbox cannot reach the live internet, so any story whose acceptance criteria require settling a live-data assumption cannot be fully closed by the automated pipeline alone - it requires exactly this kind of direct, credentialed verification outside that sandbox, matching the pattern already established for US-804/US-904/US-905/US-906 in this same PRD. The already-committed code and tests were substantively correct throughout; what was missing was simply someone with live network access actually running them.",
+  "at": "2026-09-29T02:52:00.000Z"
+}

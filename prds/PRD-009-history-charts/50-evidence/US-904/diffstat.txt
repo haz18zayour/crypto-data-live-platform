@@ -1,0 +1,13 @@
+.uf/events.ndjson                                  |   9 +
+ SESSION.md                                         |  13 +-
+ ingest/backfill.py                                 |  25 +-
+ ingest/fetchers/okx.py                             | 206 +++++++-
+ ingest/fetchers/okx_derivatives.py                 | 205 +++++++-
+ ingest/pipeline.py                                 |  20 +-
+ ingest/registry.yaml                               | 122 ++---
+ ingest/schemas.py                                  |  18 +
+ .../50-evidence/US-904/diffstat.txt                |  13 +
+ .../50-evidence/US-904/gates.json                  |  20 +
+ .../50-evidence/US-904/verdict.json                |  91 ++++
+ tests/test_backfill_okx.py                         | 549 +++++++++++++++++++++
+ 12 files changed, 1217 insertions(+), 74 deletions(-)

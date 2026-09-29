@@ -9,15 +9,19 @@ Do not hand-edit it — it is regenerated. The hand-written sections below it su
 
 ## ▶ Resume here
 
-**PRD-005-dashboard — GATE G1, scope lock**
+**1 uncommitted file(s) — the runner will not start**
 
-The research asked you questions and each carries the agent's own hypothesis. Anything you leave blank becomes an explicit assumption with a tripwire. The out-of-scope list is the one field with no default.
+A previous session edited source and did not commit. uf refuses to run on a dirty tree rather than auto-committing someone else's half-finished work.
 
 Owner: **You.** This one cannot be delegated.
 
 ```
-open prds/PRD-005-dashboard/20-decisions.yaml
+review the diff, then: git add -A && git commit
 ```
+
+**Left in flight by the previous session:**
+
+- 1 uncommitted file(s): scratch_backfill_all.py
 
 **Last handoff note:** **2026-09-15 — STOPPED HERE. PRD-007 is fully specced and compiled (8 stories, 62 criteria,
 
@@ -32,10 +36,11 @@ open prds/PRD-005-dashboard/20-decisions.yaml
 | PRD-005-dashboard | 9 | 9 | **all green** |
 | PRD-006-derivatives | 7 | 7 | **all green** |
 | PRD-007-onchain | 8 | 8 | **all green** |
-| PRD-008-macro-flows | 8 | 6 | 6/8 |
+| PRD-008-macro-flows | 8 | 8 | **all green** |
+| PRD-009-history-charts | 9 | 9 | **all green** |
 | PRD-012-cadence-split | 6 | 6 | **all green** |
 
-Spend to date: **$86.33** Claude · **243558k** Codex tokens.
+Spend to date: **$110.10** Claude · **281875k** Codex tokens.
 
 ## What happened
 
@@ -717,6 +722,157 @@ Spend to date: **$86.33** Claude · **243558k** Codex tokens.
 - 08:40  US-807 started, attempt 3 (codex)
 - 08:41  US-807 — codex finished `a0a54a71`
 - 08:41  US-807 **rejected** — 0/6 criteria, judged by claude
+- 08:41  ⏸ **gate opened** — US-807 has failed 3 times — is the story wrong?
+- 13:10  US-807 **PASSED** — 6/6 criteria, judged by human
+- 13:10  ▶ gate answered **skip** — All 3 attempts verified the same attempt-1 diff (2-3 hit codex's own usage quota before running). Fixed a real test whitelist gap, a real CI workflow secrets gap, and a real production migration gap (applied with explicit owner authorization). Real CI dispatch (run 36425805380) succeeded in 2m17s. See verdict.json overrideReason.
+- 13:07  US-808 started, attempt 1 (codex)
+- 13:12  US-808 — codex finished `35feaacb` · 1001k tok
+- 13:13  US-808 **awaiting your judgement** — 3/4 criteria, judged by claude · $0.96
+- 13:13  ⏸ **gate opened** — US-808: The demonstration item the acceptance protocol calls for, not a machine check
+- 17:35  US-808 **PASSED** — 4/4 criteria, judged by human
+- 17:35  ▶ gate answered **met** — Owner ran the dev server and read the live MACRO column directly. A real FRED vintage-cap defect was found and fixed first (6/7 rows were showing FETCH_FAILED); after the fix, the owner confirmed each of the 7 macro rows shows its own real reference period and published date, cadence-appropriate, with none implying same-day freshness it doesn't have.
+- 17:35  👤 you judged US-808 **met** — Owner ran the dev server and read the live MACRO column directly. A real FRED vintage-cap defect was found and fixed first (6/7 rows were showing FETCH_FAILED); after the fix, the owner confirmed each of the 7 macro rows shows its own real reference period and published date, cadence-appropriate, with none implying same-day freshness it doesn't have.
+- 15:16  researched PRD-009-history-charts — 20 sources · $2.28
+- 15:28  **PRD-009-history-charts** compiled — 9 stories
+- 15:31  **PRD-009-history-charts** compiled — 9 stories
+- 15:32  **PRD-009-history-charts** compiled — 9 stories
+- 15:33  US-901 started, attempt 1 (codex)
+- 15:37  US-901 — codex finished `301d43d1` · 1232k tok
+- 15:38  US-901 **rejected** — 5/6 criteria, judged by claude · $0.91
+- 15:38  US-901 started, attempt 2 (codex)
+- 15:39  US-901 — codex finished `28a438c9` · 341k tok
+- 15:40  US-901 **rejected** — 5/6 criteria, judged by claude · $0.92
+- 15:40  US-901 started, attempt 3 (codex)
+- 15:42  US-901 — codex finished `3ba6ae02` · 645k tok
+- 15:43  US-901 **PASSED** — 6/6 criteria, judged by claude · $1.03
+- 15:43  US-902 started, attempt 1 (codex)
+- 15:50  US-902 — codex finished `82055be5` · 1515k tok
+- 15:51  US-902 **rejected** — 1/6 criteria, judged by claude · $0.89
+- 15:51  US-902 started, attempt 2 (codex)
+- 15:56  US-902 — codex finished `84afcc92` · 1811k tok
+- 15:56  US-902 **rejected** — 1/6 criteria, judged by claude · $1.01
+- 15:56  US-902 started, attempt 3 (codex)
+- 16:00  US-902 — codex finished `c6e19e60` · 1420k tok
+- 16:01  US-902 **rejected** — 0/6 criteria, judged by claude · $0.99
+- 16:01  ⏸ **gate opened** — US-902 has failed 3 times — is the story wrong?
+- 21:12  US-902 **PASSED** — 6/6 criteria, judged by human
+- 21:12  ▶ gate answered **skip** — Attempts 1-2 failed on a real integration-marker misclassification, fixed correctly in attempt 3's own diff. Attempt 3's automated verdict ('no parseable verdict') was a verifier-tooling crash, not a real rejection. Verified directly: 8/8 offline tests pass against a real throwaway Postgres schema. The one live PostgREST test surfaced a second instance of PRD-008's US-807 pattern - the migration was written and tested but never applied to production. Applied with explicit owner authorization; live test now passes. See verdict.json overrideReason.
+- 18:11  US-903 started, attempt 1 (codex)
+- 18:17  US-903 — codex finished `5ebbc019` · 2872k tok
+- 18:19  US-903 **rejected** — 4/6 criteria, judged by claude · $1.46
+- 18:19  US-903 started, attempt 2 (codex)
+- 18:22  US-903 — codex finished `8db49606` · 1015k tok
+- 18:23  US-903 **rejected** — 4/6 criteria, judged by claude · $0.42
+- 18:23  US-903 started, attempt 3 (codex)
+- 18:24  US-903 — codex finished `ae499f18` · 396k tok
+- 18:27  US-903 **PASSED** — 6/6 criteria, judged by claude · $0.45
+- 18:27  US-904 started, attempt 1 (codex)
+- 18:35  US-904 — codex finished `6ef6e0ae` · 4667k tok
+- 18:36  US-904 **rejected** — 0/7 criteria, judged by claude
+- 18:36  US-904 started, attempt 2 (codex)
+- 18:39  US-904 — codex finished `1c183d56` · 1304k tok
+- 18:41  US-904 **rejected** — 5/7 criteria, judged by claude · $1.65
+- 18:41  US-904 started, attempt 3 (codex)
+- 18:44  US-904 — codex finished `a87ee8b3` · 1199k tok
+- 18:46  US-904 **rejected** — 5/7 criteria, judged by claude · $0.47
+- 18:46  ⏸ **gate opened** — US-904 has failed 3 times — is the story wrong?
+- 22:35  US-904 **PASSED** — 7/7 criteria, judged by human
+- 22:35  ▶ gate answered **skip** — Attempt 3 added the missing live tests; running them directly surfaced 3 real bugs in the TESTS themselves (an off-by-one pagination cursor, a premature raise_for_status() crash, and a float64-precision-impossible tolerance) - each fixed after independently verifying production code was correct (a from-scratch MACD recomputation matched production exactly). A fourth apparent failure (funding-rate StopIteration) was confirmed transient via two independent non-reproductions. All 7 criteria now pass against real live OKX data. See verdict.json overrideReason.
+- 19:35  US-905 started, attempt 1 (codex)
+- 19:41  US-905 — codex finished `85fb9e93` · 1910k tok
+- 19:43  US-905 **rejected** — 5/6 criteria, judged by claude · $0.34
+- 19:43  US-905 started, attempt 2 (codex)
+- 19:47  US-905 — codex finished `91808af7` · 1532k tok
+- 19:48  US-905 **rejected** — 5/6 criteria, judged by claude · $0.28
+- 19:48  US-905 started, attempt 3 (codex)
+- 19:50  US-905 — codex finished `d565aa6f` · 334k tok
+- 19:52  US-905 **PASSED** — 6/6 criteria, judged by claude · $1.26
+- 19:52  US-906 started, attempt 1 (codex)
+- 19:57  US-906 — codex finished `cf342b88` · 2084k tok
+- 20:00  US-906 **rejected** — 4/5 criteria, judged by claude · $0.26
+- 20:00  US-906 started, attempt 2 (codex)
+- 20:04  US-906 — codex finished `ced17d4e` · 1129k tok
+- 20:06  US-906 **rejected** — 4/5 criteria, judged by claude · $0.24
+- 20:06  US-906 started, attempt 3 (codex)
+- 20:17  US-906 — codex finished `baca38af`
+- 20:19  US-906 **rejected** — 4/5 criteria, judged by claude · $0.26
+- 20:19  ⏸ **gate opened** — US-906 has failed 3 times — is the story wrong?
+
+### 2026-09-29
+
+- 00:05  US-906 **PASSED** — 5/5 criteria, judged by human
+- 00:05  ▶ gate answered **skip** — Attempt 3 exhausted on codex's own usage quota. Investigating attempt 2's diff directly against a real multi-decade live window found a genuine production defect: FRED's ALFRED vintage archive does not extend as far back as the code's default 1947 start for every series (VIXCLS's real archive starts 2010-11-22), which would have crashed any real backfill using the default range. Fixed by catching this specific FRED error and skipping the unavailable chunk rather than aborting. Verified live across three series (VIXCLS/DFF/T10Y2Y, each with a distinct real boundary). Also rewrote the story's weak live test to use a real postgres fixture and a genuine multi-chunk window - it passed against the real API and real Postgres. See verdict.json overrideReason.
+
+### 2026-09-28
+
+- 21:04  US-907 started, attempt 1 (codex)
+- 21:13  US-907 — codex finished `44537d6c`
+- 21:15  US-907 **rejected** — 0/6 criteria, judged by claude
+- 21:15  US-907 started, attempt 2 (codex)
+- 21:22  US-907 — codex finished `206e81d8`
+- 21:25  US-907 **rejected** — 0/6 criteria, judged by claude
+- 21:25  US-907 started, attempt 3 (codex)
+- 21:36  US-907 — codex finished `92c31126`
+- 21:38  US-907 **rejected** — 0/6 criteria, judged by claude
+- 21:38  ⏸ **gate opened** — US-907 has failed 3 times — is the story wrong?
+
+### 2026-09-29
+
+- 00:45  ▶ gate answered **rewrite-criteria** — All 3 attempts exhausted on codex's own account usage quota outage (confirmed directly via raw implementer stdout and a direct codex exec probe). Zero files were changed across all 3 attempts - no code exists to verify. Re-identified as US-910 (same content) for a fresh attempt budget once the quota window passes.
+
+### 2026-09-28
+
+- 21:43  **PRD-009-history-charts** compiled — 9 stories
+- 21:43  **PRD-009-history-charts** compiled — 9 stories
+- 23:14  US-910 started, attempt 1 (codex)
+- 23:20  US-910 — codex finished `f3df8d71` · 2791k tok
+- 23:23  US-910 **rejected** — 5/6 criteria, judged by claude · $1.06
+- 23:23  US-910 started, attempt 2 (codex)
+- 23:27  US-910 — codex finished `83a42a12` · 2441k tok
+- 23:29  US-910 **rejected** — 5/6 criteria, judged by claude · $0.89
+- 23:29  US-910 started, attempt 3 (codex)
+- 23:34  US-910 — codex finished `3d1d0bca` · 2607k tok
+- 23:36  US-910 **rejected** — 5/6 criteria, judged by claude · $0.94
+- 23:36  ⏸ **gate opened** — US-910 has failed 3 times — is the story wrong?
+
+### 2026-09-29
+
+- 02:52  US-910 **PASSED** — 6/6 criteria, judged by human
+- 02:52  ▶ gate answered **skip** — The real blocker was structural (codex's sandbox has no live network access), not a code defect. Live-probed SoSoValue directly: confirmed a hard 19-row history cap for BTC. The already-committed code and live tests were substantively correct; running them with real network access outside the blocked sandbox, both passed cleanly. See verdict.json overrideReason.
+
+### 2026-09-28
+
+- 23:51  US-908 started, attempt 1 (claude)
+- 23:57  US-908 — codex finished `9b16f759` · $2.15 · 33k tok
+- 23:57  US-908 **rejected** — 0/8 criteria, judged by claude
+- 23:57  US-908 started, attempt 2 (claude)
+- 23:58  US-908 — codex finished `e4e0a000` · $0.79 · 5k tok
+- 23:59  US-908 **rejected** — 0/8 criteria, judged by claude
+- 23:59  US-908 started, attempt 3 (claude)
+
+### 2026-09-29
+
+- 00:01  US-908 — codex finished `8ecf01ee` · $0.94 · 7k tok
+- 00:02  US-908 **rejected** — 0/8 criteria, judged by claude
+- 00:02  ⏸ **gate opened** — US-908 has failed 3 times — is the story wrong?
+- 09:20  US-908 **PASSED** — 8/8 criteria, judged by human
+- 09:20  ▶ gate answered **skip** — The implementer sandbox could not execute the capture script itself. Ran it directly: it first reproduced a real production defect (uppercase-for-display sourceVendor breaking the history_read RPC's case-sensitive filter, so every cell showed 0 points), fixed with a new case-insensitive migration applied to production with owner authorization, then re-ran cleanly with screenshots visually reviewed. See verdict.json overrideReason.
+- 06:16  US-909 started, attempt 1 (codex)
+- 06:22  US-909 — codex finished `7e0c8ad6` · 2311k tok
+- 06:23  US-909 **rejected** — 2/4 criteria, judged by claude · $0.93
+- 06:23  US-909 started, attempt 2 (codex)
+- 06:27  US-909 — codex finished `133bb581` · 1163k tok
+- 06:28  US-909 **rejected** — 0/4 criteria, judged by claude
+- 06:28  US-909 started, attempt 3 (codex)
+- 06:31  US-909 — codex finished `87d16302` · 552k tok
+- 06:32  US-909 **rejected** — 0/4 criteria, judged by claude
+- 06:32  ⏸ **gate opened** — US-909 has failed 3 times — is the story wrong?
+- 10:20  US-909 **awaiting your judgement** — 3/4 criteria, judged by human
+- 10:20  ▶ gate answered **skip** — All 3 attempts failed on a real defect (missing endpoint field across 3 vendors, then a DefiLlama schema rejecting all real live data). Both fixed and verified live. C1-C3 now pass; C4 is the story's [human] criterion and opens its own G6_HUMAN gate instead. See verdict.json overrideReason.
+- 10:20  ⏸ **gate opened** — US-909: The demonstration item the acceptance protocol calls for, not a machine check
+- 14:35  ▶ gate answered **met** — Owner reviewed the live board at localhost:5174 - BTC MVRV's sparkline shows min 0.753959 (09 Nov 2022) and max 1.93186 (29 Mar 2022), the real, publicly-verifiable 2022 bear-market drawdown from the post-ATH local top to the FTX-collapse bottom. Confirmed as a real, accurate historical swing with correct min/max labels.
+- 14:35  👤 you judged US-909 **met**
+- 14:35  US-909 **PASSED** — 4/4 criteria, judged by human
 
 <!-- uf:generated:end -->
 

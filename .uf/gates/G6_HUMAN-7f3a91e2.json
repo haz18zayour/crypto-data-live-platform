@@ -1,0 +1,20 @@
+{
+  "gate": "G6_HUMAN",
+  "question": "US-909: The demonstration item the acceptance protocol calls for, not a machine check",
+  "feature": "PRD-009-history-charts",
+  "story": "US-909",
+  "options": [
+    "met",
+    "not-met"
+  ],
+  "context": "Everything a machine can check has passed (3/4).\nOnly your judgement is left:\n  · The owner reads the live board and confirms at least one sparkline shows a real historical swing (a genuine drawdown or spike already in the data) rendered accurately against real numbers, with the min/max labels' dates matching what the owner can independently see on the source vendor's own site or API.\n\nRun it yourself: npm run dev (in web/)\nEvidence: prds/PRD-009-history-charts/50-evidence/US-909/",
+  "defaultOnTimeout": "block",
+  "id": "G6_HUMAN-7f3a91e2",
+  "openedAt": "2026-09-29T10:20:00.000Z",
+  "answer": {
+    "choice": "met",
+    "reason": "Owner reviewed the live board at localhost:5174 - BTC MVRV's sparkline shows min 0.753959 (09 Nov 2022) and max 1.93186 (29 Mar 2022), the real, publicly-verifiable 2022 bear-market drawdown from the post-ATH local top to the FTX-collapse bottom. Confirmed as a real, accurate historical swing with correct min/max labels.",
+    "at": "2026-09-29T14:35:00.000Z",
+    "by": "human"
+  }
+}

@@ -1,0 +1,12 @@
+.uf/events.ndjson                                  |   9 +
+ SESSION.md                                         |  13 +-
+ ingest/backfill.py                                 |   2 +
+ ingest/fetchers/fred.py                            | 242 ++++++++++++++++++--
+ ingest/pipeline.py                                 |   3 +-
+ ingest/registry.yaml                               |  14 +-
+ .../50-evidence/US-906/attempt-2-local-evidence.md |  56 +++++
+ .../50-evidence/US-906/diffstat.txt                |  12 +
+ .../50-evidence/US-906/gates.json                  |  20 ++
+ .../50-evidence/US-906/verdict.json                |  69 ++++++
+ tests/test_backfill_fred.py                        | 248 +++++++++++++++++++++
+ 11 files changed, 665 insertions(+), 23 deletions(-)

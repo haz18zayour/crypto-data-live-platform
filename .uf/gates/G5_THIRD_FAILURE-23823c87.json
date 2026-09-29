@@ -1,0 +1,22 @@
+{
+  "gate": "G5_THIRD_FAILURE",
+  "question": "US-908 has failed 3 times — is the story wrong?",
+  "feature": "PRD-009-history-charts",
+  "story": "US-908",
+  "options": [
+    "split",
+    "rewrite-criteria",
+    "skip",
+    "retry-anyway"
+  ],
+  "context": "Structural problems: criterion US-908-C7 requires a screenshot at the sparkline is visible on the rendered board for at least one real cell with sufficient history, with axis labels legible at the board's existing cell size — it does not exist\nCriteria judged not met:\n  - US-908-C1: not judged — a cheaper layer already failed\n  - US-908-C2: not judged — a cheaper layer already failed\n  - US-908-C3: not judged — a cheaper layer already failed\n  - US-908-C4: not judged — a cheaper layer already failed\n  - US-908-C5: not judged — a cheaper layer already failed\n  - US-908-C6: not judged — a cheaper layer already failed\n  - US-908-C7: not judged — a cheaper layer already failed\n  - US-908-C8: not judged — a cheaper layer already failed",
+  "defaultOnTimeout": "block",
+  "answer": {
+    "choice": "skip",
+    "reason": "The implementer sandbox could not execute node/npm/Playwright to run its own committed capture-sparkline.mjs script (same class of restriction as PRD-005's US-511). Ran it directly: it first reproduced a real production defect (sourceVendor's uppercase-for-display value breaking the history_read RPC's case-sensitive filter, so every cell showed '0 points'), fixed with a new case-insensitive migration applied to production with owner authorization, then re-ran cleanly - sparkline genuinely drawn, screenshots captured and visually reviewed. See verdict.json overrideReason.",
+    "at": "2026-09-29T09:20:00.000Z",
+    "by": "human"
+  },
+  "id": "G5_THIRD_FAILURE-23823c87",
+  "openedAt": "2026-09-29T00:02:00.327Z"
+}

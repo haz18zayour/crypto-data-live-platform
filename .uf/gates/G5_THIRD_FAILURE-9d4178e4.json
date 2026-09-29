@@ -1,0 +1,22 @@
+{
+  "gate": "G5_THIRD_FAILURE",
+  "question": "US-910 has failed 3 times — is the story wrong?",
+  "feature": "PRD-009-history-charts",
+  "story": "US-910",
+  "options": [
+    "split",
+    "rewrite-criteria",
+    "skip",
+    "retry-anyway"
+  ],
+  "context": "Criteria judged not met:\n  - US-910-C1: Not met on attempt 3 either. The only tests that hit the real vendor (lines 258 and 301) are marked @pytest.mark.integration, and the gate run deselected them (396 passed, 76 deselected). The committed probe note, sosovalue-live-probe-local-attempt.md, admits the live call failed with WinError 10013 before any HTTP response came back. So the real response shape, date range and rate limit were never observed. BACKFILL_LIMIT was changed to 300 (ingest/fetchers/sosovalue.py:25) because a documentation page said so. That is the same kind of unconfirmed documentation-based assumption the 30-spec.md:6 tripwire says to replace with a live probe, so the tripwire is still open.",
+  "defaultOnTimeout": "block",
+  "answer": {
+    "choice": "skip",
+    "reason": "The real blocker across all 3 attempts was structural, not a code defect: codex's sandbox has no live network access, so the tripwire (SoSoValue's real history window) could never be settled by the automated pipeline alone. Live-probed the real endpoint directly outside the sandbox: confirmed a hard 19-row cap for BTC, matching research's own 'about 1 month' finding. The already-committed backfill code and live tests were substantively correct (they never assert the requested limit equals the returned count); running them with real network access outside the blocked sandbox, both passed cleanly. See verdict.json overrideReason.",
+    "at": "2026-09-29T02:52:00.000Z",
+    "by": "human"
+  },
+  "id": "G5_THIRD_FAILURE-9d4178e4",
+  "openedAt": "2026-09-28T23:36:35.184Z"
+}

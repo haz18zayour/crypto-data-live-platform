@@ -1,0 +1,17 @@
+.uf/events.ndjson                                  |   8 +
+ SESSION.md                                         |  21 +-
+ ingest/backfill.py                                 |   6 +
+ ingest/fetchers/alternative_me.py                  |  88 +++++-
+ ingest/fetchers/defillama_stablecoins.py           | 114 +++++++-
+ ingest/fetchers/sosovalue.py                       | 249 +++++++++++++++-
+ ingest/pipeline.py                                 |   2 +
+ ingest/registry.yaml                               |   6 +-
+ ingest/schemas.py                                  |  19 ++
+ .../50-evidence/US-910/diffstat.txt                |  17 ++
+ .../50-evidence/US-910/gates.json                  |  20 ++
+ .../US-910/sosovalue-live-probe-local-attempt.md   |  36 +++
+ .../50-evidence/US-910/verdict.json                |  80 ++++++
+ tests/test_backfill_alternative_me.py              |  59 ++++
+ tests/test_backfill_defillama.py                   | 130 +++++++++
+ tests/test_backfill_sosovalue.py                   | 317 +++++++++++++++++++++
+ 16 files changed, 1164 insertions(+), 8 deletions(-)

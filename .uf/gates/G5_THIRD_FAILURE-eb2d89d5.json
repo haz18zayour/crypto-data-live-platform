@@ -1,0 +1,22 @@
+{
+  "gate": "G5_THIRD_FAILURE",
+  "question": "US-902 has failed 3 times — is the story wrong?",
+  "feature": "PRD-009-history-charts",
+  "story": "US-902",
+  "options": [
+    "split",
+    "rewrite-criteria",
+    "skip",
+    "retry-anyway"
+  ],
+  "context": "Criteria judged not met:\n  - US-902-C1: verifier produced no parseable verdict\n  - US-902-C2: verifier produced no parseable verdict\n  - US-902-C3: verifier produced no parseable verdict\n  - US-902-C4: verifier produced no parseable verdict\n  - US-902-C5: verifier produced no parseable verdict\n  - US-902-C6: verifier produced no parseable verdict",
+  "defaultOnTimeout": "block",
+  "answer": {
+    "choice": "skip",
+    "reason": "Attempts 1-2 failed on a real integration-marker misclassification, fixed correctly in attempt 3's own diff. Attempt 3's automated verdict ('no parseable verdict') was a verifier-tooling crash, not a real rejection. Verified directly: 8/8 offline tests pass against a real throwaway Postgres schema. The one live PostgREST test then surfaced a second instance of PRD-008's US-807 pattern - the history_read() migration was written and tested but never applied to production. Applied with explicit owner authorization; live test now passes. See verdict.json overrideReason.",
+    "at": "2026-09-28T21:12:00.000Z",
+    "by": "human"
+  },
+  "id": "G5_THIRD_FAILURE-eb2d89d5",
+  "openedAt": "2026-09-28T16:01:49.832Z"
+}

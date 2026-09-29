@@ -27,14 +27,22 @@ from ingest.fetchers import (
 from ingest.fetchers.alternative_me import (
     AlternativeMeFearGreedOk,
     AlternativeMeFearGreedResult,
+    BackfilledAlternativeMeFearGreedOk,
 )
+from ingest.fetchers.coinmetrics import BackfilledCoinMetricsOk
 from ingest.fetchers.defillama_stablecoins import (
     DefiLlamaStablecoinSupplyOk,
     DefiLlamaStablecoinSupplyResult,
 )
-from ingest.fetchers.fred import FredOk, FredResult, FredSeries
-from ingest.fetchers.okx import INDICATOR_KEY, MEASURED_ON, fetch_btc_daily_close
+from ingest.fetchers.fred import BackfilledFredOk, FredOk, FredResult, FredSeries
+from ingest.fetchers.okx import (
+    INDICATOR_KEY,
+    MEASURED_ON,
+    BackfilledOkxValue,
+    fetch_btc_daily_close,
+)
 from ingest.fetchers.okx_derivatives import (
+    BackfilledOkxDerivativeOk,
     FundingRateOk,
     FundingRateResult,
     LongShortRatioOk,
@@ -82,9 +90,14 @@ type BoardResult = (
     | LongShortRatioOk
     | TakerRatioOk
     | FredOk
+    | BackfilledFredOk
     | SosoValueEtfFlowOk
     | DefiLlamaStablecoinSupplyOk
     | AlternativeMeFearGreedOk
+    | BackfilledAlternativeMeFearGreedOk
+    | BackfilledCoinMetricsOk
+    | BackfilledOkxValue
+    | BackfilledOkxDerivativeOk
 )
 
 SOL_ACTIVE_ADDRESSES_KEY = "sol_active_addresses"
@@ -726,6 +739,8 @@ def run_sol_active_addresses() -> FullAssetRun:
 def persist_board(
     connection: psycopg.Connection[tuple[object, ...]],
     run: FullAssetRun,
+    *,
+    origin: str = "live",
 ) -> tuple[int, ...]:
     """Persist one visible datapoint for every result in a full board run."""
 
@@ -743,10 +758,14 @@ def persist_board(
             persisted_result = result
         else:
             source_field = getattr(result, "source_field", None)
+            endpoint = getattr(result, "endpoint", None)
+            updates: dict[str, str] = {}
             if source_field is not None:
-                persisted_definition = definition.model_copy(
-                    update={"source_field": source_field}
-                )
+                updates["source_field"] = source_field
+            if endpoint is not None:
+                updates["endpoint"] = endpoint
+            if updates:
+                persisted_definition = definition.model_copy(update=updates)
             persisted_result = Ok(float(result.value), result.source_timestamp)
         if (
             isinstance(persisted_result, Ok)
@@ -760,6 +779,7 @@ def persist_board(
 
         reference_period = getattr(result, "reference_period", None)
         published_at = getattr(result, "published_at", None)
+        origin_kwargs = {} if origin == "live" else {"origin": origin}
         row_ids.append(
             persist_datapoint(
                 connection,
@@ -773,6 +793,7 @@ def persist_board(
                 published_at=(
                     published_at if isinstance(published_at, datetime) else None
                 ),
+                **origin_kwargs,
             ),
         )
     return tuple(row_ids)

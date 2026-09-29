@@ -93,6 +93,14 @@ class NotDefinableDefinition(BaseModel):
         return self.reason
 
 
+class NotBackfillableDefinition(BaseModel):
+    """Why this indicator's history cannot be honestly backfilled."""
+
+    model_config = ConfigDict(extra="forbid", frozen=True)
+
+    reason: NonEmptyString
+
+
 class IndicatorDefinition(BaseModel):
     """One indicator's source, applicability, and freshness contract."""
 
@@ -104,6 +112,8 @@ class IndicatorDefinition(BaseModel):
     source_field: NonEmptyString
     definable_for: tuple[NonEmptyString, ...] = Field(min_length=1)
     not_definable: NotDefinableDefinition | None = None
+    backfill_recipe: NonEmptyString | None = None
+    not_backfillable: NotBackfillableDefinition | None = None
     golden: NonEmptyString | None = None
     response_model: NonEmptyString | None = None
     required_bars: PositiveInt | None = None
@@ -134,6 +144,15 @@ class IndicatorDefinition(BaseModel):
             assets = ", ".join(sorted(overlap))
             raise ValueError(
                 f"{assets} cannot appear in both definable_for and not_definable"
+            )
+        return self
+
+    @model_validator(mode="after")
+    def reject_contradictory_backfill_declarations(self) -> IndicatorDefinition:
+        if self.backfill_recipe is not None and self.not_backfillable is not None:
+            raise ValueError(
+                f"{self.key} must not declare both backfill_recipe and "
+                "not_backfillable"
             )
         return self
 
@@ -332,6 +351,35 @@ def assert_registry_coverage(
             failures.append(f"{entry.key} is missing a response model")
         if entry.parameters is None:
             failures.append(f"{entry.key} is missing parameters")
+
+    if failures:
+        raise AssertionError("; ".join(failures))
+
+
+def assert_backfill_coverage(
+    registry: IndicatorRegistry,
+    *,
+    registered_recipes: Collection[str],
+) -> None:
+    """Fail when an indicator lacks both a backfill recipe and an honest absence."""
+
+    failures: list[str] = []
+    for entry in registry.root:
+        has_recipe = entry.backfill_recipe is not None
+        has_absence = entry.not_backfillable is not None
+        if has_recipe == has_absence:
+            failures.append(
+                f"{entry.key} must declare exactly one backfill declaration: "
+                "backfill_recipe or not_backfillable"
+            )
+            continue
+        if entry.backfill_recipe is not None and (
+            entry.backfill_recipe not in registered_recipes
+        ):
+            failures.append(
+                f"{entry.key} declares unknown backfill_recipe "
+                f"{entry.backfill_recipe}"
+            )
 
     if failures:
         raise AssertionError("; ".join(failures))

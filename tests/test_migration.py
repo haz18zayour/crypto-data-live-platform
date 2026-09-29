@@ -236,3 +236,63 @@ def test_reason_required_rejects_unavailable_without_reason(
             status="UNAVAILABLE",
             reason="FETCH_FAILED",
         )
+
+
+def test_origin_migration_defaults_pre_existing_rows_to_live_and_keeps_them_readable(
+    migrated_postgres: tuple[psycopg.Connection, str],
+) -> None:
+    connection, _ = migrated_postgres
+    schema = f"test_origin_backcompat_{uuid4().hex}"
+    origin_migration = "20260928120000_add_datapoint_origin_and_filter_live_reads.sql"
+    try:
+        with connection.transaction():
+            connection.execute(
+                sql.SQL("create schema {}").format(sql.Identifier(schema))
+            )
+            for migration in sorted(MIGRATIONS.glob("*.sql")):
+                if migration.name == origin_migration:
+                    break
+                migration_sql = migration.read_text(encoding="utf-8").replace(
+                    "public.", f"{sql.Identifier(schema).as_string(connection)}."
+                )
+                connection.execute(migration_sql)
+
+            _insert(
+                connection=connection,
+                schema=schema,
+                indicator_key="pre_origin_row",
+            )
+
+            migration_sql = (MIGRATIONS / origin_migration).read_text(
+                encoding="utf-8"
+            ).replace("public.", f"{sql.Identifier(schema).as_string(connection)}.")
+            connection.execute(migration_sql)
+
+        row = connection.execute(
+            sql.SQL(
+                """
+                select origin
+                from {}.datapoints
+                where indicator_key = 'pre_origin_row'
+                """
+            ).format(sql.Identifier(schema))
+        ).fetchone()
+        readable = connection.execute(
+            sql.SQL(
+                """
+                select indicator_key, origin
+                from {}.datapoints_read
+                where indicator_key = 'pre_origin_row'
+                """
+            ).format(sql.Identifier(schema))
+        ).fetchall()
+
+        assert row == ("live",)
+        assert readable == [("pre_origin_row", "live")]
+    finally:
+        with connection.transaction():
+            connection.execute(
+                sql.SQL("drop schema if exists {} cascade").format(
+                    sql.Identifier(schema)
+                )
+            )

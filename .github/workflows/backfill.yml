@@ -1,0 +1,41 @@
+name: backfill
+
+on:
+  workflow_dispatch:
+    inputs:
+      indicator_key:
+        description: "Registry indicator key to backfill, or all"
+        required: true
+        default: all
+
+permissions:
+  contents: read
+
+jobs:
+  backfill:
+    name: backfill
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      FRED_API_KEY: ${{ secrets.FRED_API_KEY }}
+      SOSOVALUE_API_KEY: ${{ secrets.SOSOVALUE_API_KEY }}
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+
+      - name: Run backfill
+        run: |
+          if [ "${{ inputs.indicator_key }}" = "all" ]; then
+            uv run python -m ingest.backfill --all
+          else
+            uv run python -m ingest.backfill --indicator-key "${{ inputs.indicator_key }}"
+          fi
