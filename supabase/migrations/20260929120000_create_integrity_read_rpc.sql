@@ -42,21 +42,44 @@ as $$
   ),
   observations as (
     select
-      d.indicator_key,
-      d.asset,
-      d.source_vendor,
-      d.source_timestamp,
-      d.value,
+      distinct_observation.indicator_key,
+      distinct_observation.asset,
+      distinct_observation.source_vendor,
+      distinct_observation.source_timestamp,
+      distinct_observation.value,
       row_number() over (
-        partition by d.indicator_key, d.asset, d.source_vendor
-        order by d.source_timestamp desc
+        partition by
+          distinct_observation.indicator_key,
+          distinct_observation.asset,
+          distinct_observation.source_vendor
+        order by distinct_observation.source_timestamp desc
       ) as observation_rank
-    from public.datapoints d
-      join registry r on r.key = d.indicator_key and r.vendor = d.source_vendor
-    where d.origin in ('live', 'backfill')
-      and d.status = 'OK'
-      and d.value is not null
-      and d.source_timestamp is not null
+    from (
+      select distinct on (
+        d.indicator_key,
+        d.asset,
+        d.source_vendor,
+        d.source_timestamp
+      )
+        d.indicator_key,
+        d.asset,
+        d.source_vendor,
+        d.source_timestamp,
+        d.value
+      from public.datapoints d
+        join registry r on r.key = d.indicator_key and r.vendor = d.source_vendor
+      where d.origin in ('live', 'backfill')
+        and d.status = 'OK'
+        and d.value is not null
+        and d.source_timestamp is not null
+      order by
+        d.indicator_key,
+        d.asset,
+        d.source_vendor,
+        d.source_timestamp,
+        d.fetched_at desc,
+        d.id desc
+    ) distinct_observation
   ),
   direct_frozen as (
     select

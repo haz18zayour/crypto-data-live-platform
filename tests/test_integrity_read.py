@@ -177,6 +177,8 @@ def test_integrity_read_migration_is_additive_rpc_only() -> None:
     assert "statement_timestamp() as computed_at" in sql_text
     assert "from public.datapoints" in sql_text
     assert "jsonb_to_recordset" in sql_text
+    assert "select distinct on (" in sql_text
+    assert "d.source_timestamp" in sql_text
     assert "grant execute on function public.integrity_read(jsonb) to anon, authenticated" in sql_text
     assert "notify pgrst, 'reload schema'" in sql_text
     assert "alter table public.datapoints" not in sql_text
