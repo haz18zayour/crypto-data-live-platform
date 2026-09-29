@@ -1,0 +1,14 @@
+{
+  "gate": "G6_HUMAN",
+  "question": "US-1010: The demonstration item the acceptance protocol calls for, not a machine check",
+  "feature": "PRD-010-integrity-dashboard",
+  "story": "US-1010",
+  "options": [
+    "met",
+    "not-met"
+  ],
+  "context": "Everything a machine can check has passed (7/8).\nOnly your judgement is left:\n  · The owner opens the live integrity panel and the board, confirms at least one real or deliberately-seeded frozen indicator shows its badge with a correct date, confirms the freshness rollup shows real per-vendor ages with the two wall-clock fetchers reading \"unmeasurable\" rather than green, and confirms nothing about the panel implies a judgement (a score, a colour ranking, a composite health number) beyond the honest per-source facts this PRD computes.\n\nRun it yourself: npm run dev (in web/)\nEvidence: prds/PRD-010-integrity-dashboard/50-evidence/US-1010/",
+  "defaultOnTimeout": "block",
+  "id": "G6_HUMAN-d8e4d9b0",
+  "openedAt": "2026-09-29T23:50:00.100Z"
+}

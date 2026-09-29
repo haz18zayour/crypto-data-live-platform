@@ -9,15 +9,19 @@ Do not hand-edit it — it is regenerated. The hand-written sections below it su
 
 ## ▶ Resume here
 
-**PRD-005-dashboard — GATE G1, scope lock**
+**US-1010: The demonstration item the acceptance protocol calls for, not a machine check**
 
-The research asked you questions and each carries the agent's own hypothesis. Anything you leave blank becomes an explicit assumption with a tripwire. The out-of-scope list is the one field with no default.
+A gate is open. Nothing proceeds until you answer.
 
 Owner: **You.** This one cannot be delegated.
 
 ```
-open prds/PRD-005-dashboard/20-decisions.yaml
+uf gate G6_HUMAN-d8e4d9b0 met|not-met
 ```
+
+**Left in flight by the previous session:**
+
+- 1 uncommitted file(s): tests/test_integrity_adversarial.py
 
 **Last handoff note:** **2026-09-15 — STOPPED HERE. PRD-007 is fully specced and compiled (8 stories, 62 criteria,
 
@@ -962,6 +966,11 @@ Spend to date: **$121.42** Claude · **314796k** Codex tokens.
 - 20:26  US-1007 started, attempt 3 (codex)
 - 20:28  US-1007 — codex finished `10076236`
 - 20:31  US-1007 **rejected** — 0/8 criteria, judged by claude
+- 20:31  ⏸ **gate opened** — US-1007 has failed 3 times — is the story wrong?
+- 23:35  ▶ gate answered **rewrite-criteria** — All 3 attempts produced 0 tokens/exitCode 1 - confirmed codex quota exhaustion via direct probe, now resetting Oct 4th (a multi-day block, not the earlier same-day reset). Owner chose to have this story implemented directly instead of waiting. Re-identifying as US-1010.
+- 20:39  **PRD-010-integrity-dashboard** compiled — 7 stories
+- 23:50  US-1010 **awaiting your judgement** — 7/8 criteria, judged by human
+- 23:50  ⏸ **gate opened** — US-1010: The demonstration item the acceptance protocol calls for, not a machine check
 
 <!-- uf:generated:end -->
 

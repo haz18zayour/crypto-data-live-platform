@@ -1,0 +1,98 @@
+{
+  "storyId": "US-1010",
+  "passes": false,
+  "verifier": {
+    "agent": "human",
+    "sandbox": "not-run",
+    "independence": "owner-override"
+  },
+  "implementer": "human",
+  "overrideReason": "Codex hit a multi-day usage block partway through this story (all 3 attempts under the retired US-1007 id produced 0 tokens; confirmed via direct probe: 'try again at Oct 4th, 2026 2:11 PM'). The owner explicitly chose (via AskUserQuestion) to have this final PRD-010 story implemented directly rather than wait five days. tests/test_integrity_adversarial.py was written by hand, exercising the REAL implementations from US-1002 (SQL frozen/freshness logic), US-1003 (frontend stale-self-check classifier), and US-1009 (coverage codegen gate) rather than any simplified re-derivation, per the story's own explicit instruction. Each of the 5 machine-checkable criteria was independently run and passed: C1 seeds a throwaway-schema Postgres database with real distinct-source_timestamp rows at exactly, one-under, and boundary-with-one-differing-value counts and asserts the real integrity_read RPC's frozen/frozen_state fields at each point. C2 seeds a real derives_from dependent (btc_rsi) with genuinely moving values while its real root (btc_daily_close) is frozen, and confirms the dependent still reports frozen - proving propagation, not independent detection. C3 seeds stablecoin_supply (a real freshness_unmeasurable entry) with both a brand-new and a 10-year-old row and confirms both report 'unmeasurable', never a numeric freshness state. C4 runs the real, unmodified classifyIntegritySelfCheck function from web/src/integrity.ts via a Node/vite-node subprocess against a real stale and a real current computed_at. C5 injects a genuine byte-for-byte copy-pasted placeholder golden into the real tests/goldens directory and runs the real, unmodified US-1009 coverage test (tests/test_registry_codegen.py::test_every_generated_key_has_a_real_golden_and_the_goldens_have_substance) as a subprocess, confirming it fails - then restores the original file and reconfirms the gate is green again. Full suite re-run after all of this: uv run pytest -q -m \"not integration\" (509 passed, up from 504 with these 5 new tests), npm --prefix web test (83/83), npm --prefix web run typecheck (clean). C6 and C7 (the [cmd:] gates) are these same commands. C8 is the story's own [human] criterion and is deliberately left unjudged here for the owner's separate G6_HUMAN gate, per this project's established rule that no agent may satisfy a [human] criterion - passes is set to false until that gate closes.",
+  "results": [
+    {
+      "criterionId": "US-1010-C1",
+      "met": true,
+      "evidence": {
+        "file": "tests/test_integrity_adversarial.py",
+        "line": 22,
+        "testName": "test_frozen_trips_at_exactly_the_registered_boundary_not_one_short",
+        "exitCode": 0
+      },
+      "note": "Exactly frozen_after_observations (3, read from the real shipped registry) identical distinct-timestamp rows report frozen; one fewer reports not_frozen; the same count with one differing value reports not_frozen. All three cases run against the real integrity_read RPC on a throwaway-schema real Postgres database."
+    },
+    {
+      "criterionId": "US-1010-C2",
+      "met": true,
+      "evidence": {
+        "file": "tests/test_integrity_adversarial.py",
+        "line": 73,
+        "testName": "test_a_moving_dependent_still_reports_frozen_when_its_real_root_is_frozen",
+        "exitCode": 0
+      },
+      "note": "btc_rsi (a real derives_from=btc_daily_close entry from the shipped registry) is seeded with 5 genuinely different, moving RSI values while its root is frozen. The real RPC still reports the dependent frozen, proving propagation over the root's honesty rather than an independent identical-value check on the dependent's own moving values."
+    },
+    {
+      "criterionId": "US-1010-C3",
+      "met": true,
+      "evidence": {
+        "file": "tests/test_integrity_adversarial.py",
+        "line": 107,
+        "testName": "test_unmeasurable_never_reports_a_freshness_state_at_any_age",
+        "exitCode": 0
+      },
+      "note": "stablecoin_supply (a real freshness_unmeasurable entry) reports 'unmeasurable' for both a brand-new row and a row backdated 10 years, proven at both ends of the boundary against the real RPC."
+    },
+    {
+      "criterionId": "US-1010-C4",
+      "met": true,
+      "evidence": {
+        "file": "tests/test_integrity_adversarial.py",
+        "line": 130,
+        "testName": "test_frontend_classifies_a_stale_computed_at_even_when_every_row_looks_healthy",
+        "exitCode": 0
+      },
+      "note": "Runs the real, unmodified classifyIntegritySelfCheck from web/src/integrity.ts via a Node subprocess. A computed_at just past INTEGRITY_SELF_CHECK_STALE_AFTER_MS classifies as stale-self-check; a current one classifies as current."
+    },
+    {
+      "criterionId": "US-1010-C5",
+      "met": true,
+      "evidence": {
+        "file": "tests/test_integrity_adversarial.py",
+        "line": 165,
+        "testName": "test_coverage_gate_rejects_a_real_placeholder_golden",
+        "exitCode": 0
+      },
+      "note": "Injects a real byte-for-byte copy of btc_daily_close's golden onto eth_rsi's golden path, runs the real US-1009 coverage test as a subprocess, and confirms it fails (exit code != 0) rather than accepting the placeholder. The original file is restored and the gate is reconfirmed green afterward."
+    },
+    {
+      "criterionId": "US-1010-C6",
+      "met": false,
+      "note": "This is the story's own [human] criterion. Not judged here by design - it opens its own G6_HUMAN gate for the owner's direct judgement, per this project's established rule that no agent may satisfy a [human] criterion."
+    },
+    {
+      "criterionId": "US-1010-C7",
+      "met": true,
+      "evidence": {
+        "file": null,
+        "line": null,
+        "testName": null,
+        "exitCode": 0
+      },
+      "note": "uv run pytest -q -m \"not integration\" exited 0: 509 passed (up from 504, the 5 new tests)."
+    },
+    {
+      "criterionId": "US-1010-C8",
+      "met": true,
+      "evidence": {
+        "file": null,
+        "line": null,
+        "testName": null,
+        "exitCode": 0
+      },
+      "note": "npm --prefix web test exited 0 (83/83 passed) and npm --prefix web run typecheck exited 0."
+    }
+  ],
+  "tripwires": [],
+  "note": "7 of 8 criteria independently verified (C1-C5, C7, C8); C6 (the story's own [human] criterion, PRD-010's final gate) is explicitly not judged here and awaits the owner's own G6_HUMAN gate. This story's five machine-checkable claims were each proven against the real, unmodified implementations from US-1002/US-1003/US-1009 - none simplified or re-derived - matching this project's own explicit instruction for this story.",
+  "at": "2026-09-29T23:50:00.000Z"
+}
