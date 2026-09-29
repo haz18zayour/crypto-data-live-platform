@@ -33,10 +33,10 @@ open prds/PRD-005-dashboard/20-decisions.yaml
 | PRD-006-derivatives | 7 | 7 | **all green** |
 | PRD-007-onchain | 8 | 8 | **all green** |
 | PRD-008-macro-flows | 8 | 8 | **all green** |
-| PRD-009-history-charts | 9 | 7 | 7/9 |
+| PRD-009-history-charts | 9 | 8 | 8/9 |
 | PRD-012-cadence-split | 6 | 6 | **all green** |
 
-Spend to date: **$109.17** Claude · **277850k** Codex tokens.
+Spend to date: **$110.10** Claude · **280161k** Codex tokens.
 
 ## What happened
 
@@ -850,6 +850,12 @@ Spend to date: **$109.17** Claude · **277850k** Codex tokens.
 
 - 00:01  US-908 — codex finished `8ecf01ee` · $0.94 · 7k tok
 - 00:02  US-908 **rejected** — 0/8 criteria, judged by claude
+- 00:02  ⏸ **gate opened** — US-908 has failed 3 times — is the story wrong?
+- 09:20  US-908 **PASSED** — 8/8 criteria, judged by human
+- 09:20  ▶ gate answered **skip** — The implementer sandbox could not execute the capture script itself. Ran it directly: it first reproduced a real production defect (uppercase-for-display sourceVendor breaking the history_read RPC's case-sensitive filter, so every cell showed 0 points), fixed with a new case-insensitive migration applied to production with owner authorization, then re-ran cleanly with screenshots visually reviewed. See verdict.json overrideReason.
+- 06:16  US-909 started, attempt 1 (codex)
+- 06:22  US-909 — codex finished `7e0c8ad6` · 2311k tok
+- 06:23  US-909 **rejected** — 2/4 criteria, judged by claude · $0.93
 
 <!-- uf:generated:end -->
 

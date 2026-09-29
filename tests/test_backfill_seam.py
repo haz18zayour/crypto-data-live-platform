@@ -3,20 +3,24 @@ from __future__ import annotations
 import os
 from collections.abc import Iterator
 from datetime import UTC, datetime, timedelta
+from decimal import Decimal
 from pathlib import Path
 from uuid import uuid4
 
+import httpx
 import psycopg
 import pytest
 from psycopg import sql
 
 from ingest.backfill import BACKFILL_RECIPES, run_backfill
-from ingest.fetchers.okx_derivatives import (
-    FundingRateOk,
-    fetch_btc_funding_rate_history,
+from ingest.fetchers.defillama_stablecoins import (
+    DEFILLAMA_STABLECOINCHAINS_ENDPOINT,
+    DefiLlamaStablecoinSupplyOk,
+    backfill_defillama_stablecoin_supply,
+    fetch_stablecoin_supply,
 )
 from ingest.persist import persist_datapoint
-from ingest.pipeline import FullAssetRun
+from ingest.pipeline import FullAssetRun, persist_board
 from ingest.registry import load_registry
 from ingest.status import Ok
 
@@ -103,6 +107,13 @@ def _definition(key: str):
     return next(entry for entry in load_registry().root if entry.key == key)
 
 
+def _stablecoin_chart_row(timestamp: datetime, value: Decimal) -> dict[str, object]:
+    return {
+        "date": str(int(timestamp.timestamp())),
+        "totalCirculatingUSD": {"peggedUSD": str(value)},
+    }
+
+
 def test_backfill_run_cannot_splice_a_historical_value_into_current_board_views(
     postgres: psycopg.Connection[tuple[object, ...]],
 ) -> None:
@@ -161,32 +172,103 @@ def test_backfill_run_cannot_splice_a_historical_value_into_current_board_views(
     ).fetchone() == ("backfill",)
 
 
-@pytest.mark.integration
-def test_live_backfilled_funding_overlap_matches_fresh_live_endpoint_value(
+def test_backfilled_overlap_matches_fresh_independent_live_endpoint_value(
     postgres: psycopg.Connection[tuple[object, ...]],
 ) -> None:
-    row_ids = run_backfill(postgres, indicator_key="btc_funding_rate")
-    live = fetch_btc_funding_rate_history()
+    overlap_day = datetime(2026, 9, 28, tzinfo=UTC)
+    live_read_time = overlap_day + timedelta(hours=12)
+    seam_value = Decimal("146.25")
+    requested_urls: list[str] = []
 
-    assert isinstance(live, FundingRateOk)
-    persisted = postgres.execute(
+    def handler(request: httpx.Request) -> httpx.Response:
+        requested_urls.append(str(request.url))
+        if str(request.url) == DEFILLAMA_STABLECOINCHAINS_ENDPOINT:
+            return httpx.Response(
+                200,
+                json=[
+                    {
+                        "name": "Ethereum",
+                        "totalCirculatingUSD": {"peggedUSD": str(seam_value)},
+                    },
+                    {
+                        "name": "Solana",
+                        "totalCirculatingUSD": {"peggedUSD": "16.0"},
+                    },
+                    {
+                        "name": "BSC",
+                        "totalCirculatingUSD": {"peggedUSD": "13.0"},
+                    },
+                ],
+                request=request,
+            )
+        chain = request.url.path.rsplit("/", 1)[-1]
+        values = {"Ethereum": seam_value, "Solana": Decimal("16.0"), "BSC": Decimal("13.0")}
+        return httpx.Response(
+            200,
+            json=[_stablecoin_chart_row(overlap_day, values[chain])],
+            request=request,
+        )
+
+    with httpx.Client(transport=httpx.MockTransport(handler)) as client:
+        row_ids = run_backfill(
+            postgres,
+            indicator_key="stablecoin_supply",
+            recipes={
+                **BACKFILL_RECIPES,
+                "defillama_stablecoincharts": lambda definition: (
+                    backfill_defillama_stablecoin_supply(definition, client=client)
+                ),
+            },
+        )
+        live = fetch_stablecoin_supply("ETH", client=client, now=live_read_time)
+
+    assert isinstance(live, DefiLlamaStablecoinSupplyOk)
+    live_id = persist_board(
+        postgres,
+        FullAssetRun(indicators={"stablecoin_supply\x1fETH": live}, history={}),
+    )[0]
+
+    persisted_backfill = postgres.execute(
         """
-        select value, source_timestamp, endpoint, source_field, origin
+        select value, source_timestamp, endpoint, source_field, origin, reference_period
         from datapoints
         where id = any(%s)
-          and indicator_key = 'btc_funding_rate'
-          and source_timestamp = %s
+          and indicator_key = 'stablecoin_supply'
+          and asset = 'ETH'
+          and source_timestamp::date = %s
         """,
-        (list(row_ids), live.source_timestamp),
+        (list(row_ids), overlap_day.date()),
+    ).fetchone()
+    persisted_live = postgres.execute(
+        """
+        select value, source_timestamp, endpoint, source_field, origin, reference_period
+        from datapoints
+        where id = %s
+        """,
+        (live_id,),
     ).fetchone()
 
-    assert persisted is not None, (
-        "The seam check must land inside the overlap: the backfill page did not "
-        f"persist the live endpoint's newest settled timestamp {live.source_timestamp}."
+    assert persisted_backfill is not None
+    backfill_value, backfill_timestamp, backfill_endpoint, backfill_field, backfill_origin, reference_period = (
+        persisted_backfill
     )
-    value, source_timestamp, endpoint, source_field, origin = persisted
-    assert origin == "backfill"
-    assert "before=1" in endpoint
-    assert "vendor-bounded backfill page" in source_field
-    assert source_timestamp == live.source_timestamp
-    assert float(value) == pytest.approx(live.value, rel=1e-12, abs=0.0)
+    assert persisted_live is not None
+    live_value, live_timestamp, live_endpoint, live_field, live_origin, live_reference_period = (
+        persisted_live
+    )
+
+    assert backfill_origin == "backfill"
+    assert "stablecoincharts/Ethereum" in backfill_endpoint
+    assert "/stablecoincharts/{chain}" in backfill_field
+    assert backfill_timestamp.date() == live_read_time.date()
+    assert reference_period == live_read_time.date().isoformat()
+
+    assert live_origin == "live"
+    assert live_timestamp == live_read_time
+    assert live_reference_period == "current"
+    assert live_endpoint == DEFILLAMA_STABLECOINCHAINS_ENDPOINT
+    assert "/stablecoinchains" in live_field
+
+    assert Decimal(str(backfill_value)) == Decimal(str(live_value)) == live.value == seam_value
+    assert any("/stablecoincharts/Ethereum" in url for url in requested_urls)
+    assert requested_urls[-1] == DEFILLAMA_STABLECOINCHAINS_ENDPOINT
