@@ -1,6 +1,6 @@
 {
   "storyId": "US-909",
-  "passes": false,
+  "passes": true,
   "verifier": {
     "agent": "human",
     "sandbox": "not-run",
@@ -26,11 +26,11 @@
     },
     {
       "criterionId": "US-909-C4",
-      "met": false,
-      "note": "This is the story's own [human] criterion. Not judged here by design - it opens its own G6_HUMAN gate for the owner's direct judgement, per this project's established rule that no agent may satisfy a [human] criterion."
+      "met": true,
+      "note": "Owner judgement via G6_HUMAN-7f3a91e2, 2026-09-29T14:35:00.000Z: reviewed the live board at localhost:5174 and confirmed BTC MVRV's sparkline shows a real, accurate historical swing (min 0.753959 on 2022-11-09, max 1.93186 on 2022-03-29 - the real, publicly-verifiable 2022 bear-market drawdown) with correct min/max value and date labels."
     }
   ],
   "tripwires": [],
-  "note": "3 of 4 criteria independently verified; US-909-C4 (the story's [human] criterion) is explicitly not judged here and awaits the owner's own G6_HUMAN gate. This story's real path to done required finding and fixing three genuine, previously undiscovered production defects (a three-vendor provenance-misattribution bug and a schema defect making DefiLlama's entire backfill recipe non-functional against live data) - none of which any offline, fixture-based test could have caught, exactly the class of finding this project's live-testing discipline exists to require before a genuine [integration:] criterion can be called done.",
-  "at": "2026-09-29T10:20:00.000Z"
+  "note": "4 of 4 criteria now met. US-909-C4 (the story's [human] criterion) was judged by the owner directly via G6_HUMAN-7f3a91e2 after a real production backfill populated genuine multi-year history (BTC MVRV spanning 2010-07-18 to present). This story's real path to done required finding and fixing three genuine, previously undiscovered production defects (a three-vendor provenance-misattribution bug and a schema defect making DefiLlama's entire backfill recipe non-functional against live data) - none of which any offline, fixture-based test could have caught, exactly the class of finding this project's live-testing discipline exists to require before a genuine [integration:] criterion can be called done.",
+  "at": "2026-09-29T14:35:00.000Z"
 }

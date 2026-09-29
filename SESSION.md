@@ -9,15 +9,19 @@ Do not hand-edit it — it is regenerated. The hand-written sections below it su
 
 ## ▶ Resume here
 
-**PRD-005-dashboard — GATE G1, scope lock**
+**1 uncommitted file(s) — the runner will not start**
 
-The research asked you questions and each carries the agent's own hypothesis. Anything you leave blank becomes an explicit assumption with a tripwire. The out-of-scope list is the one field with no default.
+A previous session edited source and did not commit. uf refuses to run on a dirty tree rather than auto-committing someone else's half-finished work.
 
 Owner: **You.** This one cannot be delegated.
 
 ```
-open prds/PRD-005-dashboard/20-decisions.yaml
+review the diff, then: git add -A && git commit
 ```
+
+**Left in flight by the previous session:**
+
+- 1 uncommitted file(s): scratch_backfill_all.py
 
 **Last handoff note:** **2026-09-15 — STOPPED HERE. PRD-007 is fully specced and compiled (8 stories, 62 criteria,
 
@@ -33,10 +37,10 @@ open prds/PRD-005-dashboard/20-decisions.yaml
 | PRD-006-derivatives | 7 | 7 | **all green** |
 | PRD-007-onchain | 8 | 8 | **all green** |
 | PRD-008-macro-flows | 8 | 8 | **all green** |
-| PRD-009-history-charts | 9 | 8 | 8/9 |
+| PRD-009-history-charts | 9 | 9 | **all green** |
 | PRD-012-cadence-split | 6 | 6 | **all green** |
 
-Spend to date: **$110.10** Claude · **281324k** Codex tokens.
+Spend to date: **$110.10** Claude · **281875k** Codex tokens.
 
 ## What happened
 
@@ -859,6 +863,16 @@ Spend to date: **$110.10** Claude · **281324k** Codex tokens.
 - 06:23  US-909 started, attempt 2 (codex)
 - 06:27  US-909 — codex finished `133bb581` · 1163k tok
 - 06:28  US-909 **rejected** — 0/4 criteria, judged by claude
+- 06:28  US-909 started, attempt 3 (codex)
+- 06:31  US-909 — codex finished `87d16302` · 552k tok
+- 06:32  US-909 **rejected** — 0/4 criteria, judged by claude
+- 06:32  ⏸ **gate opened** — US-909 has failed 3 times — is the story wrong?
+- 10:20  US-909 **awaiting your judgement** — 3/4 criteria, judged by human
+- 10:20  ▶ gate answered **skip** — All 3 attempts failed on a real defect (missing endpoint field across 3 vendors, then a DefiLlama schema rejecting all real live data). Both fixed and verified live. C1-C3 now pass; C4 is the story's [human] criterion and opens its own G6_HUMAN gate instead. See verdict.json overrideReason.
+- 10:20  ⏸ **gate opened** — US-909: The demonstration item the acceptance protocol calls for, not a machine check
+- 14:35  ▶ gate answered **met** — Owner reviewed the live board at localhost:5174 - BTC MVRV's sparkline shows min 0.753959 (09 Nov 2022) and max 1.93186 (29 Mar 2022), the real, publicly-verifiable 2022 bear-market drawdown from the post-ATH local top to the FTX-collapse bottom. Confirmed as a real, accurate historical swing with correct min/max labels.
+- 14:35  👤 you judged US-909 **met**
+- 14:35  US-909 **PASSED** — 4/4 criteria, judged by human
 
 <!-- uf:generated:end -->
 
