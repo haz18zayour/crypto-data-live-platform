@@ -4,6 +4,7 @@ import registryYaml from "../../../ingest/registry.yaml?raw";
 import {
   BOARD_ASSETS,
   buildBoard,
+  type BoardIntegrityRow,
   type BoardRegistryEntry,
 } from "../board";
 import type { Datapoint, Provenance } from "../datapoint";
@@ -62,4 +63,21 @@ const rows = registry.flatMap((definition, index): Datapoint[] => {
   return [{ ...provenance, status: "OK", value: index + 1.11 }];
 });
 
-export const mixedBoard = buildBoard(registry, rows, BOARD_ASSETS);
+export const mixedBoardIntegrityRows = [
+  {
+    indicatorKey: "btc_mvrv",
+    asset: "BTC",
+    sourceVendor: "coinmetrics",
+    frozen: true,
+    frozenState: "frozen",
+    frozenSinceSourceTimestamp: "2026-09-10T00:00:00Z",
+    derivesFrom: null,
+  },
+] satisfies BoardIntegrityRow[];
+
+export const mixedBoard = buildBoard(
+  registry,
+  rows,
+  BOARD_ASSETS,
+  mixedBoardIntegrityRows,
+);
