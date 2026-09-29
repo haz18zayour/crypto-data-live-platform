@@ -1,0 +1,6 @@
+.uf/events.ndjson              |  2 +
+ tests/test_registry_codegen.py | 97 ++++++++++++++++++++++++++++++++++++++++++
+ web/src/data.ts                | 10 ++++-
+ web/src/registry.generated.ts  | 86 +++++++++++++++++++++++++++++++++++++
+ web/src/registry.ts            | 96 ++++++++++++++++++++++++++++++++++++++++-
+ 5 files changed, 287 insertions(+), 4 deletions(-)
