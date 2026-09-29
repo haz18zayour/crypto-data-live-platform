@@ -189,3 +189,5 @@ $$;
 
 revoke all on function public.integrity_read(jsonb) from public;
 grant execute on function public.integrity_read(jsonb) to anon, authenticated;
+
+notify pgrst, 'reload schema';

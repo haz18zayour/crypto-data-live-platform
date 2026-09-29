@@ -178,6 +178,7 @@ def test_integrity_read_migration_is_additive_rpc_only() -> None:
     assert "from public.datapoints" in sql_text
     assert "jsonb_to_recordset" in sql_text
     assert "grant execute on function public.integrity_read(jsonb) to anon, authenticated" in sql_text
+    assert "notify pgrst, 'reload schema'" in sql_text
     assert "alter table public.datapoints" not in sql_text
     assert "create type public.datapoint_status" not in sql_text
     assert "alter type public.datapoint_status" not in sql_text
@@ -380,19 +381,16 @@ def test_live_postgrest_integrity_read_for_a_real_cell_returns_integrity_state()
             "SUPABASE_URL, plus VITE_SUPABASE_ANON_KEY"
         )
 
-    try:
-        response = httpx.post(
-            f"{supabase_url.rstrip('/')}/rest/v1/rpc/integrity_read",
-            headers={
-                "apikey": anon_key,
-                "Authorization": f"Bearer {anon_key}",
-                "Content-Type": "application/json",
-            },
-            json={"p_registry": _registry_payload()},
-            timeout=20,
-        )
-    except httpx.TransportError as error:
-        pytest.skip(f"Live PostgREST integrity_read request could not connect: {error}")
+    response = httpx.post(
+        f"{supabase_url.rstrip('/')}/rest/v1/rpc/integrity_read",
+        headers={
+            "apikey": anon_key,
+            "Authorization": f"Bearer {anon_key}",
+            "Content-Type": "application/json",
+        },
+        json={"p_registry": _registry_payload()},
+        timeout=20,
+    )
 
     assert response.status_code == 200, response.text
     rows = response.json()
