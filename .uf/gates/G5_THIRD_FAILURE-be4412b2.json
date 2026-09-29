@@ -1,0 +1,22 @@
+{
+  "gate": "G5_THIRD_FAILURE",
+  "question": "US-1001 has failed 3 times — is the story wrong?",
+  "feature": "PRD-010-integrity-dashboard",
+  "story": "US-1001",
+  "options": [
+    "split",
+    "rewrite-criteria",
+    "skip",
+    "retry-anyway"
+  ],
+  "context": "Criteria judged not met:\n  - US-1001-C1: not judged — a cheaper layer already failed\n  - US-1001-C2: not judged — a cheaper layer already failed\n  - US-1001-C3: not judged — a cheaper layer already failed\n  - US-1001-C4: not judged — a cheaper layer already failed\n  - US-1001-C5: not judged — a cheaper layer already failed\n  - US-1001-C6: not judged — a cheaper layer already failed\n  - US-1001-C7: not judged — a cheaper layer already failed\n  - US-1001-C8: not judged — a cheaper layer already failed\n  - US-1001-C9: not judged — a cheaper layer already failed\n  - US-1001-C10: not judged — a cheaper layer already failed",
+  "defaultOnTimeout": "block",
+  "id": "G5_THIRD_FAILURE-be4412b2",
+  "openedAt": "2026-09-29T13:35:00.125Z",
+  "answer": {
+    "choice": "rewrite-criteria",
+    "reason": "Derives_from assumed every asset has an existing registered root indicator; only BTC does. Attempt 3 fabricated new board-visible eth/sol/bnb_daily_close entries to work around this, breaking 5 existing web tests. Rewrote the story to require an honest frozen_propagation_unavailable declaration for ETH/SOL/BNB instead. Recompiled clean.",
+    "at": "2026-09-29T16:45:00.000Z",
+    "by": "human"
+  }
+}

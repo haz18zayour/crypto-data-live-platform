@@ -4,8 +4,8 @@
   "title": "Integrity dashboard — the self-audit that actually audits",
   "product": "crypto-data-live-platform",
   "branch": "feat/prd-010-integrity-dashboard",
-  "inputDigest": "f6c4328d9ab3bdb6",
-  "compiledAt": "2026-09-29T12:59:08.849Z",
+  "inputDigest": "b5dcfa9bcf78b0e1",
+  "compiledAt": "2026-09-29T13:46:35.773Z",
   "stories": [
     {
       "id": "US-1001",
@@ -23,18 +23,18 @@
         },
         {
           "id": "US-1001-C2",
-          "text": "Every derived indicator names its root",
+          "text": "Every derived indicator either names its real root or explicitly declares that propagation cannot apply to it",
           "method": {
             "kind": "test",
-            "name": "IndicatorDefinition gains derives_from: str | None, and a validator requires it for every entry carrying talib_function, rejecting a talib_function entry with derives_from unset"
+            "name": "IndicatorDefinition gains derives_from: str | None, and a validator requires exactly one of derives_from or frozen_propagation_unavailable (a new str | None field) for every entry carrying talib_function, rejecting a talib_function entry with neither or both set"
           }
         },
         {
           "id": "US-1001-C3",
-          "text": "derives_from cannot point at nothing",
+          "text": "derives_from cannot point at nothing or at itself",
           "method": {
             "kind": "test",
-            "name": "a validator rejects a derives_from value that does not match any existing registry key"
+            "name": "a validator rejects a derives_from value that does not match any existing registry key, and rejects an entry whose derives_from equals its own key (a self-loop)"
           }
         },
         {
@@ -50,19 +50,35 @@
           "text": "Real data populated, not just schema",
           "method": {
             "kind": "test",
-            "name": "every entry in registry.yaml currently declares exactly one of frozen_after_observations or expected_constant; btc_daily_close (or the equivalent root close entry) declares frozen_after_observations; btc_funding_rate (and eth/sol/bnb funding) declare expected_constant with a reason citing the 0.01% clamp"
+            "name": "every entry in registry.yaml currently declares exactly one of frozen_after_observations or expected_constant; btc_daily_close declares frozen_after_observations"
           }
         },
         {
           "id": "US-1001-C6",
-          "text": "Real dependency links populated",
+          "text": "The one case where real propagation is possible today",
           "method": {
             "kind": "test",
-            "name": "every talib_function-carrying entry in registry.yaml (RSI, EMA stack, MACD, StochRSI, Bollinger, ATR, OBV) declares derives_from pointing at the correct underlying price/volume series for its own asset"
+            "name": "every BTC talib_function entry (RSI, EMA stack, MACD, StochRSI, Bollinger, ATR, OBV) declares derives_from=btc_daily_close, the one asset where a real, board-visible, persisted close price already exists to point at"
           }
         },
         {
           "id": "US-1001-C7",
+          "text": "An honest, documented limitation instead of a fabricated root — this project's own no-proxy rule applies to its own audit layer exactly as it does to market data: absent real data to derive from, state that plainly rather than inventing a stand-in",
+          "method": {
+            "kind": "test",
+            "name": "every ETH/SOL/BNB talib_function entry declares frozen_propagation_unavailable with a reason explaining that no per-asset close/volume series is separately registered for that asset (technical indicators are computed directly from freshly-fetched OHLCV bars per ingest/pipeline.py's compute path, never from a persisted per-asset \"close\" indicator; only BTC also exposes its close as its own board cell, by deliberate product decision — confirmed live: ETH/SOL/BNB daily close renders \"Daily close is intentionally BTC-only on this board\")"
+          }
+        },
+        {
+          "id": "US-1001-C8",
+          "text": "The regression class that sank the first three attempts (each one invented a new eth_daily_close/sol_daily_close/bnb_daily_close board cell to give derives_from somewhere to point), checked directly — this story adds new OPTIONAL FIELDS to existing entries only; it must never add, remove, or change the definable_for of any registry row",
+          "method": {
+            "kind": "test",
+            "name": "npm --prefix web test passes with no regression in existing fixture-derived counts (src/fixtures/mixedBoard.test.ts, src/CoverageHeadline.test.tsx, src/BoardMatrix.test.tsx) — these tests hard-code exact NOT_DEFINABLE/OK counts derived from the real registry and must show zero new visible cells and zero changed cell count for any existing entry"
+          }
+        },
+        {
+          "id": "US-1001-C9",
           "text": "The two wall-clock fetchers are marked, not silently green",
           "method": {
             "kind": "test",
@@ -70,15 +86,15 @@
           }
         },
         {
-          "id": "US-1001-C8",
+          "id": "US-1001-C10",
           "text": "The coverage gate itself",
           "method": {
             "kind": "test",
-            "name": "a registry entry missing a required frozen declaration, or a talib_function entry missing derives_from, fails registry validation at load time"
+            "name": "a registry entry missing a required frozen declaration, or a talib_function entry missing both derives_from and frozen_propagation_unavailable, fails registry validation at load time"
           }
         },
         {
-          "id": "US-1001-C9",
+          "id": "US-1001-C11",
           "text": "The full offline suite stays green",
           "method": {
             "kind": "cmd",
@@ -86,7 +102,7 @@
           }
         },
         {
-          "id": "US-1001-C10",
+          "id": "US-1001-C12",
           "text": "Strict typing holds on the new fields",
           "method": {
             "kind": "cmd",
@@ -167,6 +183,14 @@
         },
         {
           "id": "US-1002-C5",
+          "text": "No silent downgrade to a check research already found unreliable for derived indicators, and no pretending the answer is known when it isn't",
+          "method": {
+            "kind": "test",
+            "name": "an entry declaring frozen_propagation_unavailable (US-1001's honest exemption for ETH/SOL/BNB's technical indicators, which have no registered root to derive from) reports a distinct propagation-unavailable state, never a false \"not frozen\" and never an independent identical-value check run on the derived series itself"
+          }
+        },
+        {
+          "id": "US-1002-C6",
           "text": "The self-check stamp US-1003 will consume",
           "method": {
             "kind": "test",
@@ -174,7 +198,7 @@
           }
         },
         {
-          "id": "US-1002-C6",
+          "id": "US-1002-C7",
           "text": "No blast radius beyond the new objects themselves",
           "method": {
             "kind": "test",
@@ -182,7 +206,7 @@
           }
         },
         {
-          "id": "US-1002-C7",
+          "id": "US-1002-C8",
           "text": "Proves the SQL against a real database, not an assumption about it — this project's established convention marks a throwaway-schema real-Postgres test UNMARKED, not [integration:], which is reserved for a genuinely live third-party vendor or deployed-instance call",
           "method": {
             "kind": "test",
@@ -190,7 +214,7 @@
           }
         },
         {
-          "id": "US-1002-C8",
+          "id": "US-1002-C9",
           "text": "Directly checks that the RPC is actually reachable through the real deployed system, not merely present in the schema — this project has already been bitten once by a migration that worked in isolation but never returned real data through the actual browser call path (US-908's sourceVendor case-sensitivity defect) and once by a PostgREST schema cache that needed an explicit reload notification",
           "method": {
             "kind": "integration",
@@ -198,7 +222,7 @@
           }
         },
         {
-          "id": "US-1002-C9",
+          "id": "US-1002-C10",
           "text": "The full offline suite stays green",
           "method": {
             "kind": "cmd",
