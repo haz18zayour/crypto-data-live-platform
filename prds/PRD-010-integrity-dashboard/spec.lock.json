@@ -4,8 +4,8 @@
   "title": "Integrity dashboard — the self-audit that actually audits",
   "product": "crypto-data-live-platform",
   "branch": "feat/prd-010-integrity-dashboard",
-  "inputDigest": "d1cdccc6f4c4e079",
-  "compiledAt": "2026-09-29T13:48:26.515Z",
+  "inputDigest": "7ae9b4d4f60474bf",
+  "compiledAt": "2026-09-29T15:12:07.159Z",
   "stories": [
     {
       "id": "US-1008",
@@ -264,13 +264,13 @@
       ]
     },
     {
-      "id": "US-1006",
+      "id": "US-1009",
       "title": "Coverage codegen — a literal IndicatorKey union generated from registry.yaml, exhaustive UI wiring, a substance-checking coverage test",
-      "source": "prds/PRD-010-integrity-dashboard/40-stories/US-1006-coverage-codegen.md",
+      "source": "prds/PRD-010-integrity-dashboard/40-stories/US-1009-coverage-codegen.md",
       "description": "As the owner, I want an indicator that is missing UI or test wiring to fail the build, so that\n\"every indicator is covered\" is a compiler/test error rather than a convention someone can forget —\nresearch found `web/src/registry.ts` currently loads `registry.yaml` at runtime via `?raw` +\n`parse()`, making every indicator key a plain `string` to the TypeScript compiler today, so no\nmapped-type exhaustiveness check can see a new key.\n\nResearch's own blind-spot finding: a coverage gate phrased as \"every indicator has wiring\" can be\nsatisfied by a placeholder — a golden file copied from another indicator, an `it.todo`, a\n`// @ts-expect-error` — that proves a key exists in a mapping without proving anything real is\nasserted. This story's coverage test must check substance, not presence, or it reproduces the exact\n\"self-audit that doesn't audit\" failure this PRD's own title warns against.",
       "criteria": [
         {
-          "id": "US-1006-C1",
+          "id": "US-1009-C1",
           "text": "as const` and a derived `IndicatorKey` union type, covering every key currently in the registry] The generated file exists and is complete",
           "method": {
             "kind": "test",
@@ -278,7 +278,7 @@
           }
         },
         {
-          "id": "US-1006-C2",
+          "id": "US-1009-C2",
           "text": "A stale generated file is caught, not silently trusted",
           "method": {
             "kind": "test",
@@ -286,7 +286,7 @@
           }
         },
         {
-          "id": "US-1006-C3",
+          "id": "US-1009-C3",
           "text": "The generation is real, not a static file someone edits by hand",
           "method": {
             "kind": "test",
@@ -294,7 +294,7 @@
           }
         },
         {
-          "id": "US-1006-C4",
+          "id": "US-1009-C4",
           "text": "Catches a copy-pasted placeholder golden, not just its presence",
           "method": {
             "kind": "test",
@@ -302,7 +302,7 @@
           }
         },
         {
-          "id": "US-1006-C5",
+          "id": "US-1009-C5",
           "text": "Catches an `it.todo` or an empty test shell — the key must appear in something that actually runs",
           "method": {
             "kind": "test",
@@ -310,7 +310,7 @@
           }
         },
         {
-          "id": "US-1006-C6",
+          "id": "US-1009-C6",
           "text": ": ...}` and demonstrably fails tsc when a key is manually removed from the mapping in a throwaway diff] The compile-time exhaustiveness check is real, proven by breaking it on purpose",
           "method": {
             "kind": "test",
@@ -318,7 +318,7 @@
           }
         },
         {
-          "id": "US-1006-C7",
+          "id": "US-1009-C7",
           "text": "The full offline suite stays green",
           "method": {
             "kind": "cmd",
@@ -326,7 +326,7 @@
           }
         },
         {
-          "id": "US-1006-C8",
+          "id": "US-1009-C8",
           "text": "The exhaustive mapping compiles cleanly against the real, current registry",
           "method": {
             "kind": "cmd",

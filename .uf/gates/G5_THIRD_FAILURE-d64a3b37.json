@@ -1,0 +1,22 @@
+{
+  "gate": "G5_THIRD_FAILURE",
+  "question": "US-1006 has failed 3 times — is the story wrong?",
+  "feature": "PRD-010-integrity-dashboard",
+  "story": "US-1006",
+  "options": [
+    "split",
+    "rewrite-criteria",
+    "skip",
+    "retry-anyway"
+  ],
+  "context": "Criteria judged not met:\n  - US-1006-C1: The script has a renderer, but web/src/registry.generated.ts does not exist. A glob of web/src/registry*.ts matches only registry.ts, and no test checks for a generated file.\n  - US-1006-C2: tests/test_registry_codegen.py does not exist, and there is no committed generated file for a staleness check to compare against.\n  - US-1006-C3: No test runs the generator or shows that its output comes from registry.yaml.\n  - US-1006-C4: No coverage test exists that checks goldens for copy-pasted placeholders.\n  - US-1006-C5: No test exists that detects it.todo calls or empty test shells.\n  - US-1006-C6: Grep finds no IndicatorKey and no mapped type anywhere in web/src. registry.ts still imports the YAML with ?raw (line 3) and runs parse() on it (line 23), so every key is still a plain string to the compiler.\n  - US-1006-C8: Typecheck exited 0, but no exhaustive mapping and no generated file exist. The thing this criterion is about is missing, so the green result proves nothing about it.",
+  "defaultOnTimeout": "block",
+  "id": "G5_THIRD_FAILURE-d64a3b37",
+  "openedAt": "2026-09-29T15:11:15.851Z",
+  "answer": {
+    "choice": "rewrite-criteria",
+    "reason": "All 3 attempts produced 0 tokens and exitCode 1 - confirmed via direct `codex exec \"say hello\"` probe: 'You've hit your usage limit... try again at 9:11 PM.' No code was written at all; there is nothing to evaluate or fix in the story's own criteria. Re-identifying as US-1009 to get a fresh attempt budget once the quota resets, matching the established US-907->US-910 pattern from PRD-009.",
+    "at": "2026-09-29T18:12:00.000Z",
+    "by": "human"
+  }
+}

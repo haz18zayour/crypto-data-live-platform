@@ -1,5 +1,5 @@
 ---
-id: US-1006
+id: US-1009
 title: Coverage codegen — a literal IndicatorKey union generated from registry.yaml, exhaustive UI wiring, a substance-checking coverage test
 priority: 2
 touches:
