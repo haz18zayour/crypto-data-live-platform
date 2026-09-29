@@ -1,9 +1,9 @@
-.uf/events.ndjson                                  |   5 +
- SESSION.md                                         |  16 +-
- .../US-909/adversarial-demonstration.md            |  29 +++
- .../50-evidence/US-909/diffstat.txt                |   6 +
+.uf/events.ndjson                                  |   8 +
+ SESSION.md                                         |  19 +-
+ .../US-909/adversarial-demonstration.md            |  52 ++++
+ .../50-evidence/US-909/diffstat.txt                |   9 +
  .../50-evidence/US-909/gates.json                  |  14 ++
  .../50-evidence/US-909/verdict.json                |  34 +++
  tests/test_backfill_seam.py                        | 274 +++++++++++++++++++++
  web/src/Sparkline.test.tsx                         |  16 ++
- 8 files changed, 392 insertions(+), 2 deletions(-)
+ 8 files changed, 424 insertions(+), 2 deletions(-)
