@@ -1,6 +1,6 @@
-.uf/events.ndjson                                  |   5 +
- SESSION.md                                         |  10 +-
- .../50-evidence/US-1005/diffstat.txt               |   8 +
+.uf/events.ndjson                                  |   8 +
+ SESSION.md                                         |  13 +-
+ .../50-evidence/US-1005/diffstat.txt               |  12 ++
  .../50-evidence/US-1005/gates.json                 |  26 +++
  .../50-evidence/US-1005/verdict.json               |  51 ++++++
  web/src/App.tsx                                    |   4 +
@@ -9,4 +9,4 @@
  web/src/board.ts                                   |   2 +
  web/src/data.ts                                    |   5 +-
  web/src/styles.css                                 |  81 +++++++++
- 11 files changed, 516 insertions(+), 3 deletions(-)
+ 11 files changed, 526 insertions(+), 3 deletions(-)
