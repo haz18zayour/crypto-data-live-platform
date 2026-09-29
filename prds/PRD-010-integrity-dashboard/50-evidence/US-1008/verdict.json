@@ -3,74 +3,144 @@
   "passes": false,
   "verifier": {
     "agent": "claude",
-    "sandbox": "not-run"
+    "sandbox": "restricted:read-only"
   },
   "implementer": "codex",
   "results": [
     {
       "criterionId": "US-1008-C1",
-      "met": false,
-      "note": "not judged — a cheaper layer already failed"
+      "met": true,
+      "evidence": {
+        "file": "tests/test_registry.py",
+        "line": 109,
+        "testName": "test_registry_rejects_an_entry_with_no_frozen_detection_declaration",
+        "exitCode": 0
+      },
+      "note": "Validator at ingest/registry.py:164-173 rejects entries with no declaration or with both. Tests at lines 109 and 119 cover both cases, and test_every_shipped_entry_declares_exactly_one_frozen_detection_contract (line 296) checks every shipped entry."
     },
     {
       "criterionId": "US-1008-C2",
-      "met": false,
-      "note": "not judged — a cheaper layer already failed"
+      "met": true,
+      "evidence": {
+        "file": "tests/test_registry.py",
+        "line": 132,
+        "testName": "test_registry_rejects_a_talib_entry_without_frozen_propagation_declaration",
+        "exitCode": 0
+      },
+      "note": "Validator at ingest/registry.py:175-194 requires every TA-Lib entry to set exactly one of derives_from or frozen_propagation_unavailable. The neither case is tested at line 132 and the both case at line 160."
     },
     {
       "criterionId": "US-1008-C3",
-      "met": false,
-      "note": "not judged — a cheaper layer already failed"
+      "met": true,
+      "evidence": {
+        "file": "tests/test_registry.py",
+        "line": 190,
+        "testName": "test_registry_rejects_derived_roots_that_are_unknown_or_self_referential",
+        "exitCode": 0
+      },
+      "note": "IndicatorRegistry.validate_derived_roots (ingest/registry.py:231-244) rejects a derives_from that points to itself or to an unknown key. The test at line 190 asserts both error messages."
     },
     {
       "criterionId": "US-1008-C4",
-      "met": false,
-      "note": "not judged — a cheaper layer already failed"
+      "met": true,
+      "evidence": {
+        "file": "ingest/registry.py",
+        "line": 128,
+        "testName": "test_every_shipped_entry_declares_exactly_one_frozen_detection_contract",
+        "exitCode": 0
+      },
+      "note": "The fields frozen_after_observations, expected_constant, derives_from, frozen_propagation_unavailable and freshness_unmeasurable are declared on IndicatorDefinition at lines 126-130."
     },
     {
       "criterionId": "US-1008-C5",
-      "met": false,
-      "note": "not judged — a cheaper layer already failed"
+      "met": true,
+      "evidence": {
+        "file": "tests/test_registry.py",
+        "line": 318,
+        "testName": "test_non_btc_talib_indicators_declare_frozen_propagation_unavailable",
+        "exitCode": 0
+      },
+      "note": "The shipped registry.yaml has real values filled in (thresholds, expected_constant for funding rates, derives_from, unavailability reasons). Tests at lines 296, 306, 318 and 332 load the real registry and assert on those values."
     },
     {
       "criterionId": "US-1008-C6",
-      "met": false,
-      "note": "not judged — a cheaper layer already failed"
+      "met": true,
+      "evidence": {
+        "file": "tests/test_registry.py",
+        "line": 306,
+        "testName": "test_btc_talib_indicators_derive_from_the_registered_btc_close_cell",
+        "exitCode": 0
+      },
+      "note": "All BTC TA-Lib entries derive from the real registered btc_daily_close, and none of them sets frozen_propagation_unavailable."
     },
     {
       "criterionId": "US-1008-C7",
-      "met": false,
-      "note": "not judged — a cheaper layer already failed"
+      "met": true,
+      "evidence": {
+        "file": "tests/test_registry.py",
+        "line": 318,
+        "testName": "test_non_btc_talib_indicators_declare_frozen_propagation_unavailable",
+        "exitCode": 0
+      },
+      "note": "ETH/SOL/BNB TA-Lib entries leave derives_from unset and carry an exact documented reason. The fabricated eth/sol/bnb_daily_close rows were removed."
     },
     {
       "criterionId": "US-1008-C8",
       "met": false,
-      "note": "not judged — a cheaper layer already failed"
+      "evidence": {
+        "file": "tests/test_registry.py",
+        "line": 254,
+        "testName": "test_shipped_registry_definitions_cover_four_assets_at_scale",
+        "exitCode": 0
+      },
+      "note": "No test checks this directly. The only guard is a total row count (== 81) plus per-asset TA-Lib counts in test_assets.py. Nothing compares the registry's keys or each row's definable_for against a baseline, so a changed definable_for, or an added row offset by a removed one, would pass. This diff itself removes three rows relative to its base commit and rewrites the hard-coded counts from 84 to 81 across several test files. It also touches ingest/pipeline.py, which is outside the declared files."
     },
     {
       "criterionId": "US-1008-C9",
-      "met": false,
-      "note": "not judged — a cheaper layer already failed"
+      "met": true,
+      "evidence": {
+        "file": "tests/test_registry.py",
+        "line": 332,
+        "testName": "test_wall_clock_fetchers_declare_freshness_unmeasurable_reasons",
+        "exitCode": 0
+      },
+      "note": "stablecoin_supply and sol_staking carry freshness_unmeasurable reasons naming the fetch wall clock, and the test asserts on both."
     },
     {
       "criterionId": "US-1008-C10",
       "met": false,
-      "note": "not judged — a cheaper layer already failed"
+      "evidence": {
+        "file": "ingest/registry.py",
+        "line": 382,
+        "testName": null,
+        "exitCode": null
+      },
+      "note": "The diff removes the frozen-detection and derives_from checks from assert_registry_coverage (registry.py:382-408 now checks only corroboration, golden, required_bars, response_model and parameters). tests/test_coverage.py has no case where a missing frozen or propagation declaration fails the coverage gate; its model_construct fixtures skip the validators entirely. Enforcement exists only at load time via pydantic validators, not in the coverage gate."
     },
     {
       "criterionId": "US-1008-C11",
-      "met": false,
-      "note": "not judged — a cheaper layer already failed"
+      "met": true,
+      "evidence": {
+        "file": null,
+        "line": null,
+        "testName": null,
+        "exitCode": 0
+      },
+      "note": "Gate `uv run pytest -q` exited 0."
     },
     {
       "criterionId": "US-1008-C12",
-      "met": false,
-      "note": "not judged — a cheaper layer already failed"
+      "met": true,
+      "evidence": {
+        "file": null,
+        "line": null,
+        "testName": null,
+        "exitCode": 0
+      },
+      "note": "Gate `uv run mypy ingest --strict` exited 0."
     }
   ],
-  "tripwires": [
-    "the story changed no files at all"
-  ],
-  "note": "gates failed: test, US-1008-C11 | tripwires: the story changed no files at all",
-  "at": "2026-09-29T13:51:52.167Z"
+  "tripwires": [],
+  "note": "Schema validators and registry data are real, and the tests make meaningful assertions. However, C8's regression check is only a total row count, not a direct per-key or definable_for comparison, and the diff weakened the coverage gate (C10) by removing its frozen and derives_from checks. The diff also churns many test files (84→81 count edits, reordered fields) and touches ingest/pipeline.py, which is outside the declared files.",
+  "at": "2026-09-29T14:10:12.560Z"
 }

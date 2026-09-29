@@ -1,18 +1,22 @@
-.uf/events.ndjson                    |   2 +
- ingest/pipeline.py                   |   4 +-
- ingest/registry.py                   |  38 --------
- ingest/registry.yaml                 | 176 -----------------------------------
- tests/test_assets.py                 |   2 +-
- tests/test_bar_slice.py              |   3 -
- tests/test_bollinger_obv.py          |   2 -
- tests/test_canary.py                 |   1 -
- tests/test_corroboration_schema.py   |   1 -
- tests/test_coverage.py               |   3 +-
- tests/test_divergence.py             |   3 -
- tests/test_lookback.py               |   2 -
- tests/test_persist.py                |   1 -
- tests/test_persist_board.py          |  22 ++---
- tests/test_registry.py               | 140 +---------------------------
- tests/test_registry_not_definable.py |   5 +-
- tests/test_uncorroborated.py         |   2 -
- 17 files changed, 21 insertions(+), 386 deletions(-)
+.uf/events.ndjson                                  |   5 +
+ SESSION.md                                         |   9 +
+ ingest/pipeline.py                                 |   4 +-
+ ingest/registry.py                                 |  70 +++--
+ ingest/registry.yaml                               | 303 +++++++++------------
+ .../50-evidence/US-1008/diffstat.txt               |  18 ++
+ .../50-evidence/US-1008/gates.json                 |  26 ++
+ .../50-evidence/US-1008/verdict.json               | 146 ++++++++++
+ tests/test_assets.py                               |   2 +-
+ tests/test_bar_slice.py                            |   8 +-
+ tests/test_bollinger_obv.py                        |   8 +-
+ tests/test_canary.py                               |   3 +-
+ tests/test_corroboration_schema.py                 |   3 +-
+ tests/test_coverage.py                             |   3 +-
+ tests/test_divergence.py                           |   7 +-
+ tests/test_lookback.py                             |   8 +-
+ tests/test_persist.py                              |   3 +-
+ tests/test_persist_board.py                        |  22 +-
+ tests/test_registry.py                             | 267 ++++++++++--------
+ tests/test_registry_not_definable.py               |   7 +-
+ tests/test_uncorroborated.py                       |   3 +-
+ 21 files changed, 572 insertions(+), 353 deletions(-)
