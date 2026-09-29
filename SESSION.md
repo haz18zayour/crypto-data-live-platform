@@ -9,19 +9,15 @@ Do not hand-edit it — it is regenerated. The hand-written sections below it su
 
 ## ▶ Resume here
 
-**1 uncommitted file(s) — the runner will not start**
+**PRD-005-dashboard — GATE G1, scope lock**
 
-A previous session edited source and did not commit. uf refuses to run on a dirty tree rather than auto-committing someone else's half-finished work.
+The research asked you questions and each carries the agent's own hypothesis. Anything you leave blank becomes an explicit assumption with a tripwire. The out-of-scope list is the one field with no default.
 
 Owner: **You.** This one cannot be delegated.
 
 ```
-review the diff, then: git add -A && git commit
+open prds/PRD-005-dashboard/20-decisions.yaml
 ```
-
-**Left in flight by the previous session:**
-
-- 1 uncommitted file(s): scratch_backfill_all.py
 
 **Last handoff note:** **2026-09-15 — STOPPED HERE. PRD-007 is fully specced and compiled (8 stories, 62 criteria,
 
@@ -38,9 +34,10 @@ review the diff, then: git add -A && git commit
 | PRD-007-onchain | 8 | 8 | **all green** |
 | PRD-008-macro-flows | 8 | 8 | **all green** |
 | PRD-009-history-charts | 9 | 9 | **all green** |
+| PRD-010-integrity-dashboard | 7 | 0 | 0/7 |
 | PRD-012-cadence-split | 6 | 6 | **all green** |
 
-Spend to date: **$110.10** Claude · **281875k** Codex tokens.
+Spend to date: **$112.13** Claude · **282142k** Codex tokens.
 
 ## What happened
 
@@ -873,6 +870,11 @@ Spend to date: **$110.10** Claude · **281875k** Codex tokens.
 - 14:35  ▶ gate answered **met** — Owner reviewed the live board at localhost:5174 - BTC MVRV's sparkline shows min 0.753959 (09 Nov 2022) and max 1.93186 (29 Mar 2022), the real, publicly-verifiable 2022 bear-market drawdown from the post-ATH local top to the FTX-collapse bottom. Confirmed as a real, accurate historical swing with correct min/max labels.
 - 14:35  👤 you judged US-909 **met**
 - 14:35  US-909 **PASSED** — 4/4 criteria, judged by human
+- 11:46  researched PRD-010-integrity-dashboard — 11 sources · $2.03
+- 12:59  **PRD-010-integrity-dashboard** compiled — 7 stories
+- 13:11  US-1001 started, attempt 1 (codex)
+- 13:12  US-1001 — codex finished `e1756f00` · 267k tok
+- 13:14  US-1001 **rejected** — 0/10 criteria, judged by claude
 
 <!-- uf:generated:end -->
 

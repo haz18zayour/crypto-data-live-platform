@@ -38,6 +38,7 @@ def _definition(tolerance_bps: float) -> IndicatorDefinition:
             "source_field": "close",
             "definable_for": ["BTC"],
             "required_bars": 1,
+            "frozen_after_observations": 3,
             "expected_update_interval_seconds": 86_400,
             "freshness_warn_seconds": 108_000,
             "freshness_stale_seconds": 172_800,
@@ -100,6 +101,7 @@ def test_tolerance_is_read_per_indicator_from_the_registry(
   source_field: close
   definable_for: [BTC]
   required_bars: 1
+  frozen_after_observations: 3
   expected_update_interval_seconds: 86400
   freshness_warn_seconds: 108000
   freshness_stale_seconds: 172800
@@ -113,6 +115,7 @@ def test_tolerance_is_read_per_indicator_from_the_registry(
   source_field: close
   definable_for: [BTC]
   required_bars: 1
+  frozen_after_observations: 3
   expected_update_interval_seconds: 86400
   freshness_warn_seconds: 108000
   freshness_stale_seconds: 172800

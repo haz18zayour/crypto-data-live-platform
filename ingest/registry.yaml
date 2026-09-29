@@ -15,6 +15,7 @@
   golden: btc_daily_close.json
   response_model: okx_candle
   required_bars: 1
+  frozen_after_observations: 3
   parameters:
   expected_update_interval_seconds: 86400
   freshness_warn_seconds: 108000
@@ -32,7 +33,9 @@
   golden: published/stockcharts_rsi_14.json
   response_model: okx_candle
   required_bars: 250
+  frozen_after_observations: 3
   talib_function: RSI
+  derives_from: btc_daily_close
   parameters:
     timeperiod: 14
   note: 'History availability measured 2026-09-10: okx at least 250 daily bars; coinbase at least 250 daily bars.'
@@ -50,6 +53,7 @@
   golden: fixtures/okx_funding_rate_history.json
   response_model: okx_funding_rate_history
   required_bars: 2
+  expected_constant: 'OKX funding rates can legitimately clamp near 0.01% per settlement interval in calm markets, so identical consecutive values are expected and are not a frozen-vendor signal.'
   parameters:
   expected_update_interval_seconds: 28800
   freshness_warn_seconds: 43200
@@ -68,6 +72,7 @@
   golden: fixtures/coinmetrics_asset_metrics.json
   response_model: coinmetrics_asset_metrics
   required_bars: 1
+  frozen_after_observations: 3
   parameters:
   expected_update_interval_seconds: 86400
   freshness_warn_seconds: 108000
@@ -83,6 +88,7 @@
   golden: fixtures/coinmetrics_asset_metrics.json
   response_model: coinmetrics_asset_metrics
   required_bars: 1
+  frozen_after_observations: 3
   parameters:
   expected_update_interval_seconds: 86400
   freshness_warn_seconds: 108000
@@ -101,6 +107,7 @@
   golden: fixtures/coinmetrics_asset_metrics.json
   response_model: coinmetrics_asset_metrics
   required_bars: 1
+  frozen_after_observations: 3
   parameters:
   expected_update_interval_seconds: 86400
   freshness_warn_seconds: 108000
@@ -116,6 +123,7 @@
   golden: fixtures/okx_open_interest.json
   response_model: okx_open_interest
   required_bars: 1
+  frozen_after_observations: 3
   parameters:
   expected_update_interval_seconds: 300
   freshness_warn_seconds: 450
@@ -131,6 +139,7 @@
   golden: fixtures/okx_long_short_ratio.json
   response_model: okx_long_short_ratio
   required_bars: 1
+  frozen_after_observations: 3
   parameters:
   expected_update_interval_seconds: 300
   freshness_warn_seconds: 450
@@ -146,6 +155,7 @@
   golden: fixtures/okx_taker_volume.json
   response_model: okx_taker_volume
   required_bars: 1
+  frozen_after_observations: 3
   parameters:
   expected_update_interval_seconds: 300
   freshness_warn_seconds: 450
@@ -161,7 +171,9 @@
   golden: hand_computed/ema_20_50_200.json
   response_model: okx_candle
   required_bars: 250
+  frozen_after_observations: 3
   talib_function: EMA
+  derives_from: btc_daily_close
   parameters:
     timeperiod: 20
   expected_update_interval_seconds: 86400
@@ -178,7 +190,9 @@
   golden: hand_computed/ema_20_50_200.json
   response_model: okx_candle
   required_bars: 250
+  frozen_after_observations: 3
   talib_function: EMA
+  derives_from: btc_daily_close
   parameters:
     timeperiod: 50
   expected_update_interval_seconds: 86400
@@ -195,7 +209,9 @@
   golden: hand_computed/ema_20_50_200.json
   response_model: okx_candle
   required_bars: 250
+  frozen_after_observations: 3
   talib_function: EMA
+  derives_from: btc_daily_close
   parameters:
     timeperiod: 200
   expected_update_interval_seconds: 86400
@@ -212,7 +228,9 @@
   golden: published/stockcharts_atr_14.json
   response_model: okx_candle
   required_bars: 250
+  frozen_after_observations: 3
   talib_function: ATR
+  derives_from: btc_daily_close
   parameters:
     timeperiod: 14
   expected_update_interval_seconds: 86400
@@ -229,7 +247,9 @@
   golden: hand_computed/bollinger_20_2_population.json
   response_model: okx_candle
   required_bars: 20
+  frozen_after_observations: 3
   talib_function: BBANDS
+  derives_from: btc_daily_close
   parameters:
     timeperiod: 20
     nbdevup: 2.0
@@ -249,7 +269,9 @@
   golden: hand_computed/bollinger_20_2_population.json
   response_model: okx_candle
   required_bars: 20
+  frozen_after_observations: 3
   talib_function: BBANDS
+  derives_from: btc_daily_close
   parameters:
     timeperiod: 20
     nbdevup: 2.0
@@ -269,7 +291,9 @@
   golden: hand_computed/bollinger_20_2_population.json
   response_model: okx_candle
   required_bars: 20
+  frozen_after_observations: 3
   talib_function: BBANDS
+  derives_from: btc_daily_close
   parameters:
     timeperiod: 20
     nbdevup: 2.0
@@ -289,7 +313,9 @@
   golden: hand_computed/obv_base_volume.json
   response_model: okx_candle
   required_bars: 200
+  frozen_after_observations: 3
   talib_function: OBV
+  derives_from: btc_daily_close
   parameters:
   note: 'OBV is cumulative and has no convergence point; 200 daily bars is a product window chosen to show sustained volume conviction over roughly six months, independent of the five-bar formula golden.'
   expected_update_interval_seconds: 86400
@@ -306,7 +332,9 @@
   golden: btc_macd.json
   response_model: okx_candle
   required_bars: 250
+  frozen_after_observations: 3
   talib_function: MACD
+  derives_from: btc_daily_close
   parameters:
     fastperiod: 12
     slowperiod: 26
@@ -325,7 +353,9 @@
   golden: btc_stochrsi.json
   response_model: okx_candle
   required_bars: 250
+  frozen_after_observations: 3
   talib_function: STOCHRSI
+  derives_from: btc_daily_close
   parameters:
     timeperiod: 14
     fastk_period: 14
@@ -346,7 +376,9 @@
   golden: published/stockcharts_rsi_14.json
   response_model: okx_candle
   required_bars: 250
+  frozen_after_observations: 3
   talib_function: RSI
+  derives_from: eth_rsi
   parameters:
     timeperiod: 14
   note: 'History availability measured 2026-09-10: okx at least 250 daily bars; coinbase at least 250 daily bars.'
@@ -364,6 +396,7 @@
   golden: fixtures/okx_funding_rate_history.json
   response_model: okx_funding_rate_history
   required_bars: 2
+  expected_constant: 'OKX funding rates can legitimately clamp near 0.01% per settlement interval in calm markets, so identical consecutive values are expected and are not a frozen-vendor signal.'
   parameters:
   expected_update_interval_seconds: 28800
   freshness_warn_seconds: 43200
@@ -382,6 +415,7 @@
   golden: fixtures/coinmetrics_asset_metrics.json
   response_model: coinmetrics_asset_metrics
   required_bars: 1
+  frozen_after_observations: 3
   parameters:
   expected_update_interval_seconds: 86400
   freshness_warn_seconds: 108000
@@ -397,6 +431,7 @@
   golden: fixtures/coinmetrics_asset_metrics.json
   response_model: coinmetrics_asset_metrics
   required_bars: 1
+  frozen_after_observations: 3
   parameters:
   expected_update_interval_seconds: 86400
   freshness_warn_seconds: 108000
@@ -415,6 +450,7 @@
   golden: fixtures/coinmetrics_asset_metrics.json
   response_model: coinmetrics_asset_metrics
   required_bars: 1
+  frozen_after_observations: 3
   parameters:
   expected_update_interval_seconds: 86400
   freshness_warn_seconds: 108000
@@ -430,6 +466,7 @@
   golden: fixtures/okx_open_interest.json
   response_model: okx_open_interest
   required_bars: 1
+  frozen_after_observations: 3
   parameters:
   expected_update_interval_seconds: 300
   freshness_warn_seconds: 450
@@ -445,6 +482,7 @@
   golden: fixtures/okx_long_short_ratio.json
   response_model: okx_long_short_ratio
   required_bars: 1
+  frozen_after_observations: 3
   parameters:
   expected_update_interval_seconds: 300
   freshness_warn_seconds: 450
@@ -460,6 +498,7 @@
   golden: fixtures/okx_taker_volume.json
   response_model: okx_taker_volume
   required_bars: 1
+  frozen_after_observations: 3
   parameters:
   expected_update_interval_seconds: 300
   freshness_warn_seconds: 450
@@ -475,7 +514,9 @@
   golden: hand_computed/ema_20_50_200.json
   response_model: okx_candle
   required_bars: 250
+  frozen_after_observations: 3
   talib_function: EMA
+  derives_from: eth_rsi
   parameters:
     timeperiod: 20
   expected_update_interval_seconds: 86400
@@ -492,7 +533,9 @@
   golden: hand_computed/ema_20_50_200.json
   response_model: okx_candle
   required_bars: 250
+  frozen_after_observations: 3
   talib_function: EMA
+  derives_from: eth_rsi
   parameters:
     timeperiod: 50
   expected_update_interval_seconds: 86400
@@ -509,7 +552,9 @@
   golden: hand_computed/ema_20_50_200.json
   response_model: okx_candle
   required_bars: 250
+  frozen_after_observations: 3
   talib_function: EMA
+  derives_from: eth_rsi
   parameters:
     timeperiod: 200
   expected_update_interval_seconds: 86400
@@ -526,7 +571,9 @@
   golden: published/stockcharts_atr_14.json
   response_model: okx_candle
   required_bars: 250
+  frozen_after_observations: 3
   talib_function: ATR
+  derives_from: eth_rsi
   parameters:
     timeperiod: 14
   expected_update_interval_seconds: 86400
@@ -543,7 +590,9 @@
   golden: hand_computed/bollinger_20_2_population.json
   response_model: okx_candle
   required_bars: 20
+  frozen_after_observations: 3
   talib_function: BBANDS
+  derives_from: eth_rsi
   parameters:
     timeperiod: 20
     nbdevup: 2.0
@@ -563,7 +612,9 @@
   golden: hand_computed/bollinger_20_2_population.json
   response_model: okx_candle
   required_bars: 20
+  frozen_after_observations: 3
   talib_function: BBANDS
+  derives_from: eth_rsi
   parameters:
     timeperiod: 20
     nbdevup: 2.0
@@ -583,7 +634,9 @@
   golden: hand_computed/bollinger_20_2_population.json
   response_model: okx_candle
   required_bars: 20
+  frozen_after_observations: 3
   talib_function: BBANDS
+  derives_from: eth_rsi
   parameters:
     timeperiod: 20
     nbdevup: 2.0
@@ -603,7 +656,9 @@
   golden: hand_computed/obv_base_volume.json
   response_model: okx_candle
   required_bars: 200
+  frozen_after_observations: 3
   talib_function: OBV
+  derives_from: eth_rsi
   parameters:
   note: 'OBV is cumulative and has no convergence point; 200 daily bars is a product window chosen to show sustained volume conviction over roughly six months, independent of the five-bar formula golden.'
   expected_update_interval_seconds: 86400
@@ -620,7 +675,9 @@
   golden: btc_macd.json
   response_model: okx_candle
   required_bars: 250
+  frozen_after_observations: 3
   talib_function: MACD
+  derives_from: eth_rsi
   parameters:
     fastperiod: 12
     slowperiod: 26
@@ -639,7 +696,9 @@
   golden: btc_stochrsi.json
   response_model: okx_candle
   required_bars: 250
+  frozen_after_observations: 3
   talib_function: STOCHRSI
+  derives_from: eth_rsi
   parameters:
     timeperiod: 14
     fastk_period: 14
@@ -660,7 +719,9 @@
   golden: published/stockcharts_rsi_14.json
   response_model: okx_candle
   required_bars: 250
+  frozen_after_observations: 3
   talib_function: RSI
+  derives_from: sol_rsi
   parameters:
     timeperiod: 14
   note: 'History availability measured 2026-09-10: okx at least 250 daily bars; coinbase at least 250 daily bars.'
@@ -678,6 +739,7 @@
   golden: fixtures/okx_funding_rate_history.json
   response_model: okx_funding_rate_history
   required_bars: 2
+  expected_constant: 'OKX funding rates can legitimately clamp near 0.01% per settlement interval in calm markets, so identical consecutive values are expected and are not a frozen-vendor signal.'
   parameters:
   expected_update_interval_seconds: 28800
   freshness_warn_seconds: 43200
@@ -694,6 +756,7 @@
   golden: fixtures/solana_get_block.json
   response_model: solana_get_block
   required_bars: 1
+  frozen_after_observations: 3
   parameters:
   expected_update_interval_seconds: 604800
   freshness_warn_seconds: 691200
@@ -713,10 +776,12 @@
   golden: fixtures/validators_app_validators.json
   response_model: validators_app_validators
   required_bars: 1
+  frozen_after_observations: 3
   parameters:
   expected_update_interval_seconds: 86400
   freshness_warn_seconds: 108000
   freshness_stale_seconds: 172800
+  freshness_unmeasurable: 'Validators.app validators/mainnet provides no observation timestamp for the aggregate staking value; the fetcher stamps source_timestamp from the fetch wall clock.'
   uncorroborated:
     note: Validators.app is the only researched free source used for SOL staking in this PRD, so this staking value has no independent corroborating venue.
 - key: sol_open_interest
@@ -728,6 +793,7 @@
   golden: fixtures/okx_open_interest.json
   response_model: okx_open_interest
   required_bars: 1
+  frozen_after_observations: 3
   parameters:
   expected_update_interval_seconds: 300
   freshness_warn_seconds: 450
@@ -743,6 +809,7 @@
   golden: fixtures/okx_long_short_ratio.json
   response_model: okx_long_short_ratio
   required_bars: 1
+  frozen_after_observations: 3
   parameters:
   expected_update_interval_seconds: 300
   freshness_warn_seconds: 450
@@ -758,6 +825,7 @@
   golden: fixtures/okx_taker_volume.json
   response_model: okx_taker_volume
   required_bars: 1
+  frozen_after_observations: 3
   parameters:
   expected_update_interval_seconds: 300
   freshness_warn_seconds: 450
@@ -773,7 +841,9 @@
   golden: hand_computed/ema_20_50_200.json
   response_model: okx_candle
   required_bars: 250
+  frozen_after_observations: 3
   talib_function: EMA
+  derives_from: sol_rsi
   parameters:
     timeperiod: 20
   expected_update_interval_seconds: 86400
@@ -790,7 +860,9 @@
   golden: hand_computed/ema_20_50_200.json
   response_model: okx_candle
   required_bars: 250
+  frozen_after_observations: 3
   talib_function: EMA
+  derives_from: sol_rsi
   parameters:
     timeperiod: 50
   expected_update_interval_seconds: 86400
@@ -807,7 +879,9 @@
   golden: hand_computed/ema_20_50_200.json
   response_model: okx_candle
   required_bars: 250
+  frozen_after_observations: 3
   talib_function: EMA
+  derives_from: sol_rsi
   parameters:
     timeperiod: 200
   expected_update_interval_seconds: 86400
@@ -824,7 +898,9 @@
   golden: published/stockcharts_atr_14.json
   response_model: okx_candle
   required_bars: 250
+  frozen_after_observations: 3
   talib_function: ATR
+  derives_from: sol_rsi
   parameters:
     timeperiod: 14
   expected_update_interval_seconds: 86400
@@ -841,7 +917,9 @@
   golden: hand_computed/bollinger_20_2_population.json
   response_model: okx_candle
   required_bars: 20
+  frozen_after_observations: 3
   talib_function: BBANDS
+  derives_from: sol_rsi
   parameters:
     timeperiod: 20
     nbdevup: 2.0
@@ -861,7 +939,9 @@
   golden: hand_computed/bollinger_20_2_population.json
   response_model: okx_candle
   required_bars: 20
+  frozen_after_observations: 3
   talib_function: BBANDS
+  derives_from: sol_rsi
   parameters:
     timeperiod: 20
     nbdevup: 2.0
@@ -881,7 +961,9 @@
   golden: hand_computed/bollinger_20_2_population.json
   response_model: okx_candle
   required_bars: 20
+  frozen_after_observations: 3
   talib_function: BBANDS
+  derives_from: sol_rsi
   parameters:
     timeperiod: 20
     nbdevup: 2.0
@@ -901,7 +983,9 @@
   golden: hand_computed/obv_base_volume.json
   response_model: okx_candle
   required_bars: 200
+  frozen_after_observations: 3
   talib_function: OBV
+  derives_from: sol_rsi
   parameters:
   note: 'OBV is cumulative and has no convergence point; 200 daily bars is a product window chosen to show sustained volume conviction over roughly six months, independent of the five-bar formula golden.'
   expected_update_interval_seconds: 86400
@@ -918,7 +1002,9 @@
   golden: btc_macd.json
   response_model: okx_candle
   required_bars: 250
+  frozen_after_observations: 3
   talib_function: MACD
+  derives_from: sol_rsi
   parameters:
     fastperiod: 12
     slowperiod: 26
@@ -937,7 +1023,9 @@
   golden: btc_stochrsi.json
   response_model: okx_candle
   required_bars: 250
+  frozen_after_observations: 3
   talib_function: STOCHRSI
+  derives_from: sol_rsi
   parameters:
     timeperiod: 14
     fastk_period: 14
@@ -958,7 +1046,9 @@
   golden: published/stockcharts_rsi_14.json
   response_model: okx_candle
   required_bars: 250
+  frozen_after_observations: 3
   talib_function: RSI
+  derives_from: bnb_rsi
   parameters:
     timeperiod: 14
   note: 'History availability measured 2026-09-10: okx at least 250 daily bars; coinbase exactly 317 daily bars.'
@@ -976,6 +1066,7 @@
   golden: fixtures/okx_funding_rate_history.json
   response_model: okx_funding_rate_history
   required_bars: 2
+  expected_constant: 'OKX funding rates can legitimately clamp near 0.01% per settlement interval in calm markets, so identical consecutive values are expected and are not a frozen-vendor signal.'
   parameters:
   expected_update_interval_seconds: 28800
   freshness_warn_seconds: 43200
@@ -994,6 +1085,7 @@
   golden: fixtures/coinmetrics_asset_metrics.json
   response_model: coinmetrics_asset_metrics
   required_bars: 1
+  frozen_after_observations: 3
   parameters:
   expected_update_interval_seconds: 86400
   freshness_warn_seconds: 108000
@@ -1009,6 +1101,7 @@
   golden: fixtures/coinmetrics_asset_metrics.json
   response_model: coinmetrics_asset_metrics
   required_bars: 1
+  frozen_after_observations: 3
   parameters:
   expected_update_interval_seconds: 86400
   freshness_warn_seconds: 108000
@@ -1024,6 +1117,7 @@
   golden: fixtures/okx_open_interest.json
   response_model: okx_open_interest
   required_bars: 1
+  frozen_after_observations: 3
   parameters:
   expected_update_interval_seconds: 300
   freshness_warn_seconds: 450
@@ -1039,6 +1133,7 @@
   golden: fixtures/okx_long_short_ratio.json
   response_model: okx_long_short_ratio
   required_bars: 1
+  frozen_after_observations: 3
   parameters:
   expected_update_interval_seconds: 300
   freshness_warn_seconds: 450
@@ -1054,6 +1149,7 @@
   golden: fixtures/okx_taker_volume.json
   response_model: okx_taker_volume
   required_bars: 1
+  frozen_after_observations: 3
   parameters:
   expected_update_interval_seconds: 300
   freshness_warn_seconds: 450
@@ -1069,7 +1165,9 @@
   golden: hand_computed/ema_20_50_200.json
   response_model: okx_candle
   required_bars: 250
+  frozen_after_observations: 3
   talib_function: EMA
+  derives_from: bnb_rsi
   parameters:
     timeperiod: 20
   expected_update_interval_seconds: 86400
@@ -1086,7 +1184,9 @@
   golden: hand_computed/ema_20_50_200.json
   response_model: okx_candle
   required_bars: 250
+  frozen_after_observations: 3
   talib_function: EMA
+  derives_from: bnb_rsi
   parameters:
     timeperiod: 50
   expected_update_interval_seconds: 86400
@@ -1103,7 +1203,9 @@
   golden: hand_computed/ema_20_50_200.json
   response_model: okx_candle
   required_bars: 250
+  frozen_after_observations: 3
   talib_function: EMA
+  derives_from: bnb_rsi
   parameters:
     timeperiod: 200
   expected_update_interval_seconds: 86400
@@ -1120,7 +1222,9 @@
   golden: published/stockcharts_atr_14.json
   response_model: okx_candle
   required_bars: 250
+  frozen_after_observations: 3
   talib_function: ATR
+  derives_from: bnb_rsi
   parameters:
     timeperiod: 14
   expected_update_interval_seconds: 86400
@@ -1137,7 +1241,9 @@
   golden: hand_computed/bollinger_20_2_population.json
   response_model: okx_candle
   required_bars: 20
+  frozen_after_observations: 3
   talib_function: BBANDS
+  derives_from: bnb_rsi
   parameters:
     timeperiod: 20
     nbdevup: 2.0
@@ -1157,7 +1263,9 @@
   golden: hand_computed/bollinger_20_2_population.json
   response_model: okx_candle
   required_bars: 20
+  frozen_after_observations: 3
   talib_function: BBANDS
+  derives_from: bnb_rsi
   parameters:
     timeperiod: 20
     nbdevup: 2.0
@@ -1177,7 +1285,9 @@
   golden: hand_computed/bollinger_20_2_population.json
   response_model: okx_candle
   required_bars: 20
+  frozen_after_observations: 3
   talib_function: BBANDS
+  derives_from: bnb_rsi
   parameters:
     timeperiod: 20
     nbdevup: 2.0
@@ -1197,7 +1307,9 @@
   golden: hand_computed/obv_base_volume.json
   response_model: okx_candle
   required_bars: 200
+  frozen_after_observations: 3
   talib_function: OBV
+  derives_from: bnb_rsi
   parameters:
   note: 'OBV is cumulative and has no convergence point; 200 daily bars is a product window chosen to show sustained volume conviction over roughly six months, independent of the five-bar formula golden.'
   expected_update_interval_seconds: 86400
@@ -1214,7 +1326,9 @@
   golden: btc_macd.json
   response_model: okx_candle
   required_bars: 250
+  frozen_after_observations: 3
   talib_function: MACD
+  derives_from: bnb_rsi
   parameters:
     fastperiod: 12
     slowperiod: 26
@@ -1233,7 +1347,9 @@
   golden: btc_stochrsi.json
   response_model: okx_candle
   required_bars: 250
+  frozen_after_observations: 3
   talib_function: STOCHRSI
+  derives_from: bnb_rsi
   parameters:
     timeperiod: 14
     fastk_period: 14
@@ -1254,6 +1370,7 @@
   golden: fixtures/fred_series_observations.json
   response_model: fred_series_observations
   required_bars: 1
+  frozen_after_observations: 3
   parameters:
   expected_update_interval_seconds: 86400
   freshness_warn_seconds: 108000
@@ -1269,6 +1386,7 @@
   golden: fixtures/fred_series_observations.json
   response_model: fred_series_observations
   required_bars: 1
+  frozen_after_observations: 3
   parameters:
   expected_update_interval_seconds: 86400
   freshness_warn_seconds: 108000
@@ -1284,6 +1402,7 @@
   golden: fixtures/fred_series_observations.json
   response_model: fred_series_observations
   required_bars: 1
+  frozen_after_observations: 3
   parameters:
   expected_update_interval_seconds: 86400
   freshness_warn_seconds: 108000
@@ -1299,6 +1418,7 @@
   golden: fixtures/fred_series_observations.json
   response_model: fred_series_observations
   required_bars: 1
+  frozen_after_observations: 3
   parameters:
   expected_update_interval_seconds: 86400
   freshness_warn_seconds: 108000
@@ -1314,6 +1434,7 @@
   golden: fixtures/fred_series_observations.json
   response_model: fred_series_observations
   required_bars: 1
+  frozen_after_observations: 3
   parameters:
   expected_update_interval_seconds: 86400
   freshness_warn_seconds: 864000
@@ -1329,6 +1450,7 @@
   golden: fixtures/fred_series_observations.json
   response_model: fred_series_observations
   required_bars: 1
+  frozen_after_observations: 3
   parameters:
   expected_update_interval_seconds: 86400
   freshness_warn_seconds: 3888000
@@ -1344,6 +1466,7 @@
   golden: fixtures/fred_series_observations.json
   response_model: fred_series_observations
   required_bars: 1
+  frozen_after_observations: 3
   parameters:
   expected_update_interval_seconds: 86400
   freshness_warn_seconds: 3888000
@@ -1362,6 +1485,7 @@
   golden: fixtures/sosovalue_etf_summary_history.json
   response_model: sosovalue_etf_summary_history
   required_bars: 1
+  frozen_after_observations: 3
   parameters:
   expected_update_interval_seconds: 86400
   freshness_warn_seconds: 108000
@@ -1380,10 +1504,12 @@
   golden: fixtures/defillama_stablecoinchains.json
   response_model: defillama_stablecoinchains
   required_bars: 1
+  frozen_after_observations: 3
   parameters:
   expected_update_interval_seconds: 86400
   freshness_warn_seconds: 108000
   freshness_stale_seconds: 172800
+  freshness_unmeasurable: 'DefiLlama stablecoinchains provides no per-chain observation timestamp; the fetcher stamps source_timestamp from fetched_at, so freshness cannot measure vendor data age.'
   uncorroborated:
     note: DefiLlama is the researched free, keyless source for per-chain stablecoin supply in this PRD; Bitcoin is a structural absence in its chain list.
 - key: fear_greed_index
@@ -1395,9 +1521,11 @@
   golden: fixtures/alternative_me_fng.json
   response_model: alternative_me_fear_greed
   required_bars: 1
+  frozen_after_observations: 3
   parameters:
   expected_update_interval_seconds: 86400
   freshness_warn_seconds: 108000
   freshness_stale_seconds: 172800
   uncorroborated:
     note: alternative.me is the researched free, keyless source for this vendor-owned Fear & Greed composite; this project displays it as vendor data, not an independent validated market signal.
+

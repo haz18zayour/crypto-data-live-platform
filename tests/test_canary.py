@@ -29,6 +29,7 @@ def definition(key: str, vendor: str, endpoint: str) -> IndicatorDefinition:
             "source_field": "data[0][4]",
             "definable_for": ["BTC"],
             "required_bars": 1,
+            "frozen_after_observations": 3,
             "expected_update_interval_seconds": 86_400,
             "freshness_warn_seconds": 108_000,
             "freshness_stale_seconds": 172_800,

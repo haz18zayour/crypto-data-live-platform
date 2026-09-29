@@ -38,6 +38,7 @@ def definition_data() -> dict[str, object]:
         "source_field": "data.value",
         "definable_for": ["BTC"],
         "required_bars": 1,
+        "frozen_after_observations": 3,
         "parameters": {},
         "expected_update_interval_seconds": 86_400,
         "freshness_warn_seconds": 108_000,
