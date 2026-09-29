@@ -4,17 +4,17 @@
   "title": "Integrity dashboard — the self-audit that actually audits",
   "product": "crypto-data-live-platform",
   "branch": "feat/prd-010-integrity-dashboard",
-  "inputDigest": "b5dcfa9bcf78b0e1",
-  "compiledAt": "2026-09-29T13:46:35.773Z",
+  "inputDigest": "d1cdccc6f4c4e079",
+  "compiledAt": "2026-09-29T13:48:26.515Z",
   "stories": [
     {
-      "id": "US-1001",
+      "id": "US-1008",
       "title": "Registry schema extension — frozen-detection declarations, derives_from for TA-Lib entries, freshness_unmeasurable for wall-clock fetchers",
-      "source": "prds/PRD-010-integrity-dashboard/40-stories/US-1001-registry-schema-extension.md",
+      "source": "prds/PRD-010-integrity-dashboard/40-stories/US-1008-registry-schema-extension.md",
       "description": "As the owner, I want every registered indicator to explicitly declare how frozen-value detection\napplies to it, so that a new indicator can never silently ship without the audit this PRD adds —\nthe same coverage discipline this project already applies to goldens, tests, and backfill recipes.\n\nResearch found that a global threshold would itself become a judgement about the market (OKX\nfunding rate legitimately clamps near zero for many consecutive intervals in a calm market), and\nthat ~70% of the board is TA-Lib-derived from a root series that a naive per-indicator frozen check\nwould never catch freezing (Wilder/EMA smoothing keeps moving even when its input is stuck). Two\nfetchers (`defillama_stablecoins.py:237-243`, `validators_app.py:48`) stamp `source_timestamp` as\nfetch-wall-clock rather than a real vendor observation time, making any freshness check on them\nstructurally always green.",
       "criteria": [
         {
-          "id": "US-1001-C1",
+          "id": "US-1008-C1",
           "text": "Exactly one frozen-detection declaration per indicator, no default",
           "method": {
             "kind": "test",
@@ -22,7 +22,7 @@
           }
         },
         {
-          "id": "US-1001-C2",
+          "id": "US-1008-C2",
           "text": "Every derived indicator either names its real root or explicitly declares that propagation cannot apply to it",
           "method": {
             "kind": "test",
@@ -30,7 +30,7 @@
           }
         },
         {
-          "id": "US-1001-C3",
+          "id": "US-1008-C3",
           "text": "derives_from cannot point at nothing or at itself",
           "method": {
             "kind": "test",
@@ -38,7 +38,7 @@
           }
         },
         {
-          "id": "US-1001-C4",
+          "id": "US-1008-C4",
           "text": "The declaration exists",
           "method": {
             "kind": "test",
@@ -46,7 +46,7 @@
           }
         },
         {
-          "id": "US-1001-C5",
+          "id": "US-1008-C5",
           "text": "Real data populated, not just schema",
           "method": {
             "kind": "test",
@@ -54,7 +54,7 @@
           }
         },
         {
-          "id": "US-1001-C6",
+          "id": "US-1008-C6",
           "text": "The one case where real propagation is possible today",
           "method": {
             "kind": "test",
@@ -62,7 +62,7 @@
           }
         },
         {
-          "id": "US-1001-C7",
+          "id": "US-1008-C7",
           "text": "An honest, documented limitation instead of a fabricated root — this project's own no-proxy rule applies to its own audit layer exactly as it does to market data: absent real data to derive from, state that plainly rather than inventing a stand-in",
           "method": {
             "kind": "test",
@@ -70,7 +70,7 @@
           }
         },
         {
-          "id": "US-1001-C8",
+          "id": "US-1008-C8",
           "text": "The regression class that sank the first three attempts (each one invented a new eth_daily_close/sol_daily_close/bnb_daily_close board cell to give derives_from somewhere to point), checked directly — this story adds new OPTIONAL FIELDS to existing entries only; it must never add, remove, or change the definable_for of any registry row",
           "method": {
             "kind": "test",
@@ -78,7 +78,7 @@
           }
         },
         {
-          "id": "US-1001-C9",
+          "id": "US-1008-C9",
           "text": "The two wall-clock fetchers are marked, not silently green",
           "method": {
             "kind": "test",
@@ -86,7 +86,7 @@
           }
         },
         {
-          "id": "US-1001-C10",
+          "id": "US-1008-C10",
           "text": "The coverage gate itself",
           "method": {
             "kind": "test",
@@ -94,7 +94,7 @@
           }
         },
         {
-          "id": "US-1001-C11",
+          "id": "US-1008-C11",
           "text": "The full offline suite stays green",
           "method": {
             "kind": "cmd",
@@ -102,7 +102,7 @@
           }
         },
         {
-          "id": "US-1001-C12",
+          "id": "US-1008-C12",
           "text": "Strict typing holds on the new fields",
           "method": {
             "kind": "cmd",

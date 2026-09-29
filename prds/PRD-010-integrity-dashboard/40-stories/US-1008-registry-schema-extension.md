@@ -1,5 +1,5 @@
 ---
-id: US-1001
+id: US-1008
 title: Registry schema extension — frozen-detection declarations, derives_from for TA-Lib entries, freshness_unmeasurable for wall-clock fetchers
 priority: 1
 touches:

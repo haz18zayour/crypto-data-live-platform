@@ -160,10 +160,10 @@ proving the gate checks substance, not presence.
 
 | Story | Title | Depends on |
 |---|---|---|
-| US-1001 | Registry schema extension — `frozen_after_observations`/`expected_constant`, `derives_from` for every TA-Lib entry, `freshness_unmeasurable` for the two wall-clock fetchers, enforced by a coverage test | — |
-| US-1002 | Integrity migration — frozen-state and freshness views/RPC computed outside the ingest path, root-only frozen detection with dependent propagation via `derives_from`, applied to production before any story below runs | US-1001 |
+| US-1008 | Registry schema extension — `frozen_after_observations`/`expected_constant`, `derives_from` for every TA-Lib entry, `freshness_unmeasurable` for the two wall-clock fetchers, enforced by a coverage test | — |
+| US-1002 | Integrity migration — frozen-state and freshness views/RPC computed outside the ingest path, root-only frozen detection with dependent propagation via `derives_from`, applied to production before any story below runs | US-1008 |
 | US-1003 | Integrity read carries a server-clock `computed_at` stamp; the frontend compares it against its own clock and renders a distinct stale-panel state | US-1002 |
 | US-1004 | The cell-level frozen badge — "unchanged since &lt;date&gt;" on any cell whose value or declared root is currently flagged, OK status unchanged | US-1002 |
 | US-1005 | The per-source freshness rollup panel — real data age vs. threshold per vendor, wall-clock-stamped sources rendered `unmeasurable`, never green | US-1002 |
-| US-1006 | Coverage codegen — a literal `IndicatorKey` TypeScript union generated from `registry.yaml`, per-key UI wiring as exhaustive mapped types, a pytest asserting the generated file is current and every key has a real, uniquely-hashed golden fixture and a named test | US-1001 |
+| US-1006 | Coverage codegen — a literal `IndicatorKey` TypeScript union generated from `registry.yaml`, per-key UI wiring as exhaustive mapped types, a pytest asserting the generated file is current and every key has a real, uniquely-hashed golden fixture and a named test | US-1008 |
 | US-1007 | The adversarial case — a real frozen sequence trips the flag, a derived indicator inherits its root's frozen state, a wall-clock fetcher never shows green, a stale integrity read is visible as stale, and the coverage gate rejects a placeholder | US-1002, US-1003, US-1004, US-1005, US-1006 |
