@@ -171,6 +171,22 @@ describe("the printed time window", () => {
 });
 
 describe("the cadence-tiered minimum", () => {
+  test("a registry cell with exactly one persisted row shows insufficient history, never a sparkline", () => {
+    const persisted = point(Date.parse("2026-09-28T00:00:00Z"), 79111.8);
+
+    const { container } = render(<Sparkline history={[persisted]} />);
+
+    expect(container.querySelector("svg")).toBeNull();
+    expect(container.querySelector("polyline")).toBeNull();
+    expect(container).toHaveTextContent(
+      "Not enough history yet (1 point since 28 Sep 2026)",
+    );
+    expect(container.querySelector(".sparkline-insufficient time")).toHaveAttribute(
+      "dateTime",
+      persisted.sourceTimestamp,
+    );
+  });
+
   test("a daily series with six points shows the not-enough-history state instead of a line", () => {
     const { container } = render(<Sparkline history={daily([1, 2, 3, 4, 5, 6])} />);
 
