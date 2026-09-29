@@ -1,7 +1,11 @@
 import type { Datapoint, Provenance, UnavailableReason } from "./datapoint";
 import type { Corroboration, VenueDatapoint } from "./corroboration";
 import { BOARD_ASSETS, buildBoard, type BoardModel } from "./board";
-import { definitions, type IndicatorDefinition } from "./registry";
+import {
+  definitions,
+  isIndicatorKey,
+  type IndicatorDefinition,
+} from "./registry";
 
 type DatapointRow = {
   id: number;
@@ -276,7 +280,9 @@ export async function fetchBoard(now: Date): Promise<BoardModel> {
   );
   const datapoints = rows.map((row) => {
     const datapoint = rowToDatapoint(row);
-    const staleAfterSeconds = staleAfter.get(row.indicator_key);
+    const staleAfterSeconds = isIndicatorKey(row.indicator_key)
+      ? staleAfter.get(row.indicator_key)
+      : undefined;
     return staleAfterSeconds === undefined
       ? datapoint
       : applyFreshness(datapoint, staleAfterSeconds, now);
