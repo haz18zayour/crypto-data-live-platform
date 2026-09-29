@@ -34,10 +34,10 @@ open prds/PRD-005-dashboard/20-decisions.yaml
 | PRD-007-onchain | 8 | 8 | **all green** |
 | PRD-008-macro-flows | 8 | 8 | **all green** |
 | PRD-009-history-charts | 9 | 9 | **all green** |
-| PRD-010-integrity-dashboard | 7 | 1 | 1/7 |
+| PRD-010-integrity-dashboard | 7 | 2 | 2/7 |
 | PRD-012-cadence-split | 6 | 6 | **all green** |
 
-Spend to date: **$117.95** Claude · **301020k** Codex tokens.
+Spend to date: **$118.66** Claude · **301020k** Codex tokens.
 
 ## What happened
 
@@ -905,6 +905,12 @@ Spend to date: **$117.95** Claude · **301020k** Codex tokens.
 - 14:48  US-1002 started, attempt 3 (codex)
 - 14:51  US-1002 — codex finished `db0485f1` · 1334k tok
 - 14:54  US-1002 **rejected** — 9/10 criteria, judged by claude · $0.97
+- 14:54  ⏸ **gate opened** — US-1002 has failed 3 times — is the story wrong?
+- 17:56  ▶ gate answered **skip** — All 3 attempts failed on the same single criterion (C9), structurally unprovable by any automated sandbox. Applied the migration to production with explicit owner sign-off and ran the live test myself. See verdict.json overrideReason.
+- 17:56  US-1002 **PASSED** — 10/10 criteria, judged by human
+- 14:59  US-1006 started, attempt 1 (codex)
+- 15:00  US-1006 — codex finished `e60b7c83`
+- 15:04  US-1006 **rejected** — 1/8 criteria, judged by claude · $0.71
 
 <!-- uf:generated:end -->
 
