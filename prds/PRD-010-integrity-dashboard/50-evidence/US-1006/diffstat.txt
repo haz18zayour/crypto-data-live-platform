@@ -1,3 +1,7 @@
-.uf/events.ndjson                  |  2 ++
- scripts/generate_indicator_keys.py | 41 ++++++++++++++++++++++++++++++++++++++
- 2 files changed, 43 insertions(+)
+.uf/events.ndjson                                  |   5 +
+ SESSION.md                                         |  10 +-
+ .../50-evidence/US-1006/diffstat.txt               |   3 +
+ .../50-evidence/US-1006/gates.json                 |  26 ++++++
+ .../50-evidence/US-1006/verdict.json               | 102 +++++++++++++++++++++
+ scripts/generate_indicator_keys.py                 |  41 +++++++++
+ 6 files changed, 185 insertions(+), 2 deletions(-)

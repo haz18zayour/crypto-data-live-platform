@@ -16,7 +16,7 @@
         "testName": null,
         "exitCode": null
       },
-      "note": "The script can render the file, but web/src/registry.generated.ts was never generated or committed; a glob finds no such file. No test checks it."
+      "note": "The script has a renderer, but web/src/registry.generated.ts does not exist; a glob finds only web/src/registry.ts. No test checks for the generated file."
     },
     {
       "criterionId": "US-1006-C2",
@@ -27,7 +27,7 @@
         "testName": null,
         "exitCode": null
       },
-      "note": "tests/test_registry_codegen.py does not exist. No pytest compares a committed generated file with the codegen output, and there is no committed file to compare."
+      "note": "tests/test_registry_codegen.py does not exist, and there is no committed generated file to check for staleness."
     },
     {
       "criterionId": "US-1006-C3",
@@ -38,7 +38,7 @@
         "testName": null,
         "exitCode": null
       },
-      "note": "The generator is real code, but no test runs it or proves the output comes from registry.yaml. The criterion's method is test, and no test exists."
+      "note": "No test runs the generator or shows that its output comes from registry.yaml."
     },
     {
       "criterionId": "US-1006-C4",
@@ -49,7 +49,7 @@
         "testName": null,
         "exitCode": null
       },
-      "note": "No coverage test exists that checks golden fixtures for unique hashes or real substance."
+      "note": "No coverage test exists that checks goldens for copy-pasted placeholders."
     },
     {
       "criterionId": "US-1006-C5",
@@ -60,7 +60,7 @@
         "testName": null,
         "exitCode": null
       },
-      "note": "No test exists that detects it.todo calls or empty test shells."
+      "note": "No test exists that detects it.todo or empty test shells."
     },
     {
       "criterionId": "US-1006-C6",
@@ -71,7 +71,7 @@
         "testName": null,
         "exitCode": null
       },
-      "note": "No `{[K in IndicatorKey]: ...}` mapping exists anywhere in web/src; grep finds IndicatorKey only in the script and the PRD docs. registry.ts still loads the YAML at runtime with ?raw and parse(), so keys are plain strings to the compiler."
+      "note": "Grep finds no IndicatorKey and no mapped type `[K in ...]` anywhere in web/src. registry.ts still imports the YAML with ?raw (line 3) and runs parse() on it (line 23), so keys stay plain strings."
     },
     {
       "criterionId": "US-1006-C7",
@@ -82,7 +82,7 @@
         "testName": null,
         "exitCode": 0
       },
-      "note": "Gate `uv run pytest -q` exited 0. The suite stays green only because this story added no tests and changed no runtime code."
+      "note": "`uv run pytest -q` exited 0 (418 passed). It stays green only because this story added no tests and changed no runtime code."
     },
     {
       "criterionId": "US-1006-C8",
@@ -93,10 +93,10 @@
         "testName": null,
         "exitCode": 0
       },
-      "note": "`npm --prefix web run typecheck` exited 0, but no exhaustive mapping or generated file exists, so the check passes without testing anything. The criterion's subject is missing."
+      "note": "Typecheck exited 0, but no exhaustive mapping exists, so the criterion's subject is missing and the green result proves nothing about it."
     }
   ],
   "tripwires": [],
-  "note": "The story is mostly unimplemented; the agent run ended with exitCode 1. Only scripts/generate_indicator_keys.py was added. registry.generated.ts, tests/test_registry_codegen.py, the mapped-type UI wiring and the registry.ts changes are all missing, and the green gates only reflect code that existed before this story.",
-  "at": "2026-09-29T15:04:03.097Z"
+  "note": "Attempt 2 (5605f78) left the repo unchanged from attempt 1: only scripts/generate_indicator_keys.py exists. The generated TS file, the codegen/coverage tests, the mapped-type wiring and the registry.ts change are all missing. The green gates only reflect code that predates this story.",
+  "at": "2026-09-29T15:07:38.280Z"
 }
