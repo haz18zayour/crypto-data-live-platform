@@ -1,0 +1,26 @@
+[
+  {
+    "name": "typecheck",
+    "run": "node -e \"const f=require('fs'),c=require('child_process');let r=0;const run=(cmd)=>{try{c.execSync(cmd,{stdio:'inherit'})}catch(e){r=1}};if(f.existsSync('web/package.json'))run('npm --prefix web run typecheck');if(f.existsSync('pyproject.toml'))run('uv run mypy ingest --strict');process.exit(r)\"",
+    "exitCode": 0,
+    "output": "\n> crypto-data-live-web@0.0.0 typecheck\n> tsc -b --pretty false\n\nSuccess: no issues found in 24 source files\r\n"
+  },
+  {
+    "name": "test",
+    "run": "node -e \"const f=require('fs'),c=require('child_process'),p=require('path');const tmp=f.mkdtempSync(p.join(process.cwd(),'.tmp','systemtemp-'));const env={...process.env,TEMP:tmp,TMP:tmp};let r=0;const run=(cmd)=>{try{c.execSync(cmd,{stdio:'inherit',env})}catch(e){r=1}};if(f.existsSync('web/package.json'))run('npm --prefix web test');if(f.existsSync('tests'))run('uv run pytest -q');process.exit(r)\"",
+    "exitCode": 0,
+    "output": "\n> crypto-data-live-web@0.0.0 pretest\n> playwright install chromium chromium-headless-shell\n\n\n> crypto-data-live-web@0.0.0 test\n> vitest run --configLoader runner\n\n\n RUN  v4.1.9 C:/Users/user/Desktop/Projects/crypto-data-live-platform/web\n\n\n Test Files  15 passed (15)\n      Tests  78 passed (78)\n   Start at  22:17:44\n   Duration  5.60s (transform 1.24s, setup 2.89s, import 3.15s, tests 8.79s, environment 9.69s)\n\n........................................................................ [ 14%]\r\n........................................................................ [ 28%]\r\n........................................................................ [ 42%]\r\n........................................................................ [ 57%]\r\n........................................................................ [ 71%]\r\n........................................................................ [ 85%]\r\n........................................................................ [100%]\r\n504 passed, 77 deselected in 97.98s (0:01:37)\r\n"
+  },
+  {
+    "name": "US-1004-C5",
+    "run": "npm --prefix web test",
+    "exitCode": 0,
+    "output": "\n> crypto-data-live-web@0.0.0 pretest\n> playwright install chromium chromium-headless-shell\n\n\n> crypto-data-live-web@0.0.0 test\n> vitest run --configLoader runner\n\n\n RUN  v4.1.9 C:/Users/user/Desktop/Projects/crypto-data-live-platform/web\n\n\n Test Files  15 passed (15)\n      Tests  78 passed (78)\n   Start at  22:19:29\n   Duration  4.66s (transform 1.05s, setup 2.89s, import 2.87s, tests 7.58s, environment 9.59s)\n\n"
+  },
+  {
+    "name": "US-1004-C6",
+    "run": "npm --prefix web run typecheck",
+    "exitCode": 0,
+    "output": "\n> crypto-data-live-web@0.0.0 typecheck\n> tsc -b --pretty false\n\n"
+  }
+]

@@ -1,0 +1,12 @@
+.uf/events.ndjson            |   3 +
+ SESSION.md                   |   7 ++-
+ web/src/BoardMatrix.test.tsx |  21 +++++++
+ web/src/CellDetail.tsx       |  38 +++++-------
+ web/src/CellFace.tsx         |  12 +++-
+ web/src/FrozenBadge.test.tsx | 145 +++++++++++++++++++++++++++++++++++++++++++
+ web/src/FrozenBadge.tsx      |  41 ++++++++++++
+ web/src/Sparkline.tsx        |   6 +-
+ web/src/board.ts             |  36 +++++++++++
+ web/src/data.ts              |  17 +++--
+ web/src/styles.css           |   7 +++
+ 11 files changed, 295 insertions(+), 38 deletions(-)
