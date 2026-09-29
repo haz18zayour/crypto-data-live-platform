@@ -1,0 +1,124 @@
+{
+  "storyId": "US-1002",
+  "passes": false,
+  "verifier": {
+    "agent": "claude",
+    "sandbox": "restricted:read-only"
+  },
+  "implementer": "codex",
+  "results": [
+    {
+      "criterionId": "US-1002-C1",
+      "met": true,
+      "evidence": {
+        "file": "tests/test_integrity_read.py",
+        "line": 186,
+        "testName": "test_integrity_read_computes_freshness_and_frozen_states_from_real_registry_rows",
+        "exitCode": 0
+      },
+      "note": "The SQL (migration lines ~160-170) derives freshness from computed_at minus max(source_timestamp), checked against the registry's warn and stale thresholds. freshness_unmeasurable short-circuits to 'unmeasurable'. The test asserts fresh (line 264), warn (288), stale (289), and unmeasurable for stablecoin_supply even though its data is at NOW (280). Nothing reads run history."
+    },
+    {
+      "criterionId": "US-1002-C2",
+      "met": true,
+      "evidence": {
+        "file": "tests/test_integrity_read.py",
+        "line": 292,
+        "testName": "test_integrity_read_counts_distinct_observations_and_clears_on_a_changed_latest_value",
+        "exitCode": 0
+      },
+      "note": "Observations are ranked by source_timestamp within each cell. Upsert on (indicator_key, asset, source_vendor, source_timestamp) means a re-fetch overwrites a row rather than adding one. In the test, re-fetching the same timestamp leaves only 2 distinct observations, so the cell is not_frozen (line 320). A third distinct timestamp makes it frozen, and a changed latest value clears it back to false."
+    },
+    {
+      "criterionId": "US-1002-C3",
+      "met": true,
+      "evidence": {
+        "file": "tests/test_integrity_read.py",
+        "line": 277,
+        "testName": "test_integrity_read_computes_freshness_and_frozen_states_from_real_registry_rows",
+        "exitCode": 0
+      },
+      "note": "btc_funding_rate declares expected_constant and is seeded with 4 identical values. It returns frozen=False with frozen_state 'expected_constant'. The SQL's first CASE branch exempts expected_constant before any identical-value check runs."
+    },
+    {
+      "criterionId": "US-1002-C4",
+      "met": true,
+      "evidence": {
+        "file": "tests/test_integrity_read.py",
+        "line": 273,
+        "testName": "test_integrity_read_computes_freshness_and_frozen_states_from_real_registry_rows",
+        "exitCode": 0
+      },
+      "note": "btc_rsi is seeded with differing values (55, 54, 53), so an independent check would report not frozen. It still reports frozen=True / 'frozen' taken from btc_daily_close, which proves the state comes from the root (resolved CTE: derives_from → root.frozen)."
+    },
+    {
+      "criterionId": "US-1002-C5",
+      "met": true,
+      "evidence": {
+        "file": "tests/test_integrity_read.py",
+        "line": 285,
+        "testName": "test_integrity_read_computes_freshness_and_frozen_states_from_real_registry_rows",
+        "exitCode": 0
+      },
+      "note": "eth_rsi is seeded with 3 identical values. It returns frozen=None (not false) and 'propagation_unavailable' with a reason. An independent check would have said frozen, so no such check ran on it."
+    },
+    {
+      "criterionId": "US-1002-C6",
+      "met": true,
+      "evidence": {
+        "file": "tests/test_integrity_read.py",
+        "line": 268,
+        "testName": "test_integrity_read_computes_freshness_and_frozen_states_from_real_registry_rows",
+        "exitCode": 0
+      },
+      "note": "The migration cross-joins statement_timestamp() as computed_at into every row's payload. The test asserts it is present on the root row, and the textual test at line 177 checks its source. This is only a non-null check on one row."
+    },
+    {
+      "criterionId": "US-1002-C7",
+      "met": true,
+      "evidence": {
+        "file": "tests/test_integrity_read.py",
+        "line": 172,
+        "testName": "test_integrity_read_migration_is_additive_rpc_only",
+        "exitCode": 0
+      },
+      "note": "The migration only creates one function and sets grants on that function. The test asserts there is no ALTER TABLE on datapoints and no change to the datapoint_status type. This is a textual check only: nothing renders the live board to confirm it is unaffected, though with no table changes it cannot be."
+    },
+    {
+      "criterionId": "US-1002-C8",
+      "met": true,
+      "evidence": {
+        "file": "tests/test_integrity_read.py",
+        "line": 186,
+        "testName": "test_integrity_read_computes_freshness_and_frozen_states_from_real_registry_rows",
+        "exitCode": 0
+      },
+      "note": "The tests are unmarked. They apply every migration to a uuid-named throwaway schema on real Postgres (the same pattern as tests/test_history_read.py) and seed from load_registry(). Caveat: the fixture skips if it cannot connect, and gate exit 0 alone does not prove these tests ran rather than skipped. .env.local exists, so they probably ran."
+    },
+    {
+      "criterionId": "US-1002-C9",
+      "met": false,
+      "evidence": {
+        "file": "tests/test_integrity_read.py",
+        "line": 374,
+        "testName": "test_live_postgrest_integrity_read_for_a_real_cell_returns_integrity_state",
+        "exitCode": null
+      },
+      "note": "The live PostgREST test exists, but it is @pytest.mark.integration and pyproject addopts deselects integration tests, so no gate ran it. Nothing shows the migration was applied to production, that the PostgREST schema was reloaded, or that the owner signed off. The criterion is explicitly 'once applied to production', so it is unproven."
+    },
+    {
+      "criterionId": "US-1002-C10",
+      "met": true,
+      "evidence": {
+        "file": null,
+        "line": null,
+        "testName": null,
+        "exitCode": 0
+      },
+      "note": "The gate `uv run pytest -q -m \"not integration\"` exited 0."
+    }
+  ],
+  "tripwires": [],
+  "note": "The SQL and the throwaway-schema tests are real and make assertions that tell the cases apart (derived values differ from the root, a re-fetch doesn't count as an observation, etc.). The production step is unproven: the only production-reachability test is deselected by default and never ran, and nothing shows the migration was applied or signed off. The diff also includes unrelated SESSION.md/events churn.",
+  "at": "2026-09-29T14:28:11.485Z"
+}
