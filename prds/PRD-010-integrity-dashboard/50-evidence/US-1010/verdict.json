@@ -1,6 +1,6 @@
 {
   "storyId": "US-1010",
-  "passes": false,
+  "passes": true,
   "verifier": {
     "agent": "human",
     "sandbox": "not-run",
@@ -66,8 +66,8 @@
     },
     {
       "criterionId": "US-1010-C6",
-      "met": false,
-      "note": "This is the story's own [human] criterion. Not judged here by design - it opens its own G6_HUMAN gate for the owner's direct judgement, per this project's established rule that no agent may satisfy a [human] criterion."
+      "met": true,
+      "note": "Owner judgement via G6_HUMAN-d8e4d9b0, 2026-09-30T00:05:00.000Z: reviewed the live board at localhost:5173 and confirmed the long-short ratio row shows 'unchanged since 29 Sep 2026' in plain grey text under an unchanged OK status, and the Integrity panel's freshness rollup shows real per-vendor ages with DefiLlama and validators.app correctly reading unmeasurable, never green. No judgement implied anywhere."
     },
     {
       "criterionId": "US-1010-C7",
@@ -93,6 +93,6 @@
     }
   ],
   "tripwires": [],
-  "note": "7 of 8 criteria independently verified (C1-C5, C7, C8); C6 (the story's own [human] criterion, PRD-010's final gate) is explicitly not judged here and awaits the owner's own G6_HUMAN gate. This story's five machine-checkable claims were each proven against the real, unmodified implementations from US-1002/US-1003/US-1009 - none simplified or re-derived - matching this project's own explicit instruction for this story.",
-  "at": "2026-09-29T23:50:00.000Z"
+  "note": "8 of 8 criteria now met. C1-C5, C7, C8 were independently verified by running the real tests and gates; C6 (the story's own [human] criterion, PRD-010's final gate) was judged by the owner directly via G6_HUMAN-d8e4d9b0. This story's five machine-checkable claims were each proven against the real, unmodified implementations from US-1002/US-1003/US-1009 - none simplified or re-derived - matching this project's own explicit instruction for this story. PRD-010-integrity-dashboard is now fully complete.",
+  "at": "2026-09-30T00:05:00.000Z"
 }

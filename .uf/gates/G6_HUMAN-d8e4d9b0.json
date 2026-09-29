@@ -10,5 +10,11 @@
   "context": "Everything a machine can check has passed (7/8).\nOnly your judgement is left:\n  · The owner opens the live integrity panel and the board, confirms at least one real or deliberately-seeded frozen indicator shows its badge with a correct date, confirms the freshness rollup shows real per-vendor ages with the two wall-clock fetchers reading \"unmeasurable\" rather than green, and confirms nothing about the panel implies a judgement (a score, a colour ranking, a composite health number) beyond the honest per-source facts this PRD computes.\n\nRun it yourself: npm run dev (in web/)\nEvidence: prds/PRD-010-integrity-dashboard/50-evidence/US-1010/",
   "defaultOnTimeout": "block",
   "id": "G6_HUMAN-d8e4d9b0",
-  "openedAt": "2026-09-29T23:50:00.100Z"
+  "openedAt": "2026-09-29T23:50:00.100Z",
+  "answer": {
+    "choice": "met",
+    "reason": "Owner reviewed the live board at localhost:5173 across two screenshots: the long-short ratio row for BTC/ETH shows 'unchanged since 29 Sep 2026' in plain grey text under an unchanged OK status, and the Integrity panel's per-source freshness rollup shows real per-vendor ages with DefiLlama and validators.app both correctly reading 'unmeasurable' rather than any shade of green. Confirmed nothing on the panel implies a judgement beyond the honest per-source facts.",
+    "at": "2026-09-30T00:05:00.000Z",
+    "by": "human"
+  }
 }
