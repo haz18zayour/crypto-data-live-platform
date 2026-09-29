@@ -37,6 +37,89 @@ NON_BTC_TALIB_PROPAGATION_REASON = (
     'ETH/SOL/BNB daily close renders "Daily close is intentionally BTC-only on '
     'this board".'
 )
+SHIPPED_REGISTRY_DEFINABLE_FOR = {
+    "btc_daily_close": ("BTC",),
+    "btc_rsi": ("BTC",),
+    "btc_funding_rate": ("BTC",),
+    "btc_mvrv": ("BTC",),
+    "btc_active_addresses": ("BTC",),
+    "btc_exchange_flow": ("BTC",),
+    "btc_open_interest": ("BTC",),
+    "btc_long_short_ratio": ("BTC",),
+    "btc_taker_ratio": ("BTC",),
+    "btc_ema_20": ("BTC",),
+    "btc_ema_50": ("BTC",),
+    "btc_ema_200": ("BTC",),
+    "btc_atr": ("BTC",),
+    "btc_bollinger_upper": ("BTC",),
+    "btc_bollinger_middle": ("BTC",),
+    "btc_bollinger_lower": ("BTC",),
+    "btc_obv": ("BTC",),
+    "btc_macd": ("BTC",),
+    "btc_stochrsi": ("BTC",),
+    "eth_rsi": ("ETH",),
+    "eth_funding_rate": ("ETH",),
+    "eth_mvrv": ("ETH",),
+    "eth_active_addresses": ("ETH",),
+    "eth_exchange_flow": ("ETH",),
+    "eth_open_interest": ("ETH",),
+    "eth_long_short_ratio": ("ETH",),
+    "eth_taker_ratio": ("ETH",),
+    "eth_ema_20": ("ETH",),
+    "eth_ema_50": ("ETH",),
+    "eth_ema_200": ("ETH",),
+    "eth_atr": ("ETH",),
+    "eth_bollinger_upper": ("ETH",),
+    "eth_bollinger_middle": ("ETH",),
+    "eth_bollinger_lower": ("ETH",),
+    "eth_obv": ("ETH",),
+    "eth_macd": ("ETH",),
+    "eth_stochrsi": ("ETH",),
+    "sol_rsi": ("SOL",),
+    "sol_funding_rate": ("SOL",),
+    "sol_active_addresses": ("SOL",),
+    "sol_staking": ("SOL",),
+    "sol_open_interest": ("SOL",),
+    "sol_long_short_ratio": ("SOL",),
+    "sol_taker_ratio": ("SOL",),
+    "sol_ema_20": ("SOL",),
+    "sol_ema_50": ("SOL",),
+    "sol_ema_200": ("SOL",),
+    "sol_atr": ("SOL",),
+    "sol_bollinger_upper": ("SOL",),
+    "sol_bollinger_middle": ("SOL",),
+    "sol_bollinger_lower": ("SOL",),
+    "sol_obv": ("SOL",),
+    "sol_macd": ("SOL",),
+    "sol_stochrsi": ("SOL",),
+    "bnb_rsi": ("BNB",),
+    "bnb_funding_rate": ("BNB",),
+    "bnb_mvrv": ("BNB",),
+    "bnb_active_addresses": ("BNB",),
+    "bnb_open_interest": ("BNB",),
+    "bnb_long_short_ratio": ("BNB",),
+    "bnb_taker_ratio": ("BNB",),
+    "bnb_ema_20": ("BNB",),
+    "bnb_ema_50": ("BNB",),
+    "bnb_ema_200": ("BNB",),
+    "bnb_atr": ("BNB",),
+    "bnb_bollinger_upper": ("BNB",),
+    "bnb_bollinger_middle": ("BNB",),
+    "bnb_bollinger_lower": ("BNB",),
+    "bnb_obv": ("BNB",),
+    "bnb_macd": ("BNB",),
+    "bnb_stochrsi": ("BNB",),
+    "macro_vixcls": ("MACRO",),
+    "macro_dff": ("MACRO",),
+    "macro_t10y2y": ("MACRO",),
+    "macro_dfii10": ("MACRO",),
+    "macro_dtwexbgs": ("MACRO",),
+    "macro_cpiaucsl": ("MACRO",),
+    "macro_m2sl": ("MACRO",),
+    "spot_etf_net_flow": ("BTC", "ETH", "SOL"),
+    "stablecoin_supply": ("ETH", "SOL", "BNB"),
+    "fear_greed_index": ("MACRO",),
+}
 
 VALID_ENTRY = """\
 - key: btc_daily_close
@@ -265,6 +348,14 @@ def test_shipped_registry_definitions_cover_four_assets_at_scale() -> None:
         len(entry.definable_for) == 1
         or entry.key in {"spot_etf_net_flow", "stablecoin_supply"}
         for entry in crypto_entries
+    )
+
+
+def test_shipped_registry_keys_and_definable_for_match_board_baseline() -> None:
+    registry = load_registry()
+
+    assert {entry.key: entry.definable_for for entry in registry.root} == (
+        SHIPPED_REGISTRY_DEFINABLE_FOR
     )
 
 

@@ -33,6 +33,11 @@ def definition(
     parameters: tuple[tuple[str, int | float], ...] | None = (),
     golden: str | None = "new_indicator.json",
     response_model: str | None = "test_response",
+    frozen_after_observations: int | None = 3,
+    expected_constant: str | None = None,
+    talib_function: str | None = None,
+    derives_from: str | None = None,
+    frozen_propagation_unavailable: str | None = None,
 ) -> IndicatorDefinition:
     return IndicatorDefinition.model_construct(
         key=key,
@@ -47,6 +52,11 @@ def definition(
         expected_update_interval_seconds=86_400,
         freshness_warn_seconds=108_000,
         freshness_stale_seconds=172_800,
+        frozen_after_observations=frozen_after_observations,
+        expected_constant=expected_constant,
+        talib_function=talib_function,
+        derives_from=derives_from,
+        frozen_propagation_unavailable=frozen_propagation_unavailable,
     )
 
 
@@ -95,6 +105,69 @@ def test_adding_an_uncovered_indicator_fails_coverage_naming_what_is_missing() -
     assert "new_indicator is missing required_bars" in message
     assert "new_indicator is missing a response model" in message
     assert "new_indicator is missing parameters" in message
+
+
+def test_coverage_rejects_missing_frozen_detection_declaration() -> None:
+    entry = definition(frozen_after_observations=None)
+
+    with pytest.raises(
+        AssertionError,
+        match="new_indicator is missing exactly one frozen detection declaration",
+    ):
+        assert_registry_coverage(
+            registry_with(entry),
+            golden_keys={"new_indicator.json"},
+            response_models={"new_indicator": object()},
+        )
+
+
+def test_coverage_rejects_conflicting_frozen_detection_declarations() -> None:
+    entry = definition(
+        frozen_after_observations=3,
+        expected_constant="Fixture deliberately repeats.",
+    )
+
+    with pytest.raises(
+        AssertionError,
+        match="new_indicator is missing exactly one frozen detection declaration",
+    ):
+        assert_registry_coverage(
+            registry_with(entry),
+            golden_keys={"new_indicator.json"},
+            response_models={"new_indicator": object()},
+        )
+
+
+def test_coverage_rejects_talib_entry_without_frozen_propagation() -> None:
+    entry = definition(talib_function="RSI", parameters=(("timeperiod", 14),))
+
+    with pytest.raises(
+        AssertionError,
+        match="new_indicator is missing exactly one TA-Lib frozen propagation",
+    ):
+        assert_registry_coverage(
+            registry_with(entry),
+            golden_keys={"new_indicator.json"},
+            response_models={"new_indicator": object()},
+        )
+
+
+def test_coverage_rejects_talib_entry_with_unknown_derived_root() -> None:
+    entry = definition(
+        talib_function="RSI",
+        parameters=(("timeperiod", 14),),
+        derives_from="missing_root",
+    )
+
+    with pytest.raises(
+        AssertionError,
+        match="new_indicator derives_from unknown registry key missing_root",
+    ):
+        assert_registry_coverage(
+            registry_with(entry),
+            golden_keys={"new_indicator.json"},
+            response_models={"new_indicator": object()},
+        )
 
 
 def test_no_indicator_key_is_duplicated_across_assets() -> None:
@@ -150,7 +223,6 @@ def test_each_coverage_failure_names_the_specific_indicator_key(
         )
 
 
-@pytest.mark.integration
 def test_assembled_coverage_check_passes_over_the_real_registry() -> None:
     assert_registry_coverage(
         load_registry(),

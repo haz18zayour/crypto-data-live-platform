@@ -388,12 +388,42 @@ def assert_registry_coverage(
     """Fail with every missing integrity artifact derived from the registry."""
 
     failures: list[str] = []
+    registry_keys = {entry.key for entry in registry.root}
     for entry in registry.root:
         has_second_source = entry.corroboration is not None
         is_uncorroborated = entry.uncorroborated is not None
         if has_second_source == is_uncorroborated:
             failures.append(
                 f"{entry.key} is missing exactly one corroboration declaration"
+            )
+        has_frozen_threshold = entry.frozen_after_observations is not None
+        has_expected_constant = entry.expected_constant is not None
+        if has_frozen_threshold == has_expected_constant:
+            failures.append(
+                f"{entry.key} is missing exactly one frozen detection declaration"
+            )
+        has_derived_root = entry.derives_from is not None
+        has_unavailable_reason = entry.frozen_propagation_unavailable is not None
+        if entry.talib_function is not None:
+            if has_derived_root == has_unavailable_reason:
+                failures.append(
+                    f"{entry.key} is missing exactly one TA-Lib frozen "
+                    "propagation declaration"
+                )
+            elif entry.derives_from == entry.key:
+                failures.append(f"{entry.key} derives_from must not point to itself")
+            elif (
+                entry.derives_from is not None
+                and entry.derives_from not in registry_keys
+            ):
+                failures.append(
+                    f"{entry.key} derives_from unknown registry key "
+                    f"{entry.derives_from}"
+                )
+        elif has_derived_root or has_unavailable_reason:
+            failures.append(
+                f"{entry.key} declares TA-Lib frozen propagation fields without "
+                "a talib_function"
             )
         if entry.golden is None or entry.golden not in golden_keys:
             failures.append(f"{entry.key} is missing a golden file")
