@@ -16,7 +16,7 @@
         "testName": null,
         "exitCode": null
       },
-      "note": "The script has a renderer, but web/src/registry.generated.ts does not exist; a glob finds only web/src/registry.ts. No test checks for the generated file."
+      "note": "The script has a renderer, but web/src/registry.generated.ts does not exist. A glob of web/src/registry*.ts matches only registry.ts, and no test checks for a generated file."
     },
     {
       "criterionId": "US-1006-C2",
@@ -27,7 +27,7 @@
         "testName": null,
         "exitCode": null
       },
-      "note": "tests/test_registry_codegen.py does not exist, and there is no committed generated file to check for staleness."
+      "note": "tests/test_registry_codegen.py does not exist, and there is no committed generated file for a staleness check to compare against."
     },
     {
       "criterionId": "US-1006-C3",
@@ -60,7 +60,7 @@
         "testName": null,
         "exitCode": null
       },
-      "note": "No test exists that detects it.todo or empty test shells."
+      "note": "No test exists that detects it.todo calls or empty test shells."
     },
     {
       "criterionId": "US-1006-C6",
@@ -71,7 +71,7 @@
         "testName": null,
         "exitCode": null
       },
-      "note": "Grep finds no IndicatorKey and no mapped type `[K in ...]` anywhere in web/src. registry.ts still imports the YAML with ?raw (line 3) and runs parse() on it (line 23), so keys stay plain strings."
+      "note": "Grep finds no IndicatorKey and no mapped type anywhere in web/src. registry.ts still imports the YAML with ?raw (line 3) and runs parse() on it (line 23), so every key is still a plain string to the compiler."
     },
     {
       "criterionId": "US-1006-C7",
@@ -82,7 +82,7 @@
         "testName": null,
         "exitCode": 0
       },
-      "note": "`uv run pytest -q` exited 0 (418 passed). It stays green only because this story added no tests and changed no runtime code."
+      "note": "The gate `uv run pytest -q` exited 0 (418 passed). It stays green only because this story added no tests and changed no runtime code."
     },
     {
       "criterionId": "US-1006-C8",
@@ -93,10 +93,10 @@
         "testName": null,
         "exitCode": 0
       },
-      "note": "Typecheck exited 0, but no exhaustive mapping exists, so the criterion's subject is missing and the green result proves nothing about it."
+      "note": "Typecheck exited 0, but no exhaustive mapping and no generated file exist. The thing this criterion is about is missing, so the green result proves nothing about it."
     }
   ],
   "tripwires": [],
-  "note": "Attempt 2 (5605f78) left the repo unchanged from attempt 1: only scripts/generate_indicator_keys.py exists. The generated TS file, the codegen/coverage tests, the mapped-type wiring and the registry.ts change are all missing. The green gates only reflect code that predates this story.",
-  "at": "2026-09-29T15:07:38.280Z"
+  "note": "Attempt 3 (cb5735b) is the same as attempts 1 and 2: only scripts/generate_indicator_keys.py exists. The generated TS file, the codegen and coverage tests, the mapped-type wiring and the registry.ts change are all missing, and the implementer's run exited 1. The green gates only reflect code that predates this story.",
+  "at": "2026-09-29T15:11:15.617Z"
 }
