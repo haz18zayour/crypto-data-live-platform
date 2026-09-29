@@ -37,7 +37,7 @@ open prds/PRD-005-dashboard/20-decisions.yaml
 | PRD-010-integrity-dashboard | 7 | 2 | 2/7 |
 | PRD-012-cadence-split | 6 | 6 | **all green** |
 
-Spend to date: **$119.56** Claude · **301020k** Codex tokens.
+Spend to date: **$120.35** Claude · **302861k** Codex tokens.
 
 ## What happened
 
@@ -917,6 +917,12 @@ Spend to date: **$119.56** Claude · **301020k** Codex tokens.
 - 15:07  US-1006 started, attempt 3 (codex)
 - 15:08  US-1006 — codex finished `cb5735b8`
 - 15:11  US-1006 **rejected** — 1/8 criteria, judged by claude · $0.16
+- 15:11  ⏸ **gate opened** — US-1006 has failed 3 times — is the story wrong?
+- 18:12  ▶ gate answered **rewrite-criteria** — All 3 attempts produced 0 tokens and exitCode 1 - confirmed codex quota exhaustion via direct probe, resets at 9:11 PM. No code was written; re-identifying as US-1009 for a fresh attempt budget.
+- 15:12  **PRD-010-integrity-dashboard** compiled — 7 stories
+- 18:31  US-1009 started, attempt 1 (codex)
+- 18:36  US-1009 — codex finished `45d80ac1` · 1841k tok
+- 18:40  US-1009 **rejected** — 5/8 criteria, judged by claude · $0.79
 
 <!-- uf:generated:end -->
 
