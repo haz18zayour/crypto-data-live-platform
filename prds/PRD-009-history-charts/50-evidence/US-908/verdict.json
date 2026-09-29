@@ -51,6 +51,6 @@
   "tripwires": [
     "criterion US-908-C7 requires a screenshot at the sparkline is visible on the rendered board for at least one real cell with sufficient history, with axis labels legible at the board's existing cell size — it does not exist"
   ],
-  "note": "gates failed: test, US-908-C8 | tripwires: criterion US-908-C7 requires a screenshot at the sparkline is visible on the rendered board for at least one real cell with sufficient history, with axis labels legible at the board's existing cell size — it does not exist",
-  "at": "2026-09-28T23:59:49.462Z"
+  "note": "tripwires: criterion US-908-C7 requires a screenshot at the sparkline is visible on the rendered board for at least one real cell with sufficient history, with axis labels legible at the board's existing cell size — it does not exist",
+  "at": "2026-09-29T00:02:00.092Z"
 }

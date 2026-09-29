@@ -1,12 +1,13 @@
-.uf/events.ndjson                                  |   5 +
- SESSION.md                                         |  19 +-
+.uf/events.ndjson                                  |   8 +
+ SESSION.md                                         |  22 +-
  .../50-evidence/US-908/capture-sparkline.mjs       |  76 ++++
- .../50-evidence/US-908/diffstat.txt                |   9 +
+ .../50-evidence/US-908/diffstat.txt                |  12 +
  .../50-evidence/US-908/gates.json                  |  20 ++
  .../50-evidence/US-908/verdict.json                |  56 +++
+ scripts/capture-board.mjs                          |  69 +++-
  web/src/CellDetail.tsx                             |  55 ++-
- web/src/Sparkline.test.tsx                         | 382 +++++++++++++++++++++
+ web/src/Sparkline.test.tsx                         | 381 +++++++++++++++++++++
  web/src/Sparkline.tsx                              |  99 ++++++
  web/src/history.ts                                 |  52 +++
  web/src/styles.css                                 |  72 ++++
- 11 files changed, 841 insertions(+), 4 deletions(-)
+ 12 files changed, 917 insertions(+), 5 deletions(-)
