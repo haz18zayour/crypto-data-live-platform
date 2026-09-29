@@ -8,7 +8,7 @@ import {
   type BoardRegistryEntry,
 } from "../board";
 import type { Datapoint } from "../datapoint";
-import { mixedBoard } from "./mixedBoard";
+import { mixedBoard, mixedBoardIntegrityRows } from "./mixedBoard";
 
 vi.mock("../board", async (importOriginal) => {
   const actual = await importOriginal<typeof import("../board")>();
@@ -58,6 +58,12 @@ describe("mixed board fixture", () => {
       )?.state,
     ).toMatchObject({ status: "STALE", value: 11111.11 });
     expect(
+      mixedBoard.cells.find((cell) => cell.indicatorKey === "btc_mvrv"),
+    ).toMatchObject({
+      state: { status: "OK" },
+      frozen: { sinceSourceTimestamp: "2026-09-10T00:00:00Z" },
+    });
+    expect(
       mixedBoard.cells.some(
         (cell) =>
           cell.state.status === "ERROR" &&
@@ -89,7 +95,8 @@ describe("mixed board fixture", () => {
     const fixtureDatapoints = mixedBoard.cells
       .map((cell) => cell.state)
       .filter((state): state is Datapoint => "indicatorKey" in state);
-    const [calledRegistry, calledRows, calledAssets] = fixtureBuild.calls[0];
+    const [calledRegistry, calledRows, calledAssets, calledIntegrityRows] =
+      fixtureBuild.calls[0];
 
     expect(fixtureDatapoints).toHaveLength(boardRegistry.length);
     expect(calledRegistry).toEqual(registry);
@@ -98,10 +105,11 @@ describe("mixed board fixture", () => {
       boardRegistry.map((definition) => definition.key),
     );
     expect(calledAssets).toEqual(BOARD_ASSETS);
+    expect(calledIntegrityRows).toEqual(mixedBoardIntegrityRows);
     expect(fixtureBuild.results[0]?.value).toBe(mixedBoard);
-    expect(buildBoard(registry, fixtureDatapoints, BOARD_ASSETS)).toEqual(
-      mixedBoard,
-    );
+    expect(
+      buildBoard(registry, fixtureDatapoints, BOARD_ASSETS, mixedBoardIntegrityRows),
+    ).toEqual(mixedBoard);
   });
 
   test("the fixture cells carry real provenance including vendor and source timestamp", () => {

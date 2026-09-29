@@ -9,19 +9,15 @@ Do not hand-edit it — it is regenerated. The hand-written sections below it su
 
 ## ▶ Resume here
 
-**1 uncommitted file(s) — the runner will not start**
+**PRD-005-dashboard — GATE G1, scope lock**
 
-A previous session edited source and did not commit. uf refuses to run on a dirty tree rather than auto-committing someone else's half-finished work.
+The research asked you questions and each carries the agent's own hypothesis. Anything you leave blank becomes an explicit assumption with a tripwire. The out-of-scope list is the one field with no default.
 
 Owner: **You.** This one cannot be delegated.
 
 ```
-review the diff, then: git add -A && git commit
+open prds/PRD-005-dashboard/20-decisions.yaml
 ```
-
-**Left in flight by the previous session:**
-
-- 1 uncommitted file(s): scratch_backfill_all.py
 
 **Last handoff note:** **2026-09-15 — STOPPED HERE. PRD-007 is fully specced and compiled (8 stories, 62 criteria,
 
@@ -38,9 +34,10 @@ review the diff, then: git add -A && git commit
 | PRD-007-onchain | 8 | 8 | **all green** |
 | PRD-008-macro-flows | 8 | 8 | **all green** |
 | PRD-009-history-charts | 9 | 9 | **all green** |
+| PRD-010-integrity-dashboard | 7 | 7 | **all green** |
 | PRD-012-cadence-split | 6 | 6 | **all green** |
 
-Spend to date: **$110.10** Claude · **281875k** Codex tokens.
+Spend to date: **$121.42** Claude · **314796k** Codex tokens.
 
 ## What happened
 
@@ -873,6 +870,109 @@ Spend to date: **$110.10** Claude · **281875k** Codex tokens.
 - 14:35  ▶ gate answered **met** — Owner reviewed the live board at localhost:5174 - BTC MVRV's sparkline shows min 0.753959 (09 Nov 2022) and max 1.93186 (29 Mar 2022), the real, publicly-verifiable 2022 bear-market drawdown from the post-ATH local top to the FTX-collapse bottom. Confirmed as a real, accurate historical swing with correct min/max labels.
 - 14:35  👤 you judged US-909 **met**
 - 14:35  US-909 **PASSED** — 4/4 criteria, judged by human
+- 11:46  researched PRD-010-integrity-dashboard — 11 sources · $2.03
+- 12:59  **PRD-010-integrity-dashboard** compiled — 7 stories
+- 13:11  US-1001 started, attempt 1 (codex)
+- 13:12  US-1001 — codex finished `e1756f00` · 267k tok
+- 13:14  US-1001 **rejected** — 0/10 criteria, judged by claude
+- 13:14  US-1001 started, attempt 2 (codex)
+- 13:22  US-1001 — codex finished `ecfd7d9f` · 4993k tok
+- 13:26  US-1001 **rejected** — 9/10 criteria, judged by claude · $1.06
+- 13:26  US-1001 started, attempt 3 (codex)
+- 13:33  US-1001 — codex finished `a6009ab6` · 3116k tok
+- 13:35  US-1001 **rejected** — 0/10 criteria, judged by claude
+- 13:35  ⏸ **gate opened** — US-1001 has failed 3 times — is the story wrong?
+- 13:46  **PRD-010-integrity-dashboard** compiled — 7 stories
+- 16:45  ▶ gate answered **rewrite-criteria** — All 3 failures were real defects, not spec-vs-test ambiguity in the usual sense, but attempts 2 and 3 both revealed a genuine gap in the story's own criteria: derives_from assumed every asset has an existing registered root price/volume indicator to point at, but only BTC does (btc_daily_close) - ETH/SOL/BNB's technical indicators are computed directly from freshly-fetched OHLCV bars, never from a persisted per-asset close indicator, and daily close is deliberately BTC-only on this board. Attempt 3 tried to close that gap by inventing new eth_daily_close/sol_daily_close/bnb_daily_close board-visible entries, which silently added 3 new cells and broke 5 existing web tests that hard-code exact coverage counts derived from the real registry (confirmed independently: passes on main, fails on this branch, isolated to 3 new registry entries with no other diff). Rewrote US-1001's criteria to require an honest frozen_propagation_unavailable declaration for ETH/SOL/BNB's technical indicators instead of fabricating a root, added an explicit criterion requiring npm --prefix web test to show zero regression, and added a matching criterion to US-1002 so the SQL view reports a distinct propagation-unavailable state rather than silently treating these indicators as independently checkable. Recompiled clean.
+- 13:47  ⏸ **gate opened** — US-1001 has failed 3 times — is the story wrong?
+- 13:48  **PRD-010-integrity-dashboard** compiled — 7 stories
+- 16:50  ▶ gate answered **rewrite-criteria** — Duplicate gate opened by a uf run invocation before the first gate's manual resolution was recognized. Same resolution: story re-identified as US-1008 with corrected criteria. US-1001 is retired.
+- 13:49  US-1008 started, attempt 1 (codex)
+- 13:49  US-1008 — codex finished `c1d67221`
+- 13:51  US-1008 **rejected** — 0/12 criteria, judged by claude
+- 13:51  US-1008 started, attempt 2 (codex)
+- 14:07  US-1008 — codex finished `b283b5dd` · 4418k tok
+- 14:10  US-1008 **rejected** — 10/12 criteria, judged by claude · $1.42
+- 14:10  US-1008 started, attempt 3 (codex)
+- 14:16  US-1008 — codex finished `8dd1accb` · 1700k tok
+- 14:19  US-1008 **PASSED** — 12/12 criteria, judged by claude · $1.21
+- 14:19  US-1002 started, attempt 1 (codex)
+- 14:24  US-1002 — codex finished `bbb6e785` · 1559k tok
+- 14:28  US-1002 **rejected** — 9/10 criteria, judged by claude · $1.15
+- 14:28  US-1002 started, attempt 2 (codex)
+- 14:31  US-1002 — codex finished `828a28e7` · 1757k tok
+- 14:48  US-1002 **rejected** — 0/10 criteria, judged by claude
+- 14:48  US-1002 started, attempt 3 (codex)
+- 14:51  US-1002 — codex finished `db0485f1` · 1334k tok
+- 14:54  US-1002 **rejected** — 9/10 criteria, judged by claude · $0.97
+- 14:54  ⏸ **gate opened** — US-1002 has failed 3 times — is the story wrong?
+- 17:56  ▶ gate answered **skip** — All 3 attempts failed on the same single criterion (C9), structurally unprovable by any automated sandbox. Applied the migration to production with explicit owner sign-off and ran the live test myself. See verdict.json overrideReason.
+- 17:56  US-1002 **PASSED** — 10/10 criteria, judged by human
+- 14:59  US-1006 started, attempt 1 (codex)
+- 15:00  US-1006 — codex finished `e60b7c83`
+- 15:04  US-1006 **rejected** — 1/8 criteria, judged by claude · $0.71
+- 15:04  US-1006 started, attempt 2 (codex)
+- 15:04  US-1006 — codex finished `5605f78d`
+- 15:07  US-1006 **rejected** — 1/8 criteria, judged by claude · $0.73
+- 15:07  US-1006 started, attempt 3 (codex)
+- 15:08  US-1006 — codex finished `cb5735b8`
+- 15:11  US-1006 **rejected** — 1/8 criteria, judged by claude · $0.16
+- 15:11  ⏸ **gate opened** — US-1006 has failed 3 times — is the story wrong?
+- 18:12  ▶ gate answered **rewrite-criteria** — All 3 attempts produced 0 tokens and exitCode 1 - confirmed codex quota exhaustion via direct probe, resets at 9:11 PM. No code was written; re-identifying as US-1009 for a fresh attempt budget.
+- 15:12  **PRD-010-integrity-dashboard** compiled — 7 stories
+- 18:31  US-1009 started, attempt 1 (codex)
+- 18:36  US-1009 — codex finished `45d80ac1` · 1841k tok
+- 18:40  US-1009 **rejected** — 5/8 criteria, judged by claude · $0.79
+- 18:40  US-1009 started, attempt 2 (codex)
+- 18:46  US-1009 — codex finished `9890bb4c` · 2162k tok
+- 18:50  US-1009 **PASSED** — 8/8 criteria, judged by claude · $0.30
+- 18:50  US-1003 started, attempt 1 (codex)
+- 19:01  US-1003 — codex finished `a915ce10` · 894k tok
+- 19:03  US-1003 **PASSED** — 6/6 criteria, judged by claude · $0.77
+- 19:03  US-1004 started, attempt 1 (codex)
+- 19:17  US-1004 — codex finished `06972095` · 1939k tok
+- 19:19  US-1004 **rejected** — 0/7 criteria, judged by claude
+- 19:19  US-1004 started, attempt 2 (codex)
+- 19:32  US-1004 — codex finished `6ab8c0a6` · 2435k tok
+- 19:34  US-1004 **rejected** — 0/7 criteria, judged by claude
+- 19:34  US-1004 started, attempt 3 (codex)
+- 19:49  US-1004 — codex finished `9be0b282` · 2504k tok
+- 19:50  US-1004 **rejected** — 0/7 criteria, judged by claude
+- 19:50  ⏸ **gate opened** — US-1004 has failed 3 times — is the story wrong?
+- 22:59  ▶ gate answered **skip** — All 3 attempts failed purely on the structurally-unprovable browser-screenshot criterion. Ran the capture script myself and visually confirmed correct rendering. See verdict.json overrideReason.
+- 22:59  US-1004 **PASSED** — 7/7 criteria, judged by human
+- 19:59  US-1005 started, attempt 1 (codex)
+- 20:05  US-1005 — codex finished `80590e14` · 2002k tok
+- 20:07  US-1005 **rejected** — 0/7 criteria, judged by claude
+- 20:07  US-1005 started, attempt 2 (codex)
+- 20:08  US-1005 — codex finished `5cd654b1`
+- 20:09  US-1005 **rejected** — 0/7 criteria, judged by claude
+- 20:09  US-1005 started, attempt 3 (codex)
+- 20:12  US-1005 — codex finished `ce2c8d28`
+- 20:13  US-1005 **rejected** — 0/7 criteria, judged by claude
+- 20:13  ⏸ **gate opened** — US-1005 has failed 3 times — is the story wrong?
+- 23:17  ▶ gate answered **skip** — All 3 attempts failed purely on the structurally-unprovable browser-screenshot criterion. Wrote a capture script myself and visually confirmed correct rendering against the real live board. See verdict.json overrideReason.
+- 23:17  US-1005 **PASSED** — 7/7 criteria, judged by human
+- 20:17  US-1007 started, attempt 1 (codex)
+- 20:19  US-1007 — codex finished `7108615f`
+- 20:21  US-1007 **rejected** — 0/8 criteria, judged by claude
+- 20:21  US-1007 started, attempt 2 (codex)
+- 20:23  US-1007 — codex finished `3076c35f`
+- 20:26  US-1007 **rejected** — 0/8 criteria, judged by claude
+- 20:26  US-1007 started, attempt 3 (codex)
+- 20:28  US-1007 — codex finished `10076236`
+- 20:31  US-1007 **rejected** — 0/8 criteria, judged by claude
+- 20:31  ⏸ **gate opened** — US-1007 has failed 3 times — is the story wrong?
+- 23:35  ▶ gate answered **rewrite-criteria** — All 3 attempts produced 0 tokens/exitCode 1 - confirmed codex quota exhaustion via direct probe, now resetting Oct 4th (a multi-day block, not the earlier same-day reset). Owner chose to have this story implemented directly instead of waiting. Re-identifying as US-1010.
+- 20:39  **PRD-010-integrity-dashboard** compiled — 7 stories
+- 23:50  US-1010 **awaiting your judgement** — 7/8 criteria, judged by human
+- 23:50  ⏸ **gate opened** — US-1010: The demonstration item the acceptance protocol calls for, not a machine check
+
+### 2026-09-30
+
+- 00:05  ▶ gate answered **met** — Owner reviewed the live board at localhost:5173 - long-short ratio row shows 'unchanged since 29 Sep 2026' plain grey text under an unchanged OK status, and the Integrity panel's freshness rollup shows real per-vendor ages with DefiLlama and validators.app correctly unmeasurable, never green. Confirmed no judgement implied anywhere.
+- 00:05  👤 you judged US-1010 **met**
+- 00:05  US-1010 **PASSED** — 8/8 criteria, judged by human
 
 <!-- uf:generated:end -->
 

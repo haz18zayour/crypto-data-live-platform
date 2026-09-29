@@ -1,4 +1,4 @@
-import { formatUtcTimestamp } from "./CellDetail";
+import { formatUtcDate } from "./FrozenBadge";
 import {
   formatWindow,
   historySufficiency,
@@ -12,10 +12,6 @@ const INSET = 4;
 
 function formatValue(value: number): string {
   return value.toLocaleString("en-US", { maximumSignificantDigits: 6 });
-}
-
-function formatUtcDate(timestamp: string): string {
-  return formatUtcTimestamp(timestamp).split(",")[0];
 }
 
 function Extreme({

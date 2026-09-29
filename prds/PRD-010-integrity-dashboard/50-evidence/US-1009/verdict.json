@@ -1,0 +1,102 @@
+{
+  "storyId": "US-1009",
+  "passes": true,
+  "verifier": {
+    "agent": "claude",
+    "sandbox": "restricted:read-only"
+  },
+  "implementer": "codex",
+  "results": [
+    {
+      "criterionId": "US-1009-C1",
+      "met": true,
+      "evidence": {
+        "file": "tests/test_registry_codegen.py",
+        "line": 55,
+        "testName": "test_committed_indicator_key_union_matches_registry_codegen",
+        "exitCode": 0
+      },
+      "note": "web/src/registry.generated.ts exports `INDICATOR_KEYS = [...] as const` and `IndicatorKey = (typeof INDICATOR_KEYS)[number]`. The test requires the file to equal render_indicator_keys(registry.yaml) byte for byte, and that function emits every entry.key (scripts/generate_indicator_keys.py:14)."
+    },
+    {
+      "criterionId": "US-1009-C2",
+      "met": true,
+      "evidence": {
+        "file": "tests/test_registry_codegen.py",
+        "line": 55,
+        "testName": "test_committed_indicator_key_union_matches_registry_codegen",
+        "exitCode": 0
+      },
+      "note": "The committed file must exactly match a fresh render from the current registry.yaml, so any stale file fails."
+    },
+    {
+      "criterionId": "US-1009-C3",
+      "met": true,
+      "evidence": {
+        "file": "tests/test_registry_codegen.py",
+        "line": 61,
+        "testName": "test_codegen_reflects_registry_key_changes",
+        "exitCode": 0
+      },
+      "note": "The test renames a key in a temp copy of registry.yaml and asserts the rendered output changes to match. The renderer reads the YAML through load_registry."
+    },
+    {
+      "criterionId": "US-1009-C4",
+      "met": true,
+      "evidence": {
+        "file": "tests/test_registry_codegen.py",
+        "line": 106,
+        "testName": "test_every_generated_key_has_a_real_golden_and_the_goldens_have_substance",
+        "exitCode": 0
+      },
+      "note": "New since attempt 1: the test hashes every distinct golden file and fails if two different files have identical bytes (line 88-106). That catches a golden copied verbatim from another indicator. It also rejects empty or non-container payloads. The parametrized test at line 127 checks that a golden's indicator_key suffix matches its key when that field is present. Limitation: a copied golden that has been lightly edited and has no indicator_key field would still pass."
+    },
+    {
+      "criterionId": "US-1009-C5",
+      "met": true,
+      "evidence": {
+        "file": "tests/test_registry_codegen.py",
+        "line": 152,
+        "testName": "test_every_generated_union_key_is_referenced_by_a_substantive_running_test_function",
+        "exitCode": 0
+      },
+      "note": "The test scans for `it.todo(` (line 262) and uses the AST to require real assert nodes in the key-reference tests. It also checks that the parametrized test at line 127, which actually runs and asserts registry and golden facts for each key, covers every generated key. Weaknesses: the it.todo glob is shallow (web/src/*.test.ts*, not recursive), the empty-shell AST check only looks at the two named functions, and `referenced_by_name` is a hand-copied list of keys (padding, though it does fail when a new key is added)."
+    },
+    {
+      "criterionId": "US-1009-C6",
+      "met": true,
+      "evidence": {
+        "file": "tests/test_registry_codegen.py",
+        "line": 271,
+        "testName": "test_indicator_stale_after_seconds_mapping_is_compile_time_exhaustive",
+        "exitCode": 0
+      },
+      "note": "The test pulls the real `indicatorStaleAfterSeconds ... satisfies { [K in IndicatorKey]: number }` object out of registry.ts, deletes btc_daily_close in a throwaway temp file, and runs the real tsc on it. It asserts tsc exits nonzero and names the missing key. The test is not marked integration, so it runs in the gate, which exited 0. The mapping is also used as real wiring: data.ts reads indicatorStaleAfterSeconds for freshness."
+    },
+    {
+      "criterionId": "US-1009-C7",
+      "met": true,
+      "evidence": {
+        "file": null,
+        "line": null,
+        "testName": null,
+        "exitCode": 0
+      },
+      "note": "The `uv run pytest -q` gate exited 0 (503 passed). The vitest suite also passed in the test gate."
+    },
+    {
+      "criterionId": "US-1009-C8",
+      "met": true,
+      "evidence": {
+        "file": "web/src/registry.ts",
+        "line": 111,
+        "testName": null,
+        "exitCode": 0
+      },
+      "note": "The exhaustive `satisfies { [K in IndicatorKey]: number }` mapping compiles, and `npm --prefix web run typecheck` exited 0."
+    }
+  ],
+  "tripwires": [],
+  "note": "Attempt 2 fixes the problems found in attempt 1. It adds a check that rejects identical copied goldens, an it.todo scan, and a test that deletes a key from the mapping and confirms tsc fails. The mapping is now used by data.ts. What remains weak: a hand-copied key list pads the coverage test, the it.todo glob doesn't search subfolders, and the empty-shell check only looks at two named functions.",
+  "at": "2026-09-29T18:50:59.421Z"
+}

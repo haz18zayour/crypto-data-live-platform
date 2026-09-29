@@ -29,6 +29,97 @@ FRED_UNCORROBORATED_NOTE = (
     "mirror against its origin rather than provide genuine independent "
     "corroboration."
 )
+NON_BTC_TALIB_PROPAGATION_REASON = (
+    "No per-asset close/volume series is separately registered for this asset; "
+    "technical indicators are computed directly from freshly-fetched OHLCV bars "
+    "in ingest/pipeline.py, never from a persisted per-asset close indicator. "
+    "Only BTC also exposes its close as a board cell by product decision; "
+    'ETH/SOL/BNB daily close renders "Daily close is intentionally BTC-only on '
+    'this board".'
+)
+SHIPPED_REGISTRY_DEFINABLE_FOR = {
+    "btc_daily_close": ("BTC",),
+    "btc_rsi": ("BTC",),
+    "btc_funding_rate": ("BTC",),
+    "btc_mvrv": ("BTC",),
+    "btc_active_addresses": ("BTC",),
+    "btc_exchange_flow": ("BTC",),
+    "btc_open_interest": ("BTC",),
+    "btc_long_short_ratio": ("BTC",),
+    "btc_taker_ratio": ("BTC",),
+    "btc_ema_20": ("BTC",),
+    "btc_ema_50": ("BTC",),
+    "btc_ema_200": ("BTC",),
+    "btc_atr": ("BTC",),
+    "btc_bollinger_upper": ("BTC",),
+    "btc_bollinger_middle": ("BTC",),
+    "btc_bollinger_lower": ("BTC",),
+    "btc_obv": ("BTC",),
+    "btc_macd": ("BTC",),
+    "btc_stochrsi": ("BTC",),
+    "eth_rsi": ("ETH",),
+    "eth_funding_rate": ("ETH",),
+    "eth_mvrv": ("ETH",),
+    "eth_active_addresses": ("ETH",),
+    "eth_exchange_flow": ("ETH",),
+    "eth_open_interest": ("ETH",),
+    "eth_long_short_ratio": ("ETH",),
+    "eth_taker_ratio": ("ETH",),
+    "eth_ema_20": ("ETH",),
+    "eth_ema_50": ("ETH",),
+    "eth_ema_200": ("ETH",),
+    "eth_atr": ("ETH",),
+    "eth_bollinger_upper": ("ETH",),
+    "eth_bollinger_middle": ("ETH",),
+    "eth_bollinger_lower": ("ETH",),
+    "eth_obv": ("ETH",),
+    "eth_macd": ("ETH",),
+    "eth_stochrsi": ("ETH",),
+    "sol_rsi": ("SOL",),
+    "sol_funding_rate": ("SOL",),
+    "sol_active_addresses": ("SOL",),
+    "sol_staking": ("SOL",),
+    "sol_open_interest": ("SOL",),
+    "sol_long_short_ratio": ("SOL",),
+    "sol_taker_ratio": ("SOL",),
+    "sol_ema_20": ("SOL",),
+    "sol_ema_50": ("SOL",),
+    "sol_ema_200": ("SOL",),
+    "sol_atr": ("SOL",),
+    "sol_bollinger_upper": ("SOL",),
+    "sol_bollinger_middle": ("SOL",),
+    "sol_bollinger_lower": ("SOL",),
+    "sol_obv": ("SOL",),
+    "sol_macd": ("SOL",),
+    "sol_stochrsi": ("SOL",),
+    "bnb_rsi": ("BNB",),
+    "bnb_funding_rate": ("BNB",),
+    "bnb_mvrv": ("BNB",),
+    "bnb_active_addresses": ("BNB",),
+    "bnb_open_interest": ("BNB",),
+    "bnb_long_short_ratio": ("BNB",),
+    "bnb_taker_ratio": ("BNB",),
+    "bnb_ema_20": ("BNB",),
+    "bnb_ema_50": ("BNB",),
+    "bnb_ema_200": ("BNB",),
+    "bnb_atr": ("BNB",),
+    "bnb_bollinger_upper": ("BNB",),
+    "bnb_bollinger_middle": ("BNB",),
+    "bnb_bollinger_lower": ("BNB",),
+    "bnb_obv": ("BNB",),
+    "bnb_macd": ("BNB",),
+    "bnb_stochrsi": ("BNB",),
+    "macro_vixcls": ("MACRO",),
+    "macro_dff": ("MACRO",),
+    "macro_t10y2y": ("MACRO",),
+    "macro_dfii10": ("MACRO",),
+    "macro_dtwexbgs": ("MACRO",),
+    "macro_cpiaucsl": ("MACRO",),
+    "macro_m2sl": ("MACRO",),
+    "spot_etf_net_flow": ("BTC", "ETH", "SOL"),
+    "stablecoin_supply": ("ETH", "SOL", "BNB"),
+    "fear_greed_index": ("MACRO",),
+}
 
 VALID_ENTRY = """\
 - key: btc_daily_close
@@ -39,6 +130,7 @@ VALID_ENTRY = """\
   expected_update_interval_seconds: 86400
   freshness_warn_seconds: 108000
   freshness_stale_seconds: 172800
+  frozen_after_observations: 3
 """
 
 
@@ -97,6 +189,117 @@ def test_entry_without_source_field_is_rejected(tmp_path: Path) -> None:
         load_registry(registry_path)
 
 
+def test_registry_rejects_an_entry_with_no_frozen_detection_declaration(
+    tmp_path: Path,
+) -> None:
+    registry_path = tmp_path / "registry.yaml"
+    write_registry(registry_path, entry_without("frozen_after_observations"))
+
+    with pytest.raises(ValidationError, match="frozen detection declaration"):
+        load_registry(registry_path)
+
+
+def test_registry_rejects_an_entry_with_both_frozen_detection_declarations(
+    tmp_path: Path,
+) -> None:
+    registry_path = tmp_path / "registry.yaml"
+    write_registry(
+        registry_path,
+        VALID_ENTRY + "  expected_constant: This fixture deliberately repeats.\n",
+    )
+
+    with pytest.raises(ValidationError, match="frozen detection declaration"):
+        load_registry(registry_path)
+
+
+def test_registry_rejects_a_talib_entry_without_frozen_propagation_declaration(
+    tmp_path: Path,
+) -> None:
+    registry_path = tmp_path / "registry.yaml"
+    write_registry(
+        registry_path,
+        VALID_ENTRY
+        + """\
+- key: btc_rsi
+  vendor: okx
+  endpoint: https://example.test/bars
+  source_field: close
+  definable_for: [BTC]
+  required_bars: 250
+  talib_function: RSI
+  parameters:
+    timeperiod: 14
+  expected_update_interval_seconds: 86400
+  freshness_warn_seconds: 108000
+  freshness_stale_seconds: 172800
+  frozen_after_observations: 3
+""",
+    )
+
+    with pytest.raises(ValidationError, match="TA-Lib frozen propagation"):
+        load_registry(registry_path)
+
+
+def test_registry_rejects_a_talib_entry_with_both_propagation_declarations(
+    tmp_path: Path,
+) -> None:
+    registry_path = tmp_path / "registry.yaml"
+    write_registry(
+        registry_path,
+        VALID_ENTRY
+        + """\
+- key: btc_rsi
+  vendor: okx
+  endpoint: https://example.test/bars
+  source_field: close
+  definable_for: [BTC]
+  required_bars: 250
+  talib_function: RSI
+  parameters:
+    timeperiod: 14
+  expected_update_interval_seconds: 86400
+  freshness_warn_seconds: 108000
+  freshness_stale_seconds: 172800
+  frozen_after_observations: 3
+  derives_from: btc_daily_close
+  frozen_propagation_unavailable: Fixture says both, which is invalid.
+""",
+    )
+
+    with pytest.raises(ValidationError, match="TA-Lib frozen propagation"):
+        load_registry(registry_path)
+
+
+def test_registry_rejects_derived_roots_that_are_unknown_or_self_referential(
+    tmp_path: Path,
+) -> None:
+    registry_path = tmp_path / "registry.yaml"
+    talib_entry = """\
+- key: btc_rsi
+  vendor: okx
+  endpoint: https://example.test/bars
+  source_field: close
+  definable_for: [BTC]
+  required_bars: 250
+  talib_function: RSI
+  parameters:
+    timeperiod: 14
+  expected_update_interval_seconds: 86400
+  freshness_warn_seconds: 108000
+  freshness_stale_seconds: 172800
+  frozen_after_observations: 3
+  derives_from: {root}
+"""
+
+    write_registry(registry_path, VALID_ENTRY + talib_entry.format(root="missing_root"))
+    with pytest.raises(ValidationError, match="unknown registry key missing_root"):
+        load_registry(registry_path)
+
+    write_registry(registry_path, VALID_ENTRY + talib_entry.format(root="btc_rsi"))
+    with pytest.raises(ValidationError, match="must not point to itself"):
+        load_registry(registry_path)
+
+
 def test_registry_rejects_duplicate_indicator_keys(tmp_path: Path) -> None:
     registry_path = tmp_path / "registry.yaml"
     write_registry(registry_path, VALID_ENTRY + VALID_ENTRY)
@@ -148,6 +351,14 @@ def test_shipped_registry_definitions_cover_four_assets_at_scale() -> None:
     )
 
 
+def test_shipped_registry_keys_and_definable_for_match_board_baseline() -> None:
+    registry = load_registry()
+
+    assert {entry.key: entry.definable_for for entry in registry.root} == (
+        SHIPPED_REGISTRY_DEFINABLE_FOR
+    )
+
+
 def test_registry_cadence_intervals_partition_the_shipped_entries() -> None:
     registry = load_registry()
 
@@ -171,6 +382,59 @@ def test_registry_cadence_intervals_partition_the_shipped_entries() -> None:
         if entry.key != "sol_active_addresses"
     }
     assert sum(len(keys) for keys in by_tier.values()) == len(registry.root) - 1
+
+
+def test_every_shipped_entry_declares_exactly_one_frozen_detection_contract() -> None:
+    entries = {entry.key: entry for entry in load_registry().root}
+
+    assert entries["btc_daily_close"].frozen_after_observations is not None
+    for entry in entries.values():
+        assert (
+            entry.frozen_after_observations is not None
+        ) != (entry.expected_constant is not None), entry.key
+
+
+def test_btc_talib_indicators_derive_from_the_registered_btc_close_cell() -> None:
+    entries = tuple(
+        entry
+        for entry in load_registry().root
+        if entry.talib_function is not None and entry.definable_for == ("BTC",)
+    )
+
+    assert entries
+    assert {entry.derives_from for entry in entries} == {"btc_daily_close"}
+    assert all(entry.frozen_propagation_unavailable is None for entry in entries)
+
+
+def test_non_btc_talib_indicators_declare_frozen_propagation_unavailable() -> None:
+    entries = tuple(
+        entry
+        for entry in load_registry().root
+        if entry.talib_function is not None and entry.definable_for != ("BTC",)
+    )
+
+    assert {entry.definable_for[0] for entry in entries} == {"ETH", "SOL", "BNB"}
+    assert entries
+    for entry in entries:
+        assert entry.derives_from is None
+        assert entry.frozen_propagation_unavailable == NON_BTC_TALIB_PROPAGATION_REASON
+
+
+def test_wall_clock_fetchers_declare_freshness_unmeasurable_reasons() -> None:
+    entries = {entry.key: entry for entry in load_registry().root}
+
+    stablecoin_reason = entries["stablecoin_supply"].freshness_unmeasurable
+    staking_reason = entries["sol_staking"].freshness_unmeasurable
+    assert stablecoin_reason is not None
+    assert "DefiLlama stablecoinchains provides no per-chain observation timestamp" in (
+        stablecoin_reason
+    )
+    assert "fetch wall clock" in stablecoin_reason
+    assert staking_reason is not None
+    assert "Validators.app validators/mainnet provides no aggregate observation timestamp" in (
+        staking_reason
+    )
+    assert "fetch wall clock" in staking_reason
 
 
 def test_sol_active_addresses_declares_its_real_weekly_schedule() -> None:

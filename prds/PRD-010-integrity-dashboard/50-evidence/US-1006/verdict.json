@@ -1,0 +1,102 @@
+{
+  "storyId": "US-1006",
+  "passes": false,
+  "verifier": {
+    "agent": "claude",
+    "sandbox": "restricted:read-only"
+  },
+  "implementer": "codex",
+  "results": [
+    {
+      "criterionId": "US-1006-C1",
+      "met": false,
+      "evidence": {
+        "file": "scripts/generate_indicator_keys.py",
+        "line": 13,
+        "testName": null,
+        "exitCode": null
+      },
+      "note": "The script has a renderer, but web/src/registry.generated.ts does not exist. A glob of web/src/registry*.ts matches only registry.ts, and no test checks for a generated file."
+    },
+    {
+      "criterionId": "US-1006-C2",
+      "met": false,
+      "evidence": {
+        "file": null,
+        "line": null,
+        "testName": null,
+        "exitCode": null
+      },
+      "note": "tests/test_registry_codegen.py does not exist, and there is no committed generated file for a staleness check to compare against."
+    },
+    {
+      "criterionId": "US-1006-C3",
+      "met": false,
+      "evidence": {
+        "file": null,
+        "line": null,
+        "testName": null,
+        "exitCode": null
+      },
+      "note": "No test runs the generator or shows that its output comes from registry.yaml."
+    },
+    {
+      "criterionId": "US-1006-C4",
+      "met": false,
+      "evidence": {
+        "file": null,
+        "line": null,
+        "testName": null,
+        "exitCode": null
+      },
+      "note": "No coverage test exists that checks goldens for copy-pasted placeholders."
+    },
+    {
+      "criterionId": "US-1006-C5",
+      "met": false,
+      "evidence": {
+        "file": null,
+        "line": null,
+        "testName": null,
+        "exitCode": null
+      },
+      "note": "No test exists that detects it.todo calls or empty test shells."
+    },
+    {
+      "criterionId": "US-1006-C6",
+      "met": false,
+      "evidence": {
+        "file": "web/src/registry.ts",
+        "line": 3,
+        "testName": null,
+        "exitCode": null
+      },
+      "note": "Grep finds no IndicatorKey and no mapped type anywhere in web/src. registry.ts still imports the YAML with ?raw (line 3) and runs parse() on it (line 23), so every key is still a plain string to the compiler."
+    },
+    {
+      "criterionId": "US-1006-C7",
+      "met": true,
+      "evidence": {
+        "file": null,
+        "line": null,
+        "testName": null,
+        "exitCode": 0
+      },
+      "note": "The gate `uv run pytest -q` exited 0 (418 passed). It stays green only because this story added no tests and changed no runtime code."
+    },
+    {
+      "criterionId": "US-1006-C8",
+      "met": false,
+      "evidence": {
+        "file": null,
+        "line": null,
+        "testName": null,
+        "exitCode": 0
+      },
+      "note": "Typecheck exited 0, but no exhaustive mapping and no generated file exist. The thing this criterion is about is missing, so the green result proves nothing about it."
+    }
+  ],
+  "tripwires": [],
+  "note": "Attempt 3 (cb5735b) is the same as attempts 1 and 2: only scripts/generate_indicator_keys.py exists. The generated TS file, the codegen and coverage tests, the mapped-type wiring and the registry.ts change are all missing, and the implementer's run exited 1. The green gates only reflect code that predates this story.",
+  "at": "2026-09-29T15:11:15.617Z"
+}

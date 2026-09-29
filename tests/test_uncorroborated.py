@@ -19,6 +19,7 @@ MVRV_REGISTRY_ENTRY = """\
   expected_update_interval_seconds: 86400
   freshness_warn_seconds: 108000
   freshness_stale_seconds: 172800
+  frozen_after_observations: 3
   uncorroborated:
     note: Coin Metrics resolves multiple venues, excludes market VWAPs over 3% from the median, and publishes no dispersion.
 """

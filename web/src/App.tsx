@@ -4,6 +4,7 @@ import { BoardMatrix } from "./BoardMatrix";
 import { CorroborationPanel } from "./CorroborationPanel";
 import { CoverageHeadline } from "./CoverageHeadline";
 import { fetchBoard, fetchLatestCorroboration } from "./data";
+import { IntegrityPanel } from "./IntegrityPanel";
 import { getIndicatorDefinition } from "./registry";
 
 const definition = getIndicatorDefinition("btc_daily_close");
@@ -39,6 +40,9 @@ export function App() {
         <>
           <CoverageHeadline board={board.data} />
           <BoardMatrix board={board.data} />
+          {board.data.integrityRead ? (
+            <IntegrityPanel read={board.data.integrityRead} />
+          ) : null}
         </>
       )}
       <h2>BTC daily close</h2>

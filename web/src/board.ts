@@ -1,4 +1,6 @@
 import type { Datapoint } from "./datapoint";
+import type { IntegrityRead } from "./integrity";
+import type { IndicatorKey } from "./registry.generated";
 
 // MACRO is not a tracked crypto asset — it is the board's pseudo-asset column for
 // market-wide indicators (FRED macro series, Fear & Greed) that have no per-asset value.
@@ -24,17 +26,34 @@ export type DeclaredNotDefinable = {
   detail: string;
 };
 
+export type CellFrozenBadge = {
+  sinceSourceTimestamp: string;
+  rootIndicatorKey: IndicatorKey | null;
+};
+
+export type BoardIntegrityRow = {
+  indicatorKey: IndicatorKey;
+  asset: string;
+  sourceVendor: string;
+  frozen: boolean | null;
+  frozenState: string;
+  frozenSinceSourceTimestamp: string | null;
+  derivesFrom: IndicatorKey | null;
+};
+
 export type BoardCell = {
   family: string;
   asset: string;
   indicatorKey: string;
   state: Datapoint | NotFetched | DeclaredNotDefinable;
+  frozen?: CellFrozenBadge;
 };
 
 export type BoardModel = {
   assets: readonly string[];
   families: string[];
   cells: BoardCell[];
+  integrityRead?: IntegrityRead;
 };
 
 // The strip is asserted, never defaulted: a key that does not begin with its own asset would
@@ -62,6 +81,7 @@ export function buildBoard(
   definitions: readonly BoardRegistryEntry[],
   datapoints: readonly Datapoint[],
   assets: readonly string[],
+  integrityRows: readonly BoardIntegrityRow[] = [],
 ): BoardModel {
   const families = new Set<string>();
   const definitionsByCell = new Map<string, BoardRegistryEntry>();
@@ -111,13 +131,31 @@ export function buildBoard(
           (candidate) =>
             candidate.indicatorKey === indicatorKey && candidate.asset === asset,
         );
+        const integrity = datapoint
+          ? integrityRows.find(
+              (candidate) =>
+                candidate.indicatorKey === indicatorKey &&
+                candidate.asset === asset &&
+                candidate.sourceVendor === datapoint.sourceVendor,
+            )
+          : undefined;
         const notDefinableReason = notDefinableByCell.get(
           `${family}:${asset}`,
         );
+        const frozen =
+          integrity?.frozen === true &&
+          integrity.frozenState === "frozen" &&
+          integrity.frozenSinceSourceTimestamp
+            ? {
+                sinceSourceTimestamp: integrity.frozenSinceSourceTimestamp,
+                rootIndicatorKey: integrity.derivesFrom,
+              }
+            : undefined;
         return {
           family,
           asset,
           indicatorKey,
+          frozen,
           state:
             datapoint ??
             (notDefinableReason === undefined

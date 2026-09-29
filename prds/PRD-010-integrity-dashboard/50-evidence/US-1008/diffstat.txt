@@ -1,0 +1,22 @@
+.uf/events.ndjson                                  |   8 +
+ SESSION.md                                         |  14 +-
+ ingest/pipeline.py                                 |   4 +-
+ ingest/registry.py                                 |  90 ++++--
+ ingest/registry.yaml                               | 303 ++++++++----------
+ .../50-evidence/US-1008/diffstat.txt               |  22 ++
+ .../50-evidence/US-1008/gates.json                 |  26 ++
+ .../50-evidence/US-1008/verdict.json               | 146 +++++++++
+ tests/test_assets.py                               |   2 +-
+ tests/test_bar_slice.py                            |   8 +-
+ tests/test_bollinger_obv.py                        |   8 +-
+ tests/test_canary.py                               |   3 +-
+ tests/test_corroboration_schema.py                 |   3 +-
+ tests/test_coverage.py                             |  77 ++++-
+ tests/test_divergence.py                           |   7 +-
+ tests/test_lookback.py                             |   8 +-
+ tests/test_persist.py                              |   3 +-
+ tests/test_persist_board.py                        |  22 +-
+ tests/test_registry.py                             | 350 ++++++++++++++-------
+ tests/test_registry_not_definable.py               |   7 +-
+ tests/test_uncorroborated.py                       |   3 +-
+ 21 files changed, 768 insertions(+), 346 deletions(-)

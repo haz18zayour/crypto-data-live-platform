@@ -1,7 +1,8 @@
 import type { BoardCell } from "./board";
-import { CellDetail, formatUtcTimestamp } from "./CellDetail";
+import { CellDetail } from "./CellDetail";
 import { assertNever, type Datapoint, type UnavailableReason } from "./datapoint";
 import { formatAge } from "./DatapointValue";
+import { FrozenBadge, formatUtcTimestamp } from "./FrozenBadge";
 
 type Face = {
   name: string;
@@ -140,6 +141,11 @@ export function CellFace({ cell, now }: { cell: BoardCell; now: Date }) {
               </time>
             </span>
           ) : null}
+          {cell.frozen ? (
+            <FrozenBadge
+              sinceSourceTimestamp={cell.frozen.sinceSourceTimestamp}
+            />
+          ) : null}
           {needsFaceDisclosure(cell.state) ? (
             <span className="cell-face-disclosure">{cell.state.sourceField}</span>
           ) : null}
@@ -151,7 +157,9 @@ export function CellFace({ cell, now }: { cell: BoardCell; now: Date }) {
   return (
     <td className={`cell cell--${face.name}`}>
       {isSourced(cell.state) ? (
-        <CellDetail datapoint={cell.state}>{content}</CellDetail>
+        <CellDetail datapoint={cell.state} frozen={cell.frozen}>
+          {content}
+        </CellDetail>
       ) : (
         content
       )}

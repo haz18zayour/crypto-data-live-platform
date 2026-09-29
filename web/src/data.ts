@@ -1,7 +1,13 @@
 import type { Datapoint, Provenance, UnavailableReason } from "./datapoint";
 import type { Corroboration, VenueDatapoint } from "./corroboration";
 import { BOARD_ASSETS, buildBoard, type BoardModel } from "./board";
-import { definitions, type IndicatorDefinition } from "./registry";
+import {
+  definitions,
+  indicatorStaleAfterSeconds,
+  isIndicatorKey,
+  type IndicatorDefinition,
+} from "./registry";
+import { fetchIntegrityRead } from "./integrity";
 
 type DatapointRow = {
   id: number;
@@ -263,25 +269,28 @@ export function applyFreshness(
 // One request for the whole board: board_read already holds the latest row per cell, so the
 // page never fetches per cell. The cells themselves come from the registry, not the response.
 export async function fetchBoard(now: Date): Promise<BoardModel> {
-  const rows = await fetchRows<DatapointRow>(
-    "board_read",
-    new URLSearchParams({ select: "*" }),
-    browserConfig(),
-  );
-  const staleAfter = new Map(
-    definitions.map((definition) => [
-      definition.key,
-      definition.freshness_stale_seconds,
-    ]),
-  );
+  const config = browserConfig();
+  const [rows, integrity] = await Promise.all([
+    fetchRows<DatapointRow>(
+      "board_read",
+      new URLSearchParams({ select: "*" }),
+      config,
+    ),
+    fetchIntegrityRead(config),
+  ]);
   const datapoints = rows.map((row) => {
     const datapoint = rowToDatapoint(row);
-    const staleAfterSeconds = staleAfter.get(row.indicator_key);
+    const staleAfterSeconds = isIndicatorKey(row.indicator_key)
+      ? indicatorStaleAfterSeconds[row.indicator_key]
+      : undefined;
     return staleAfterSeconds === undefined
       ? datapoint
       : applyFreshness(datapoint, staleAfterSeconds, now);
   });
-  return buildBoard(definitions, datapoints, BOARD_ASSETS);
+  return {
+    ...buildBoard(definitions, datapoints, BOARD_ASSETS, integrity.rows),
+    integrityRead: integrity,
+  };
 }
 
 export async function fetchLatestDatapoint(

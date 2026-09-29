@@ -22,6 +22,8 @@ def definition(required_bars: int) -> IndicatorDefinition:
         expected_update_interval_seconds=86_400,
         freshness_warn_seconds=108_000,
         freshness_stale_seconds=172_800,
+        frozen_after_observations=3,
+        expected_constant=None,
     )
 
 
@@ -43,6 +45,7 @@ def test_registry_rejects_an_indicator_with_no_required_bars(
   expected_update_interval_seconds: 86400
   freshness_warn_seconds: 108000
   freshness_stale_seconds: 172800
+  frozen_after_observations: 3
 """,
         encoding="utf-8",
     )
@@ -90,6 +93,8 @@ indicator = IndicatorDefinition(
     expected_update_interval_seconds=86400,
     freshness_warn_seconds=108000,
     freshness_stale_seconds=172800,
+    frozen_after_observations=3,
+    expected_constant=None,
 )
 print(struct.pack("!d", compute_indicator(indicator, (1.25, 2.5, 5.0), mean)).hex())
 """

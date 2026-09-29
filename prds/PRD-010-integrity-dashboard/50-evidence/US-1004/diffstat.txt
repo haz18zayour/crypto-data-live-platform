@@ -1,0 +1,22 @@
+.uf/events.ndjson                                  |   9 ++
+ SESSION.md                                         |  13 +-
+ .../50-evidence/US-1004/capture-frozen-badge.mjs   |  77 +++++++++++
+ .../50-evidence/US-1004/diffstat.txt               |  18 +++
+ .../50-evidence/US-1004/frozen-badge-cell-open.png | Bin 0 -> 14870 bytes
+ .../US-1004/frozen-badge-live-board-fixture.png    | Bin 0 -> 356752 bytes
+ .../50-evidence/US-1004/gates.json                 |  26 ++++
+ .../50-evidence/US-1004/verdict.json               |  51 +++++++
+ web/package.json                                   |   2 +-
+ web/scripts/ensure-playwright-browsers.mjs         |  29 ++++
+ web/src/BoardMatrix.test.tsx                       |  21 +++
+ web/src/CellDetail.tsx                             |  38 +++---
+ web/src/CellFace.tsx                               |  12 +-
+ web/src/FrozenBadge.test.tsx                       | 146 +++++++++++++++++++++
+ web/src/FrozenBadge.tsx                            |  41 ++++++
+ web/src/Sparkline.tsx                              |   6 +-
+ web/src/board.ts                                   |  36 +++++
+ web/src/data.ts                                    |  17 ++-
+ web/src/fixtures/mixedBoard.test.ts                |  18 ++-
+ web/src/fixtures/mixedBoard.ts                     |  20 ++-
+ web/src/styles.css                                 |   7 +
+ 21 files changed, 542 insertions(+), 45 deletions(-)

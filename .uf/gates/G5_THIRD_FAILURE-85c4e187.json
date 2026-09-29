@@ -1,0 +1,22 @@
+{
+  "gate": "G5_THIRD_FAILURE",
+  "question": "US-1002 has failed 3 times — is the story wrong?",
+  "feature": "PRD-010-integrity-dashboard",
+  "story": "US-1002",
+  "options": [
+    "split",
+    "rewrite-criteria",
+    "skip",
+    "retry-anyway"
+  ],
+  "context": "Criteria judged not met:\n  - US-1002-C9: The live PostgREST test exists and uses the anon key, but it is @pytest.mark.integration and pyproject addopts ('-m not integration') deselects it, so no gate ran it. Nothing shows the migration was applied to production, that the PostgREST schema was reloaded there, or that the owner signed off. The criterion is explicitly 'once applied to production', so it is unproven.",
+  "defaultOnTimeout": "block",
+  "id": "G5_THIRD_FAILURE-85c4e187",
+  "openedAt": "2026-09-29T14:54:24.757Z",
+  "answer": {
+    "choice": "skip",
+    "reason": "All 3 attempts failed on the same single criterion (C9), which is structurally unprovable by any automated sandbox: it requires the migration be applied to production with owner sign-off before the live PostgREST test can run. C1-C8 and C10 passed cleanly across attempts, confirming the SQL logic itself is correct. Reviewed the migration directly (purely additive: one new function, its own grants, a schema reload notify), obtained explicit owner approval, applied it to production, and ran the live test myself - it passed. See verdict.json overrideReason.",
+    "at": "2026-09-29T17:56:00.000Z",
+    "by": "human"
+  }
+}

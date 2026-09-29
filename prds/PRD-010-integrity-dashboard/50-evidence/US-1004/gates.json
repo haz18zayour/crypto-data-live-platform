@@ -1,0 +1,26 @@
+[
+  {
+    "name": "typecheck",
+    "run": "node -e \"const f=require('fs'),c=require('child_process');let r=0;const run=(cmd)=>{try{c.execSync(cmd,{stdio:'inherit'})}catch(e){r=1}};if(f.existsSync('web/package.json'))run('npm --prefix web run typecheck');if(f.existsSync('pyproject.toml'))run('uv run mypy ingest --strict');process.exit(r)\"",
+    "exitCode": 0,
+    "output": "\n> crypto-data-live-web@0.0.0 typecheck\n> tsc -b --pretty false\n\nSuccess: no issues found in 24 source files\r\n"
+  },
+  {
+    "name": "test",
+    "run": "node -e \"const f=require('fs'),c=require('child_process'),p=require('path');const tmp=f.mkdtempSync(p.join(process.cwd(),'.tmp','systemtemp-'));const env={...process.env,TEMP:tmp,TMP:tmp};let r=0;const run=(cmd)=>{try{c.execSync(cmd,{stdio:'inherit',env})}catch(e){r=1}};if(f.existsSync('web/package.json'))run('npm --prefix web test');if(f.existsSync('tests'))run('uv run pytest -q');process.exit(r)\"",
+    "exitCode": 0,
+    "output": "\n> crypto-data-live-web@0.0.0 pretest\n> node scripts/ensure-playwright-browsers.mjs\n\nPlaywright browsers already installed.\n\n> crypto-data-live-web@0.0.0 test\n> vitest run --configLoader runner\n\n\n RUN  v4.1.9 C:/Users/user/Desktop/Projects/crypto-data-live-platform/web\n\n\n Test Files  15 passed (15)\n      Tests  78 passed (78)\n   Start at  22:49:05\n   Duration  5.61s (transform 1.45s, setup 3.12s, import 3.42s, tests 8.82s, environment 9.41s)\n\n........................................................................ [ 14%]\r\n........................................................................ [ 28%]\r\n........................................................................ [ 42%]\r\n........................................................................ [ 57%]\r\n........................................................................ [ 71%]\r\n........................................................................ [ 85%]\r\n........................................................................ [100%]\r\n504 passed, 77 deselected in 72.91s (0:01:12)\r\n"
+  },
+  {
+    "name": "US-1004-C5",
+    "run": "npm --prefix web test",
+    "exitCode": 0,
+    "output": "\n> crypto-data-live-web@0.0.0 pretest\n> node scripts/ensure-playwright-browsers.mjs\n\nPlaywright browsers already installed.\n\n> crypto-data-live-web@0.0.0 test\n> vitest run --configLoader runner\n\n\n RUN  v4.1.9 C:/Users/user/Desktop/Projects/crypto-data-live-platform/web\n\n\n Test Files  15 passed (15)\n      Tests  78 passed (78)\n   Start at  22:50:25\n   Duration  5.41s (transform 1.44s, setup 2.94s, import 3.38s, tests 8.45s, environment 9.45s)\n\n"
+  },
+  {
+    "name": "US-1004-C6",
+    "run": "npm --prefix web run typecheck",
+    "exitCode": 0,
+    "output": "\n> crypto-data-live-web@0.0.0 typecheck\n> tsc -b --pretty false\n\n"
+  }
+]

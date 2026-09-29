@@ -123,6 +123,11 @@ class IndicatorDefinition(BaseModel):
     expected_update_interval_seconds: PositiveInt
     freshness_warn_seconds: PositiveInt
     freshness_stale_seconds: PositiveInt
+    frozen_after_observations: PositiveInt | None = None
+    expected_constant: NonEmptyString | None = None
+    derives_from: NonEmptyString | None = None
+    frozen_propagation_unavailable: NonEmptyString | None = None
+    freshness_unmeasurable: NonEmptyString | None = None
     corroboration: CorroborationDefinition | None = None
     uncorroborated: UncorroboratedDefinition | None = None
 
@@ -153,6 +158,38 @@ class IndicatorDefinition(BaseModel):
             raise ValueError(
                 f"{self.key} must not declare both backfill_recipe and "
                 "not_backfillable"
+            )
+        return self
+
+    @model_validator(mode="after")
+    def require_one_frozen_detection_declaration(self) -> IndicatorDefinition:
+        has_threshold = self.frozen_after_observations is not None
+        is_expected_constant = self.expected_constant is not None
+        if has_threshold == is_expected_constant:
+            raise ValueError(
+                f"{self.key} must declare exactly one frozen detection declaration: "
+                "frozen_after_observations or expected_constant"
+            )
+        return self
+
+    @model_validator(mode="after")
+    def require_talib_frozen_propagation_declaration(self) -> IndicatorDefinition:
+        if self.talib_function is None:
+            if (
+                self.derives_from is not None
+                or self.frozen_propagation_unavailable is not None
+            ):
+                raise ValueError(
+                    f"{self.key} must not declare TA-Lib frozen propagation fields "
+                    "without a talib_function"
+                )
+            return self
+        has_root = self.derives_from is not None
+        has_unavailable_reason = self.frozen_propagation_unavailable is not None
+        if has_root == has_unavailable_reason:
+            raise ValueError(
+                f"{self.key} must declare exactly one TA-Lib frozen propagation "
+                "declaration: derives_from or frozen_propagation_unavailable"
             )
         return self
 
@@ -189,6 +226,21 @@ class IndicatorRegistry(RootModel[tuple[IndicatorDefinition, ...]]):
             if entry.key in seen:
                 raise ValueError(f"Duplicate indicator key: {entry.key}")
             seen.add(entry.key)
+        return self
+
+    @model_validator(mode="after")
+    def validate_derived_roots(self) -> IndicatorRegistry:
+        keys = {entry.key for entry in self.root}
+        for entry in self.root:
+            if entry.derives_from is None:
+                continue
+            if entry.derives_from == entry.key:
+                raise ValueError(f"{entry.key} derives_from must not point to itself")
+            if entry.derives_from not in keys:
+                raise ValueError(
+                    f"{entry.key} derives_from unknown registry key "
+                    f"{entry.derives_from}"
+                )
         return self
 
     @model_validator(mode="after")
@@ -336,12 +388,42 @@ def assert_registry_coverage(
     """Fail with every missing integrity artifact derived from the registry."""
 
     failures: list[str] = []
+    registry_keys = {entry.key for entry in registry.root}
     for entry in registry.root:
         has_second_source = entry.corroboration is not None
         is_uncorroborated = entry.uncorroborated is not None
         if has_second_source == is_uncorroborated:
             failures.append(
                 f"{entry.key} is missing exactly one corroboration declaration"
+            )
+        has_frozen_threshold = entry.frozen_after_observations is not None
+        has_expected_constant = entry.expected_constant is not None
+        if has_frozen_threshold == has_expected_constant:
+            failures.append(
+                f"{entry.key} is missing exactly one frozen detection declaration"
+            )
+        has_derived_root = entry.derives_from is not None
+        has_unavailable_reason = entry.frozen_propagation_unavailable is not None
+        if entry.talib_function is not None:
+            if has_derived_root == has_unavailable_reason:
+                failures.append(
+                    f"{entry.key} is missing exactly one TA-Lib frozen "
+                    "propagation declaration"
+                )
+            elif entry.derives_from == entry.key:
+                failures.append(f"{entry.key} derives_from must not point to itself")
+            elif (
+                entry.derives_from is not None
+                and entry.derives_from not in registry_keys
+            ):
+                failures.append(
+                    f"{entry.key} derives_from unknown registry key "
+                    f"{entry.derives_from}"
+                )
+        elif has_derived_root or has_unavailable_reason:
+            failures.append(
+                f"{entry.key} declares TA-Lib frozen propagation fields without "
+                "a talib_function"
             )
         if entry.golden is None or entry.golden not in golden_keys:
             failures.append(f"{entry.key} is missing a golden file")

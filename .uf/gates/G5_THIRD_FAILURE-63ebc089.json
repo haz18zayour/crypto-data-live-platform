@@ -1,0 +1,22 @@
+{
+  "gate": "G5_THIRD_FAILURE",
+  "question": "US-1001 has failed 3 times — is the story wrong?",
+  "feature": "PRD-010-integrity-dashboard",
+  "story": "US-1001",
+  "options": [
+    "split",
+    "rewrite-criteria",
+    "skip",
+    "retry-anyway"
+  ],
+  "context": "Criteria judged not met:\n  - US-1001-C1: not judged — a cheaper layer already failed\n  - US-1001-C2: not judged — a cheaper layer already failed\n  - US-1001-C3: not judged — a cheaper layer already failed\n  - US-1001-C4: not judged — a cheaper layer already failed\n  - US-1001-C5: not judged — a cheaper layer already failed\n  - US-1001-C6: not judged — a cheaper layer already failed\n  - US-1001-C7: not judged — a cheaper layer already failed\n  - US-1001-C8: not judged — a cheaper layer already failed\n  - US-1001-C9: not judged — a cheaper layer already failed\n  - US-1001-C10: not judged — a cheaper layer already failed",
+  "defaultOnTimeout": "block",
+  "id": "G5_THIRD_FAILURE-63ebc089",
+  "openedAt": "2026-09-29T13:47:39.443Z",
+  "answer": {
+    "choice": "rewrite-criteria",
+    "reason": "Duplicate gate opened by a uf run invocation before the first G5_THIRD_FAILURE-be4412b2 gate's manual resolution was recognized by the runner's own attempt-counter state. Same root cause and same resolution as that gate: story re-identified as US-1008 with corrected criteria (honest frozen_propagation_unavailable exemption for ETH/SOL/BNB instead of a fabricated root). US-1001 is retired.",
+    "at": "2026-09-29T16:50:00.000Z",
+    "by": "human"
+  }
+}

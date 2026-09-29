@@ -4,17 +4,17 @@
   "title": "Integrity dashboard — the self-audit that actually audits",
   "product": "crypto-data-live-platform",
   "branch": "feat/prd-010-integrity-dashboard",
-  "inputDigest": "f6c4328d9ab3bdb6",
-  "compiledAt": "2026-09-29T12:59:08.849Z",
+  "inputDigest": "4fba543994fb05bd",
+  "compiledAt": "2026-09-29T20:39:34.883Z",
   "stories": [
     {
-      "id": "US-1001",
+      "id": "US-1008",
       "title": "Registry schema extension — frozen-detection declarations, derives_from for TA-Lib entries, freshness_unmeasurable for wall-clock fetchers",
-      "source": "prds/PRD-010-integrity-dashboard/40-stories/US-1001-registry-schema-extension.md",
+      "source": "prds/PRD-010-integrity-dashboard/40-stories/US-1008-registry-schema-extension.md",
       "description": "As the owner, I want every registered indicator to explicitly declare how frozen-value detection\napplies to it, so that a new indicator can never silently ship without the audit this PRD adds —\nthe same coverage discipline this project already applies to goldens, tests, and backfill recipes.\n\nResearch found that a global threshold would itself become a judgement about the market (OKX\nfunding rate legitimately clamps near zero for many consecutive intervals in a calm market), and\nthat ~70% of the board is TA-Lib-derived from a root series that a naive per-indicator frozen check\nwould never catch freezing (Wilder/EMA smoothing keeps moving even when its input is stuck). Two\nfetchers (`defillama_stablecoins.py:237-243`, `validators_app.py:48`) stamp `source_timestamp` as\nfetch-wall-clock rather than a real vendor observation time, making any freshness check on them\nstructurally always green.",
       "criteria": [
         {
-          "id": "US-1001-C1",
+          "id": "US-1008-C1",
           "text": "Exactly one frozen-detection declaration per indicator, no default",
           "method": {
             "kind": "test",
@@ -22,23 +22,23 @@
           }
         },
         {
-          "id": "US-1001-C2",
-          "text": "Every derived indicator names its root",
+          "id": "US-1008-C2",
+          "text": "Every derived indicator either names its real root or explicitly declares that propagation cannot apply to it",
           "method": {
             "kind": "test",
-            "name": "IndicatorDefinition gains derives_from: str | None, and a validator requires it for every entry carrying talib_function, rejecting a talib_function entry with derives_from unset"
+            "name": "IndicatorDefinition gains derives_from: str | None, and a validator requires exactly one of derives_from or frozen_propagation_unavailable (a new str | None field) for every entry carrying talib_function, rejecting a talib_function entry with neither or both set"
           }
         },
         {
-          "id": "US-1001-C3",
-          "text": "derives_from cannot point at nothing",
+          "id": "US-1008-C3",
+          "text": "derives_from cannot point at nothing or at itself",
           "method": {
             "kind": "test",
-            "name": "a validator rejects a derives_from value that does not match any existing registry key"
+            "name": "a validator rejects a derives_from value that does not match any existing registry key, and rejects an entry whose derives_from equals its own key (a self-loop)"
           }
         },
         {
-          "id": "US-1001-C4",
+          "id": "US-1008-C4",
           "text": "The declaration exists",
           "method": {
             "kind": "test",
@@ -46,23 +46,39 @@
           }
         },
         {
-          "id": "US-1001-C5",
+          "id": "US-1008-C5",
           "text": "Real data populated, not just schema",
           "method": {
             "kind": "test",
-            "name": "every entry in registry.yaml currently declares exactly one of frozen_after_observations or expected_constant; btc_daily_close (or the equivalent root close entry) declares frozen_after_observations; btc_funding_rate (and eth/sol/bnb funding) declare expected_constant with a reason citing the 0.01% clamp"
+            "name": "every entry in registry.yaml currently declares exactly one of frozen_after_observations or expected_constant; btc_daily_close declares frozen_after_observations"
           }
         },
         {
-          "id": "US-1001-C6",
-          "text": "Real dependency links populated",
+          "id": "US-1008-C6",
+          "text": "The one case where real propagation is possible today",
           "method": {
             "kind": "test",
-            "name": "every talib_function-carrying entry in registry.yaml (RSI, EMA stack, MACD, StochRSI, Bollinger, ATR, OBV) declares derives_from pointing at the correct underlying price/volume series for its own asset"
+            "name": "every BTC talib_function entry (RSI, EMA stack, MACD, StochRSI, Bollinger, ATR, OBV) declares derives_from=btc_daily_close, the one asset where a real, board-visible, persisted close price already exists to point at"
           }
         },
         {
-          "id": "US-1001-C7",
+          "id": "US-1008-C7",
+          "text": "An honest, documented limitation instead of a fabricated root — this project's own no-proxy rule applies to its own audit layer exactly as it does to market data: absent real data to derive from, state that plainly rather than inventing a stand-in",
+          "method": {
+            "kind": "test",
+            "name": "every ETH/SOL/BNB talib_function entry declares frozen_propagation_unavailable with a reason explaining that no per-asset close/volume series is separately registered for that asset (technical indicators are computed directly from freshly-fetched OHLCV bars per ingest/pipeline.py's compute path, never from a persisted per-asset \"close\" indicator; only BTC also exposes its close as its own board cell, by deliberate product decision — confirmed live: ETH/SOL/BNB daily close renders \"Daily close is intentionally BTC-only on this board\")"
+          }
+        },
+        {
+          "id": "US-1008-C8",
+          "text": "The regression class that sank the first three attempts (each one invented a new eth_daily_close/sol_daily_close/bnb_daily_close board cell to give derives_from somewhere to point), checked directly — this story adds new OPTIONAL FIELDS to existing entries only; it must never add, remove, or change the definable_for of any registry row",
+          "method": {
+            "kind": "test",
+            "name": "npm --prefix web test passes with no regression in existing fixture-derived counts (src/fixtures/mixedBoard.test.ts, src/CoverageHeadline.test.tsx, src/BoardMatrix.test.tsx) — these tests hard-code exact NOT_DEFINABLE/OK counts derived from the real registry and must show zero new visible cells and zero changed cell count for any existing entry"
+          }
+        },
+        {
+          "id": "US-1008-C9",
           "text": "The two wall-clock fetchers are marked, not silently green",
           "method": {
             "kind": "test",
@@ -70,15 +86,15 @@
           }
         },
         {
-          "id": "US-1001-C8",
+          "id": "US-1008-C10",
           "text": "The coverage gate itself",
           "method": {
             "kind": "test",
-            "name": "a registry entry missing a required frozen declaration, or a talib_function entry missing derives_from, fails registry validation at load time"
+            "name": "a registry entry missing a required frozen declaration, or a talib_function entry missing both derives_from and frozen_propagation_unavailable, fails registry validation at load time"
           }
         },
         {
-          "id": "US-1001-C9",
+          "id": "US-1008-C11",
           "text": "The full offline suite stays green",
           "method": {
             "kind": "cmd",
@@ -86,7 +102,7 @@
           }
         },
         {
-          "id": "US-1001-C10",
+          "id": "US-1008-C12",
           "text": "Strict typing holds on the new fields",
           "method": {
             "kind": "cmd",
@@ -167,6 +183,14 @@
         },
         {
           "id": "US-1002-C5",
+          "text": "No silent downgrade to a check research already found unreliable for derived indicators, and no pretending the answer is known when it isn't",
+          "method": {
+            "kind": "test",
+            "name": "an entry declaring frozen_propagation_unavailable (US-1001's honest exemption for ETH/SOL/BNB's technical indicators, which have no registered root to derive from) reports a distinct propagation-unavailable state, never a false \"not frozen\" and never an independent identical-value check run on the derived series itself"
+          }
+        },
+        {
+          "id": "US-1002-C6",
           "text": "The self-check stamp US-1003 will consume",
           "method": {
             "kind": "test",
@@ -174,7 +198,7 @@
           }
         },
         {
-          "id": "US-1002-C6",
+          "id": "US-1002-C7",
           "text": "No blast radius beyond the new objects themselves",
           "method": {
             "kind": "test",
@@ -182,7 +206,7 @@
           }
         },
         {
-          "id": "US-1002-C7",
+          "id": "US-1002-C8",
           "text": "Proves the SQL against a real database, not an assumption about it — this project's established convention marks a throwaway-schema real-Postgres test UNMARKED, not [integration:], which is reserved for a genuinely live third-party vendor or deployed-instance call",
           "method": {
             "kind": "test",
@@ -190,7 +214,7 @@
           }
         },
         {
-          "id": "US-1002-C8",
+          "id": "US-1002-C9",
           "text": "Directly checks that the RPC is actually reachable through the real deployed system, not merely present in the schema — this project has already been bitten once by a migration that worked in isolation but never returned real data through the actual browser call path (US-908's sourceVendor case-sensitivity defect) and once by a PostgREST schema cache that needed an explicit reload notification",
           "method": {
             "kind": "integration",
@@ -198,7 +222,7 @@
           }
         },
         {
-          "id": "US-1002-C9",
+          "id": "US-1002-C10",
           "text": "The full offline suite stays green",
           "method": {
             "kind": "cmd",
@@ -240,13 +264,13 @@
       ]
     },
     {
-      "id": "US-1006",
+      "id": "US-1009",
       "title": "Coverage codegen — a literal IndicatorKey union generated from registry.yaml, exhaustive UI wiring, a substance-checking coverage test",
-      "source": "prds/PRD-010-integrity-dashboard/40-stories/US-1006-coverage-codegen.md",
+      "source": "prds/PRD-010-integrity-dashboard/40-stories/US-1009-coverage-codegen.md",
       "description": "As the owner, I want an indicator that is missing UI or test wiring to fail the build, so that\n\"every indicator is covered\" is a compiler/test error rather than a convention someone can forget —\nresearch found `web/src/registry.ts` currently loads `registry.yaml` at runtime via `?raw` +\n`parse()`, making every indicator key a plain `string` to the TypeScript compiler today, so no\nmapped-type exhaustiveness check can see a new key.\n\nResearch's own blind-spot finding: a coverage gate phrased as \"every indicator has wiring\" can be\nsatisfied by a placeholder — a golden file copied from another indicator, an `it.todo`, a\n`// @ts-expect-error` — that proves a key exists in a mapping without proving anything real is\nasserted. This story's coverage test must check substance, not presence, or it reproduces the exact\n\"self-audit that doesn't audit\" failure this PRD's own title warns against.",
       "criteria": [
         {
-          "id": "US-1006-C1",
+          "id": "US-1009-C1",
           "text": "as const` and a derived `IndicatorKey` union type, covering every key currently in the registry] The generated file exists and is complete",
           "method": {
             "kind": "test",
@@ -254,7 +278,7 @@
           }
         },
         {
-          "id": "US-1006-C2",
+          "id": "US-1009-C2",
           "text": "A stale generated file is caught, not silently trusted",
           "method": {
             "kind": "test",
@@ -262,7 +286,7 @@
           }
         },
         {
-          "id": "US-1006-C3",
+          "id": "US-1009-C3",
           "text": "The generation is real, not a static file someone edits by hand",
           "method": {
             "kind": "test",
@@ -270,7 +294,7 @@
           }
         },
         {
-          "id": "US-1006-C4",
+          "id": "US-1009-C4",
           "text": "Catches a copy-pasted placeholder golden, not just its presence",
           "method": {
             "kind": "test",
@@ -278,7 +302,7 @@
           }
         },
         {
-          "id": "US-1006-C5",
+          "id": "US-1009-C5",
           "text": "Catches an `it.todo` or an empty test shell — the key must appear in something that actually runs",
           "method": {
             "kind": "test",
@@ -286,7 +310,7 @@
           }
         },
         {
-          "id": "US-1006-C6",
+          "id": "US-1009-C6",
           "text": ": ...}` and demonstrably fails tsc when a key is manually removed from the mapping in a throwaway diff] The compile-time exhaustiveness check is real, proven by breaking it on purpose",
           "method": {
             "kind": "test",
@@ -294,7 +318,7 @@
           }
         },
         {
-          "id": "US-1006-C7",
+          "id": "US-1009-C7",
           "text": "The full offline suite stays green",
           "method": {
             "kind": "cmd",
@@ -302,7 +326,7 @@
           }
         },
         {
-          "id": "US-1006-C8",
+          "id": "US-1009-C8",
           "text": "The exhaustive mapping compiles cleanly against the real, current registry",
           "method": {
             "kind": "cmd",
@@ -626,13 +650,13 @@
       ]
     },
     {
-      "id": "US-1007",
+      "id": "US-1010",
       "title": "The adversarial case — a real frozen sequence trips the flag, propagation to a derived indicator, a wall-clock fetcher never shows green, a stale integrity read is visible as stale, and the coverage gate rejects a placeholder",
-      "source": "prds/PRD-010-integrity-dashboard/40-stories/US-1007-adversarial-case.md",
+      "source": "prds/PRD-010-integrity-dashboard/40-stories/US-1010-adversarial-case.md",
       "description": "As the owner, I want this PRD's five hardest claims proven directly against realistic scenarios,\nnot just asserted by the individual stories' own narrower unit tests — the same adversarial\ndiscipline every prior PRD in this project has closed with.",
       "criteria": [
         {
-          "id": "US-1007-C1",
+          "id": "US-1010-C1",
           "text": "The exact boundary, proven directly, not assumed from the SQL alone",
           "method": {
             "kind": "test",
@@ -640,7 +664,7 @@
           }
         },
         {
-          "id": "US-1007-C2",
+          "id": "US-1010-C2",
           "text": "The finding that motivated this whole PRD, proven end to end — a derived indicator whose own values are moving is still correctly flagged, because what matters is its root's honesty, not its own superficial variance",
           "method": {
             "kind": "test",
@@ -648,7 +672,7 @@
           }
         },
         {
-          "id": "US-1007-C3",
+          "id": "US-1010-C3",
           "text": "The false-comfort gap closed, proven at the boundary",
           "method": {
             "kind": "test",
@@ -656,7 +680,7 @@
           }
         },
         {
-          "id": "US-1007-C4",
+          "id": "US-1010-C4",
           "text": "The panel cannot present a false all-clear from an old snapshot",
           "method": {
             "kind": "test",
@@ -664,7 +688,7 @@
           }
         },
         {
-          "id": "US-1007-C5",
+          "id": "US-1010-C5",
           "text": "The gate resists exactly the gaming research warned about",
           "method": {
             "kind": "test",
@@ -672,7 +696,7 @@
           }
         },
         {
-          "id": "US-1007-C6",
+          "id": "US-1010-C6",
           "text": "The owner opens the live integrity panel and the board, confirms at least one real or deliberately-seeded frozen indicator shows its badge with a correct date, confirms the freshness rollup shows real per-vendor ages with the two wall-clock fetchers reading \"unmeasurable\" rather than green, and confirms nothing about the panel implies a judgement (a score, a colour ranking, a composite health number) beyond the honest per-source facts this PRD computes",
           "method": {
             "kind": "human",
@@ -680,7 +704,7 @@
           }
         },
         {
-          "id": "US-1007-C7",
+          "id": "US-1010-C7",
           "text": "The full offline suite stays green",
           "method": {
             "kind": "cmd",
@@ -688,7 +712,7 @@
           }
         },
         {
-          "id": "US-1007-C8",
+          "id": "US-1010-C8",
           "text": "The full web suite and typecheck stay green",
           "method": {
             "kind": "cmd",
