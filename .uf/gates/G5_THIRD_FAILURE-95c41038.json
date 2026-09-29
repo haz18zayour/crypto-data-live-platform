@@ -1,0 +1,22 @@
+{
+  "gate": "G5_THIRD_FAILURE",
+  "question": "US-1004 has failed 3 times — is the story wrong?",
+  "feature": "PRD-010-integrity-dashboard",
+  "story": "US-1004",
+  "options": [
+    "split",
+    "rewrite-criteria",
+    "skip",
+    "retry-anyway"
+  ],
+  "context": "Structural problems: criterion US-1004-C7 requires a screenshot at load the live board at http://localhost:5174, open a cell whose underlying data currently satisfies the frozen condition (or one manufactured via a short-lived test fixture against a throwaway schema if no live cell currently qualifies), and visually confirm the badge renders with a real date, with no colour or layout change implying a value judgement about the number — it does not exist\nCriteria judged not met:\n  - US-1004-C1: not judged — a cheaper layer already failed\n  - US-1004-C2: not judged — a cheaper layer already failed\n  - US-1004-C3: not judged — a cheaper layer already failed\n  - US-1004-C4: not judged — a cheaper layer already failed\n  - US-1004-C5: not judged — a cheaper layer already failed\n  - US-1004-C6: not judged — a cheaper layer already failed\n  - US-1004-C7: not judged — a cheaper layer already failed",
+  "defaultOnTimeout": "block",
+  "id": "G5_THIRD_FAILURE-95c41038",
+  "openedAt": "2026-09-29T19:50:33.030Z",
+  "answer": {
+    "choice": "skip",
+    "reason": "All 3 attempts failed purely on C7, a [browser:] criterion structurally unprovable by any automated sandbox. Attempt 3 also genuinely fixed a real frozen-badge rendering bug in the process. Ran the story's own capture script myself on the final committed state - it succeeded, and I visually confirmed honest, additive-only rendering. See verdict.json overrideReason.",
+    "at": "2026-09-29T22:59:00.000Z",
+    "by": "human"
+  }
+}
