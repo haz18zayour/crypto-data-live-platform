@@ -1,4 +1,5 @@
 import type { Datapoint } from "./datapoint";
+import type { IntegrityRead } from "./integrity";
 import type { IndicatorKey } from "./registry.generated";
 
 // MACRO is not a tracked crypto asset — it is the board's pseudo-asset column for
@@ -52,6 +53,7 @@ export type BoardModel = {
   assets: readonly string[];
   families: string[];
   cells: BoardCell[];
+  integrityRead?: IntegrityRead;
 };
 
 // The strip is asserted, never defaulted: a key that does not begin with its own asset would

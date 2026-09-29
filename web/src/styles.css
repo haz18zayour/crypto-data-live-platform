@@ -421,6 +421,87 @@ h2 {
   color: var(--failed);
 }
 
+.integrity-panel {
+  margin: 0 0 3rem;
+}
+
+.integrity-panel-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  justify-content: space-between;
+  gap: 0.75rem 1rem;
+}
+
+.integrity-computed-at,
+.integrity-self-check {
+  color: var(--label-secondary);
+  font-size: 0.8125rem;
+}
+
+.integrity-computed-at,
+.integrity-self-check {
+  margin: 0;
+}
+
+.integrity-self-check {
+  margin-top: 0.5rem;
+}
+
+.integrity-self-check--stale {
+  color: var(--failed);
+  font-weight: 600;
+}
+
+.integrity-rollup {
+  width: 100%;
+  min-width: 34rem;
+  margin-top: 1rem;
+  font-size: 0.8125rem;
+}
+
+.integrity-rollup-head,
+.integrity-rollup-row {
+  display: grid;
+  grid-template-columns: minmax(8rem, 0.25fr) minmax(0, 1fr);
+}
+
+.integrity-rollup-head > *,
+.integrity-rollup-row > * {
+  padding: 0.625rem 0.75rem;
+  border-bottom: 1px solid var(--separator);
+  overflow-wrap: anywhere;
+}
+
+.integrity-rollup-head {
+  color: var(--label-secondary);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.integrity-rollup-row strong {
+  font-weight: 600;
+}
+
+.integrity-rollup--fresh span {
+  color: var(--ok);
+}
+
+.integrity-rollup--warn span {
+  color: var(--stale);
+}
+
+.integrity-rollup--stale span {
+  color: var(--failed);
+}
+
+.integrity-rollup--unmeasurable span {
+  color: var(--label-secondary);
+  font-weight: 600;
+}
+
 /* A live pulse on the two faces worth watching at a glance: healthy and failed. This is a
    breathing heartbeat, not a stock-ticker blink — the glyph and word keep their fixed colour at
    every frame, so contrast never dips mid-animation; only a glow radius and the glyph's own

@@ -287,7 +287,10 @@ export async function fetchBoard(now: Date): Promise<BoardModel> {
       ? datapoint
       : applyFreshness(datapoint, staleAfterSeconds, now);
   });
-  return buildBoard(definitions, datapoints, BOARD_ASSETS, integrity.rows);
+  return {
+    ...buildBoard(definitions, datapoints, BOARD_ASSETS, integrity.rows),
+    integrityRead: integrity,
+  };
 }
 
 export async function fetchLatestDatapoint(
