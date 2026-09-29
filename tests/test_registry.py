@@ -29,6 +29,14 @@ FRED_UNCORROBORATED_NOTE = (
     "mirror against its origin rather than provide genuine independent "
     "corroboration."
 )
+NON_BTC_TALIB_PROPAGATION_REASON = (
+    "No per-asset close/volume series is separately registered for this asset; "
+    "technical indicators are computed directly from freshly-fetched OHLCV bars "
+    "in ingest/pipeline.py, never from a persisted per-asset close indicator. "
+    "Only BTC also exposes its close as a board cell by product decision; "
+    'ETH/SOL/BNB daily close renders "Daily close is intentionally BTC-only on '
+    'this board".'
+)
 
 VALID_ENTRY = """\
 - key: btc_daily_close
@@ -39,6 +47,7 @@ VALID_ENTRY = """\
   expected_update_interval_seconds: 86400
   freshness_warn_seconds: 108000
   freshness_stale_seconds: 172800
+  frozen_after_observations: 3
 """
 
 
@@ -94,6 +103,117 @@ def test_entry_without_source_field_is_rejected(tmp_path: Path) -> None:
     write_registry(registry_path, entry_without("source_field"))
 
     with pytest.raises(ValidationError, match="source_field"):
+        load_registry(registry_path)
+
+
+def test_registry_rejects_an_entry_with_no_frozen_detection_declaration(
+    tmp_path: Path,
+) -> None:
+    registry_path = tmp_path / "registry.yaml"
+    write_registry(registry_path, entry_without("frozen_after_observations"))
+
+    with pytest.raises(ValidationError, match="frozen detection declaration"):
+        load_registry(registry_path)
+
+
+def test_registry_rejects_an_entry_with_both_frozen_detection_declarations(
+    tmp_path: Path,
+) -> None:
+    registry_path = tmp_path / "registry.yaml"
+    write_registry(
+        registry_path,
+        VALID_ENTRY + "  expected_constant: This fixture deliberately repeats.\n",
+    )
+
+    with pytest.raises(ValidationError, match="frozen detection declaration"):
+        load_registry(registry_path)
+
+
+def test_registry_rejects_a_talib_entry_without_frozen_propagation_declaration(
+    tmp_path: Path,
+) -> None:
+    registry_path = tmp_path / "registry.yaml"
+    write_registry(
+        registry_path,
+        VALID_ENTRY
+        + """\
+- key: btc_rsi
+  vendor: okx
+  endpoint: https://example.test/bars
+  source_field: close
+  definable_for: [BTC]
+  required_bars: 250
+  talib_function: RSI
+  parameters:
+    timeperiod: 14
+  expected_update_interval_seconds: 86400
+  freshness_warn_seconds: 108000
+  freshness_stale_seconds: 172800
+  frozen_after_observations: 3
+""",
+    )
+
+    with pytest.raises(ValidationError, match="TA-Lib frozen propagation"):
+        load_registry(registry_path)
+
+
+def test_registry_rejects_a_talib_entry_with_both_propagation_declarations(
+    tmp_path: Path,
+) -> None:
+    registry_path = tmp_path / "registry.yaml"
+    write_registry(
+        registry_path,
+        VALID_ENTRY
+        + """\
+- key: btc_rsi
+  vendor: okx
+  endpoint: https://example.test/bars
+  source_field: close
+  definable_for: [BTC]
+  required_bars: 250
+  talib_function: RSI
+  parameters:
+    timeperiod: 14
+  expected_update_interval_seconds: 86400
+  freshness_warn_seconds: 108000
+  freshness_stale_seconds: 172800
+  frozen_after_observations: 3
+  derives_from: btc_daily_close
+  frozen_propagation_unavailable: Fixture says both, which is invalid.
+""",
+    )
+
+    with pytest.raises(ValidationError, match="TA-Lib frozen propagation"):
+        load_registry(registry_path)
+
+
+def test_registry_rejects_derived_roots_that_are_unknown_or_self_referential(
+    tmp_path: Path,
+) -> None:
+    registry_path = tmp_path / "registry.yaml"
+    talib_entry = """\
+- key: btc_rsi
+  vendor: okx
+  endpoint: https://example.test/bars
+  source_field: close
+  definable_for: [BTC]
+  required_bars: 250
+  talib_function: RSI
+  parameters:
+    timeperiod: 14
+  expected_update_interval_seconds: 86400
+  freshness_warn_seconds: 108000
+  freshness_stale_seconds: 172800
+  frozen_after_observations: 3
+  derives_from: {root}
+"""
+
+    write_registry(registry_path, VALID_ENTRY + talib_entry.format(root="missing_root"))
+    with pytest.raises(ValidationError, match="unknown registry key missing_root"):
+        load_registry(registry_path)
+
+    write_registry(registry_path, VALID_ENTRY + talib_entry.format(root="btc_rsi"))
+    with pytest.raises(ValidationError, match="must not point to itself"):
         load_registry(registry_path)
 
 
@@ -171,6 +291,59 @@ def test_registry_cadence_intervals_partition_the_shipped_entries() -> None:
         if entry.key != "sol_active_addresses"
     }
     assert sum(len(keys) for keys in by_tier.values()) == len(registry.root) - 1
+
+
+def test_every_shipped_entry_declares_exactly_one_frozen_detection_contract() -> None:
+    entries = {entry.key: entry for entry in load_registry().root}
+
+    assert entries["btc_daily_close"].frozen_after_observations is not None
+    for entry in entries.values():
+        assert (
+            entry.frozen_after_observations is not None
+        ) != (entry.expected_constant is not None), entry.key
+
+
+def test_btc_talib_indicators_derive_from_the_registered_btc_close_cell() -> None:
+    entries = tuple(
+        entry
+        for entry in load_registry().root
+        if entry.talib_function is not None and entry.definable_for == ("BTC",)
+    )
+
+    assert entries
+    assert {entry.derives_from for entry in entries} == {"btc_daily_close"}
+    assert all(entry.frozen_propagation_unavailable is None for entry in entries)
+
+
+def test_non_btc_talib_indicators_declare_frozen_propagation_unavailable() -> None:
+    entries = tuple(
+        entry
+        for entry in load_registry().root
+        if entry.talib_function is not None and entry.definable_for != ("BTC",)
+    )
+
+    assert {entry.definable_for[0] for entry in entries} == {"ETH", "SOL", "BNB"}
+    assert entries
+    for entry in entries:
+        assert entry.derives_from is None
+        assert entry.frozen_propagation_unavailable == NON_BTC_TALIB_PROPAGATION_REASON
+
+
+def test_wall_clock_fetchers_declare_freshness_unmeasurable_reasons() -> None:
+    entries = {entry.key: entry for entry in load_registry().root}
+
+    stablecoin_reason = entries["stablecoin_supply"].freshness_unmeasurable
+    staking_reason = entries["sol_staking"].freshness_unmeasurable
+    assert stablecoin_reason is not None
+    assert "DefiLlama stablecoinchains provides no per-chain observation timestamp" in (
+        stablecoin_reason
+    )
+    assert "fetch wall clock" in stablecoin_reason
+    assert staking_reason is not None
+    assert "Validators.app validators/mainnet provides no aggregate observation timestamp" in (
+        staking_reason
+    )
+    assert "fetch wall clock" in staking_reason
 
 
 def test_sol_active_addresses_declares_its_real_weekly_schedule() -> None:

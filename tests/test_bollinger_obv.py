@@ -117,6 +117,12 @@ def test_obv_uses_base_volume_and_the_registry_records_which() -> None:
                 expected_update_interval_seconds=86_400,
                 freshness_warn_seconds=108_000,
                 freshness_stale_seconds=172_800,
+                frozen_after_observations=3,
+                expected_constant=None,
+                frozen_propagation_unavailable=(
+                    "Fixture computes directly from inline bars and has no "
+                    "registered persisted root indicator."
+                ),
                 uncorroborated={"note": golden["registry"]["uncorroborated_note"]},
             )
             for venue, source_field in source_fields.items()

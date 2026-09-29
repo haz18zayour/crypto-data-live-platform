@@ -102,6 +102,8 @@ def definition() -> IndicatorDefinition:
         expected_update_interval_seconds=86_400,
         freshness_warn_seconds=108_000,
         freshness_stale_seconds=172_800,
+        frozen_after_observations=3,
+        expected_constant=None,
     )
 
 

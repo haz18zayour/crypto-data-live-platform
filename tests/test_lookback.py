@@ -23,6 +23,12 @@ def definition(
             "freshness_stale_seconds": 172_800,
             "talib_function": function,
             "parameters": parameters,
+            "frozen_after_observations": 3,
+            "expected_constant": None,
+            "frozen_propagation_unavailable": (
+                "Fixture computes directly from inline bars and has no registered "
+                "persisted root indicator."
+            ),
         }
     )
 

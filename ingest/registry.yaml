@@ -19,6 +19,7 @@
   expected_update_interval_seconds: 86400
   freshness_warn_seconds: 108000
   freshness_stale_seconds: 172800
+  frozen_after_observations: 3
   corroboration:
     venue: coinbase
     pair: BTC-USD
@@ -39,6 +40,8 @@
   expected_update_interval_seconds: 86400
   freshness_warn_seconds: 108000
   freshness_stale_seconds: 172800
+  frozen_after_observations: 3
+  derives_from: btc_daily_close
   uncorroborated:
     note: The derived output is not cross-venue corroborated; its OKX input bars are corroborated against Coinbase.
 - key: btc_funding_rate
@@ -54,6 +57,7 @@
   expected_update_interval_seconds: 28800
   freshness_warn_seconds: 43200
   freshness_stale_seconds: 57600
+  expected_constant: OKX funding rates can legitimately clamp near the interest-rate baseline for consecutive funding intervals in a calm market; constant runs are expected vendor observations, not an integrity failure.
   uncorroborated:
     note: No second venue's derivatives public endpoints were confirmed to exist or be reachable; Binance's futures API returns HTTP 451 to US IPs on public endpoints.
 - key: btc_mvrv
@@ -72,6 +76,7 @@
   expected_update_interval_seconds: 86400
   freshness_warn_seconds: 108000
   freshness_stale_seconds: 172800
+  frozen_after_observations: 3
   uncorroborated:
     note: Coin Metrics is the only researched source for CapMVRVCur in this PRD, so this MVRV value has no independent corroborating venue.
 - key: btc_active_addresses
@@ -87,6 +92,7 @@
   expected_update_interval_seconds: 86400
   freshness_warn_seconds: 108000
   freshness_stale_seconds: 172800
+  frozen_after_observations: 3
   uncorroborated:
     note: Coin Metrics is the only researched source for AdrActCnt in this PRD, so this active-addresses value has no independent corroborating venue.
 - key: btc_exchange_flow
@@ -105,6 +111,7 @@
   expected_update_interval_seconds: 86400
   freshness_warn_seconds: 108000
   freshness_stale_seconds: 172800
+  frozen_after_observations: 3
   uncorroborated:
     note: Coin Metrics is the only researched source for FlowInExNtv and FlowOutExNtv in this PRD, so this exchange-flow value has no independent corroborating venue.
 - key: btc_open_interest
@@ -120,6 +127,7 @@
   expected_update_interval_seconds: 300
   freshness_warn_seconds: 450
   freshness_stale_seconds: 600
+  frozen_after_observations: 3
   uncorroborated:
     note: No second venue's derivatives public endpoints were confirmed to exist or be reachable; Binance's futures API returns HTTP 451 to US IPs on public endpoints.
 - key: btc_long_short_ratio
@@ -135,6 +143,7 @@
   expected_update_interval_seconds: 300
   freshness_warn_seconds: 450
   freshness_stale_seconds: 600
+  frozen_after_observations: 3
   uncorroborated:
     note: No second venue's derivatives public endpoints were confirmed to exist or be reachable; Binance's futures API returns HTTP 451 to US IPs on public endpoints.
 - key: btc_taker_ratio
@@ -150,6 +159,7 @@
   expected_update_interval_seconds: 300
   freshness_warn_seconds: 450
   freshness_stale_seconds: 600
+  frozen_after_observations: 3
   uncorroborated:
     note: No second venue's derivatives public endpoints were confirmed to exist or be reachable; Binance's futures API returns HTTP 451 to US IPs on public endpoints.
 - key: btc_ema_20
@@ -167,6 +177,8 @@
   expected_update_interval_seconds: 86400
   freshness_warn_seconds: 108000
   freshness_stale_seconds: 172800
+  frozen_after_observations: 3
+  derives_from: btc_daily_close
   uncorroborated:
     note: The derived output is not cross-venue corroborated; its OKX input bars are corroborated against Coinbase.
 - key: btc_ema_50
@@ -184,6 +196,8 @@
   expected_update_interval_seconds: 86400
   freshness_warn_seconds: 108000
   freshness_stale_seconds: 172800
+  frozen_after_observations: 3
+  derives_from: btc_daily_close
   uncorroborated:
     note: The derived output is not cross-venue corroborated; its OKX input bars are corroborated against Coinbase.
 - key: btc_ema_200
@@ -201,6 +215,8 @@
   expected_update_interval_seconds: 86400
   freshness_warn_seconds: 108000
   freshness_stale_seconds: 172800
+  frozen_after_observations: 3
+  derives_from: btc_daily_close
   uncorroborated:
     note: The derived output is not cross-venue corroborated; its OKX input bars are corroborated against Coinbase.
 - key: btc_atr
@@ -218,6 +234,8 @@
   expected_update_interval_seconds: 86400
   freshness_warn_seconds: 108000
   freshness_stale_seconds: 172800
+  frozen_after_observations: 3
+  derives_from: btc_daily_close
   uncorroborated:
     note: The derived output is not cross-venue corroborated; its OKX input bars are corroborated against Coinbase.
 - key: btc_bollinger_upper
@@ -238,6 +256,8 @@
   expected_update_interval_seconds: 86400
   freshness_warn_seconds: 108000
   freshness_stale_seconds: 172800
+  frozen_after_observations: 3
+  derives_from: btc_daily_close
   uncorroborated:
     note: The derived output is not cross-venue corroborated; its OKX input bars are corroborated against Coinbase.
 - key: btc_bollinger_middle
@@ -258,6 +278,8 @@
   expected_update_interval_seconds: 86400
   freshness_warn_seconds: 108000
   freshness_stale_seconds: 172800
+  frozen_after_observations: 3
+  derives_from: btc_daily_close
   uncorroborated:
     note: The derived output is not cross-venue corroborated; its OKX input bars are corroborated against Coinbase.
 - key: btc_bollinger_lower
@@ -278,6 +300,8 @@
   expected_update_interval_seconds: 86400
   freshness_warn_seconds: 108000
   freshness_stale_seconds: 172800
+  frozen_after_observations: 3
+  derives_from: btc_daily_close
   uncorroborated:
     note: The derived output is not cross-venue corroborated; its OKX input bars are corroborated against Coinbase.
 - key: btc_obv
@@ -295,6 +319,8 @@
   expected_update_interval_seconds: 86400
   freshness_warn_seconds: 108000
   freshness_stale_seconds: 172800
+  frozen_after_observations: 3
+  derives_from: btc_daily_close
   uncorroborated:
     note: The derived output is not cross-venue corroborated; its OKX input bars are corroborated against Coinbase.
 - key: btc_macd
@@ -314,6 +340,8 @@
   expected_update_interval_seconds: 86400
   freshness_warn_seconds: 108000
   freshness_stale_seconds: 172800
+  frozen_after_observations: 3
+  derives_from: btc_daily_close
   uncorroborated:
     note: The derived output is not cross-venue corroborated; its OKX input bars are corroborated against Coinbase.
 - key: btc_stochrsi
@@ -335,6 +363,8 @@
   expected_update_interval_seconds: 86400
   freshness_warn_seconds: 108000
   freshness_stale_seconds: 172800
+  frozen_after_observations: 3
+  derives_from: btc_daily_close
   uncorroborated:
     note: The derived output is not cross-venue corroborated; its OKX input bars are corroborated against Coinbase.
 - key: eth_rsi
@@ -353,6 +383,8 @@
   expected_update_interval_seconds: 86400
   freshness_warn_seconds: 108000
   freshness_stale_seconds: 172800
+  frozen_after_observations: 3
+  frozen_propagation_unavailable: No per-asset close/volume series is separately registered for this asset; technical indicators are computed directly from freshly-fetched OHLCV bars in ingest/pipeline.py, never from a persisted per-asset close indicator. Only BTC also exposes its close as a board cell by product decision; ETH/SOL/BNB daily close renders "Daily close is intentionally BTC-only on this board".
   uncorroborated:
     note: The derived output is not cross-venue corroborated; its OKX input bars are corroborated against Coinbase.
 - key: eth_funding_rate
@@ -368,6 +400,7 @@
   expected_update_interval_seconds: 28800
   freshness_warn_seconds: 43200
   freshness_stale_seconds: 57600
+  expected_constant: OKX funding rates can legitimately clamp near the interest-rate baseline for consecutive funding intervals in a calm market; constant runs are expected vendor observations, not an integrity failure.
   uncorroborated:
     note: No second venue's derivatives public endpoints were confirmed to exist or be reachable; Binance's futures API returns HTTP 451 to US IPs on public endpoints.
 - key: eth_mvrv
@@ -386,6 +419,7 @@
   expected_update_interval_seconds: 86400
   freshness_warn_seconds: 108000
   freshness_stale_seconds: 172800
+  frozen_after_observations: 3
   uncorroborated:
     note: Coin Metrics is the only researched source for CapMVRVCur in this PRD, so this MVRV value has no independent corroborating venue.
 - key: eth_active_addresses
@@ -401,6 +435,7 @@
   expected_update_interval_seconds: 86400
   freshness_warn_seconds: 108000
   freshness_stale_seconds: 172800
+  frozen_after_observations: 3
   uncorroborated:
     note: Coin Metrics is the only researched source for AdrActCnt in this PRD, so this active-addresses value has no independent corroborating venue.
 - key: eth_exchange_flow
@@ -419,6 +454,7 @@
   expected_update_interval_seconds: 86400
   freshness_warn_seconds: 108000
   freshness_stale_seconds: 172800
+  frozen_after_observations: 3
   uncorroborated:
     note: Coin Metrics is the only researched source for FlowInExNtv and FlowOutExNtv in this PRD, so this exchange-flow value has no independent corroborating venue.
 - key: eth_open_interest
@@ -434,6 +470,7 @@
   expected_update_interval_seconds: 300
   freshness_warn_seconds: 450
   freshness_stale_seconds: 600
+  frozen_after_observations: 3
   uncorroborated:
     note: No second venue's derivatives public endpoints were confirmed to exist or be reachable; Binance's futures API returns HTTP 451 to US IPs on public endpoints.
 - key: eth_long_short_ratio
@@ -449,6 +486,7 @@
   expected_update_interval_seconds: 300
   freshness_warn_seconds: 450
   freshness_stale_seconds: 600
+  frozen_after_observations: 3
   uncorroborated:
     note: No second venue's derivatives public endpoints were confirmed to exist or be reachable; Binance's futures API returns HTTP 451 to US IPs on public endpoints.
 - key: eth_taker_ratio
@@ -464,6 +502,7 @@
   expected_update_interval_seconds: 300
   freshness_warn_seconds: 450
   freshness_stale_seconds: 600
+  frozen_after_observations: 3
   uncorroborated:
     note: No second venue's derivatives public endpoints were confirmed to exist or be reachable; Binance's futures API returns HTTP 451 to US IPs on public endpoints.
 - key: eth_ema_20
@@ -481,6 +520,8 @@
   expected_update_interval_seconds: 86400
   freshness_warn_seconds: 108000
   freshness_stale_seconds: 172800
+  frozen_after_observations: 3
+  frozen_propagation_unavailable: No per-asset close/volume series is separately registered for this asset; technical indicators are computed directly from freshly-fetched OHLCV bars in ingest/pipeline.py, never from a persisted per-asset close indicator. Only BTC also exposes its close as a board cell by product decision; ETH/SOL/BNB daily close renders "Daily close is intentionally BTC-only on this board".
   uncorroborated:
     note: The derived output is not cross-venue corroborated; its OKX input bars are corroborated against Coinbase.
 - key: eth_ema_50
@@ -498,6 +539,8 @@
   expected_update_interval_seconds: 86400
   freshness_warn_seconds: 108000
   freshness_stale_seconds: 172800
+  frozen_after_observations: 3
+  frozen_propagation_unavailable: No per-asset close/volume series is separately registered for this asset; technical indicators are computed directly from freshly-fetched OHLCV bars in ingest/pipeline.py, never from a persisted per-asset close indicator. Only BTC also exposes its close as a board cell by product decision; ETH/SOL/BNB daily close renders "Daily close is intentionally BTC-only on this board".
   uncorroborated:
     note: The derived output is not cross-venue corroborated; its OKX input bars are corroborated against Coinbase.
 - key: eth_ema_200
@@ -515,6 +558,8 @@
   expected_update_interval_seconds: 86400
   freshness_warn_seconds: 108000
   freshness_stale_seconds: 172800
+  frozen_after_observations: 3
+  frozen_propagation_unavailable: No per-asset close/volume series is separately registered for this asset; technical indicators are computed directly from freshly-fetched OHLCV bars in ingest/pipeline.py, never from a persisted per-asset close indicator. Only BTC also exposes its close as a board cell by product decision; ETH/SOL/BNB daily close renders "Daily close is intentionally BTC-only on this board".
   uncorroborated:
     note: The derived output is not cross-venue corroborated; its OKX input bars are corroborated against Coinbase.
 - key: eth_atr
@@ -532,6 +577,8 @@
   expected_update_interval_seconds: 86400
   freshness_warn_seconds: 108000
   freshness_stale_seconds: 172800
+  frozen_after_observations: 3
+  frozen_propagation_unavailable: No per-asset close/volume series is separately registered for this asset; technical indicators are computed directly from freshly-fetched OHLCV bars in ingest/pipeline.py, never from a persisted per-asset close indicator. Only BTC also exposes its close as a board cell by product decision; ETH/SOL/BNB daily close renders "Daily close is intentionally BTC-only on this board".
   uncorroborated:
     note: The derived output is not cross-venue corroborated; its OKX input bars are corroborated against Coinbase.
 - key: eth_bollinger_upper
@@ -552,6 +599,8 @@
   expected_update_interval_seconds: 86400
   freshness_warn_seconds: 108000
   freshness_stale_seconds: 172800
+  frozen_after_observations: 3
+  frozen_propagation_unavailable: No per-asset close/volume series is separately registered for this asset; technical indicators are computed directly from freshly-fetched OHLCV bars in ingest/pipeline.py, never from a persisted per-asset close indicator. Only BTC also exposes its close as a board cell by product decision; ETH/SOL/BNB daily close renders "Daily close is intentionally BTC-only on this board".
   uncorroborated:
     note: The derived output is not cross-venue corroborated; its OKX input bars are corroborated against Coinbase.
 - key: eth_bollinger_middle
@@ -572,6 +621,8 @@
   expected_update_interval_seconds: 86400
   freshness_warn_seconds: 108000
   freshness_stale_seconds: 172800
+  frozen_after_observations: 3
+  frozen_propagation_unavailable: No per-asset close/volume series is separately registered for this asset; technical indicators are computed directly from freshly-fetched OHLCV bars in ingest/pipeline.py, never from a persisted per-asset close indicator. Only BTC also exposes its close as a board cell by product decision; ETH/SOL/BNB daily close renders "Daily close is intentionally BTC-only on this board".
   uncorroborated:
     note: The derived output is not cross-venue corroborated; its OKX input bars are corroborated against Coinbase.
 - key: eth_bollinger_lower
@@ -592,6 +643,8 @@
   expected_update_interval_seconds: 86400
   freshness_warn_seconds: 108000
   freshness_stale_seconds: 172800
+  frozen_after_observations: 3
+  frozen_propagation_unavailable: No per-asset close/volume series is separately registered for this asset; technical indicators are computed directly from freshly-fetched OHLCV bars in ingest/pipeline.py, never from a persisted per-asset close indicator. Only BTC also exposes its close as a board cell by product decision; ETH/SOL/BNB daily close renders "Daily close is intentionally BTC-only on this board".
   uncorroborated:
     note: The derived output is not cross-venue corroborated; its OKX input bars are corroborated against Coinbase.
 - key: eth_obv
@@ -609,6 +662,8 @@
   expected_update_interval_seconds: 86400
   freshness_warn_seconds: 108000
   freshness_stale_seconds: 172800
+  frozen_after_observations: 3
+  frozen_propagation_unavailable: No per-asset close/volume series is separately registered for this asset; technical indicators are computed directly from freshly-fetched OHLCV bars in ingest/pipeline.py, never from a persisted per-asset close indicator. Only BTC also exposes its close as a board cell by product decision; ETH/SOL/BNB daily close renders "Daily close is intentionally BTC-only on this board".
   uncorroborated:
     note: The derived output is not cross-venue corroborated; its OKX input bars are corroborated against Coinbase.
 - key: eth_macd
@@ -628,6 +683,8 @@
   expected_update_interval_seconds: 86400
   freshness_warn_seconds: 108000
   freshness_stale_seconds: 172800
+  frozen_after_observations: 3
+  frozen_propagation_unavailable: No per-asset close/volume series is separately registered for this asset; technical indicators are computed directly from freshly-fetched OHLCV bars in ingest/pipeline.py, never from a persisted per-asset close indicator. Only BTC also exposes its close as a board cell by product decision; ETH/SOL/BNB daily close renders "Daily close is intentionally BTC-only on this board".
   uncorroborated:
     note: The derived output is not cross-venue corroborated; its OKX input bars are corroborated against Coinbase.
 - key: eth_stochrsi
@@ -649,6 +706,8 @@
   expected_update_interval_seconds: 86400
   freshness_warn_seconds: 108000
   freshness_stale_seconds: 172800
+  frozen_after_observations: 3
+  frozen_propagation_unavailable: No per-asset close/volume series is separately registered for this asset; technical indicators are computed directly from freshly-fetched OHLCV bars in ingest/pipeline.py, never from a persisted per-asset close indicator. Only BTC also exposes its close as a board cell by product decision; ETH/SOL/BNB daily close renders "Daily close is intentionally BTC-only on this board".
   uncorroborated:
     note: The derived output is not cross-venue corroborated; its OKX input bars are corroborated against Coinbase.
 - key: sol_rsi
@@ -667,6 +726,8 @@
   expected_update_interval_seconds: 86400
   freshness_warn_seconds: 108000
   freshness_stale_seconds: 172800
+  frozen_after_observations: 3
+  frozen_propagation_unavailable: No per-asset close/volume series is separately registered for this asset; technical indicators are computed directly from freshly-fetched OHLCV bars in ingest/pipeline.py, never from a persisted per-asset close indicator. Only BTC also exposes its close as a board cell by product decision; ETH/SOL/BNB daily close renders "Daily close is intentionally BTC-only on this board".
   uncorroborated:
     note: The derived output is not cross-venue corroborated; its OKX input bars are corroborated against Coinbase.
 - key: sol_funding_rate
@@ -682,6 +743,7 @@
   expected_update_interval_seconds: 28800
   freshness_warn_seconds: 43200
   freshness_stale_seconds: 57600
+  expected_constant: OKX funding rates can legitimately clamp near the interest-rate baseline for consecutive funding intervals in a calm market; constant runs are expected vendor observations, not an integrity failure.
   uncorroborated:
     note: No second venue's derivatives public endpoints were confirmed to exist or be reachable; Binance's futures API returns HTTP 451 to US IPs on public endpoints.
 - key: sol_active_addresses
@@ -698,6 +760,7 @@
   expected_update_interval_seconds: 604800
   freshness_warn_seconds: 691200
   freshness_stale_seconds: 777600
+  frozen_after_observations: 3
   uncorroborated:
     note: Helius Solana RPC is the only researched source used for this built SOL active-addresses cell, and its one-hour method is not directly comparable to Coin Metrics' 24-hour AdrActCnt.
 - key: sol_staking
@@ -717,6 +780,8 @@
   expected_update_interval_seconds: 86400
   freshness_warn_seconds: 108000
   freshness_stale_seconds: 172800
+  frozen_after_observations: 3
+  freshness_unmeasurable: Validators.app validators/mainnet provides no aggregate observation timestamp; the fetcher stamps source_timestamp with the fetch wall clock, so source_timestamp age cannot measure vendor data freshness.
   uncorroborated:
     note: Validators.app is the only researched free source used for SOL staking in this PRD, so this staking value has no independent corroborating venue.
 - key: sol_open_interest
@@ -732,6 +797,7 @@
   expected_update_interval_seconds: 300
   freshness_warn_seconds: 450
   freshness_stale_seconds: 600
+  frozen_after_observations: 3
   uncorroborated:
     note: No second venue's derivatives public endpoints were confirmed to exist or be reachable; Binance's futures API returns HTTP 451 to US IPs on public endpoints.
 - key: sol_long_short_ratio
@@ -747,6 +813,7 @@
   expected_update_interval_seconds: 300
   freshness_warn_seconds: 450
   freshness_stale_seconds: 600
+  frozen_after_observations: 3
   uncorroborated:
     note: No second venue's derivatives public endpoints were confirmed to exist or be reachable; Binance's futures API returns HTTP 451 to US IPs on public endpoints.
 - key: sol_taker_ratio
@@ -762,6 +829,7 @@
   expected_update_interval_seconds: 300
   freshness_warn_seconds: 450
   freshness_stale_seconds: 600
+  frozen_after_observations: 3
   uncorroborated:
     note: No second venue's derivatives public endpoints were confirmed to exist or be reachable; Binance's futures API returns HTTP 451 to US IPs on public endpoints.
 - key: sol_ema_20
@@ -779,6 +847,8 @@
   expected_update_interval_seconds: 86400
   freshness_warn_seconds: 108000
   freshness_stale_seconds: 172800
+  frozen_after_observations: 3
+  frozen_propagation_unavailable: No per-asset close/volume series is separately registered for this asset; technical indicators are computed directly from freshly-fetched OHLCV bars in ingest/pipeline.py, never from a persisted per-asset close indicator. Only BTC also exposes its close as a board cell by product decision; ETH/SOL/BNB daily close renders "Daily close is intentionally BTC-only on this board".
   uncorroborated:
     note: The derived output is not cross-venue corroborated; its OKX input bars are corroborated against Coinbase.
 - key: sol_ema_50
@@ -796,6 +866,8 @@
   expected_update_interval_seconds: 86400
   freshness_warn_seconds: 108000
   freshness_stale_seconds: 172800
+  frozen_after_observations: 3
+  frozen_propagation_unavailable: No per-asset close/volume series is separately registered for this asset; technical indicators are computed directly from freshly-fetched OHLCV bars in ingest/pipeline.py, never from a persisted per-asset close indicator. Only BTC also exposes its close as a board cell by product decision; ETH/SOL/BNB daily close renders "Daily close is intentionally BTC-only on this board".
   uncorroborated:
     note: The derived output is not cross-venue corroborated; its OKX input bars are corroborated against Coinbase.
 - key: sol_ema_200
@@ -813,6 +885,8 @@
   expected_update_interval_seconds: 86400
   freshness_warn_seconds: 108000
   freshness_stale_seconds: 172800
+  frozen_after_observations: 3
+  frozen_propagation_unavailable: No per-asset close/volume series is separately registered for this asset; technical indicators are computed directly from freshly-fetched OHLCV bars in ingest/pipeline.py, never from a persisted per-asset close indicator. Only BTC also exposes its close as a board cell by product decision; ETH/SOL/BNB daily close renders "Daily close is intentionally BTC-only on this board".
   uncorroborated:
     note: The derived output is not cross-venue corroborated; its OKX input bars are corroborated against Coinbase.
 - key: sol_atr
@@ -830,6 +904,8 @@
   expected_update_interval_seconds: 86400
   freshness_warn_seconds: 108000
   freshness_stale_seconds: 172800
+  frozen_after_observations: 3
+  frozen_propagation_unavailable: No per-asset close/volume series is separately registered for this asset; technical indicators are computed directly from freshly-fetched OHLCV bars in ingest/pipeline.py, never from a persisted per-asset close indicator. Only BTC also exposes its close as a board cell by product decision; ETH/SOL/BNB daily close renders "Daily close is intentionally BTC-only on this board".
   uncorroborated:
     note: The derived output is not cross-venue corroborated; its OKX input bars are corroborated against Coinbase.
 - key: sol_bollinger_upper
@@ -850,6 +926,8 @@
   expected_update_interval_seconds: 86400
   freshness_warn_seconds: 108000
   freshness_stale_seconds: 172800
+  frozen_after_observations: 3
+  frozen_propagation_unavailable: No per-asset close/volume series is separately registered for this asset; technical indicators are computed directly from freshly-fetched OHLCV bars in ingest/pipeline.py, never from a persisted per-asset close indicator. Only BTC also exposes its close as a board cell by product decision; ETH/SOL/BNB daily close renders "Daily close is intentionally BTC-only on this board".
   uncorroborated:
     note: The derived output is not cross-venue corroborated; its OKX input bars are corroborated against Coinbase.
 - key: sol_bollinger_middle
@@ -870,6 +948,8 @@
   expected_update_interval_seconds: 86400
   freshness_warn_seconds: 108000
   freshness_stale_seconds: 172800
+  frozen_after_observations: 3
+  frozen_propagation_unavailable: No per-asset close/volume series is separately registered for this asset; technical indicators are computed directly from freshly-fetched OHLCV bars in ingest/pipeline.py, never from a persisted per-asset close indicator. Only BTC also exposes its close as a board cell by product decision; ETH/SOL/BNB daily close renders "Daily close is intentionally BTC-only on this board".
   uncorroborated:
     note: The derived output is not cross-venue corroborated; its OKX input bars are corroborated against Coinbase.
 - key: sol_bollinger_lower
@@ -890,6 +970,8 @@
   expected_update_interval_seconds: 86400
   freshness_warn_seconds: 108000
   freshness_stale_seconds: 172800
+  frozen_after_observations: 3
+  frozen_propagation_unavailable: No per-asset close/volume series is separately registered for this asset; technical indicators are computed directly from freshly-fetched OHLCV bars in ingest/pipeline.py, never from a persisted per-asset close indicator. Only BTC also exposes its close as a board cell by product decision; ETH/SOL/BNB daily close renders "Daily close is intentionally BTC-only on this board".
   uncorroborated:
     note: The derived output is not cross-venue corroborated; its OKX input bars are corroborated against Coinbase.
 - key: sol_obv
@@ -907,6 +989,8 @@
   expected_update_interval_seconds: 86400
   freshness_warn_seconds: 108000
   freshness_stale_seconds: 172800
+  frozen_after_observations: 3
+  frozen_propagation_unavailable: No per-asset close/volume series is separately registered for this asset; technical indicators are computed directly from freshly-fetched OHLCV bars in ingest/pipeline.py, never from a persisted per-asset close indicator. Only BTC also exposes its close as a board cell by product decision; ETH/SOL/BNB daily close renders "Daily close is intentionally BTC-only on this board".
   uncorroborated:
     note: The derived output is not cross-venue corroborated; its OKX input bars are corroborated against Coinbase.
 - key: sol_macd
@@ -926,6 +1010,8 @@
   expected_update_interval_seconds: 86400
   freshness_warn_seconds: 108000
   freshness_stale_seconds: 172800
+  frozen_after_observations: 3
+  frozen_propagation_unavailable: No per-asset close/volume series is separately registered for this asset; technical indicators are computed directly from freshly-fetched OHLCV bars in ingest/pipeline.py, never from a persisted per-asset close indicator. Only BTC also exposes its close as a board cell by product decision; ETH/SOL/BNB daily close renders "Daily close is intentionally BTC-only on this board".
   uncorroborated:
     note: The derived output is not cross-venue corroborated; its OKX input bars are corroborated against Coinbase.
 - key: sol_stochrsi
@@ -947,6 +1033,8 @@
   expected_update_interval_seconds: 86400
   freshness_warn_seconds: 108000
   freshness_stale_seconds: 172800
+  frozen_after_observations: 3
+  frozen_propagation_unavailable: No per-asset close/volume series is separately registered for this asset; technical indicators are computed directly from freshly-fetched OHLCV bars in ingest/pipeline.py, never from a persisted per-asset close indicator. Only BTC also exposes its close as a board cell by product decision; ETH/SOL/BNB daily close renders "Daily close is intentionally BTC-only on this board".
   uncorroborated:
     note: The derived output is not cross-venue corroborated; its OKX input bars are corroborated against Coinbase.
 - key: bnb_rsi
@@ -965,6 +1053,8 @@
   expected_update_interval_seconds: 86400
   freshness_warn_seconds: 108000
   freshness_stale_seconds: 172800
+  frozen_after_observations: 3
+  frozen_propagation_unavailable: No per-asset close/volume series is separately registered for this asset; technical indicators are computed directly from freshly-fetched OHLCV bars in ingest/pipeline.py, never from a persisted per-asset close indicator. Only BTC also exposes its close as a board cell by product decision; ETH/SOL/BNB daily close renders "Daily close is intentionally BTC-only on this board".
   uncorroborated:
     note: The derived output is not cross-venue corroborated; its OKX input bars are corroborated against Coinbase.
 - key: bnb_funding_rate
@@ -980,6 +1070,7 @@
   expected_update_interval_seconds: 28800
   freshness_warn_seconds: 43200
   freshness_stale_seconds: 57600
+  expected_constant: OKX funding rates can legitimately clamp near the interest-rate baseline for consecutive funding intervals in a calm market; constant runs are expected vendor observations, not an integrity failure.
   uncorroborated:
     note: No second venue's derivatives public endpoints were confirmed to exist or be reachable; Binance's futures API returns HTTP 451 to US IPs on public endpoints.
 - key: bnb_mvrv
@@ -998,6 +1089,7 @@
   expected_update_interval_seconds: 86400
   freshness_warn_seconds: 108000
   freshness_stale_seconds: 172800
+  frozen_after_observations: 3
   uncorroborated:
     note: Coin Metrics is the only researched source for CapMVRVCur in this PRD, so this MVRV value has no independent corroborating venue.
 - key: bnb_active_addresses
@@ -1013,6 +1105,7 @@
   expected_update_interval_seconds: 86400
   freshness_warn_seconds: 108000
   freshness_stale_seconds: 172800
+  frozen_after_observations: 3
   uncorroborated:
     note: Coin Metrics is the only researched source for AdrActCnt in this PRD, so this active-addresses value has no independent corroborating venue.
 - key: bnb_open_interest
@@ -1028,6 +1121,7 @@
   expected_update_interval_seconds: 300
   freshness_warn_seconds: 450
   freshness_stale_seconds: 600
+  frozen_after_observations: 3
   uncorroborated:
     note: No second venue's derivatives public endpoints were confirmed to exist or be reachable; Binance's futures API returns HTTP 451 to US IPs on public endpoints.
 - key: bnb_long_short_ratio
@@ -1043,6 +1137,7 @@
   expected_update_interval_seconds: 300
   freshness_warn_seconds: 450
   freshness_stale_seconds: 600
+  frozen_after_observations: 3
   uncorroborated:
     note: No second venue's derivatives public endpoints were confirmed to exist or be reachable; Binance's futures API returns HTTP 451 to US IPs on public endpoints.
 - key: bnb_taker_ratio
@@ -1058,6 +1153,7 @@
   expected_update_interval_seconds: 300
   freshness_warn_seconds: 450
   freshness_stale_seconds: 600
+  frozen_after_observations: 3
   uncorroborated:
     note: No second venue's derivatives public endpoints were confirmed to exist or be reachable; Binance's futures API returns HTTP 451 to US IPs on public endpoints.
 - key: bnb_ema_20
@@ -1075,6 +1171,8 @@
   expected_update_interval_seconds: 86400
   freshness_warn_seconds: 108000
   freshness_stale_seconds: 172800
+  frozen_after_observations: 3
+  frozen_propagation_unavailable: No per-asset close/volume series is separately registered for this asset; technical indicators are computed directly from freshly-fetched OHLCV bars in ingest/pipeline.py, never from a persisted per-asset close indicator. Only BTC also exposes its close as a board cell by product decision; ETH/SOL/BNB daily close renders "Daily close is intentionally BTC-only on this board".
   uncorroborated:
     note: The derived output is not cross-venue corroborated; its OKX input bars are corroborated against Coinbase.
 - key: bnb_ema_50
@@ -1092,6 +1190,8 @@
   expected_update_interval_seconds: 86400
   freshness_warn_seconds: 108000
   freshness_stale_seconds: 172800
+  frozen_after_observations: 3
+  frozen_propagation_unavailable: No per-asset close/volume series is separately registered for this asset; technical indicators are computed directly from freshly-fetched OHLCV bars in ingest/pipeline.py, never from a persisted per-asset close indicator. Only BTC also exposes its close as a board cell by product decision; ETH/SOL/BNB daily close renders "Daily close is intentionally BTC-only on this board".
   uncorroborated:
     note: The derived output is not cross-venue corroborated; its OKX input bars are corroborated against Coinbase.
 - key: bnb_ema_200
@@ -1109,6 +1209,8 @@
   expected_update_interval_seconds: 86400
   freshness_warn_seconds: 108000
   freshness_stale_seconds: 172800
+  frozen_after_observations: 3
+  frozen_propagation_unavailable: No per-asset close/volume series is separately registered for this asset; technical indicators are computed directly from freshly-fetched OHLCV bars in ingest/pipeline.py, never from a persisted per-asset close indicator. Only BTC also exposes its close as a board cell by product decision; ETH/SOL/BNB daily close renders "Daily close is intentionally BTC-only on this board".
   uncorroborated:
     note: The derived output is not cross-venue corroborated; its OKX input bars are corroborated against Coinbase.
 - key: bnb_atr
@@ -1126,6 +1228,8 @@
   expected_update_interval_seconds: 86400
   freshness_warn_seconds: 108000
   freshness_stale_seconds: 172800
+  frozen_after_observations: 3
+  frozen_propagation_unavailable: No per-asset close/volume series is separately registered for this asset; technical indicators are computed directly from freshly-fetched OHLCV bars in ingest/pipeline.py, never from a persisted per-asset close indicator. Only BTC also exposes its close as a board cell by product decision; ETH/SOL/BNB daily close renders "Daily close is intentionally BTC-only on this board".
   uncorroborated:
     note: The derived output is not cross-venue corroborated; its OKX input bars are corroborated against Coinbase.
 - key: bnb_bollinger_upper
@@ -1146,6 +1250,8 @@
   expected_update_interval_seconds: 86400
   freshness_warn_seconds: 108000
   freshness_stale_seconds: 172800
+  frozen_after_observations: 3
+  frozen_propagation_unavailable: No per-asset close/volume series is separately registered for this asset; technical indicators are computed directly from freshly-fetched OHLCV bars in ingest/pipeline.py, never from a persisted per-asset close indicator. Only BTC also exposes its close as a board cell by product decision; ETH/SOL/BNB daily close renders "Daily close is intentionally BTC-only on this board".
   uncorroborated:
     note: The derived output is not cross-venue corroborated; its OKX input bars are corroborated against Coinbase.
 - key: bnb_bollinger_middle
@@ -1166,6 +1272,8 @@
   expected_update_interval_seconds: 86400
   freshness_warn_seconds: 108000
   freshness_stale_seconds: 172800
+  frozen_after_observations: 3
+  frozen_propagation_unavailable: No per-asset close/volume series is separately registered for this asset; technical indicators are computed directly from freshly-fetched OHLCV bars in ingest/pipeline.py, never from a persisted per-asset close indicator. Only BTC also exposes its close as a board cell by product decision; ETH/SOL/BNB daily close renders "Daily close is intentionally BTC-only on this board".
   uncorroborated:
     note: The derived output is not cross-venue corroborated; its OKX input bars are corroborated against Coinbase.
 - key: bnb_bollinger_lower
@@ -1186,6 +1294,8 @@
   expected_update_interval_seconds: 86400
   freshness_warn_seconds: 108000
   freshness_stale_seconds: 172800
+  frozen_after_observations: 3
+  frozen_propagation_unavailable: No per-asset close/volume series is separately registered for this asset; technical indicators are computed directly from freshly-fetched OHLCV bars in ingest/pipeline.py, never from a persisted per-asset close indicator. Only BTC also exposes its close as a board cell by product decision; ETH/SOL/BNB daily close renders "Daily close is intentionally BTC-only on this board".
   uncorroborated:
     note: The derived output is not cross-venue corroborated; its OKX input bars are corroborated against Coinbase.
 - key: bnb_obv
@@ -1203,6 +1313,8 @@
   expected_update_interval_seconds: 86400
   freshness_warn_seconds: 108000
   freshness_stale_seconds: 172800
+  frozen_after_observations: 3
+  frozen_propagation_unavailable: No per-asset close/volume series is separately registered for this asset; technical indicators are computed directly from freshly-fetched OHLCV bars in ingest/pipeline.py, never from a persisted per-asset close indicator. Only BTC also exposes its close as a board cell by product decision; ETH/SOL/BNB daily close renders "Daily close is intentionally BTC-only on this board".
   uncorroborated:
     note: The derived output is not cross-venue corroborated; its OKX input bars are corroborated against Coinbase.
 - key: bnb_macd
@@ -1222,6 +1334,8 @@
   expected_update_interval_seconds: 86400
   freshness_warn_seconds: 108000
   freshness_stale_seconds: 172800
+  frozen_after_observations: 3
+  frozen_propagation_unavailable: No per-asset close/volume series is separately registered for this asset; technical indicators are computed directly from freshly-fetched OHLCV bars in ingest/pipeline.py, never from a persisted per-asset close indicator. Only BTC also exposes its close as a board cell by product decision; ETH/SOL/BNB daily close renders "Daily close is intentionally BTC-only on this board".
   uncorroborated:
     note: The derived output is not cross-venue corroborated; its OKX input bars are corroborated against Coinbase.
 - key: bnb_stochrsi
@@ -1243,6 +1357,8 @@
   expected_update_interval_seconds: 86400
   freshness_warn_seconds: 108000
   freshness_stale_seconds: 172800
+  frozen_after_observations: 3
+  frozen_propagation_unavailable: No per-asset close/volume series is separately registered for this asset; technical indicators are computed directly from freshly-fetched OHLCV bars in ingest/pipeline.py, never from a persisted per-asset close indicator. Only BTC also exposes its close as a board cell by product decision; ETH/SOL/BNB daily close renders "Daily close is intentionally BTC-only on this board".
   uncorroborated:
     note: The derived output is not cross-venue corroborated; its OKX input bars are corroborated against Coinbase.
 - key: macro_vixcls
@@ -1258,6 +1374,7 @@
   expected_update_interval_seconds: 86400
   freshness_warn_seconds: 108000
   freshness_stale_seconds: 172800
+  frozen_after_observations: 3
   uncorroborated:
     note: FRED mirrors the Fed/BLS directly; a second source would check the mirror against its origin rather than provide genuine independent corroboration.
 - key: macro_dff
@@ -1273,6 +1390,7 @@
   expected_update_interval_seconds: 86400
   freshness_warn_seconds: 108000
   freshness_stale_seconds: 172800
+  frozen_after_observations: 3
   uncorroborated:
     note: FRED mirrors the Fed/BLS directly; a second source would check the mirror against its origin rather than provide genuine independent corroboration.
 - key: macro_t10y2y
@@ -1288,6 +1406,7 @@
   expected_update_interval_seconds: 86400
   freshness_warn_seconds: 108000
   freshness_stale_seconds: 172800
+  frozen_after_observations: 3
   uncorroborated:
     note: FRED mirrors the Fed/BLS directly; a second source would check the mirror against its origin rather than provide genuine independent corroboration.
 - key: macro_dfii10
@@ -1303,6 +1422,7 @@
   expected_update_interval_seconds: 86400
   freshness_warn_seconds: 108000
   freshness_stale_seconds: 172800
+  frozen_after_observations: 3
   uncorroborated:
     note: FRED mirrors the Fed/BLS directly; a second source would check the mirror against its origin rather than provide genuine independent corroboration.
 - key: macro_dtwexbgs
@@ -1318,6 +1438,7 @@
   expected_update_interval_seconds: 86400
   freshness_warn_seconds: 864000
   freshness_stale_seconds: 1209600
+  frozen_after_observations: 3
   uncorroborated:
     note: FRED mirrors the Fed/BLS directly; a second source would check the mirror against its origin rather than provide genuine independent corroboration.
 - key: macro_cpiaucsl
@@ -1333,6 +1454,7 @@
   expected_update_interval_seconds: 86400
   freshness_warn_seconds: 3888000
   freshness_stale_seconds: 5184000
+  frozen_after_observations: 3
   uncorroborated:
     note: FRED mirrors the Fed/BLS directly; a second source would check the mirror against its origin rather than provide genuine independent corroboration.
 - key: macro_m2sl
@@ -1348,6 +1470,7 @@
   expected_update_interval_seconds: 86400
   freshness_warn_seconds: 3888000
   freshness_stale_seconds: 5184000
+  frozen_after_observations: 3
   uncorroborated:
     note: FRED mirrors the Fed/BLS directly; a second source would check the mirror against its origin rather than provide genuine independent corroboration.
 - key: spot_etf_net_flow
@@ -1366,6 +1489,7 @@
   expected_update_interval_seconds: 86400
   freshness_warn_seconds: 108000
   freshness_stale_seconds: 172800
+  frozen_after_observations: 3
   uncorroborated:
     note: SoSoValue is the researched source for US spot ETF flow aggregates in this PRD; BNB is not in its API enum.
 - key: stablecoin_supply
@@ -1384,6 +1508,8 @@
   expected_update_interval_seconds: 86400
   freshness_warn_seconds: 108000
   freshness_stale_seconds: 172800
+  frozen_after_observations: 3
+  freshness_unmeasurable: DefiLlama stablecoinchains provides no per-chain observation timestamp; the live fetcher stamps source_timestamp with the fetch wall clock, so source_timestamp age cannot measure vendor data freshness.
   uncorroborated:
     note: DefiLlama is the researched free, keyless source for per-chain stablecoin supply in this PRD; Bitcoin is a structural absence in its chain list.
 - key: fear_greed_index
@@ -1399,5 +1525,6 @@
   expected_update_interval_seconds: 86400
   freshness_warn_seconds: 108000
   freshness_stale_seconds: 172800
+  frozen_after_observations: 3
   uncorroborated:
     note: alternative.me is the researched free, keyless source for this vendor-owned Fear & Greed composite; this project displays it as vendor data, not an independent validated market signal.

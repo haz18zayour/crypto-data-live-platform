@@ -881,6 +881,15 @@ Spend to date: **$113.19** Claude · **290251k** Codex tokens.
 - 13:26  US-1001 started, attempt 3 (codex)
 - 13:33  US-1001 — codex finished `a6009ab6` · 3116k tok
 - 13:35  US-1001 **rejected** — 0/10 criteria, judged by claude
+- 13:35  ⏸ **gate opened** — US-1001 has failed 3 times — is the story wrong?
+- 13:46  **PRD-010-integrity-dashboard** compiled — 7 stories
+- 16:45  ▶ gate answered **rewrite-criteria** — All 3 failures were real defects, not spec-vs-test ambiguity in the usual sense, but attempts 2 and 3 both revealed a genuine gap in the story's own criteria: derives_from assumed every asset has an existing registered root price/volume indicator to point at, but only BTC does (btc_daily_close) - ETH/SOL/BNB's technical indicators are computed directly from freshly-fetched OHLCV bars, never from a persisted per-asset close indicator, and daily close is deliberately BTC-only on this board. Attempt 3 tried to close that gap by inventing new eth_daily_close/sol_daily_close/bnb_daily_close board-visible entries, which silently added 3 new cells and broke 5 existing web tests that hard-code exact coverage counts derived from the real registry (confirmed independently: passes on main, fails on this branch, isolated to 3 new registry entries with no other diff). Rewrote US-1001's criteria to require an honest frozen_propagation_unavailable declaration for ETH/SOL/BNB's technical indicators instead of fabricating a root, added an explicit criterion requiring npm --prefix web test to show zero regression, and added a matching criterion to US-1002 so the SQL view reports a distinct propagation-unavailable state rather than silently treating these indicators as independently checkable. Recompiled clean.
+- 13:47  ⏸ **gate opened** — US-1001 has failed 3 times — is the story wrong?
+- 13:48  **PRD-010-integrity-dashboard** compiled — 7 stories
+- 16:50  ▶ gate answered **rewrite-criteria** — Duplicate gate opened by a uf run invocation before the first gate's manual resolution was recognized. Same resolution: story re-identified as US-1008 with corrected criteria. US-1001 is retired.
+- 13:49  US-1008 started, attempt 1 (codex)
+- 13:49  US-1008 — codex finished `c1d67221`
+- 13:51  US-1008 **rejected** — 0/12 criteria, judged by claude
 
 <!-- uf:generated:end -->
 
