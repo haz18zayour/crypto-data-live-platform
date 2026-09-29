@@ -34,7 +34,7 @@ open prds/PRD-005-dashboard/20-decisions.yaml
 | PRD-007-onchain | 8 | 8 | **all green** |
 | PRD-008-macro-flows | 8 | 8 | **all green** |
 | PRD-009-history-charts | 9 | 9 | **all green** |
-| PRD-010-integrity-dashboard | 7 | 5 | 5/7 |
+| PRD-010-integrity-dashboard | 7 | 6 | 6/7 |
 | PRD-012-cadence-split | 6 | 6 | **all green** |
 
 Spend to date: **$121.42** Claude · **314796k** Codex tokens.
@@ -950,6 +950,12 @@ Spend to date: **$121.42** Claude · **314796k** Codex tokens.
 - 20:09  US-1005 started, attempt 3 (codex)
 - 20:12  US-1005 — codex finished `ce2c8d28`
 - 20:13  US-1005 **rejected** — 0/7 criteria, judged by claude
+- 20:13  ⏸ **gate opened** — US-1005 has failed 3 times — is the story wrong?
+- 23:17  ▶ gate answered **skip** — All 3 attempts failed purely on the structurally-unprovable browser-screenshot criterion. Wrote a capture script myself and visually confirmed correct rendering against the real live board. See verdict.json overrideReason.
+- 23:17  US-1005 **PASSED** — 7/7 criteria, judged by human
+- 20:17  US-1007 started, attempt 1 (codex)
+- 20:19  US-1007 — codex finished `7108615f`
+- 20:21  US-1007 **rejected** — 0/8 criteria, judged by claude
 
 <!-- uf:generated:end -->
 
