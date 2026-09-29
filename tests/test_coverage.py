@@ -47,7 +47,6 @@ def definition(
         expected_update_interval_seconds=86_400,
         freshness_warn_seconds=108_000,
         freshness_stale_seconds=172_800,
-        frozen_after_observations=3,
     )
 
 
@@ -60,7 +59,7 @@ def test_every_registry_entry_has_a_golden_required_bars_and_response_model() ->
 ):
     registry = load_registry()
 
-    assert len(registry.root) == 84
+    assert len(registry.root) == 81
     assert_registry_coverage(
         registry,
         golden_keys=golden_keys(),

@@ -38,7 +38,6 @@ def definition_data() -> dict[str, object]:
         "source_field": "data.value",
         "definable_for": ["BTC"],
         "required_bars": 1,
-        "frozen_after_observations": 3,
         "parameters": {},
         "expected_update_interval_seconds": 86_400,
         "freshness_warn_seconds": 108_000,
@@ -162,10 +161,10 @@ def test_us_808_macro_flow_not_definable_reasons_do_not_collapse_into_existing_b
     assert not (set(prd_reasons.values()) & set(existing_reasons.values()))
 
 
-def test_registry_coverage_still_passes_for_all_84_entries() -> None:
+def test_registry_coverage_still_passes_for_all_81_entries() -> None:
     registry = load_registry()
 
-    assert len(registry.root) == 84
+    assert len(registry.root) == 81
     assert_registry_coverage(
         registry,
         golden_keys={

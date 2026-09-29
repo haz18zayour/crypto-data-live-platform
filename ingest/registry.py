@@ -118,15 +118,11 @@ class IndicatorDefinition(BaseModel):
     response_model: NonEmptyString | None = None
     required_bars: PositiveInt | None = None
     talib_function: NonEmptyString | None = None
-    derives_from: NonEmptyString | None = None
     parameters: dict[NonEmptyString, int | float] | None = None
     note: NonEmptyString | None = None
     expected_update_interval_seconds: PositiveInt
     freshness_warn_seconds: PositiveInt
     freshness_stale_seconds: PositiveInt
-    frozen_after_observations: PositiveInt | None = None
-    expected_constant: NonEmptyString | None = None
-    freshness_unmeasurable: NonEmptyString | None = None
     corroboration: CorroborationDefinition | None = None
     uncorroborated: UncorroboratedDefinition | None = None
 
@@ -161,28 +157,13 @@ class IndicatorDefinition(BaseModel):
         return self
 
     @model_validator(mode="after")
-    def require_exactly_one_frozen_declaration(self) -> IndicatorDefinition:
-        has_threshold = self.frozen_after_observations is not None
-        has_expected_constant = self.expected_constant is not None
-        if has_threshold == has_expected_constant:
-            raise ValueError(
-                f"{self.key} must declare exactly one frozen-detection declaration: "
-                "frozen_after_observations or expected_constant"
-            )
-        return self
-
-    @model_validator(mode="after")
     def require_more_bars_than_talib_lookback(self) -> IndicatorDefinition:
         if self.talib_function is None:
-            if self.derives_from is not None:
-                raise ValueError("derives_from requires a talib_function")
             if self.parameters not in (None, {}):
                 raise ValueError(
                     "parameters without a talib_function must be an empty mapping"
                 )
             return self
-        if self.derives_from is None:
-            raise ValueError(f"{self.key} is missing derives_from")
         if self.parameters is None:
             raise ValueError(f"{self.key} is missing TA-Lib parameters")
 
@@ -243,17 +224,6 @@ class IndicatorRegistry(RootModel[tuple[IndicatorDefinition, ...]]):
                 "unsupported expected_update_interval_seconds for cadence tier "
                 f"filter: {unsupported}; supported intervals are {supported}"
             )
-        return self
-
-    @model_validator(mode="after")
-    def reject_unknown_derived_roots(self) -> IndicatorRegistry:
-        keys = {entry.key for entry in self.root}
-        for entry in self.root:
-            if entry.derives_from is not None and entry.derives_from not in keys:
-                raise ValueError(
-                    f"{entry.key} derives_from unknown indicator key: "
-                    f"{entry.derives_from}"
-                )
         return self
 
 
@@ -373,14 +343,6 @@ def assert_registry_coverage(
             failures.append(
                 f"{entry.key} is missing exactly one corroboration declaration"
             )
-        has_frozen_threshold = entry.frozen_after_observations is not None
-        has_expected_constant = entry.expected_constant is not None
-        if has_frozen_threshold == has_expected_constant:
-            failures.append(
-                f"{entry.key} is missing exactly one frozen-detection declaration"
-            )
-        if entry.talib_function is not None and entry.derives_from is None:
-            failures.append(f"{entry.key} is missing derives_from")
         if entry.golden is None or entry.golden not in golden_keys:
             failures.append(f"{entry.key} is missing a golden file")
         if entry.required_bars is None:

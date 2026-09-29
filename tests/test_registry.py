@@ -36,26 +36,6 @@ VALID_ENTRY = """\
   endpoint: https://www.okx.com/api/v5/market/candles?instId=BTC-USDT&bar=1D
   source_field: 'candle[4] (close), where candle[8] == "1"'
   definable_for: [BTC]
-  required_bars: 1
-  frozen_after_observations: 3
-  parameters:
-  expected_update_interval_seconds: 86400
-  freshness_warn_seconds: 108000
-  freshness_stale_seconds: 172800
-"""
-
-VALID_TALIB_ENTRY = """\
-- key: btc_rsi
-  vendor: okx
-  endpoint: https://www.okx.com/api/v5/market/candles?instId=BTC-USDT&bar=1D
-  source_field: 'TA-Lib RSI from closed candle[4] values'
-  definable_for: [BTC]
-  required_bars: 250
-  frozen_after_observations: 3
-  talib_function: RSI
-  derives_from: btc_daily_close
-  parameters:
-    timeperiod: 14
   expected_update_interval_seconds: 86400
   freshness_warn_seconds: 108000
   freshness_stale_seconds: 172800
@@ -82,14 +62,6 @@ def entry_without(field: str) -> str:
     return "\n".join(
         line
         for line in VALID_ENTRY.splitlines()
-        if not line.lstrip().startswith(f"{field}:")
-    )
-
-
-def entry_without_talib_field(field: str) -> str:
-    return "\n".join(
-        line
-        for line in VALID_TALIB_ENTRY.splitlines()
         if not line.lstrip().startswith(f"{field}:")
     )
 
@@ -135,55 +107,6 @@ def test_registry_rejects_duplicate_indicator_keys(tmp_path: Path) -> None:
         load_registry(registry_path)
 
 
-def test_registry_rejects_entry_without_frozen_detection_declaration(
-    tmp_path: Path,
-) -> None:
-    registry_path = tmp_path / "registry.yaml"
-    write_registry(registry_path, entry_without("frozen_after_observations"))
-
-    with pytest.raises(ValidationError, match="frozen-detection"):
-        load_registry(registry_path)
-
-
-def test_registry_rejects_entry_with_both_frozen_detection_declarations(
-    tmp_path: Path,
-) -> None:
-    registry_path = tmp_path / "registry.yaml"
-    write_registry(
-        registry_path,
-        VALID_ENTRY.replace(
-            "  frozen_after_observations: 3\n",
-            "  frozen_after_observations: 3\n"
-            "  expected_constant: legitimately constant fixture\n",
-        ),
-    )
-
-    with pytest.raises(ValidationError, match="frozen-detection"):
-        load_registry(registry_path)
-
-
-def test_registry_rejects_talib_entry_without_derives_from(tmp_path: Path) -> None:
-    registry_path = tmp_path / "registry.yaml"
-    write_registry(registry_path, VALID_ENTRY + entry_without_talib_field("derives_from"))
-
-    with pytest.raises(ValidationError, match="missing derives_from"):
-        load_registry(registry_path)
-
-
-def test_registry_rejects_derives_from_unknown_registry_key(tmp_path: Path) -> None:
-    registry_path = tmp_path / "registry.yaml"
-    write_registry(
-        registry_path,
-        VALID_ENTRY + VALID_TALIB_ENTRY.replace(
-            "derives_from: btc_daily_close",
-            "derives_from: missing_daily_close",
-        ),
-    )
-
-    with pytest.raises(ValidationError, match="unknown indicator key"):
-        load_registry(registry_path)
-
-
 @pytest.mark.parametrize("wildcard", ("*", "all", "ALL"))
 def test_definable_for_rejects_wildcards(tmp_path: Path, wildcard: str) -> None:
     registry_path = tmp_path / "registry.yaml"
@@ -208,7 +131,7 @@ def test_definable_for_requires_a_nonempty_asset_list(
 def test_shipped_registry_definitions_cover_four_assets_at_scale() -> None:
     registry = load_registry()
 
-    assert len(registry.root) == 84
+    assert len(registry.root) == 81
     crypto_entries = tuple(
         entry for entry in registry.root if entry.definable_for != ("MACRO",)
     )
@@ -223,65 +146,6 @@ def test_shipped_registry_definitions_cover_four_assets_at_scale() -> None:
         or entry.key in {"spot_etf_net_flow", "stablecoin_supply"}
         for entry in crypto_entries
     )
-
-
-def test_shipped_registry_declares_frozen_detection_for_every_entry() -> None:
-    entries = {entry.key: entry for entry in load_registry().root}
-
-    assert all(
-        (entry.frozen_after_observations is None) != (entry.expected_constant is None)
-        for entry in entries.values()
-    )
-    assert entries["btc_daily_close"].frozen_after_observations is not None
-
-    funding = {
-        key: entries[key]
-        for key in (
-            "btc_funding_rate",
-            "eth_funding_rate",
-            "sol_funding_rate",
-            "bnb_funding_rate",
-        )
-    }
-    for entry in funding.values():
-        assert entry.frozen_after_observations is None
-        assert entry.expected_constant is not None
-        assert "0.01%" in entry.expected_constant
-        assert "clamp" in entry.expected_constant
-
-
-def test_shipped_talib_entries_declare_existing_dependency_roots() -> None:
-    entries = {entry.key: entry for entry in load_registry().root}
-    talib_entries = tuple(
-        entry for entry in entries.values() if entry.talib_function is not None
-    )
-
-    assert talib_entries
-    for entry in talib_entries:
-        asset = entry.definable_for[0].lower()
-        expected_root_key = f"{asset}_daily_close"
-        root = entries[expected_root_key]
-
-        assert entry.derives_from == expected_root_key
-        assert root.talib_function is None
-        assert root.response_model == "okx_candle"
-        assert root.definable_for == entry.definable_for
-
-
-def test_wall_clock_fetchers_declare_freshness_unmeasurable_reasons() -> None:
-    entries = {entry.key: entry for entry in load_registry().root}
-
-    stablecoin_supply = entries["stablecoin_supply"]
-    assert stablecoin_supply.freshness_unmeasurable is not None
-    assert "DefiLlama" in stablecoin_supply.freshness_unmeasurable
-    assert "fetched_at" in stablecoin_supply.freshness_unmeasurable
-    assert "source_timestamp" in stablecoin_supply.freshness_unmeasurable
-
-    sol_staking = entries["sol_staking"]
-    assert sol_staking.freshness_unmeasurable is not None
-    assert "Validators.app" in sol_staking.freshness_unmeasurable
-    assert "fetch wall clock" in sol_staking.freshness_unmeasurable
-    assert "source_timestamp" in sol_staking.freshness_unmeasurable
 
 
 def test_registry_cadence_intervals_partition_the_shipped_entries() -> None:
@@ -299,7 +163,7 @@ def test_registry_cadence_intervals_partition_the_shipped_entries() -> None:
     assert {tier: len(keys) for tier, keys in by_tier.items()} == {
         "fast": 12,
         "medium": 4,
-        "daily": 67,
+        "daily": 64,
     }
     assert set().union(*by_tier.values()) == {
         entry.key

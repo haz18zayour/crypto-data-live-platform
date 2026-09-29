@@ -19,7 +19,6 @@ def definition(required_bars: int) -> IndicatorDefinition:
         source_field="bars.close",
         definable_for=("BTC",),
         required_bars=required_bars,
-        frozen_after_observations=3,
         expected_update_interval_seconds=86_400,
         freshness_warn_seconds=108_000,
         freshness_stale_seconds=172_800,
@@ -41,7 +40,6 @@ def test_registry_rejects_an_indicator_with_no_required_bars(
   endpoint: https://example.test/bars
   source_field: candle[4]
   definable_for: [BTC]
-  frozen_after_observations: 3
   expected_update_interval_seconds: 86400
   freshness_warn_seconds: 108000
   freshness_stale_seconds: 172800
@@ -89,7 +87,6 @@ indicator = IndicatorDefinition(
     source_field="bars.close",
     definable_for=("BTC",),
     required_bars=3,
-    frozen_after_observations=3,
     expected_update_interval_seconds=86400,
     freshness_warn_seconds=108000,
     freshness_stale_seconds=172800,

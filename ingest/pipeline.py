@@ -398,7 +398,7 @@ def _definition_and_asset_for_result_key(
 
 def _calculate(definition: IndicatorDefinition, bars: Sequence[Bar]) -> float:
     parameters = definition.parameters or {}
-    if definition.key.endswith("_daily_close"):
+    if definition.key == INDICATOR_KEY:
         return daily_close(bars)
     if definition.talib_function == "RSI":
         return rsi(bars, period=int(parameters["timeperiod"]))
@@ -470,7 +470,7 @@ def run_all_assets(
         definition
         for definition in registered
         if definition.key not in excluded_keys
-        and definition.response_model == "okx_candle"
+        and (definition.talib_function is not None or definition.key == INDICATOR_KEY)
     )
     funding_definitions = tuple(
         definition

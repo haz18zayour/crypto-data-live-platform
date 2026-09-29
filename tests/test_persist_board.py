@@ -368,7 +368,7 @@ def test_full_run_writes_one_datapoint_row_per_computed_indicator(
     row_ids = run_pipeline(object(), fetcher=_full_board)  # type: ignore[arg-type]
 
     definitions = _board_definitions()
-    assert len(definitions) == 84
+    assert len(definitions) == 81
     assert len(row_ids) == _expected_rows(definitions)
     assert len(persisted) == _expected_rows(definitions)
     assert {row["indicator_key"] for row in persisted} == {
@@ -378,7 +378,7 @@ def test_full_run_writes_one_datapoint_row_per_computed_indicator(
 
 @pytest.mark.parametrize(
     ("tier", "expected_count"),
-    (("fast", 12), ("medium", 4), ("daily", 71)),
+    (("fast", 12), ("medium", 4), ("daily", 68)),
 )
 def test_tier_run_persists_only_registry_entries_for_that_cadence(
     monkeypatch: pytest.MonkeyPatch,
@@ -524,7 +524,7 @@ def test_adversarial_fast_tier_missed_window_reads_stale_within_450_seconds(
     assert persisted["btc_taker_ratio"].status == "OK"
 
 
-def test_adversarial_full_cycle_reconciles_all_75_registry_rows_once_each(
+def test_adversarial_full_cycle_reconciles_all_72_registry_rows_once_each(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     persisted_by_run: dict[str, list[tuple[str, str]]] = {
@@ -560,10 +560,10 @@ def test_adversarial_full_cycle_reconciles_all_75_registry_rows_once_each(
     )
 
     flattened = [row for persisted in persisted_by_run.values() for row in persisted]
-    assert len(_board_definitions()) == 84
+    assert len(_board_definitions()) == 81
     assert len(persisted_by_run["fast"]) == 12
     assert len(persisted_by_run["medium"]) == 4
-    assert len(persisted_by_run["daily"]) == 71
+    assert len(persisted_by_run["daily"]) == 68
     assert persisted_by_run["sol_active_addresses"] == [
         (pipeline.SOL_ACTIVE_ADDRESSES_KEY, "SOL")
     ]
@@ -608,7 +608,7 @@ def test_scheduled_daily_tier_keeps_existing_sol_active_addresses_exclusion(
         and definition.key != pipeline.SOL_ACTIVE_ADDRESSES_KEY
     )
 
-    assert _expected_rows(expected_definitions) == 71
+    assert _expected_rows(expected_definitions) == 68
     assert set(run.indicators) == _expected_run_keys(expected_definitions)
 
 
@@ -1701,8 +1701,8 @@ def test_scheduled_entry_point_persists_board_without_sol_active_addresses_and_p
     definitions = _scheduled_board_definitions()
     assert connected_to == [DATABASE_URL]
     assert pinged == [HEARTBEAT_URL]
-    assert len(_board_definitions()) == 84
-    assert _expected_rows(definitions) == 87
+    assert len(_board_definitions()) == 81
+    assert _expected_rows(definitions) == 84
     assert len(persisted) == _expected_rows(definitions)
     assert {row["indicator_key"] for row in persisted} == {
         definition.key for definition in definitions
@@ -1830,7 +1830,7 @@ def test_daily_tier_entry_point_persists_only_daily_board_rows_and_pings_once(
     )
     assert connected_to == [DATABASE_URL]
     assert pinged == [HEARTBEAT_URL]
-    assert _expected_rows(expected_definitions) == 71
+    assert _expected_rows(expected_definitions) == 68
     assert len(persisted) == _expected_rows(expected_definitions)
     assert {row["indicator_key"] for row in persisted} == {
         definition.key for definition in expected_definitions
@@ -2117,8 +2117,8 @@ def test_live_scheduled_board_run_persists_registry_minus_sol_active_addresses(
         (list(row_ids),),
     ).fetchall()
 
-    assert len(_board_definitions()) == 84
-    assert _expected_rows(definitions) == 87
+    assert len(_board_definitions()) == 81
+    assert _expected_rows(definitions) == 84
     assert all(item.status == "AVAILABLE" for item in run.history.values())
     assert all(item.fetched_bars == 250 for item in run.history.values())
 

@@ -1,0 +1,18 @@
+.uf/events.ndjson                    |   2 +
+ ingest/pipeline.py                   |   4 +-
+ ingest/registry.py                   |  38 --------
+ ingest/registry.yaml                 | 176 -----------------------------------
+ tests/test_assets.py                 |   2 +-
+ tests/test_bar_slice.py              |   3 -
+ tests/test_bollinger_obv.py          |   2 -
+ tests/test_canary.py                 |   1 -
+ tests/test_corroboration_schema.py   |   1 -
+ tests/test_coverage.py               |   3 +-
+ tests/test_divergence.py             |   3 -
+ tests/test_lookback.py               |   2 -
+ tests/test_persist.py                |   1 -
+ tests/test_persist_board.py          |  22 ++---
+ tests/test_registry.py               | 140 +---------------------------
+ tests/test_registry_not_definable.py |   5 +-
+ tests/test_uncorroborated.py         |   2 -
+ 17 files changed, 21 insertions(+), 386 deletions(-)
