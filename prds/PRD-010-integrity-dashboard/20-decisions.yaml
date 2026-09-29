@@ -1,34 +1,232 @@
 # GATE G1 — scope lock.
 #
-# Produced by /pre-prd-research interrogating you, then confirmed by you. The research
-# agent commits to a hypothesis for every question so you are correcting a draft rather
-# than answering a blank form: skim, override what is wrong, confirm the out-of-scope list.
+# Produced by /pre-prd-research interrogating the owner, then confirmed by the owner. The
+# research agent commits to a hypothesis for every question so the owner is correcting a
+# draft rather than answering a blank form: skim, override what is wrong, confirm the
+# out-of-scope list.
 #
-# Anything you do NOT answer becomes an `assumptions:` row below — an explicit assumption
-# with a tripwire, never a silent guess. That is the whole point of this file.
+# Anything not answered becomes an `assumptions:` row below — an explicit assumption with
+# a tripwire, never a silent guess. That is the whole point of this file.
 
 decisions:
-  - q: <the question the research agent asked>
-    hypothesis: <what it guessed>
-    answer: <your answer, or leave blank to accept the hypothesis>
+  - q: >
+      Is "frozen" (a value that keeps reporting OK but never actually changes) a separate
+      state shown on the cell itself, or only surfaced on a dedicated integrity panel?
+    hypothesis: >
+      Shown on the cell as a provenance badge ("value unchanged across K observations
+      since <date>"), without downgrading the cell away from OK. The market value stays
+      untouched — this project makes no judgement about the number itself — but the
+      integrity problem must be visible where the value is read, not buried on a separate
+      page nobody checks by default.
+    answer: >
+      Confirmed — cell-level badge, OK status unchanged. 2026-09-29.
 
-# The one field with no default. Half of all scope creep is features someone assumed
-# were included, so this list is load-bearing and you must physically write it.
+  - q: >
+      Frozen-detection threshold: one global K (number of identical consecutive
+      observations before flagging), or per-indicator, declared in the registry?
+    hypothesis: >
+      Per-indicator, required field in the registry (e.g. `frozen_after_observations:
+      int`), with no default — a new indicator must explicitly decide. Indicators that are
+      legitimately constant for long stretches (OKX funding rate clamped to 0.01% in a
+      calm market, Fear & Greed as a bounded integer, monthly macro series repeating
+      within a reference period) need an explicit `expected_constant: <reason>`
+      declaration rather than a threshold, so the detector never flags a healthy quiet
+      market as broken.
+    answer: >
+      Confirmed — per-indicator registry field, no default, explicit
+      expected-constant declaration for the known exceptions. 2026-09-29.
+
+  - q: >
+      Two fetchers (DefiLlama stablecoin supply, validators.app) stamp `source_timestamp`
+      as the wall clock at fetch time rather than a real vendor observation time, so a
+      freshness rollup built from `source_timestamp` age is structurally always green for
+      them even if the underlying vendor value is frozen. What does the rollup show for
+      these two?
+    hypothesis: >
+      "Freshness unmeasurable: vendor provides no observation time" — never a green SLA
+      state — with frozen-value detection as the only real defence for these two.
+      Fixing the wall-clock stamping itself is a separate, out-of-scope fetcher change;
+      this PRD's job is to stop the rollup from lying about them, not to re-plumb
+      `source_timestamp` semantics for two already-shipped fetchers.
+    answer: >
+      Confirmed — unmeasurable state, not green; fetcher stamping fix out of scope.
+      2026-09-29.
+
+  - q: >
+      Mechanism: a new `FROZEN` value added to the existing `datapoint_status` enum
+      (detected at write time in `persist.py`), or a computed view/RPC read outside the
+      ingest path?
+    hypothesis: >
+      Computed view or RPC, no new enum value. Postgres enum values can never be removed
+      once added, an enum change touches the `value_iff_ok` / `reason_required`
+      constraints and every UI discriminated union, existing history stays unflagged
+      unless separately backfilled, and — most importantly — a detector running inside
+      the same ingest path it audits goes silent exactly when ingest itself stops. The
+      audit has to live outside the thing being audited.
+    answer: >
+      Confirmed — computed view/RPC, no `datapoint_status` enum change. 2026-09-29.
+
+  - q: >
+      "An uncovered indicator fails the build": does that mean a TypeScript compile
+      failure, a test failure, or both?
+    hypothesis: >
+      Both. `web/src/registry.ts` currently loads `registry.yaml` at runtime via
+      `?raw` + `parse()`, so every indicator key is a plain `string` to the compiler —
+      no mapped-type exhaustiveness check can see a new key today. A codegen step must
+      emit a literal `IndicatorKey` union from the registry so `{[K in IndicatorKey]:
+      ...}` wiring maps fail `tsc -b` on a missing key, AND a pytest must assert the
+      generated file is current against `registry.yaml` (a stale generated file is its
+      own silent drift) and that each key has a real golden fixture and a named test —
+      not just a type-level placeholder. Type-only misses Python-side wiring; test-only
+      can be skipped by a marker.
+    answer: >
+      Confirmed — codegen'd literal key union (tsc) plus a coverage pytest asserting
+      real per-key wiring, not placeholder presence. 2026-09-29.
+
+  - q: >
+      Should the freshness/SLA rollup include Healthchecks.io's own dead-man's-switch
+      status (up/grace/down) alongside data age computed from Postgres?
+    hypothesis: >
+      Not in v1. Data age computed from `source_timestamp` at read time is the ground
+      truth this PRD needs, and Healthchecks remains the independent, out-of-band alarm
+      it already is. Pulling HC's Management API into this rollup means a new secret
+      (`HEALTHCHECKS_API_KEY_READONLY`) wired into every collector workflow — exactly the
+      class of thing that has already caused a real defect this project (the
+      canary.py params-merge bug from missing per-vendor keys). Can be added later as its
+      own story once the core rollup is proven.
+    answer: >
+      Confirmed — Postgres data age only for v1; Healthchecks stays a separate,
+      independent alarm. 2026-09-29.
+
+  - q: >
+      Blind spot — the integrity panel reads through the same `datapoints` table, the
+      same PostgREST layer, and the same browser poll/cache as the board it audits. If
+      any of those layers serves stale data (a TanStack Query cache, a PostgREST schema
+      cache never reloaded, a CDN edge cache), the panel can report "all green" from old
+      data in exactly the failure mode it exists to catch. Does the panel need its own
+      freshness self-check?
+    hypothesis: >
+      Yes. The integrity read returns a server-clock "computed at T" stamp, and the
+      browser compares T against its own clock, surfacing "integrity check itself is
+      stale" as a distinct, visible state — never silently trusting a green panel that
+      is itself old.
+    answer: >
+      Confirmed — integrity reads carry a server-clock computed-at stamp, checked
+      against the browser's own clock. 2026-09-29.
+
+  - q: >
+      Blind spot — roughly 70% of registry keys are TA-Lib-derived (EMA, Bollinger,
+      MACD, OBV, ATR, StochRSI). A frozen input series (e.g. a stuck daily close) makes
+      Wilder/EMA-smoothed outputs converge smoothly toward a constant rather than repeat
+      identically, so a naive identical-value check on the derived indicator itself would
+      never catch it. Does frozen detection run per-indicator independently, or only on
+      root/raw inputs with the flag propagated to dependents?
+    hypothesis: >
+      Detect on raw/root inputs only (the values TA-Lib actually consumes: daily close,
+      funding rate, MVRV, etc.), then propagate the frozen flag to every indicator whose
+      computation chain depends on that input. Running the naive check independently on
+      every derived indicator would certify most of the board healthy during precisely
+      the failure this PRD exists to catch — the research's own finding.
+    answer: >
+      Confirmed — detect on root inputs, propagate to dependents via the existing
+      registry dependency information. 2026-09-29.
+
+  - q: >
+      Blind spot — a coverage gate phrased as "every indicator has UI/test wiring" can be
+      satisfied with a placeholder (a golden file copied from another indicator, an
+      `it.todo`, a `// @ts-expect-error`) that proves a key exists without proving the
+      wiring actually asserts anything. Should the coverage test check substance, not
+      just presence?
+    hypothesis: >
+      Yes. The coverage pytest must additionally assert the named test for each key
+      exists AND that its golden fixture's hash is unique per indicator (catching a
+      copy-pasted placeholder), not merely that a mapping key is present. A gate that can
+      be satisfied by a placeholder reproduces the exact "self-audit that doesn't audit"
+      failure the brief names in its own title.
+    answer: >
+      Confirmed — coverage test checks for a real, unique per-indicator test and
+      fixture, not key presence alone. 2026-09-29.
+
+# The one field with no default.
 out_of_scope:
-  - <thing this PRD explicitly does not do>
+  - No new `datapoint_status` enum value (e.g. `FROZEN`) — detection lives in a
+    read-outside-ingest view/RPC, never inside the write path it would be auditing.
+  - No adoption of dbt or Soda Core as a second toolchain/config source — `registry.yaml`
+    stays the single source of truth; a second config surface is the exact drift this
+    PRD exists to prevent (Option C, rejected).
+  - No fix to the two wall-clock-stamped fetchers' (DefiLlama stablecoins, validators.app)
+    underlying `source_timestamp` semantics — this PRD stops the rollup from reporting a
+    false green for them; re-plumbing their real observation-time semantics is a
+    separate, future fetcher change.
+  - No Healthchecks.io Management API integration in v1 — Postgres-computed data age is
+    the rollup's ground truth; Healthchecks remains its own independent, out-of-band
+    dead-man's-switch, unchanged.
+  - No cross-indicator or cross-asset integrity comparison — this project's permanent
+    no-composite-score, no-ranking rule applies to the integrity layer exactly as it does
+    to the market-data layer; each indicator's own frozen/freshness state is independent.
 
-# Each assumption needs a tripwire: a condition that, if it appears later, reopens G1
-# rather than quietly proceeding on a guess that has stopped being true.
 assumptions:
-  - claim: <e.g. fewer than 100 users in the first six months>
-    tripwire: <e.g. any story mentioning scale, sharding, or rate limits>
-    acceptedBy: default    # or: human
+  - claim: >
+      Soda Core's `freshness(col): warn: when > 6h, fail: when > 24h` syntax runs
+      correctly against Postgres the way dbt source freshness does.
+    tripwire: >
+      Research flagged this as UNVERIFIED — sourced from search-result summaries, not a
+      fetched page. Irrelevant if Option A (pure SQL views) is followed as decided above,
+      since neither dbt nor Soda is adopted; record only in case a future story
+      reconsiders Option C.
+    acceptedBy: default
 
-# Options the research agent surfaced, and which you picked. Recording the rejected
-# option is what stops a later story quietly re-litigating a settled decision.
+  - claim: >
+      alternative.me's Fear & Greed index updates at most once per day, so day-to-day
+      repetition of the same integer value is expected and should be declared
+      `expected_constant` rather than flagged as frozen.
+    tripwire: >
+      Research flagged our fetcher's exact update granularity as UNVERIFIED. Confirm the
+      real cadence live (check `fetched_at` spread on already-persisted rows, or the
+      vendor's own docs) before setting Fear & Greed's registry declaration — do not
+      assume daily without checking, since a shorter real cadence would mean genuine
+      staleness could hide behind an overly permissive `expected_constant` declaration.
+    acceptedBy: default
+
+  - claim: >
+      No current fetcher rounds a value on the vendor side in a way that would make real
+      movement between observations read as bit-for-bit identical, and no float64
+      recomputation (TA-Lib reseeding) produces a spurious last-ULP difference that would
+      make a genuinely frozen value read as "changed."
+    tripwire: >
+      Research flagged both directions of this as UNVERIFIED. Before committing to exact
+      `=` equality for the frozen check, spot-check a real indicator's persisted history
+      for either failure mode; if either is found, decide and document a per-indicator
+      epsilon rather than silently picking one during implementation.
+    acceptedBy: default
+
+# Options the research agent surfaced, and which the owner picked.
 chosen_approach:
-  option: <name>
-  because: <one line>
+  option: >
+    Pure SQL integrity views/RPCs computing freshness and frozen state per indicator,
+    asset and vendor from existing registry thresholds and `source_timestamp`, plus a
+    codegen step emitting a literal `IndicatorKey` TypeScript union from `registry.yaml`
+    so per-key UI wiring is a compile-time exhaustiveness check (Option A).
+  because: >
+    Keeps `registry.yaml` as the only source of truth, moves the audit outside the
+    ingest path so a stopped pipeline cannot silently stop its own audit, and turns "every
+    indicator is wired" into something `tsc` and a coverage pytest actually enforce
+    rather than a convention someone can forget.
   rejected:
-    - option: <name>
-      because: <one line>
+    - option: >
+        Detection at ingest time via a new `FROZEN` datapoint_status enum value
+        (Option B)
+      because: >
+        Enum values can never be removed once added, it touches existing status
+        constraints and every UI discriminated union, already-written history stays
+        unflagged unless separately backfilled, and a detector living inside the ingest
+        path goes silent exactly when ingest itself stops — the single biggest risk for
+        an integrity feature.
+    - option: >
+        Adopt dbt (source freshness, dbt-utils not_constant) or Soda Core as a second
+        toolchain (Option C)
+      because: >
+        Battle-tested semantics, but adds a second config surface that must be kept in
+        sync with `registry.yaml` by hand — the exact drift this PRD exists to close —
+        plus an operational surface (another job, another config file) not justified at
+        this project's scale.
