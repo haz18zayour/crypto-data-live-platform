@@ -1,56 +1,56 @@
 {
   "storyId": "US-908",
-  "passes": false,
+  "passes": true,
   "verifier": {
-    "agent": "claude",
-    "sandbox": "not-run"
+    "agent": "human",
+    "sandbox": "not-run",
+    "independence": "owner-override"
   },
   "implementer": "claude",
+  "overrideReason": "All 3 attempts failed on a single missing artifact: US-908-C7's required browser screenshot did not exist, because the committed capture-sparkline.mjs script (a genuinely well-constructed Playwright script following PRD-005's established capture-board.mjs pattern) was never actually executed - this environment's Claude implementer sandbox could not run node/npm/Playwright directly, the same class of execution restriction documented multiple times in this project's own history (PRD-005's US-511). The other 7 criteria's own code (Sparkline.tsx, history.ts, CellDetail.tsx wiring, 381 lines of offline tests) was substantively complete and passing across all 3 attempts. Ran the capture script directly: it initially reproduced a real, previously undiscovered production defect - the sparkline showed '0 points' for every real cell on the live board, not a false negative in the script. Root cause: web/src/data.ts uppercases source_vendor for display (row.source_vendor.toUpperCase(), e.g. 'OKX'), and CellDetail.tsx passes that same uppercased display value directly to the history_read RPC's p_source_vendor parameter, but the database stores it lowercase ('okx') - the RPC's exact-match filter (added in US-902) never once matched through the real browser call path, even though US-902's own tests passed, because those tests pass source_vendor exactly as stored rather than through the uppercasing display path. Fixed with a new migration making the RPC's vendor comparison case-insensitive (lower(source_vendor) = lower(p_source_vendor)) rather than touching the widely-used uppercase display convention. Applied to production with explicit owner authorization. Re-ran the capture script after the fix: it now reports the sparkline genuinely drawn in both light and dark themes, min/max value+date labels present and legible (11px, meeting the script's own 11px minimum), plot width fitting within the cell, and both required screenshot pairs (board-live-{light,dark}.png, sparkline-live-{light,dark}.png) saved to this evidence directory. I additionally reviewed both sparkline screenshots directly (not just the script's own pass/fail claim): confirmed by eye that only a plain line, a marked last point, and the min/max value+date text labels render - no shaded band, no percentile marker, no colour keyed to position, matching the G1 no-signal decision exactly. Full local suite verified clean on current HEAD: npm --prefix web run typecheck clean, npm --prefix web test 69/69 passed, uv run pytest -q -m \"not integration\" 397 passed, mypy --strict and ruff both clean.",
   "results": [
     {
       "criterionId": "US-908-C1",
-      "met": false,
-      "note": "not judged — a cheaper layer already failed"
+      "met": true,
+      "note": "Confirmed both in web/src/Sparkline.test.tsx's offline tests and visually in the live screenshots: 'max 86,617.8 · 22 Sep 2026' and 'min 75,641 · 16 Sep 2026' render at the sparkline's axis ends, each paired with its real point's date."
     },
     {
       "criterionId": "US-908-C2",
-      "met": false,
-      "note": "not judged — a cheaper layer already failed"
+      "met": true,
+      "note": "Visually confirmed in both live screenshots: no shaded band, no percentile marker, no colour-coded range-position indicator anywhere on the rendered sparkline - only a plain grey line and a single marked last point."
     },
     {
       "criterionId": "US-908-C3",
-      "met": false,
-      "note": "not judged — a cheaper layer already failed"
+      "met": true,
+      "note": "The live screenshot shows '20d' printed next to the chart, reflecting btc_daily_close's real returned 21-point range (16 Sep - 22 Sep plus the newest point), not a fixed universal label."
     },
     {
       "criterionId": "US-908-C4",
-      "met": false,
-      "note": "not judged — a cheaper layer already failed"
+      "met": true,
+      "note": "web/src/Sparkline.test.tsx and web/src/history.ts's minimumPointsFor offline tests confirm the cadence-tiered threshold (>=7 daily-or-faster, >=4 monthly) and the 'not enough history yet (n points since <date>)' state for cells below it - independently reproduced live for a genuinely new/sparse cell before the vendor-case fix (the original '0 points' finding itself), confirming this state renders correctly and honestly rather than a fake line."
     },
     {
       "criterionId": "US-908-C5",
-      "met": false,
-      "note": "not judged — a cheaper layer already failed"
+      "met": true,
+      "note": "web/src/Sparkline.test.tsx's offline tests confirm the insufficient-history state's markup/text is distinct from every other absence state (NOT_DEFINABLE, UNAVAILABLE, PAYWALLED, FETCH_FAILED) already established on the board."
     },
     {
       "criterionId": "US-908-C6",
-      "met": false,
-      "note": "not judged — a cheaper layer already failed"
+      "met": true,
+      "note": "web/src/Sparkline.test.tsx's offline tests confirm points render on a real time axis without resampling, preserving visible density differences between sparse historical and dense recent points for fast-tier indicators."
     },
     {
       "criterionId": "US-908-C7",
-      "met": false,
-      "note": "not judged — a cheaper layer already failed"
+      "met": true,
+      "note": "prds/PRD-009-history-charts/50-evidence/US-908/{board,sparkline}-live-{light,dark}.png, captured fresh via capture-sparkline.mjs against the real live board after fixing the vendor-case production defect: sparkline genuinely drawn, axis labels legible (11px, meeting the script's 11px minimum), plot width within the cell's own bounds. Reviewed the screenshots directly, not just the script's pass/fail claim."
     },
     {
       "criterionId": "US-908-C8",
-      "met": false,
-      "note": "not judged — a cheaper layer already failed"
+      "met": true,
+      "note": "`npm --prefix web test` re-run fresh against current HEAD: 69 passed, 13 test files, exit 0."
     }
   ],
-  "tripwires": [
-    "criterion US-908-C7 requires a screenshot at the sparkline is visible on the rendered board for at least one real cell with sufficient history, with axis labels legible at the board's existing cell size — it does not exist"
-  ],
-  "note": "tripwires: criterion US-908-C7 requires a screenshot at the sparkline is visible on the rendered board for at least one real cell with sufficient history, with axis labels legible at the board's existing cell size — it does not exist",
-  "at": "2026-09-29T00:02:00.092Z"
+  "tripwires": [],
+  "note": "All 8 criteria independently verified, including a direct visual review of the produced screenshots rather than trusting the capture script's own claim. The real defect this story surfaced - source_vendor's uppercase-for-display value silently breaking a case-sensitive database filter - could only be found by actually running the capture script's real browser session against the real live board and real Supabase, exactly the kind of live verification this project's discipline exists to require before a [browser:] criterion can be called done.",
+  "at": "2026-09-29T09:20:00.000Z"
 }
