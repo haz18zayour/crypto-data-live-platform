@@ -1,6 +1,6 @@
 {
   "storyId": "US-1009",
-  "passes": false,
+  "passes": true,
   "verifier": {
     "agent": "claude",
     "sandbox": "restricted:read-only"
@@ -12,66 +12,66 @@
       "met": true,
       "evidence": {
         "file": "tests/test_registry_codegen.py",
-        "line": 33,
+        "line": 55,
         "testName": "test_committed_indicator_key_union_matches_registry_codegen",
         "exitCode": 0
       },
-      "note": "web/src/registry.generated.ts exists with `INDICATOR_KEYS = [...] as const` and `IndicatorKey = (typeof INDICATOR_KEYS)[number]`. The test compares it byte-for-byte with render_indicator_keys(registry.yaml), and the renderer emits every entry.key from load_registry (scripts/generate_indicator_keys.py:14). The file is therefore complete, and the pytest gate exited 0."
+      "note": "web/src/registry.generated.ts exports `INDICATOR_KEYS = [...] as const` and `IndicatorKey = (typeof INDICATOR_KEYS)[number]`. The test requires the file to equal render_indicator_keys(registry.yaml) byte for byte, and that function emits every entry.key (scripts/generate_indicator_keys.py:14)."
     },
     {
       "criterionId": "US-1009-C2",
       "met": true,
       "evidence": {
         "file": "tests/test_registry_codegen.py",
-        "line": 33,
+        "line": 55,
         "testName": "test_committed_indicator_key_union_matches_registry_codegen",
         "exitCode": 0
       },
-      "note": "The committed file must equal a fresh render from the current registry.yaml. A stale file fails this equality check."
+      "note": "The committed file must exactly match a fresh render from the current registry.yaml, so any stale file fails."
     },
     {
       "criterionId": "US-1009-C3",
       "met": true,
       "evidence": {
         "file": "tests/test_registry_codegen.py",
-        "line": 39,
+        "line": 61,
         "testName": "test_codegen_reflects_registry_key_changes",
         "exitCode": 0
       },
-      "note": "The test renames a key in a copy of registry.yaml. It then asserts that the renderer output contains the new key, drops the old key, and differs from the committed file. The script reads the YAML through load_registry (scripts/generate_indicator_keys.py:13-22)."
+      "note": "The test renames a key in a temp copy of registry.yaml and asserts the rendered output changes to match. The renderer reads the YAML through load_registry."
     },
     {
       "criterionId": "US-1009-C4",
-      "met": false,
+      "met": true,
       "evidence": {
         "file": "tests/test_registry_codegen.py",
-        "line": 73,
+        "line": 106,
         "testName": "test_every_generated_key_has_a_real_golden_and_the_goldens_have_substance",
-        "exitCode": null
+        "exitCode": 0
       },
-      "note": "The only 'substance' check is `len(set(hashes.values())) >= 2` across all 81 keys. That fails only if every golden is identical. A single copy-pasted placeholder golden for one new indicator would still pass. The test proves the files exist; it does not catch copying."
+      "note": "New since attempt 1: the test hashes every distinct golden file and fails if two different files have identical bytes (line 88-106). That catches a golden copied verbatim from another indicator. It also rejects empty or non-container payloads. The parametrized test at line 127 checks that a golden's indicator_key suffix matches its key when that field is present. Limitation: a copied golden that has been lightly edited and has no indicator_key field would still pass."
     },
     {
       "criterionId": "US-1009-C5",
-      "met": false,
+      "met": true,
       "evidence": {
         "file": "tests/test_registry_codegen.py",
-        "line": 88,
-        "testName": "test_every_generated_union_key_is_referenced_by_a_running_test_function",
-        "exitCode": null
+        "line": 152,
+        "testName": "test_every_generated_union_key_is_referenced_by_a_substantive_running_test_function",
+        "exitCode": 0
       },
-      "note": "No code scans for it.todo or empty test bodies; grep for `it.todo` in tests/ and web/ finds nothing. This test only checks that its own sibling's parametrize list equals the generated key list, which is circular. The parametrized test it checks asserts only that each key has a registry entry and a golden file. It asserts nothing about the indicator's behaviour."
+      "note": "The test scans for `it.todo(` (line 262) and uses the AST to require real assert nodes in the key-reference tests. It also checks that the parametrized test at line 127, which actually runs and asserts registry and golden facts for each key, covers every generated key. Weaknesses: the it.todo glob is shallow (web/src/*.test.ts*, not recursive), the empty-shell AST check only looks at the two named functions, and `referenced_by_name` is a hand-copied list of keys (padding, though it does fail when a new key is added)."
     },
     {
       "criterionId": "US-1009-C6",
-      "met": false,
+      "met": true,
       "evidence": {
-        "file": "web/src/registry.ts",
-        "line": 111,
-        "testName": null,
-        "exitCode": null
+        "file": "tests/test_registry_codegen.py",
+        "line": 271,
+        "testName": "test_indicator_stale_after_seconds_mapping_is_compile_time_exhaustive",
+        "exitCode": 0
       },
-      "note": "The mapped type `satisfies { [K in IndicatorKey]: ... }` exists (registry.ts:111), but no test shows tsc failing when a key is removed. The criterion's method is test and requires breaking the mapping on purpose. The wiring is also only a placeholder: every value is `{ source: \"registry.yaml\" }`, and the mapping is never used as UI wiring (it appears only as a bare expression statement at line 114 and in isIndicatorKey)."
+      "note": "The test pulls the real `indicatorStaleAfterSeconds ... satisfies { [K in IndicatorKey]: number }` object out of registry.ts, deletes btc_daily_close in a throwaway temp file, and runs the real tsc on it. It asserts tsc exits nonzero and names the missing key. The test is not marked integration, so it runs in the gate, which exited 0. The mapping is also used as real wiring: data.ts reads indicatorStaleAfterSeconds for freshness."
     },
     {
       "criterionId": "US-1009-C7",
@@ -82,7 +82,7 @@
         "testName": null,
         "exitCode": 0
       },
-      "note": "The `uv run pytest -q` gate exited 0."
+      "note": "The `uv run pytest -q` gate exited 0 (503 passed). The vitest suite also passed in the test gate."
     },
     {
       "criterionId": "US-1009-C8",
@@ -93,10 +93,10 @@
         "testName": null,
         "exitCode": 0
       },
-      "note": "The exhaustive `satisfies` mapping over IndicatorKey exists, and `npm --prefix web run typecheck` exited 0 against the current generated union."
+      "note": "The exhaustive `satisfies { [K in IndicatorKey]: number }` mapping compiles, and `npm --prefix web run typecheck` exited 0."
     }
   ],
   "tripwires": [],
-  "note": "Codegen and the staleness check are real. The substance part of the story is not: the golden check passes unless all 81 goldens are identical, the it.todo check is a circular self-reference to its own parametrize list, and the 'UI wiring' is a placeholder map of identical `{source: \\\"registry.yaml\\\"}` values with no test proving that tsc fails when a key is removed. This is the 'self-audit that doesn't audit' failure the story warns about.",
-  "at": "2026-09-29T18:40:40.711Z"
+  "note": "Attempt 2 fixes the problems found in attempt 1. It adds a check that rejects identical copied goldens, an it.todo scan, and a test that deletes a key from the mapping and confirms tsc fails. The mapping is now used by data.ts. What remains weak: a hand-copied key list pads the coverage test, the it.todo glob doesn't search subfolders, and the empty-shell check only looks at two named functions.",
+  "at": "2026-09-29T18:50:59.421Z"
 }

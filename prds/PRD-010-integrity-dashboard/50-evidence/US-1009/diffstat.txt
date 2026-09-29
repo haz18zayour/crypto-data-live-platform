@@ -1,6 +1,10 @@
-.uf/events.ndjson              |  2 +
- tests/test_registry_codegen.py | 97 ++++++++++++++++++++++++++++++++++++++++++
- web/src/data.ts                | 10 ++++-
- web/src/registry.generated.ts  | 86 +++++++++++++++++++++++++++++++++++++
- web/src/registry.ts            | 96 ++++++++++++++++++++++++++++++++++++++++-
- 5 files changed, 287 insertions(+), 4 deletions(-)
+.uf/events.ndjson                                  |   5 +
+ SESSION.md                                         |   8 +-
+ .../50-evidence/US-1009/diffstat.txt               |   6 +
+ .../50-evidence/US-1009/gates.json                 |  26 ++
+ .../50-evidence/US-1009/verdict.json               | 102 +++++++
+ tests/test_registry_codegen.py                     | 327 +++++++++++++++++++++
+ web/src/data.ts                                    |  17 +-
+ web/src/registry.generated.ts                      |  86 ++++++
+ web/src/registry.ts                                |  95 +++++-
+ 9 files changed, 661 insertions(+), 11 deletions(-)
