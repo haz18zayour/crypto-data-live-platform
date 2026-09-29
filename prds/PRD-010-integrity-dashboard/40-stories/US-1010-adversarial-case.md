@@ -1,5 +1,5 @@
 ---
-id: US-1007
+id: US-1010
 title: The adversarial case — a real frozen sequence trips the flag, propagation to a derived indicator, a wall-clock fetcher never shows green, a stale integrity read is visible as stale, and the coverage gate rejects a placeholder
 priority: 4
 touches:

@@ -4,8 +4,8 @@
   "title": "Integrity dashboard — the self-audit that actually audits",
   "product": "crypto-data-live-platform",
   "branch": "feat/prd-010-integrity-dashboard",
-  "inputDigest": "7ae9b4d4f60474bf",
-  "compiledAt": "2026-09-29T15:12:07.159Z",
+  "inputDigest": "4fba543994fb05bd",
+  "compiledAt": "2026-09-29T20:39:34.883Z",
   "stories": [
     {
       "id": "US-1008",
@@ -650,13 +650,13 @@
       ]
     },
     {
-      "id": "US-1007",
+      "id": "US-1010",
       "title": "The adversarial case — a real frozen sequence trips the flag, propagation to a derived indicator, a wall-clock fetcher never shows green, a stale integrity read is visible as stale, and the coverage gate rejects a placeholder",
-      "source": "prds/PRD-010-integrity-dashboard/40-stories/US-1007-adversarial-case.md",
+      "source": "prds/PRD-010-integrity-dashboard/40-stories/US-1010-adversarial-case.md",
       "description": "As the owner, I want this PRD's five hardest claims proven directly against realistic scenarios,\nnot just asserted by the individual stories' own narrower unit tests — the same adversarial\ndiscipline every prior PRD in this project has closed with.",
       "criteria": [
         {
-          "id": "US-1007-C1",
+          "id": "US-1010-C1",
           "text": "The exact boundary, proven directly, not assumed from the SQL alone",
           "method": {
             "kind": "test",
@@ -664,7 +664,7 @@
           }
         },
         {
-          "id": "US-1007-C2",
+          "id": "US-1010-C2",
           "text": "The finding that motivated this whole PRD, proven end to end — a derived indicator whose own values are moving is still correctly flagged, because what matters is its root's honesty, not its own superficial variance",
           "method": {
             "kind": "test",
@@ -672,7 +672,7 @@
           }
         },
         {
-          "id": "US-1007-C3",
+          "id": "US-1010-C3",
           "text": "The false-comfort gap closed, proven at the boundary",
           "method": {
             "kind": "test",
@@ -680,7 +680,7 @@
           }
         },
         {
-          "id": "US-1007-C4",
+          "id": "US-1010-C4",
           "text": "The panel cannot present a false all-clear from an old snapshot",
           "method": {
             "kind": "test",
@@ -688,7 +688,7 @@
           }
         },
         {
-          "id": "US-1007-C5",
+          "id": "US-1010-C5",
           "text": "The gate resists exactly the gaming research warned about",
           "method": {
             "kind": "test",
@@ -696,7 +696,7 @@
           }
         },
         {
-          "id": "US-1007-C6",
+          "id": "US-1010-C6",
           "text": "The owner opens the live integrity panel and the board, confirms at least one real or deliberately-seeded frozen indicator shows its badge with a correct date, confirms the freshness rollup shows real per-vendor ages with the two wall-clock fetchers reading \"unmeasurable\" rather than green, and confirms nothing about the panel implies a judgement (a score, a colour ranking, a composite health number) beyond the honest per-source facts this PRD computes",
           "method": {
             "kind": "human",
@@ -704,7 +704,7 @@
           }
         },
         {
-          "id": "US-1007-C7",
+          "id": "US-1010-C7",
           "text": "The full offline suite stays green",
           "method": {
             "kind": "cmd",
@@ -712,7 +712,7 @@
           }
         },
         {
-          "id": "US-1007-C8",
+          "id": "US-1010-C8",
           "text": "The full web suite and typecheck stay green",
           "method": {
             "kind": "cmd",
