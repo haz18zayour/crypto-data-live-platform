@@ -47,5 +47,5 @@
     "criterion US-1005-C7 requires a screenshot at load the live board at http://localhost:5174, open the integrity panel, and visually confirm every registered vendor appears exactly once, the two wall-clock-stamped vendors (DefiLlama stablecoin supply's vendor, validators.app) show \"unmeasurable\" rather than green, and no vendor is silently missing from the rollup — it does not exist"
   ],
   "note": "tripwires: criterion US-1005-C7 requires a screenshot at load the live board at http://localhost:5174, open the integrity panel, and visually confirm every registered vendor appears exactly once, the two wall-clock-stamped vendors (DefiLlama stablecoin supply's vendor, validators.app) show \"unmeasurable\" rather than green, and no vendor is silently missing from the rollup — it does not exist",
-  "at": "2026-09-29T20:07:07.859Z"
+  "at": "2026-09-29T20:09:57.855Z"
 }

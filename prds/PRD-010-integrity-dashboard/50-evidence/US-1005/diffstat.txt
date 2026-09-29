@@ -1,8 +1,12 @@
-.uf/events.ndjson               |   2 +
- web/src/App.tsx                 |   4 +
- web/src/IntegrityPanel.test.tsx | 184 ++++++++++++++++++++++++++++++++++++++++
- web/src/IntegrityPanel.tsx      | 143 +++++++++++++++++++++++++++++++
- web/src/board.ts                |   2 +
- web/src/data.ts                 |   5 +-
- web/src/styles.css              |  81 ++++++++++++++++++
- 7 files changed, 420 insertions(+), 1 deletion(-)
+.uf/events.ndjson                                  |   5 +
+ SESSION.md                                         |  10 +-
+ .../50-evidence/US-1005/diffstat.txt               |   8 +
+ .../50-evidence/US-1005/gates.json                 |  26 +++
+ .../50-evidence/US-1005/verdict.json               |  51 ++++++
+ web/src/App.tsx                                    |   4 +
+ web/src/IntegrityPanel.test.tsx                    | 184 +++++++++++++++++++++
+ web/src/IntegrityPanel.tsx                         | 143 ++++++++++++++++
+ web/src/board.ts                                   |   2 +
+ web/src/data.ts                                    |   5 +-
+ web/src/styles.css                                 |  81 +++++++++
+ 11 files changed, 516 insertions(+), 3 deletions(-)
