@@ -34,10 +34,10 @@ open prds/PRD-005-dashboard/20-decisions.yaml
 | PRD-007-onchain | 8 | 8 | **all green** |
 | PRD-008-macro-flows | 8 | 8 | **all green** |
 | PRD-009-history-charts | 9 | 9 | **all green** |
-| PRD-010-integrity-dashboard | 7 | 4 | 4/7 |
+| PRD-010-integrity-dashboard | 7 | 5 | 5/7 |
 | PRD-012-cadence-split | 6 | 6 | **all green** |
 
-Spend to date: **$121.42** Claude · **312794k** Codex tokens.
+Spend to date: **$121.42** Claude · **314796k** Codex tokens.
 
 ## What happened
 
@@ -938,6 +938,12 @@ Spend to date: **$121.42** Claude · **312794k** Codex tokens.
 - 19:34  US-1004 started, attempt 3 (codex)
 - 19:49  US-1004 — codex finished `9be0b282` · 2504k tok
 - 19:50  US-1004 **rejected** — 0/7 criteria, judged by claude
+- 19:50  ⏸ **gate opened** — US-1004 has failed 3 times — is the story wrong?
+- 22:59  ▶ gate answered **skip** — All 3 attempts failed purely on the structurally-unprovable browser-screenshot criterion. Ran the capture script myself and visually confirmed correct rendering. See verdict.json overrideReason.
+- 22:59  US-1004 **PASSED** — 7/7 criteria, judged by human
+- 19:59  US-1005 started, attempt 1 (codex)
+- 20:05  US-1005 — codex finished `80590e14` · 2002k tok
+- 20:07  US-1005 **rejected** — 0/7 criteria, judged by claude
 
 <!-- uf:generated:end -->
 
