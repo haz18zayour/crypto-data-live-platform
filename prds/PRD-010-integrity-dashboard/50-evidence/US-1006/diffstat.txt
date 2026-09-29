@@ -1,0 +1,3 @@
+.uf/events.ndjson                  |  2 ++
+ scripts/generate_indicator_keys.py | 41 ++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 43 insertions(+)
