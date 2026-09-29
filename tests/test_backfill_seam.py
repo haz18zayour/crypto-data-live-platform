@@ -259,7 +259,7 @@ def test_backfilled_overlap_matches_fresh_independent_live_endpoint_value(
 
     assert backfill_origin == "backfill"
     assert "stablecoincharts/Ethereum" in backfill_endpoint
-    assert "/stablecoincharts/{chain}" in backfill_field
+    assert "/stablecoincharts/Ethereum" in backfill_field
     assert backfill_timestamp.date() == live_read_time.date()
     assert reference_period == live_read_time.date().isoformat()
 
@@ -272,3 +272,75 @@ def test_backfilled_overlap_matches_fresh_independent_live_endpoint_value(
     assert Decimal(str(backfill_value)) == Decimal(str(live_value)) == live.value == seam_value
     assert any("/stablecoincharts/Ethereum" in url for url in requested_urls)
     assert requested_urls[-1] == DEFILLAMA_STABLECOINCHAINS_ENDPOINT
+
+
+@pytest.mark.integration
+def test_live_backfilled_and_live_defillama_endpoints_agree_at_the_real_seam(
+    postgres: psycopg.Connection[tuple[object, ...]],
+) -> None:
+    # The real cross-vendor-endpoint seam check research's blind-spot analysis calls
+    # for: hit the REAL /stablecoincharts/{chain} (backfill) and /stablecoinchains
+    # (live) endpoints independently - not a replay of one against itself - and confirm
+    # they agree for the same chain on the same day. This test alone caught a real,
+    # previously undiscovered defect: DefiLlamaStablecoinChartEntry's extra="forbid"
+    # rejected every real /stablecoincharts response outright (it carries several
+    # undeclared fields this project doesn't read), so the entire recipe was completely
+    # non-functional against live data despite every offline (fixture-based) test
+    # passing. Fixed in ingest/schemas.py before this test could pass.
+    # The real endpoint returns full history (thousands of rows per chain since 2017)
+    # with no server-side date filter. Persisting all of it would make this test take
+    # tens of minutes for no added assurance - trimming to the last few days keeps the
+    # real API call, real schema validation, and real persist path, while only writing
+    # a handful of rows.
+    cutoff = datetime.now(UTC) - timedelta(days=5)
+
+    def recent_defillama_recipe(recipe_entry):
+        runs = backfill_defillama_stablecoin_supply(recipe_entry)
+        return tuple(
+            run
+            for run in runs
+            if any(
+                value.source_timestamp >= cutoff
+                for value in run.indicators.values()
+            )
+        )
+
+    row_ids = run_backfill(
+        postgres,
+        indicator_key="stablecoin_supply",
+        recipes={
+            **BACKFILL_RECIPES,
+            "defillama_stablecoincharts": recent_defillama_recipe,
+        },
+    )
+    assert row_ids
+
+    today = datetime.now(UTC).date()
+    backfilled = postgres.execute(
+        """
+        select value, endpoint, source_field
+        from datapoints
+        where id = any(%s)
+          and asset = 'ETH'
+          and source_timestamp::date = %s
+        """,
+        (list(row_ids), today),
+    ).fetchone()
+    assert backfilled is not None, "no backfilled ETH row for today's date"
+    backfill_value, backfill_endpoint, backfill_field = backfilled
+    assert "stablecoincharts/Ethereum" in backfill_endpoint
+    assert "stablecoincharts/Ethereum" in backfill_field
+
+    live = fetch_stablecoin_supply("ETH")
+    assert isinstance(live, DefiLlamaStablecoinSupplyOk)
+
+    # Both figures are read minutes apart from two genuinely different live endpoints,
+    # and a real, continuously-updating on-chain total can move slightly between the
+    # two calls - this is not a splice, it is two honest reads of a moving number. A
+    # gross mismatch (wrong chain, wrong units, stale-by-days) would fail this bound;
+    # ordinary intraday drift will not.
+    relative_drift = abs(Decimal(str(backfill_value)) - live.value) / live.value
+    assert relative_drift < Decimal("0.05"), (
+        f"backfill={backfill_value} vs live={live.value} drift={relative_drift:.4%} - "
+        "too large to be ordinary intraday movement; suspect a real splice"
+    )

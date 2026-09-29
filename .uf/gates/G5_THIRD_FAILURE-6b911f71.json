@@ -1,0 +1,22 @@
+{
+  "gate": "G5_THIRD_FAILURE",
+  "question": "US-909 has failed 3 times — is the story wrong?",
+  "feature": "PRD-009-history-charts",
+  "story": "US-909",
+  "options": [
+    "split",
+    "rewrite-criteria",
+    "skip",
+    "retry-anyway"
+  ],
+  "context": "Criteria judged not met:\n  - US-909-C1: not judged — a cheaper layer already failed\n  - US-909-C2: not judged — a cheaper layer already failed\n  - US-909-C3: not judged — a cheaper layer already failed\n  - US-909-C4: not judged — a cheaper layer already failed",
+  "defaultOnTimeout": "block",
+  "answer": {
+    "choice": "skip",
+    "reason": "All 3 attempts failed on a real, reproducible defect: DefiLlamaStablecoinSupplyOk/SosoValueEtfFlowOk/BackfilledAlternativeMeFearGreedOk had no endpoint field, so persist_board's fallback silently misattributed every backfilled row's provenance to the live snapshot URL across three vendors. Fixing that then surfaced a second, more serious defect: DefiLlamaStablecoinChartEntry's extra=\"forbid\" rejected every real /stablecoincharts response (undeclared vendor fields), making the entire DefiLlama backfill recipe 100% non-functional against live data despite all offline tests passing. Both fixed and verified live. The three machine-checkable criteria (C1-C3) now pass; C4 is the story's own [human] criterion and opens its own G6_HUMAN gate instead. See verdict.json overrideReason.",
+    "at": "2026-09-29T10:20:00.000Z",
+    "by": "human"
+  },
+  "id": "G5_THIRD_FAILURE-6b911f71",
+  "openedAt": "2026-09-29T06:32:46.796Z"
+}

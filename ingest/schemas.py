@@ -492,7 +492,16 @@ class DefiLlamaStablecoinChainsResponse(
 class DefiLlamaStablecoinChartEntry(BaseModel):
     """One historical stablecoin-supply total from DefiLlama."""
 
-    model_config = ConfigDict(extra="forbid", frozen=True)
+    # Confirmed live, 2026-09-29: real /stablecoincharts/{chain} entries also carry
+    # totalCirculating, totalMintedUSD, and - on more recent entries only -
+    # totalUnreleased and totalBridgedToUSD, none of which this project reads. The exact
+    # set present varies by entry date, so extra="forbid" here (as used for the simpler
+    # /stablecoinchains snapshot) would reject every real historical row. extra="allow"
+    # matches the sibling DefiLlamaPeggedAmounts model's own established tolerance for
+    # this vendor's many currency/derived breakdown fields, while date and
+    # totalCirculatingUSD - the only field this project actually reads - stay strictly
+    # required and typed.
+    model_config = ConfigDict(extra="allow", frozen=True)
 
     date: StrictStr
     total_circulating_usd: DefiLlamaPeggedAmounts = Field(

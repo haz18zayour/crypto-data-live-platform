@@ -55,6 +55,13 @@ class DefiLlamaStablecoinSupplyOk:
     published_at: datetime
     chain: str
     source_field: str = DEFILLAMA_SOURCE_FIELD
+    # None for the live fetcher, which relies on persist_board's fallback to the
+    # registry's own static endpoint (correct there, since that IS the live snapshot
+    # URL). Backfill sets this explicitly to the per-chain stablecoincharts URL it
+    # actually called - otherwise persist_board's duck-typed getattr(result, "endpoint",
+    # None) silently falls back to the live URL for a backfilled row too, misrepresenting
+    # where the historical value actually came from.
+    endpoint: str | None = None
     status: Literal["OK"] = field(default="OK", init=False)
 
     def __post_init__(self) -> None:
@@ -160,6 +167,7 @@ def backfill_defillama_stablecoin_supply(
                             source_field=DEFILLAMA_CHARTS_SOURCE_FIELD.format(
                                 chain=chain
                             ),
+                            endpoint=endpoint,
                         ),
                     )
                 )

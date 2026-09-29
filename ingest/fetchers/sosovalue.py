@@ -34,6 +34,12 @@ class SosoValueEtfFlowOk:
     reference_period: str
     published_at: datetime
     source_field: str = SOSOVALUE_SOURCE_FIELD
+    # None for the live fetcher (persist_board's fallback to the registry's own static
+    # endpoint is correct there). Backfill sets this explicitly, since the registry's
+    # static endpoint hardcodes symbol=BTC&limit=1 - a backfilled ETH/SOL row, or any
+    # row using the real backfill limit, would otherwise misrepresent both which asset
+    # and which query actually produced it.
+    endpoint: str | None = None
     status: Literal["OK"] = field(default="OK", init=False)
 
     def __post_init__(self) -> None:
@@ -295,6 +301,10 @@ def backfill_sosovalue_etf_flows(
                             source_field=(
                                 f"{SOSOVALUE_SOURCE_FIELD}; request limit={limit}; "
                                 f"{range_detail}"
+                            ),
+                            endpoint=(
+                                f"{SOSOVALUE_SUMMARY_HISTORY_ENDPOINT}?symbol={asset}"
+                                f"&country_code=US&limit={limit}"
                             ),
                         ),
                     )

@@ -62,6 +62,10 @@ class BackfilledAlternativeMeFearGreedOk:
     reference_period: str
     published_at: datetime
     source_field: str = ALTERNATIVE_ME_SOURCE_FIELD
+    # The registry's static endpoint hardcodes ?limit=1 (the live query); backfill
+    # actually calls ALTERNATIVE_ME_FNG_HISTORY_ENDPOINT (?limit=0), a different URL,
+    # so this must be set explicitly rather than left to persist_board's live fallback.
+    endpoint: str | None = None
     status: Literal["OK"] = field(default="OK", init=False)
 
     def __post_init__(self) -> None:
@@ -132,6 +136,7 @@ def backfill_alternative_me_fear_greed(
                     source_timestamp=timestamp,
                     reference_period=timestamp.date().isoformat(),
                     published_at=timestamp,
+                    endpoint=ALTERNATIVE_ME_FNG_HISTORY_ENDPOINT,
                 )
             )
     except (
