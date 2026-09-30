@@ -35,9 +35,10 @@ open prds/PRD-005-dashboard/20-decisions.yaml
 | PRD-008-macro-flows | 8 | 8 | **all green** |
 | PRD-009-history-charts | 9 | 9 | **all green** |
 | PRD-010-integrity-dashboard | 7 | 7 | **all green** |
+| PRD-011-deploy | 5 | 0 | 0/5 |
 | PRD-012-cadence-split | 6 | 6 | **all green** |
 
-Spend to date: **$121.42** Claude · **314796k** Codex tokens.
+Spend to date: **$123.07** Claude · **314796k** Codex tokens.
 
 ## What happened
 
@@ -973,6 +974,11 @@ Spend to date: **$121.42** Claude · **314796k** Codex tokens.
 - 00:05  ▶ gate answered **met** — Owner reviewed the live board at localhost:5173 - long-short ratio row shows 'unchanged since 29 Sep 2026' plain grey text under an unchanged OK status, and the Integrity panel's freshness rollup shows real per-vendor ages with DefiLlama and validators.app correctly unmeasurable, never green. Confirmed no judgement implied anywhere.
 - 00:05  👤 you judged US-1010 **met**
 - 00:05  US-1010 **PASSED** — 8/8 criteria, judged by human
+- 08:27  researched PRD-011-deploy — 16 sources · $1.65
+- 12:56  **PRD-011-deploy** compiled — 5 stories
+- 13:08  US-1101 started, attempt 1 (codex)
+- 13:08  US-1101 — codex finished `993c1fd1`
+- 13:11  US-1101 **rejected** — 0/5 criteria, judged by claude
 
 <!-- uf:generated:end -->
 
