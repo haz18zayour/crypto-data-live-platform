@@ -9,7 +9,7 @@ Do not hand-edit it — it is regenerated. The hand-written sections below it su
 
 ## ▶ Resume here
 
-**4 uncommitted file(s) — the runner will not start**
+**1 uncommitted file(s) — the runner will not start**
 
 A previous session edited source and did not commit. uf refuses to run on a dirty tree rather than auto-committing someone else's half-finished work.
 
@@ -21,7 +21,7 @@ review the diff, then: git add -A && git commit
 
 **Left in flight by the previous session:**
 
-- 4 uncommitted file(s): prds/PRD-011-deploy/30-spec.md, prds/PRD-011-deploy/40-stories/US-1103-first-deploy-and-access.md, prds/PRD-011-deploy/40-stories/US-1106-worker-scaffold.md, prds/PRD-011-deploy/40-stories/US-1107-deploy-workflow.md
+- 1 uncommitted file(s): .github/workflows/deploy-web.yml
 
 **Last handoff note:** **2026-09-15 — STOPPED HERE. PRD-007 is fully specced and compiled (8 stories, 62 criteria,
 
@@ -39,7 +39,7 @@ review the diff, then: git add -A && git commit
 | PRD-008-macro-flows | 8 | 8 | **all green** |
 | PRD-009-history-charts | 9 | 9 | **all green** |
 | PRD-010-integrity-dashboard | 7 | 7 | **all green** |
-| PRD-011-deploy | 5 | 1 | 1/5 |
+| PRD-011-deploy | 5 | 2 | 2/5 |
 | PRD-012-cadence-split | 6 | 6 | **all green** |
 
 Spend to date: **$123.07** Claude · **314796k** Codex tokens.
@@ -1005,6 +1005,7 @@ Spend to date: **$123.07** Claude · **314796k** Codex tokens.
 - 13:54  ⏸ **gate opened** — US-1102 has failed 3 times — is the story wrong?
 - 17:00  ▶ gate answered **rewrite-criteria** — All 3 attempts produced 0 tokens/exitCode 1 - confirmed codex quota exhaustion via direct probe, still blocked until Oct 4th. Owner has chosen direct implementation for this exact situation before today. Re-identifying as US-1107.
 - 13:56  **PRD-011-deploy** compiled — 5 stories
+- 17:05  US-1107 **PASSED** — 6/6 criteria, judged by human
 
 <!-- uf:generated:end -->
 
