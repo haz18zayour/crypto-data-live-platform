@@ -1,0 +1,20 @@
+[
+  {
+    "name": "typecheck",
+    "run": "node -e \"const f=require('fs'),c=require('child_process');let r=0;const run=(cmd)=>{try{c.execSync(cmd,{stdio:'inherit'})}catch(e){r=1}};if(f.existsSync('web/package.json'))run('npm --prefix web run typecheck');if(f.existsSync('pyproject.toml'))run('uv run mypy ingest --strict');process.exit(r)\"",
+    "exitCode": 0,
+    "output": "\n> crypto-data-live-web@0.0.0 typecheck\n> tsc -b --pretty false\n\nSuccess: no issues found in 24 source files\r\n"
+  },
+  {
+    "name": "test",
+    "run": "node -e \"const f=require('fs'),c=require('child_process'),p=require('path');const tmp=f.mkdtempSync(p.join(process.cwd(),'.tmp','systemtemp-'));const env={...process.env,TEMP:tmp,TMP:tmp};let r=0;const run=(cmd)=>{try{c.execSync(cmd,{stdio:'inherit',env})}catch(e){r=1}};if(f.existsSync('web/package.json'))run('npm --prefix web test');if(f.existsSync('tests'))run('uv run pytest -q');process.exit(r)\"",
+    "exitCode": 0,
+    "output": "\n> crypto-data-live-web@0.0.0 pretest\n> node scripts/ensure-playwright-browsers.mjs\n\nPlaywright browsers already installed.\n\n> crypto-data-live-web@0.0.0 test\n> vitest run --configLoader runner\n\n\n RUN  v4.1.9 C:/Users/user/Desktop/Projects/crypto-data-live-platform/web\n\n\n Test Files  16 passed (16)\n      Tests  83 passed (83)\n   Start at  16:42:53\n   Duration  5.94s (transform 1.77s, setup 3.75s, import 3.81s, tests 10.21s, environment 11.55s)\n\n........................................................................ [ 14%]\r\n........................................................................ [ 28%]\r\n........................................................................ [ 42%]\r\n........................................................................ [ 56%]\r\n........................................................................ [ 70%]\r\n........................................................................ [ 84%]\r\n........................................................................ [ 99%]\r\n.....                                                                    [100%]\r\n509 passed, 77 deselected in 105.41s (0:01:45)\r\n"
+  },
+  {
+    "name": "US-1102-C6",
+    "run": "uv run pytest -q",
+    "exitCode": 0,
+    "output": "........................................................................ [ 14%]\r\n........................................................................ [ 28%]\r\n........................................................................ [ 42%]\r\n........................................................................ [ 56%]\r\n........................................................................ [ 70%]\r\n........................................................................ [ 84%]\r\n........................................................................ [ 99%]\r\n.....                                                                    [100%]\r\n509 passed, 77 deselected in 100.34s (0:01:40)\r\n"
+  }
+]
