@@ -15,9 +15,16 @@ GitHub Actions `schedule:` + cron-job.org `repository_dispatch` triggers ·
 Healthchecks.io dead-man's-switch.
 See `project-documents/10_Technical_Architecture.md`.
 
-> **Compute location is UNDECIDED** until PRD-001's reachability spike runs. Binance returns
-> HTTP 451 to US IPs, which is what forced the prior system onto a self-hosted runner that
-> later died silently. Do not assume GitHub-hosted runners can reach every venue — measure it.
+> **Compute location: GitHub-hosted runners, settled by evidence, not assumption.** Binance
+> returns HTTP 451 to US IPs, which is what forced the prior system onto a self-hosted runner
+> that later died silently — this project avoids Binance entirely (OKX is the spot/derivatives
+> venue) and never assumed reachability for any vendor it does use. Confirmed by hundreds of
+> real GitHub Actions runs across all three ingest tiers (daily, 8h medium, 5-minute fast)
+> successfully reaching every current vendor (okx, coinmetrics, fred, defillama, sosovalue,
+> alternative.me, helius, validators_app) with no unreachable-venue failures. If a new vendor
+> is ever added, measure its reachability from the actual runner before assuming it — this
+> project's own PRD-001 reachability story was rejected twice for asserting this without
+> proof, which is exactly the mistake to not repeat.
 
 **This product's one rule above all others:** it displays market data and **makes no
 judgement about it**. No composite score, no signal, no ranking. A wrong number must look
