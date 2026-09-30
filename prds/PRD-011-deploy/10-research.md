@@ -1,53 +1,97 @@
-# PRD-000 · Research
+# PRD-011 · Deploy behind Cloudflare Access: research
 
-<!--
-WRITTEN BY `/pre-prd-research`. Do not write this by hand, and do not let it continue into
-the spec — the skill hard-stops here on purpose. This file is the deliverable.
+## What we already knew, and whether it still holds
 
-It runs two things in parallel: a research agent investigating the technical landscape, and
-an adversarial interrogation of the human. Both land here.
--->
+| Claim from our knowledge base / architecture | Still true? | What the source says | Citation |
+|---|---|---|---|
+| Cloudflare Pages is the frontend host (arch doc, "owner already deploys here") | **Holds, but it is no longer where Cloudflare is heading** | Pages is not deprecated. Cloudflare's own migration guide says Workers has "a distinctly broader set of features." Search-result summaries (not fetched, so treat as secondary) say that since March 2026 Workers matches Pages for static assets and custom domains, and that "Pages is still supported for existing projects; new work goes to Workers." | https://developers.cloudflare.com/workers/static-assets/migration-guides/migrate-from-pages/ |
+| "Pages: connect git repo or `wrangler pages deploy`" (KB hosting) | **Holds, with a caveat the KB leaves out** | "If you deploy using the Git integration, you cannot switch to Direct Upload later." You have to delete the project and recreate it. | https://developers.cloudflare.com/pages/platform/known-issues/ |
+| Pages free tier: 500 builds/mo | **Holds** | 500 builds/month, 1 concurrent build, 20-minute build timeout, 20,000 files, 25 MiB max asset size, unlimited preview deployments. | https://developers.cloudflare.com/pages/platform/limits/ |
+| Pages free tier: "unlimited static requests and bandwidth" | **Not re-verified.** The limits page I fetched doesn't cover bandwidth. | — | **UNVERIFIED** |
+| Workers free: 100k req/day, 10 ms CPU | **Not re-verified** | — | **UNVERIFIED** |
+| Cloudflare Access free "up to 50 users" (15_Services row) | **Holds, per search snippet only** | Free plan covers up to 50 users. Default session is 24h, configurable from immediate timeout up to one month. | https://developers.cloudflare.com/cloudflare-one/identity/users/session-management/ (session duration, fetched); 50-user figure from search snippet only |
+| Arch: "Auth stays entirely at the edge; no service-role key can reach the browser because the browser never holds one" | **Misleading. It is true for the page, not the data.** | The browser holds `VITE_SUPABASE_ANON_KEY` (`web/src/data.ts:57-75`) and calls Supabase directly. Migrations grant `SELECT` on `datapoints`, `datapoints_read`, `board_read`, `corroborations`, `corroborations_read`, and `EXECUTE` on `history_read` and `integrity_read`, to `anon` (e.g. `supabase/migrations/20260928120000_add_datapoint_origin_and_filter_live_reads.sql:27,53`, `20260929120000_create_integrity_read_rpc.sql:214`). Supabase says the browser key's safety "is entirely dependent on Row Level Security." Access puts nothing in front of `*.supabase.co`. | https://supabase.com/docs/guides/getting-started/api-keys |
+| 15_Services: browser key is `VITE_SUPABASE_ANON_KEY` | **Stale, and it runs out soon** | Supabase is "deprecating the `anon` and `service_role` keys by the end of 2026" in favour of `sb_publishable_…` / `sb_secret_…`. Today is 2026-09-30, so that is about 3 months away. | https://supabase.com/docs/guides/getting-started/api-keys |
+| Pages "Enable access policy" gates the site (implied by the brief: "gated by Cloudflare Access") | **Wrong as a default** | That toggle "will only protect your preview deployments … **not** your production domain or custom domains." | https://developers.cloudflare.com/pages/configuration/preview-deployments/ |
+| KB has nothing on the Pages build Node version | **Gap. Cloudflare's own known-issues page is also stale here.** | Known-issues says the default is Node `12.18.0`. The build-image page says v1=12.18.0, v2=18.17.1, v3=22.16.0, and v1/v2 are being deprecated. You pin with `NODE_VERSION`, `.nvmrc` or `.node-version`. Vite 7 and TS 5.9 will not build on Node 12 or 18.17. | https://developers.cloudflare.com/pages/configuration/build-image/ |
 
 ## Existing implementations
-<!-- How this is actually built in the wild for this stack. Cite sources; flag anything
-     recalled from memory as UNVERIFIED. -->
+
+- **Pages + Access, done the documented way.** Cloudflare's instructions for putting production `*.pages.dev` behind Access take five steps: enable the access policy, edit the generated Access app and delete the `*` from the subdomain field, re-enable the policy, then confirm there are two Access apps, one for `<project>.pages.dev` and one for `*.<project>.pages.dev`. A custom domain needs a third, separately created self-hosted Access application (https://developers.cloudflare.com/pages/platform/known-issues/). The community threads in the search results say people repeatedly get this wrong and leave production open. That is search snippet only; see "Cloudflare Access protect production pages.dev" in Sources.
+- **Workers with static assets + worker-level Access.** In the dashboard you pick "Protect this Worker behind Access", choose scope ("previews only or all traffic"), set a policy and apply it. "Every request is checked before your Worker runs." The authenticated identity is available as `ctx.access` (https://developers.cloudflare.com/workers/configuration/cloudflare-access/). An SPA needs `"not_found_handling": "single-page-application"` set explicitly; Pages guessed it automatically (https://developers.cloudflare.com/workers/static-assets/migration-guides/migrate-from-pages/).
+- **CI-driven Pages deploy.** `cloudflare/wrangler-action@v4` running `pages deploy <dir> --project-name=<name>`. It needs `CLOUDFLARE_API_TOKEN` (scope: Account → Cloudflare Pages → Edit) and `CLOUDFLARE_ACCOUNT_ID`, plus job permissions `contents: read, deployments: write`. It deploys to whatever branch triggered it unless you set `branch` (https://developers.cloudflare.com/pages/how-to/use-direct-upload-with-continuous-integration/).
+- **SPA serving on Pages.** With no top-level `404.html`, Pages treats the project as an SPA and routes every path to `/`. It sends `Cache-Control: public, max-age=0, must-revalidate` plus ETags, and Cloudflare warns against adding your own caching on the domain (https://developers.cloudflare.com/pages/configuration/serving-pages/). Our app has one route, so this is harmless.
 
 ## Approach options
 
-### Option A — <name>
-- **How it works:**
-- **Trade-offs:**
-- **Cost:**
+| # | How it works | Trade-offs | Cost | Who uses it |
+|---|---|---|---|---|
+| **A. Pages Git integration + the Access known-issue procedure** | Connect the repo with root dir `web/` and build command `npm run build`. `VITE_*` values go in the Pages dashboard for **both** Production and Preview. Protect production `pages.dev` and previews with two Access apps (known-issues steps). | No new workflow file, so no blast-radius CI change. But it deploys on every push to every branch, and a red test suite does not block a deploy. The setup is irreversible ("cannot switch to Direct Upload later"). Protection sits in a dashboard where you can't diff it, and the wildcard step is easy to undo by accident. | $0 | The default path in Cloudflare's docs |
+| **B. Pages Direct Upload from GitHub Actions** | New `deploy-web.yml`: on push to the default branch, run typecheck + vitest, then `wrangler pages deploy web/dist`. Access is set up as in A. | Deploys only after tests pass and leaves a GH run ID as evidence. It is a new CI workflow, so G4 applies, and it needs two new repo secrets. Access is still configured outside the repo. | $0 (Actions minutes) | Cloudflare's CI guide |
+| **C. Workers static assets + worker-level Access (all traffic)** | `wrangler.jsonc` with `assets.directory = web/dist` and `not_found_handling: single-page-application`. Deploy via `wrangler deploy` from Actions, as in B. In the dashboard, "Protect this Worker behind Access", scope = all traffic. | **One Access setting covers `workers.dev` and preview URLs**, so there is no wildcard workaround. This is where Cloudflare is putting new features, and it's the foundation for D. The cost is that the architecture's "Cloudflare Pages" row has to change, and it is still a new CI workflow. | $0 on the free plan (**UNVERIFIED** that static asset requests are free and uncounted) | Cloudflare migration guide; community migration writeups (search snippets) |
+| **D. C + the Worker proxies Supabase reads** | The browser calls `/api/*` on the same Access-protected origin. The Worker adds the Supabase key server-side from a Worker secret. Then revoke the `anon` grants. | This is the only option where the brief's "only the owner can open it" is true of the **data** too. It adds server code and touches RLS/grants and migrations, which are blast radius. The Access session then gates the polled fetches, so the frontend has to handle expiry (see Gotchas). | $0 on the free plan (**UNVERIFIED** request cap) | Standard pattern; no source fetched for it here |
 
-### Option B — <name>
-- **How it works:**
-- **Trade-offs:**
-- **Cost:**
-
-**Recommended:** <A or B>, because <one line>.
+**Recommendation: C, with D recorded as a follow-up PRD.** Worker-level Access with "all traffic" satisfies the brief's core requirement in one setting, and Pages' default gets exactly that wrong.
 
 ## Edge cases and gotchas
-<!-- The non-obvious failure modes. What people get wrong on the first implementation. -->
+
+1. **The obvious toggle leaves production public.** Pages' "Enable access policy" protects only `<hash>.<project>.pages.dev`, not `<project>.pages.dev` (https://developers.cloudflare.com/pages/configuration/preview-deployments/). The first implementation will very likely ship an open production URL and a "protected" checkmark. The acceptance test has to hit the **production** hostname unauthenticated and assert a 302 to `<team>.cloudflareaccess.com`. A preview URL is not enough.
+2. **Two Access apps, and one wildcard deletion, have to survive dashboard edits** (https://developers.cloudflare.com/pages/platform/known-issues/). Re-toggling the Pages setting later can silently put things back to the old state (**UNVERIFIED**, inferred from the multi-step toggle procedure). The unauthenticated-probe criterion needs to be re-runnable, not one-shot.
+3. **The Pages build Node version.** Cloudflare's own pages disagree (12.18.0 on known-issues vs 22.16.0 on v3), and Vite 7 can't build on the older images (https://developers.cloudflare.com/pages/configuration/build-image/). Commit a `.node-version` rather than relying on the default.
+4. **The build reads a file outside `web/`.** `web/src/registry.ts:3` imports `../../ingest/registry.yaml?raw`. Any build context that uploads or checks out only `web/` fails. Git integration clones the whole repo, so a root dir of `web/` is fine; a CI job with sparse checkout or `working-directory` tricks is not.
+5. **`VITE_*` values are baked in at build time.** On Pages Git integration they must be set in the dashboard **per environment** (Production and Preview are separate). If Preview is missing them, `browserConfig()` throws, so every preview is a blank page (`web/src/data.ts:59`). For B/C they come from GH secrets inside the build step, and past lessons show exactly this wiring getting missed.
+6. **An open tab keeps getting data after the Access session expires.** Polling goes cross-origin to `*.supabase.co`, which Access never sees. So Access's 24h default session (https://developers.cloudflare.com/cloudflare-one/identity/users/session-management/) is only checked on page load. That is fine for A–C. For D it flips: same-origin fetches after expiry get redirected. Cloudflare's fix is to send `X-Requested-With: XMLHttpRequest` so expired sessions return `401` instead of failing silently (same source). For this product, a silently failing fetch would show as "stale" when the cause is auth, which is exactly the "wrong number that looks right" failure.
+7. **The legacy anon key dies around the end of 2026** (https://supabase.com/docs/guides/getting-started/api-keys). If the deployed bundle carries a legacy JWT anon key, the live page goes down with no code change. **UNVERIFIED:** whether `sb_publishable_…` keys work in the `Authorization: Bearer` header the app currently sends (`web/src/data.ts:75`). I recall that non-JWT keys are meant for the `apikey` header only. Test this before rotating.
+8. **Git integration cannot be undone** without deleting the project, which changes the URL (https://developers.cloudflare.com/pages/platform/known-issues/).
+9. **wrangler-action deploys whatever branch triggered it** unless `branch` is pinned (https://developers.cloudflare.com/pages/how-to/use-direct-upload-with-continuous-integration/). Combined with this repo's confusing branch setup (see Open questions), a feature-branch push could become "production."
+10. **Worker-level Access does not support WebSockets** and returns 403 (https://developers.cloudflare.com/workers/configuration/cloudflare-access/). This is irrelevant today because the app polls. It becomes a tripwire if anyone revisits push.
+11. **Proving it works is a live check.** "Unauthenticated request returns 302 to Access" can only be proven against the real hostname. Per our own lessons, an `[integration:]` criterion that only exists as a marked test never actually runs. Make it a committed evidence file (curl output + timestamp) produced by a real run, not a deselected pytest.
 
 ## Services and keys this PRD needs
-<!-- Anything not already READY in project-documents/15_Services_and_Credentials.md.
-     Surface it HERE, not when a story halts at 2am waiting for a human to click something. -->
 
-| Service | Why this PRD needs it | Env var | Already ready? |
+| Service | Why | Env var | Already provisioned? |
 |---|---|---|---|
-| | | | |
+| Cloudflare account + Zero Trust org (team domain) | Hosting + Access | — (dashboard) | **No.** 15_Services says "N/A until PRD-011"; the checklist item for an Access policy restricted to `zayourhassan.1@gmail.com` is unchecked |
+| Cloudflare API token (Pages Edit, or Workers Scripts Edit for C) | CI deploy (B/C only) | `CLOUDFLARE_API_TOKEN` (GH secret) | No |
+| Cloudflare account ID | CI deploy (B/C only) | `CLOUDFLARE_ACCOUNT_ID` (GH secret) | No |
+| Supabase browser key | Baked into the bundle at build time | `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY` → GH secrets (B/C) or Pages env vars (A) | Present in `.env.local` only. Not in GH secrets for a deploy job, and not in Cloudflare |
+| Access identity provider | Owner login | — | No. One-time PIN needs no setup (search snippet: "PIN expires 10 minutes after the initial request"); GitHub/Google needs an OAuth app |
 
 ## Open questions for the human
-<!-- Every question carries the research agent's own committed hypothesis, so the human is
-     correcting a draft rather than answering a blank form. Rank by decision impact. -->
 
-| # | Question | My hypothesis | Impact if wrong |
+| # | Question | My hypothesis | What breaks if I'm wrong |
 |---|---|---|---|
-| 1 | | | |
+| 1 | Is it acceptable that Access gates the **page** but the **data** stays readable by anyone holding the anon key + project URL? | **Yes for PRD-011.** It's public market data, and the key isn't in git (grep found no JWT or project URL committed). Record it as a known limit, with D as a follow-up. | If "only the owner" was meant to cover the data, A–C don't deliver the brief and D (RLS changes, blast radius) has to come into scope now. |
+| 2 | Pages (as in the architecture) or Workers static assets (C)? | **Workers static assets.** Worker-level Access covers all hostnames in one setting, and Pages' default leaves production open. | If you want to stay on Pages, the stories must include the two-Access-app procedure and a production-hostname probe. Otherwise we ship publicly. |
+| 3 | Which branch is production? The repo snapshot shows the PR base as `feat/prd-001-spine`, but work merges to `main`. | **`main`** is (or should become) the GitHub default branch and the deploy trigger. | We'd deploy a stale branch, or the deploy workflow would fail to trigger (see our lesson: dispatch-triggered workflows must live on the default branch). |
+| 4 | Is `VITE_SUPABASE_ANON_KEY` a legacy JWT or already `sb_publishable_…`? | **Legacy JWT**, given the variable name and the `Bearer` usage. Migrating is a separate small story, before end of 2026. | If it's legacy and nobody migrates, the live page breaks at Supabase's cutoff with no deploy in between. |
+| 5 | Access login method? | **One-time PIN to the owner's email.** No OAuth app to maintain. | An email dependency is exactly what the architecture rejected Supabase magic link for. If that matters, use GitHub as the IdP. |
+| 6 | Access session length? | **1 week or more.** It is only checked on page load (Gotcha 6), and a daily re-login is friction. | Too long a session on a shared device exposes the page. Low stakes for market data. |
+| 7 | Deploy only after tests pass (B/C), or on every push (A)? | **After tests pass**, via a GH workflow, accepting a G4 review. | On A, a broken bundle can go live, with no CI record to point at as evidence. |
 
 ## Blind spots
-<!-- Three named risks the human has probably not considered. Be adversarial; that is the job. -->
 
----
+1. **"Auth at the edge" is about to be claimed for something it doesn't protect.** The Supabase REST/RPC endpoints are world-reachable with the browser key. The key has to be in the bundle, so anyone who ever gets the bundle, a HAR file or a screenshot of devtools can poll `history_read`/`integrity_read` indefinitely. That eats the free tier's 5 GB egress (15_Services). The failure mode isn't data theft. It's a quota-exhausted Supabase making **ingest** writes fail, and the dashboard showing stale data for a reason unrelated to markets.
+2. **A calendar-driven outage with no code change.** Supabase's legacy-key removal around the end of 2026 (https://supabase.com/docs/guides/getting-started/api-keys) will hit whichever of the browser key (`VITE_SUPABASE_ANON_KEY`) and the ingest key (`SUPABASE_SERVICE_ROLE_KEY`) is still legacy. Healthchecks.io watches ingest, so a dead ingest key would at least be caught. **Nothing watches the deployed page.** If the browser key dies, the owner opens the page to a wall of errors, possibly weeks after the cause.
+3. **Access configuration isn't in the repo, so it drifts silently.** Every other control in this project is diffable and gated. The one thing standing between the dashboard and the internet would live in a Zero Trust dashboard that anyone with the account can toggle. The Pages procedure is known to be fragile across re-toggles. No offline test can catch that, so a scheduled unauthenticated probe of the production hostname (e.g. in `canary.yml`, expecting a 302 to `cloudflareaccess.com`) is the only thing that would. Otherwise the first sign of a regression is a search engine indexing the page.
 
-**Next:** the human answers into `20-decisions.yaml` (gate G1). Nothing proceeds until then.
+## Sources
+
+- https://developers.cloudflare.com/pages/configuration/preview-deployments/
+- https://developers.cloudflare.com/pages/platform/known-issues/
+- https://developers.cloudflare.com/workers/static-assets/migration-guides/migrate-from-pages/
+- https://developers.cloudflare.com/workers/configuration/cloudflare-access/
+- https://developers.cloudflare.com/pages/configuration/build-image/
+- https://developers.cloudflare.com/pages/configuration/serving-pages/
+- https://developers.cloudflare.com/pages/platform/limits/
+- https://developers.cloudflare.com/pages/how-to/use-direct-upload-with-continuous-integration/
+- https://developers.cloudflare.com/cloudflare-one/identity/users/session-management/
+- https://supabase.com/docs/guides/getting-started/api-keys
+
+Seen only as search-result snippets, not fetched (claims from these are marked above):
+- [Cloudflare Pages vs Workers in 2026: Migration Guide (dev.to)](https://dev.to/rickcogley/cloudflare-pages-vs-workers-in-2026-migration-guide-ka7)
+- [Cloudflare Pages vs Workers 2026 (cogley.jp)](https://cogley.jp/articles/cloudflare-pages-to-workers-migration)
+- [Zero Trust plans & pricing](https://www.cloudflare.com/plans/zero-trust-services/)
+- [One-time PIN login · Cloudflare One docs](https://developers.cloudflare.com/cloudflare-one/integrations/identity-providers/one-time-pin/)
+- [Protecting sub & main domain of pages project through Cloudflare Access (community)](https://community.cloudflare.com/t/protecting-sub-main-domain-of-pages-project-through-cloudflare-access/304551)
+- [Migrating to publishable and secret API keys (Supabase)](https://supabase.com/docs/guides/getting-started/migrating-to-new-api-keys)

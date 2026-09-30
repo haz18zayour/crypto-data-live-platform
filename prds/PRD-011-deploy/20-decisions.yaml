@@ -1,34 +1,196 @@
 # GATE G1 — scope lock.
 #
-# Produced by /pre-prd-research interrogating you, then confirmed by you. The research
-# agent commits to a hypothesis for every question so you are correcting a draft rather
-# than answering a blank form: skim, override what is wrong, confirm the out-of-scope list.
+# Produced by /pre-prd-research interrogating the owner, then confirmed by the owner. The
+# research agent commits to a hypothesis for every question so the owner is correcting a
+# draft rather than answering a blank form: skim, override what is wrong, confirm the
+# out-of-scope list.
 #
-# Anything you do NOT answer becomes an `assumptions:` row below — an explicit assumption
-# with a tripwire, never a silent guess. That is the whole point of this file.
+# Anything not answered becomes an explicit `assumptions:` row with a tripwire, never a
+# silent guess. That is the whole point of this file.
 
 decisions:
-  - q: <the question the research agent asked>
-    hypothesis: <what it guessed>
-    answer: <your answer, or leave blank to accept the hypothesis>
+  - q: >
+      Is it acceptable that Cloudflare Access gates the page, but the underlying Supabase
+      data stays readable by anyone holding the anon key + project URL (extractable from the
+      deployed bundle)?
+    hypothesis: >
+      Yes, for this PRD. It is public market data with no user-specific content, the key is
+      not in git, and RLS already scopes the anon role to read-only grants on specific
+      views/RPCs. Record this as a known, accepted limit rather than solving it here — a
+      Worker-proxied data path (research's Option D) that actually restricts the data itself
+      is real, separate, blast-radius work (touches RLS/grants/migrations) and becomes a
+      follow-up PRD if ever needed.
+    answer: >
+      Confirmed — accepted limit for PRD-011; Option D deferred as a follow-up. 2026-09-30.
 
-# The one field with no default. Half of all scope creep is features someone assumed
-# were included, so this list is load-bearing and you must physically write it.
+  - q: >
+      Cloudflare Pages (as the architecture doc currently says) or Workers static assets with
+      worker-level Access?
+    hypothesis: >
+      Workers static assets (research's Option C). Pages' "Enable access policy" toggle only
+      protects `<hash>.<project>.pages.dev`, never the real production `<project>.pages.dev`
+      or a custom domain — the default path in Cloudflare's own docs would ship this product
+      publicly, exactly the "wrong number that looks right" failure class this project exists
+      to prevent, just at the infrastructure layer instead of the data layer. Worker-level
+      Access with scope "all traffic" covers every hostname (including previews) in one
+      setting, with no wildcard-deletion step to get wrong.
+    answer: >
+      Confirmed — Workers static assets, worker-level Access, scope "all traffic". The
+      architecture doc's "Cloudflare Pages" row is corrected to reflect this. 2026-09-30.
+
+  - q: >
+      Which branch is production, i.e. what does the deploy workflow trigger on?
+    hypothesis: >
+      `main`. It is already this project's actual integration branch (every PRD this session
+      merges here), and GitHub Actions `schedule`/`workflow_dispatch` triggers must live on
+      the repository's default branch per this project's own established lesson.
+    answer: Confirmed — main. 2026-09-30.
+
+  - q: >
+      Deploy on every push (research's Option A's default behaviour), or only after the test
+      suite passes?
+    hypothesis: >
+      Only after tests pass, via a dedicated GitHub Actions workflow (`deploy-web.yml`) that
+      runs typecheck + vitest before `wrangler deploy`. A red suite must never reach
+      production, and the workflow run itself becomes the evidence a later verifier or owner
+      can point to — Option A's dashboard-driven Git integration has no such record.
+    answer: Confirmed — deploy gated on a passing test/typecheck run in CI. 2026-09-30.
+
+  - q: >
+      Cloudflare Access identity provider: one-time PIN to the owner's email, or an OAuth
+      provider (GitHub/Google)?
+    hypothesis: >
+      One-time PIN to the owner's own email. No OAuth app to register or maintain for a
+      single user. The architecture doc already rejected an email-dependent auth flow
+      (Supabase magic link) for the *data* path specifically because of the added moving
+      part and email dependency — but Access's own PIN flow is Cloudflare's own
+      infrastructure sending the email, not a self-hosted dependency this project owns or
+      could break, so the same objection does not transfer.
+    answer: Confirmed — one-time PIN via Cloudflare Access, owner's email. 2026-09-30.
+
+  - q: >
+      Cloudflare Access session length before the owner must re-authenticate?
+    hypothesis: >
+      One week. The session is only checked on page load (the app's own polling goes
+      cross-origin straight to Supabase, invisible to Access), so a short session mainly adds
+      login friction without adding real protection for a single-user, non-sensitive-data
+      tool. A daily or hourly session would be pure friction.
+    answer: Confirmed — 1 week session length. 2026-09-30.
+
+  - q: >
+      `VITE_SUPABASE_ANON_KEY`'s current value is a legacy JWT-format anon key. Supabase is
+      deprecating legacy anon/service-role keys by the end of 2026 (~3 months from today) in
+      favour of `sb_publishable_...`/`sb_secret_...`. Does the legacy-key migration happen as
+      part of this PRD, or is it explicitly out of scope?
+    hypothesis: >
+      Out of scope for PRD-011 itself, but the risk must be named on the record rather than
+      silently inherited: the deployed page will stop working with no code change on
+      whatever date Supabase actually cuts the legacy key over, unless a separate story
+      migrates it before then. This PRD's own scheduled unauthenticated-probe canary (see the
+      blind-spot decision below) should be extended, in a later PRD, to also assert the
+      browser key still authenticates — but building that now is scope creep on a deploy PRD.
+    answer: >
+      Confirmed — legacy-key migration is out of scope for PRD-011; tracked as an explicit
+      assumption below with a hard external deadline, not silently deferred. 2026-09-30.
+
+  - q: >
+      Blind spot — research found Access configuration lives entirely in the Cloudflare
+      dashboard, is not diffable, and is known to be fragile across re-toggles (Pages'
+      documented multi-step procedure, though moot now that Workers static assets is chosen).
+      Nothing in this repo would catch a misconfiguration that silently leaves the deployed
+      page open to the public internet. Should this PRD add an automated, recurring check?
+    hypothesis: >
+      Yes. A scheduled canary (or an addition to the existing `canary.yml`) makes an
+      unauthenticated HTTP request to the real production hostname and asserts it is
+      redirected toward Cloudflare Access's login (not a 200 with real page content). This is
+      the only thing that can catch dashboard drift, and it must run against the real
+      deployed hostname on a schedule, not as a one-shot deselected integration test that
+      never actually runs per this project's own established lesson.
+    answer: >
+      Confirmed — a scheduled, unauthenticated production-hostname probe is in scope for this
+      PRD. 2026-09-30.
+
+# The one field with no default.
 out_of_scope:
-  - <thing this PRD explicitly does not do>
+  - No change to how the browser reads Supabase data (anon key stays client-side, RLS stays
+    the only real protection on the data itself) — Access protects the page, not the
+    dataset. A future PRD (Option D: Worker-proxied reads with the key kept server-side) is
+    the real fix if that gap ever needs closing, and it is real blast-radius work
+    (migrations, grant changes), not part of this deploy.
+  - No Supabase legacy-anon-key migration (`sb_publishable_...`) — tracked as an assumption
+    with a hard external deadline (~end of 2026), not solved here.
+  - No custom domain — the default `*.workers.dev` subdomain is accepted for a single-user
+    tool; adding a custom domain is a separate, later decision if ever wanted.
+  - No change to the existing ingestion pipeline, its schedules, or its own Healthchecks
+    dead-man's-switch — this PRD only deploys the read-only frontend.
+  - No WebSocket/push functionality — the app polls today and Worker-level Access does not
+    support WebSockets in any case; irrelevant unless a future PRD revisits push.
 
-# Each assumption needs a tripwire: a condition that, if it appears later, reopens G1
-# rather than quietly proceeding on a guess that has stopped being true.
 assumptions:
-  - claim: <e.g. fewer than 100 users in the first six months>
-    tripwire: <e.g. any story mentioning scale, sharding, or rate limits>
-    acceptedBy: default    # or: human
+  - claim: >
+      Cloudflare Workers' free plan serves static assets and Access-gated requests without a
+      practical request cap that a single owner opening one page occasionally would hit.
+    tripwire: >
+      Research could not verify the exact current free-tier request/bandwidth limits for
+      Workers static assets or Access-gated traffic (search-result-only, not fetched from a
+      pricing page). Confirm live via the Cloudflare dashboard's own usage/limits display
+      after deployment; if a real cap exists that a normal daily-open pattern could approach,
+      revisit before this becomes a problem, not after.
+    acceptedBy: default
 
-# Options the research agent surfaced, and which you picked. Recording the rejected
-# option is what stops a later story quietly re-litigating a settled decision.
+  - claim: >
+      `sb_publishable_...`-format Supabase keys (the successor to the legacy anon key) work
+      correctly in this app's current `Authorization: Bearer <key>` header pattern, the same
+      way the legacy JWT anon key does today.
+    tripwire: >
+      Research flagged this as unverified and recalled (not fetched) that non-JWT publishable
+      keys may be intended only for the `apikey` header, not `Authorization: Bearer`. Confirm
+      this live against Supabase's real current behavior before any future story migrates off
+      the legacy key — do not assume the header pattern carries over unchanged.
+    acceptedBy: default
+
+  - claim: >
+      Supabase's legacy anon/service-role key deprecation will actually land by, or close to,
+      the end of 2026 as currently documented, giving this project a real, external, non-code
+      deadline to migrate before the deployed page breaks with no corresponding code change.
+    tripwire: >
+      This is a vendor's own stated timeline, not something this project controls. Check
+      Supabase's own current status periodically rather than assuming the original date
+      holds; if the cutover date moves, so does the urgency of a legacy-key migration story.
+    acceptedBy: default
+
+# Options the research agent surfaced, and which the owner picked.
 chosen_approach:
-  option: <name>
-  because: <one line>
+  option: >
+    Workers static assets (`assets.directory` serving `web/dist`, `not_found_handling:
+    single-page-application`) deployed via a dedicated GitHub Actions workflow that runs the
+    test suite first, with Cloudflare Access protecting the Worker at scope "all traffic" via
+    a one-time-PIN identity provider and a 1-week session (research's Option C).
+  because: >
+    Worker-level Access covers every hostname — production and previews — in one dashboard
+    setting, with no wildcard-deletion procedure to get wrong the way Cloudflare's own
+    documented Pages+Access setup requires. It is also where Cloudflare is actively investing
+    new features, and it is the natural foundation if a future PRD ever adds Option D
+    (server-side Supabase proxying).
   rejected:
-    - option: <name>
-      because: <one line>
+    - option: >
+        Pages Git integration + the documented two-Access-app procedure (Option A)
+      because: >
+        The one-click "Enable access policy" toggle everyone reaches for protects only the
+        preview-deployment subdomain, never the real production `pages.dev` domain — the
+        default path in Cloudflare's own docs ships the product publicly by default. The
+        correct procedure exists but is multi-step, dashboard-only, undiffable, and
+        documented by Cloudflare itself as something people repeatedly get wrong.
+    - option: >
+        Pages Direct Upload from GitHub Actions (Option B)
+      because: >
+        Fixes the "deploy only after tests pass" problem Option A has, but inherits the exact
+        same Pages+Access wildcard-deletion fragility as Option A. Solves one problem, not the
+        one that actually matters most.
+    - option: >
+        Workers static assets + a Worker-side proxy for Supabase reads (Option D)
+      because: >
+        The only option where "only the owner can access it" is true of the data as well as
+        the page — but it requires new server code, touches RLS/grants, and is genuine
+        blast-radius migration work. Recorded as a real follow-up PRD, not silently dropped,
+        but not justified as part of a "deploy what already exists" PRD.
