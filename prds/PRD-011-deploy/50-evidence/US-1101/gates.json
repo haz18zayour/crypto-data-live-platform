@@ -1,0 +1,26 @@
+[
+  {
+    "name": "typecheck",
+    "run": "node -e \"const f=require('fs'),c=require('child_process');let r=0;const run=(cmd)=>{try{c.execSync(cmd,{stdio:'inherit'})}catch(e){r=1}};if(f.existsSync('web/package.json'))run('npm --prefix web run typecheck');if(f.existsSync('pyproject.toml'))run('uv run mypy ingest --strict');process.exit(r)\"",
+    "exitCode": 0,
+    "output": "\n> crypto-data-live-web@0.0.0 typecheck\n> tsc -b --pretty false\n\nSuccess: no issues found in 24 source files\r\n"
+  },
+  {
+    "name": "test",
+    "run": "node -e \"const f=require('fs'),c=require('child_process'),p=require('path');const tmp=f.mkdtempSync(p.join(process.cwd(),'.tmp','systemtemp-'));const env={...process.env,TEMP:tmp,TMP:tmp};let r=0;const run=(cmd)=>{try{c.execSync(cmd,{stdio:'inherit',env})}catch(e){r=1}};if(f.existsSync('web/package.json'))run('npm --prefix web test');if(f.existsSync('tests'))run('uv run pytest -q');process.exit(r)\"",
+    "exitCode": 0,
+    "output": "\n> crypto-data-live-web@0.0.0 pretest\n> node scripts/ensure-playwright-browsers.mjs\n\nPlaywright browsers already installed.\n\n> crypto-data-live-web@0.0.0 test\n> vitest run --configLoader runner\n\n\n RUN  v4.1.9 C:/Users/user/Desktop/Projects/crypto-data-live-platform/web\n\n\n Test Files  16 passed (16)\n      Tests  83 passed (83)\n   Start at  16:09:01\n   Duration  15.29s (transform 1.35s, setup 7.39s, import 3.06s, tests 12.89s, environment 125.71s)\n\n........................................................................ [ 14%]\r\n........................................................................ [ 28%]\r\n........................................................................ [ 42%]\r\n........................................................................ [ 56%]\r\n........................................................................ [ 70%]\r\n........................................................................ [ 84%]\r\n........................................................................ [ 99%]\r\n.....                                                                    [100%]\r\n509 passed, 77 deselected in 103.00s (0:01:43)\r\n"
+  },
+  {
+    "name": "US-1101-C2",
+    "run": "npm --prefix web run build",
+    "exitCode": 0,
+    "output": "\n> crypto-data-live-web@0.0.0 build\n> tsc -b && vite build --configLoader runner\n\n\u001b[36mvite v7.3.6 \u001b[32mbuilding client environment for production...\u001b[36m\u001b[39m\ntransforming...\n\u001b[32m✓\u001b[39m 165 modules transformed.\nrendering chunks...\ncomputing gzip size...\n\u001b[2mdist/\u001b[22m\u001b[32mindex.html                 \u001b[39m\u001b[1m\u001b[2m  0.45 kB\u001b[22m\u001b[1m\u001b[22m\u001b[2m │ gzip:   0.29 kB\u001b[22m\n\u001b[2mdist/\u001b[22m\u001b[35massets/index-B8quT2eK.css  \u001b[39m\u001b[1m\u001b[2m 16.79 kB\u001b[22m\u001b[1m\u001b[22m\u001b[2m │ gzip:   4.37 kB\u001b[22m\n\u001b[2mdist/\u001b[22m\u001b[36massets/index-BkzKuGa3.js   \u001b[39m\u001b[1m\u001b[2m426.84 kB\u001b[22m\u001b[1m\u001b[22m\u001b[2m │ gzip: 115.30 kB\u001b[22m\n\u001b[32m✓ built in 719ms\u001b[39m\n"
+  },
+  {
+    "name": "US-1101-C4",
+    "run": "npx wrangler deploy --dry-run",
+    "exitCode": 1,
+    "output": "\n ⛅️ wrangler 4.144.0\n────────────────────\n\nDetected Project Settings:\n - Worker Name: crypto-data-live-platform\n - Framework: Static\n - Output Directory: web\n\n\n📄 Create wrangler.jsonc:\n  {\n    \"$schema\": \"node_modules/wrangler/config-schema.json\",\n    \"name\": \"crypto-data-live-platform\",\n    \"compatibility_date\": \"2026-09-26\",\n    \"observability\": {\n      \"enabled\": true\n    },\n    \"assets\": {\n      \"directory\": \"web\"\n    }\n  }\n\n✋  Autoconfig process run in dry-run mode, existing now.\n\n\nUsing the project name \"crypto-data-live-platform\" as the Worker name. To change it, set the `name` field in your Wrangler configuration file or pass `--name <name>` when deploying.\n\nCloudflare collects anonymous telemetry about your usage of Wrangler. Learn more at https://github.com/cloudflare/workers-sdk/tree/main/packages/wrangler/telemetry.md\n\n\nnpm warn exec The following package was not found and will be installed: wrangler@4.144.0\n\u001b[31mX \u001b[41;31m[\u001b[41;97mERROR\u001b[41;31m]\u001b[0m \u001b[1mMissing entry-point to Worker script or to assets directory\u001b[0m\n\n  \n  If there is code to deploy, you can either:\n  - Specify an entry-point to your Worker script via the command line (ex: `npx wrangler deploy src/index.ts`)\n  - Or create a \"wrangler.jsonc\" file containing:\n  \n  ```\n  {\n    \"name\": \"worker-name\",\n    \"compatibility_date\": \"2026-09-26\",\n    \"main\": \"src/index.ts\"\n  }\n  ```\n  \n  \n  If are uploading a directory of assets, you can either:\n  - Specify the path to the directory of assets via the command line: (ex: `npx wrangler deploy --assets=./dist`)\n  - Or create a \"wrangler.jsonc\" file containing:\n  \n  ```\n  {\n    \"name\": \"worker-name\",\n    \"compatibility_date\": \"2026-09-26\",\n    \"assets\": {\n      \"directory\": \"./dist\"\n    }\n  }\n  ```\n  \n\n\n🪵  Logs were written to \"C:\\Users\\user\\AppData\\Roaming\\xdg.config\\.wrangler\\logs\\wrangler-2026-09-30_13-11-19_636.log\"\n"
+  }
+]
