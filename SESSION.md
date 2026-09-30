@@ -9,19 +9,15 @@ Do not hand-edit it — it is regenerated. The hand-written sections below it su
 
 ## ▶ Resume here
 
-**1 uncommitted file(s) — the runner will not start**
+**PRD-005-dashboard — GATE G1, scope lock**
 
-A previous session edited source and did not commit. uf refuses to run on a dirty tree rather than auto-committing someone else's half-finished work.
+The research asked you questions and each carries the agent's own hypothesis. Anything you leave blank becomes an explicit assumption with a tripwire. The out-of-scope list is the one field with no default.
 
 Owner: **You.** This one cannot be delegated.
 
 ```
-review the diff, then: git add -A && git commit
+open prds/PRD-005-dashboard/20-decisions.yaml
 ```
-
-**Left in flight by the previous session:**
-
-- 1 uncommitted file(s): .github/workflows/deploy-web.yml
 
 **Last handoff note:** **2026-09-15 — STOPPED HERE. PRD-007 is fully specced and compiled (8 stories, 62 criteria,
 
@@ -1006,6 +1002,9 @@ Spend to date: **$123.07** Claude · **314796k** Codex tokens.
 - 17:00  ▶ gate answered **rewrite-criteria** — All 3 attempts produced 0 tokens/exitCode 1 - confirmed codex quota exhaustion via direct probe, still blocked until Oct 4th. Owner has chosen direct implementation for this exact situation before today. Re-identifying as US-1107.
 - 13:56  **PRD-011-deploy** compiled — 5 stories
 - 17:05  US-1107 **PASSED** — 6/6 criteria, judged by human
+- 14:00  US-1103 started, attempt 1 (codex)
+- 14:00  US-1103 — codex finished `8c609f9c`
+- 14:03  US-1103 **rejected** — 0/4 criteria, judged by claude
 
 <!-- uf:generated:end -->
 
