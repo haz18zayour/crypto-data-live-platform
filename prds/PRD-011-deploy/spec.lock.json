@@ -4,17 +4,17 @@
   "title": "Deploy behind Cloudflare Access",
   "product": "crypto-data-live-platform",
   "branch": "feat/prd-011-deploy",
-  "inputDigest": "3c625ebc0a497500",
-  "compiledAt": "2026-09-30T12:56:14.348Z",
+  "inputDigest": "53d2f67d1c601803",
+  "compiledAt": "2026-09-30T13:36:47.515Z",
   "stories": [
     {
-      "id": "US-1101",
+      "id": "US-1106",
       "title": "Worker scaffold — wrangler.jsonc serving web/dist as an SPA, .node-version pinned, local build verified",
-      "source": "prds/PRD-011-deploy/40-stories/US-1101-worker-scaffold.md",
+      "source": "prds/PRD-011-deploy/40-stories/US-1106-worker-scaffold.md",
       "description": "As the owner, I want the existing web app packaged as a Cloudflare Worker serving static\nassets, so that Access can protect it at the Worker level (covering every hostname in one\nsetting) rather than needing Cloudflare Pages' fragile, dashboard-only two-Access-app\nprocedure.",
       "criteria": [
         {
-          "id": "US-1101-C1",
+          "id": "US-1106-C1",
           "text": "The Worker config itself",
           "method": {
             "kind": "test",
@@ -22,7 +22,7 @@
           }
         },
         {
-          "id": "US-1101-C2",
+          "id": "US-1106-C2",
           "text": "Produces a real web/dist directory (tsc -b && vite build), proving the build this config depends on actually works today",
           "method": {
             "kind": "cmd",
@@ -30,7 +30,7 @@
           }
         },
         {
-          "id": "US-1101-C3",
+          "id": "US-1106-C3",
           "text": "Pins a working version explicitly rather than relying on Cloudflare's disputed default",
           "method": {
             "kind": "test",
@@ -38,7 +38,7 @@
           }
         },
         {
-          "id": "US-1101-C4",
+          "id": "US-1106-C4",
           "text": "Cloudflare's own tooling validates the wrangler config without requiring a real API token or account access yet",
           "method": {
             "kind": "cmd",
@@ -46,7 +46,7 @@
           }
         },
         {
-          "id": "US-1101-C5",
+          "id": "US-1106-C5",
           "text": "Confirms research's finding that a build context checking out only web/ would break this import does not apply to the chosen approach",
           "method": {
             "kind": "test",

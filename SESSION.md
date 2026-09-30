@@ -9,15 +9,19 @@ Do not hand-edit it — it is regenerated. The hand-written sections below it su
 
 ## ▶ Resume here
 
-**PRD-005-dashboard — GATE G1, scope lock**
+**2 uncommitted file(s) — the runner will not start**
 
-The research asked you questions and each carries the agent's own hypothesis. Anything you leave blank becomes an explicit assumption with a tripwire. The out-of-scope list is the one field with no default.
+A previous session edited source and did not commit. uf refuses to run on a dirty tree rather than auto-committing someone else's half-finished work.
 
 Owner: **You.** This one cannot be delegated.
 
 ```
-open prds/PRD-005-dashboard/20-decisions.yaml
+review the diff, then: git add -A && git commit
 ```
+
+**Left in flight by the previous session:**
+
+- 2 uncommitted file(s): prds/PRD-011-deploy/30-spec.md, prds/PRD-011-deploy/40-stories/US-1106-worker-scaffold.md
 
 **Last handoff note:** **2026-09-15 — STOPPED HERE. PRD-007 is fully specced and compiled (8 stories, 62 criteria,
 
@@ -982,6 +986,12 @@ Spend to date: **$123.07** Claude · **314796k** Codex tokens.
 - 13:11  US-1101 started, attempt 2 (codex)
 - 13:11  US-1101 — codex finished `31d9766c`
 - 13:13  US-1101 **rejected** — 0/5 criteria, judged by claude
+- 13:13  US-1101 started, attempt 3 (codex)
+- 13:13  US-1101 — codex finished `ab6b83d6`
+- 13:15  US-1101 **rejected** — 0/5 criteria, judged by claude
+- 13:15  ⏸ **gate opened** — US-1101 has failed 3 times — is the story wrong?
+- 13:20  ▶ gate answered **rewrite-criteria** — All 3 attempts produced 0 tokens/exitCode 1 - confirmed codex quota exhaustion via direct probe, still blocked until Oct 4th. Owner chose direct implementation. Re-identifying as US-1106.
+- 13:36  **PRD-011-deploy** compiled — 5 stories
 
 <!-- uf:generated:end -->
 

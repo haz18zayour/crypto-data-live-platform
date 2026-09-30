@@ -1,0 +1,22 @@
+{
+  "gate": "G5_THIRD_FAILURE",
+  "question": "US-1101 has failed 3 times — is the story wrong?",
+  "feature": "PRD-011-deploy",
+  "story": "US-1101",
+  "options": [
+    "split",
+    "rewrite-criteria",
+    "skip",
+    "retry-anyway"
+  ],
+  "context": "Structural problems: the story changed no files at all\nCriteria judged not met:\n  - US-1101-C1: not judged — a cheaper layer already failed\n  - US-1101-C2: not judged — a cheaper layer already failed\n  - US-1101-C3: not judged — a cheaper layer already failed\n  - US-1101-C4: not judged — a cheaper layer already failed\n  - US-1101-C5: not judged — a cheaper layer already failed",
+  "defaultOnTimeout": "block",
+  "id": "G5_THIRD_FAILURE-9378c18a",
+  "openedAt": "2026-09-30T13:15:56.421Z",
+  "answer": {
+    "choice": "rewrite-criteria",
+    "reason": "All 3 attempts produced 0 tokens and exitCode 1 - confirmed via direct codex probe: usage limit still blocked until Oct 4th 2026. Owner chose to have this story implemented directly again (same pattern as PRD-010's US-1007). Re-identifying as US-1106 for a fresh attempt slot.",
+    "at": "2026-09-30T13:20:00.000Z",
+    "by": "human"
+  }
+}

@@ -1,5 +1,5 @@
 ---
-id: US-1101
+id: US-1106
 title: Worker scaffold — wrangler.jsonc serving web/dist as an SPA, .node-version pinned, local build verified
 priority: 1
 touches:
