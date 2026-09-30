@@ -1,0 +1,34 @@
+# GATE G1 — scope lock.
+#
+# Produced by /pre-prd-research interrogating you, then confirmed by you. The research
+# agent commits to a hypothesis for every question so you are correcting a draft rather
+# than answering a blank form: skim, override what is wrong, confirm the out-of-scope list.
+#
+# Anything you do NOT answer becomes an `assumptions:` row below — an explicit assumption
+# with a tripwire, never a silent guess. That is the whole point of this file.
+
+decisions:
+  - q: <the question the research agent asked>
+    hypothesis: <what it guessed>
+    answer: <your answer, or leave blank to accept the hypothesis>
+
+# The one field with no default. Half of all scope creep is features someone assumed
+# were included, so this list is load-bearing and you must physically write it.
+out_of_scope:
+  - <thing this PRD explicitly does not do>
+
+# Each assumption needs a tripwire: a condition that, if it appears later, reopens G1
+# rather than quietly proceeding on a guess that has stopped being true.
+assumptions:
+  - claim: <e.g. fewer than 100 users in the first six months>
+    tripwire: <e.g. any story mentioning scale, sharding, or rate limits>
+    acceptedBy: default    # or: human
+
+# Options the research agent surfaced, and which you picked. Recording the rejected
+# option is what stops a later story quietly re-litigating a settled decision.
+chosen_approach:
+  option: <name>
+  because: <one line>
+  rejected:
+    - option: <name>
+      because: <one line>
