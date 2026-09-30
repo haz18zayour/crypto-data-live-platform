@@ -1,0 +1,8 @@
+{
+  "name": "crypto-data-live-platform",
+  "private": true,
+  "version": "0.0.0",
+  "devDependencies": {
+    "wrangler": "4.144.0"
+  }
+}
