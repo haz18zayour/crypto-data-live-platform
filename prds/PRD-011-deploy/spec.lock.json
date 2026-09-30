@@ -4,8 +4,8 @@
   "title": "Deploy behind Cloudflare Access",
   "product": "crypto-data-live-platform",
   "branch": "feat/prd-011-deploy",
-  "inputDigest": "53d2f67d1c601803",
-  "compiledAt": "2026-09-30T13:36:47.515Z",
+  "inputDigest": "07967ea30a928de2",
+  "compiledAt": "2026-09-30T13:56:01.079Z",
   "stories": [
     {
       "id": "US-1106",
@@ -88,13 +88,13 @@
       ]
     },
     {
-      "id": "US-1102",
+      "id": "US-1107",
       "title": "Deploy workflow — deploy-web.yml gated on typecheck+test, triggers on push to main, builds with the real VITE_* secrets",
-      "source": "prds/PRD-011-deploy/40-stories/US-1102-deploy-workflow.md",
+      "source": "prds/PRD-011-deploy/40-stories/US-1107-deploy-workflow.md",
       "description": "As the owner, I want a broken build to be structurally incapable of reaching production, so\nthat a red test suite never ships — confirmed at G1: deploy only after tests pass, with the\nworkflow run itself standing as evidence, unlike a dashboard-driven Git integration with no CI\nrecord.",
       "criteria": [
         {
-          "id": "US-1102-C1",
+          "id": "US-1107-C1",
           "text": "Matches G1's decision that main is production",
           "method": {
             "kind": "test",
@@ -102,7 +102,7 @@
           }
         },
         {
-          "id": "US-1102-C2",
+          "id": "US-1107-C2",
           "text": "Deploy is structurally gated, not merely ordered by convention",
           "method": {
             "kind": "test",
@@ -110,7 +110,7 @@
           }
         },
         {
-          "id": "US-1102-C3",
+          "id": "US-1107-C3",
           "text": "The deployed bundle gets real, working Supabase configuration",
           "method": {
             "kind": "test",
@@ -118,7 +118,7 @@
           }
         },
         {
-          "id": "US-1102-C4",
+          "id": "US-1107-C4",
           "text": "No credential ever lands in the repo",
           "method": {
             "kind": "test",
@@ -126,7 +126,7 @@
           }
         },
         {
-          "id": "US-1102-C5",
+          "id": "US-1107-C5",
           "text": "Confirms research's gotcha that wrangler-action deploys whatever branch triggered it unless pinned — a feature-branch push must never become \"production\"",
           "method": {
             "kind": "test",
@@ -134,7 +134,7 @@
           }
         },
         {
-          "id": "US-1102-C6",
+          "id": "US-1107-C6",
           "text": "The full offline suite stays green (this story does not touch Python code, but the gate must still pass)",
           "method": {
             "kind": "cmd",
@@ -192,7 +192,7 @@
           "text": "The Worker is actually live, not just configured",
           "method": {
             "kind": "integration",
-            "name": "pushing to main triggers deploy-web.yml (US-1102), and the workflow's real run — not a dry run — completes successfully, producing a real reachable *.workers.dev URL"
+            "name": "pushing to main triggers deploy-web.yml (US-1107), and the workflow's real run — not a dry run — completes successfully, producing a real reachable *.workers.dev URL"
           }
         },
         {

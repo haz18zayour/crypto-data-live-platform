@@ -1,0 +1,22 @@
+{
+  "gate": "G5_THIRD_FAILURE",
+  "question": "US-1102 has failed 3 times — is the story wrong?",
+  "feature": "PRD-011-deploy",
+  "story": "US-1102",
+  "options": [
+    "split",
+    "rewrite-criteria",
+    "skip",
+    "retry-anyway"
+  ],
+  "context": "Structural problems: the story changed no files at all\nCriteria judged not met:\n  - US-1102-C1: not judged — a cheaper layer already failed\n  - US-1102-C2: not judged — a cheaper layer already failed\n  - US-1102-C3: not judged — a cheaper layer already failed\n  - US-1102-C4: not judged — a cheaper layer already failed\n  - US-1102-C5: not judged — a cheaper layer already failed\n  - US-1102-C6: not judged — a cheaper layer already failed",
+  "answer": {
+    "choice": "rewrite-criteria",
+    "reason": "All 3 attempts produced 0 tokens and exitCode 1 - confirmed codex quota exhaustion via direct probe, still blocked until Oct 4th 2026. Owner has already chosen direct implementation twice today for this exact situation (US-1101->US-1106, and again here). Re-identifying as US-1107 for a fresh attempt slot.",
+    "at": "2026-09-30T17:00:00.000Z",
+    "by": "human"
+  },
+  "defaultOnTimeout": "block",
+  "id": "G5_THIRD_FAILURE-970317c8",
+  "openedAt": "2026-09-30T13:54:28.289Z"
+}

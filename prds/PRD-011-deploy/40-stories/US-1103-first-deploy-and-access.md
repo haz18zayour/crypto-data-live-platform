@@ -20,7 +20,7 @@ existing. Confirmed at G1: the owner does this directly.
 ## Acceptance criteria
 
 - [human] The owner has: (1) a Cloudflare account with a Zero Trust org (team domain) created, (2) a Cloudflare API token scoped for Workers deploys added as the `CLOUDFLARE_API_TOKEN` GitHub repo secret, (3) the account id added as `CLOUDFLARE_ACCOUNT_ID`, (4) `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` added as GitHub repo secrets with the same real values already in `.env.local`
-- [integration: pushing to main triggers deploy-web.yml (US-1102), and the workflow's real run — not a dry run — completes successfully, producing a real reachable *.workers.dev URL] The Worker is actually live, not just configured
+- [integration: pushing to main triggers deploy-web.yml (US-1107), and the workflow's real run — not a dry run — completes successfully, producing a real reachable *.workers.dev URL] The Worker is actually live, not just configured
 - [human] The owner has applied Cloudflare Access to the deployed Worker at scope "all traffic" (per G1: one-time-PIN identity provider to the owner's own email, 1-week session) via the Cloudflare dashboard or API
 - [integration: after Access is applied, the owner (or the implementer, if given a way to authenticate) opens the real deployed URL and confirms the real dashboard renders — the same board this project has been running locally throughout] Proves the deployed bundle is the real app, not a blank page from a missing VITE_* value (research's own flagged gotcha)
 

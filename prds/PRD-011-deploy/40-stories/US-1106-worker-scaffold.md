@@ -33,5 +33,5 @@ procedure.
 - Follow research's Option C exactly (Workers static assets), not Cloudflare Pages — see
   `20-decisions.yaml` decision 2 for why Pages was rejected.
 - If `wrangler` is not already a dependency, add it to `web/package.json` (or the repo root,
-  whichever matches where the deploy workflow in US-1102 will run it from) — check which makes
+  whichever matches where the deploy workflow in US-1107 will run it from) — check which makes
   more sense given the existing `web/` npm scripts before choosing.
