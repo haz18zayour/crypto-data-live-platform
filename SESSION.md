@@ -9,14 +9,14 @@ Do not hand-edit it — it is regenerated. The hand-written sections below it su
 
 ## ▶ Resume here
 
-**US-1108: The demonstration item the acceptance protocol calls for, not a machine check**
+**PRD-005-dashboard — GATE G1, scope lock**
 
-A gate is open. Nothing proceeds until you answer.
+The research asked you questions and each carries the agent's own hypothesis. Anything you leave blank becomes an explicit assumption with a tripwire. The out-of-scope list is the one field with no default.
 
 Owner: **You.** This one cannot be delegated.
 
 ```
-uf gate G6_HUMAN-a3f1c9e2 met|not-met
+open prds/PRD-005-dashboard/20-decisions.yaml
 ```
 
 **Last handoff note:** **2026-09-15 — STOPPED HERE. PRD-007 is fully specced and compiled (8 stories, 62 criteria,
@@ -35,7 +35,7 @@ uf gate G6_HUMAN-a3f1c9e2 met|not-met
 | PRD-008-macro-flows | 8 | 8 | **all green** |
 | PRD-009-history-charts | 9 | 9 | **all green** |
 | PRD-010-integrity-dashboard | 7 | 7 | **all green** |
-| PRD-011-deploy | 4 | 3 | 3/4 |
+| PRD-011-deploy | 4 | 4 | **all green** |
 | PRD-012-cadence-split | 6 | 6 | **all green** |
 
 Spend to date: **$123.07** Claude · **314796k** Codex tokens.
@@ -1033,6 +1033,8 @@ Spend to date: **$123.07** Claude · **314796k** Codex tokens.
 - 14:50  **PRD-011-deploy** compiled — 4 stories
 - 15:00  US-1108 **awaiting your judgement** — 3/4 criteria, judged by human
 - 15:00  ⏸ **gate opened** — US-1108: The demonstration item the acceptance protocol calls for, not a machine check
+- 15:10  ▶ gate answered **met** — Owner opened the real deployed public URL directly, no login, and confirmed the dashboard renders.
+- 15:10  US-1108 **PASSED** — 4/4 criteria, judged by human
 
 <!-- uf:generated:end -->
 

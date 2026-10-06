@@ -1,6 +1,6 @@
 {
   "storyId": "US-1108",
-  "passes": false,
+  "passes": true,
   "verifier": {
     "agent": "human",
     "sandbox": "not-run",
@@ -22,8 +22,14 @@
     },
     {
       "criterionId": "US-1108-C2",
-      "met": false,
-      "note": "This is the story's own [human] criterion. Not judged here by design - it opens its own G6_HUMAN gate for the owner's direct judgement, per this project's established rule that no agent may satisfy a [human] criterion."
+      "met": true,
+      "evidence": {
+        "file": ".uf/gates/G6_HUMAN-a3f1c9e2.json",
+        "line": null,
+        "testName": null,
+        "exitCode": null
+      },
+      "note": "G6_HUMAN-a3f1c9e2 closed by the owner (choice: met): opened https://crypto-data-live-platform.zayourhassan-1.workers.dev directly, no login, and confirmed the real live dashboard renders."
     },
     {
       "criterionId": "US-1108-C3",
@@ -49,6 +55,6 @@
     }
   ],
   "tripwires": [],
-  "note": "3 of 4 criteria independently verified (C1, C3, C4); C2 (the story's own [human] criterion, PRD-011's and the current roadmap's final gate) is explicitly not judged here and awaits the owner's own G6_HUMAN gate.",
-  "at": "2026-10-06T15:00:00.000Z"
+  "note": "4 of 4 criteria met. C1/C3/C4 independently verified; C2 (the story's own [human] criterion, PRD-011's and the current roadmap's final gate) closed by the owner via G6_HUMAN-a3f1c9e2 (choice: met). PRD-011 is complete.",
+  "at": "2026-10-06T15:10:00.000Z"
 }
