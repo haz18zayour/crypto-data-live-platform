@@ -12,5 +12,11 @@
   "context": "Structural problems: the story changed no files at all\nCriteria judged not met:\n  - US-1103-C1: not judged — a cheaper layer already failed\n  - US-1103-C2: not judged — a cheaper layer already failed\n  - US-1103-C3: not judged — a cheaper layer already failed\n  - US-1103-C4: not judged — a cheaper layer already failed",
   "defaultOnTimeout": "block",
   "id": "G5_THIRD_FAILURE-f75aa5e3",
-  "openedAt": "2026-09-30T14:07:35.364Z"
+  "openedAt": "2026-09-30T14:07:35.364Z",
+  "answer": {
+    "choice": "rewrite-criteria",
+    "reason": "Resolved by the owner's own direct action, not a codex/spec problem: the owner completed real Cloudflare account setup and the real first deploy succeeded (deploy-web.yml run 37474353014, live URL confirmed serving the real app). Separately, the owner then decided (2026-10-06) the page may be public, dropping Access from scope entirely - the story's criteria were rewritten to drop the two Access-specific criteria, leaving only the two (account setup, real deploy) that were already passing. See verdict.json and 20-decisions.yaml's amendments entry.",
+    "at": "2026-10-06T15:00:00.000Z",
+    "by": "human"
+  }
 }

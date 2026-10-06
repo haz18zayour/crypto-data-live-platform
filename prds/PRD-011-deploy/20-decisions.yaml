@@ -110,8 +110,37 @@ decisions:
       Confirmed — a scheduled, unauthenticated production-hostname probe is in scope for this
       PRD. 2026-09-30.
 
+amendments:
+  - date: 2026-10-06
+    reason: >
+      Owner decision, made explicitly and directly (not a default, not inferred): Cloudflare
+      Access is dropped from PRD-011's scope entirely. The owner is fine with the deployed
+      page being public. This reverses decisions 2, 5, and 6 above (Access itself, its
+      identity provider, and its session length) insofar as they required Access to actually
+      be applied — Workers static assets remains the right hosting choice regardless (it was
+      chosen for deploy-workflow/CI reasons independent of Access), but no Access policy is
+      configured, and none of this PRD's remaining acceptance criteria may require one.
+    changes:
+      - US-1103's two Access-specific criteria (apply Access at scope "all traffic"; confirm
+        login through it) are dropped. The story's other two criteria (real account setup,
+        real live deploy) already passed on real evidence and stand as this story's full,
+        now-complete scope.
+      - US-1104 (the scheduled Access-drift canary) is retired in full — there is no Access
+        configuration left for it to watch for drift in. Confirmed directly: the data itself
+        was already a known, accepted public-readable limit (decision 1 above) even before
+        this amendment, so dropping page-level Access does not newly expose the dataset
+        beyond what decision 1 already accepted.
+      - US-1105 (the adversarial case) is rewritten to drop every Access-rejection criterion
+        and replace its final [human] criterion with: the owner opens the real public URL
+        directly (no login) and confirms the real dashboard renders. The build-gate proof
+        (a broken build cannot reach production) is unaffected and stays in scope — that
+        protection has nothing to do with Access.
+
 # The one field with no default.
 out_of_scope:
+  - Cloudflare Access entirely, and everything that depended on it (the drift canary, the
+    login-through-Access verification) — owner decision, 2026-10-06 amendment above. The
+    page is public by choice, not by a defect this PRD failed to catch.
   - No change to how the browser reads Supabase data (anon key stays client-side, RLS stays
     the only real protection on the data itself) — Access protects the page, not the
     dataset. A future PRD (Option D: Worker-proxied reads with the key kept server-side) is

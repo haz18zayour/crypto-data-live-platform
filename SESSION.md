@@ -9,15 +9,19 @@ Do not hand-edit it — it is regenerated. The hand-written sections below it su
 
 ## ▶ Resume here
 
-**US-1103 has failed 3 times — is the story wrong?**
+**6 uncommitted file(s) — the runner will not start**
 
-A gate is open. Nothing proceeds until you answer.
+A previous session edited source and did not commit. uf refuses to run on a dirty tree rather than auto-committing someone else's half-finished work.
 
 Owner: **You.** This one cannot be delegated.
 
 ```
-uf gate G5_THIRD_FAILURE-f75aa5e3 split|rewrite-criteria|skip|retry-anyway
+review the diff, then: git add -A && git commit
 ```
+
+**Left in flight by the previous session:**
+
+- 6 uncommitted file(s): prds/PRD-011-deploy/20-decisions.yaml, prds/PRD-011-deploy/30-spec.md, prds/PRD-011-deploy/40-stories/US-1103-first-deploy-and-access.md, prds/PRD-011-deploy/40-stories/US-1104-access-drift-canary.md…
 
 **Last handoff note:** **2026-09-15 — STOPPED HERE. PRD-007 is fully specced and compiled (8 stories, 62 criteria,
 
@@ -35,7 +39,7 @@ uf gate G5_THIRD_FAILURE-f75aa5e3 split|rewrite-criteria|skip|retry-anyway
 | PRD-008-macro-flows | 8 | 8 | **all green** |
 | PRD-009-history-charts | 9 | 9 | **all green** |
 | PRD-010-integrity-dashboard | 7 | 7 | **all green** |
-| PRD-011-deploy | 5 | 2 | 2/5 |
+| PRD-011-deploy | 4 | 3 | 3/4 |
 | PRD-012-cadence-split | 6 | 6 | **all green** |
 
 Spend to date: **$123.07** Claude · **314796k** Codex tokens.
@@ -1015,9 +1019,12 @@ Spend to date: **$123.07** Claude · **314796k** Codex tokens.
 
 ### 2026-10-06
 
+- 14:32  **PRD-011-deploy** compiled — 4 stories
 - 14:34  US-1105 started, attempt 1 (codex)
 - 14:34  US-1105 — codex finished `09b499b6`
 - 14:38  US-1105 **rejected** — 0/4 criteria, judged by claude
+- 15:00  US-1103 **PASSED** — 2/2 criteria, judged by human
+- 15:00  ▶ gate answered **rewrite-criteria** — Resolved by owner's real account setup + real deploy, then a scope amendment dropping Access entirely. See verdict.json and 20-decisions.yaml amendments.
 
 <!-- uf:generated:end -->
 
