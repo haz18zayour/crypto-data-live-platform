@@ -17,7 +17,7 @@ Sourced from `research/R0`–`R8`, plus the US-011 reachability measurement. **v
 | Service | Why | Env var(s) | Free tier? | Status |
 |---|---|---|---|---|
 | GitHub | repo, Actions scheduling, `gh` for the verifier's CI check | `gh auth login` (already done) | 2,000 Actions min/mo (private repo) | **READY** — repo exists, `gh` authenticated |
-| Cloudflare | Pages hosting **+ Access (Zero Trust)** for single-user auth | `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID` | yes — Access free up to 50 users | **N/A until PRD-011** — deployment deferred; the page runs on localhost and the data path is already in production |
+| Cloudflare | Workers static-assets hosting (`wrangler.jsonc`, not Pages — Pages' "Enable access policy" only ever protects the preview subdomain, never production) | `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID` | yes | **READY** — live in production at `https://crypto-data-live-platform.zayourhassan-1.workers.dev` since PRD-011 (2026-10-06). **Cloudflare Access was dropped from scope by owner decision — the page is public**, deliberately, since it is read-only market data with no account/login system to protect |
 | Supabase | Postgres for `datapoints` | `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` (ingest only), `VITE_SUPABASE_ANON_KEY` (browser), `DATABASE_URL` | 500 MB DB, 5 GB egress | **READY** — project `jsfyvxzuvxdnqhrqloux`, PostgreSQL 17.6, session pooler (direct is IPv6-only without the paid add-on). Migration applied, all three CHECK constraints proven live |
 | Healthchecks.io | **dead-man's-switch** — alerts on job *silence*. The single highest value-per-effort defence (R5 §1) | `HEALTHCHECKS_PING_URL`; `HEALTHCHECK_URL_INGEST_MEDIUM`; `HEALTHCHECK_URL_INGEST_FAST` | 20 checks | **READY / PRD-012 provisioning required** — check `crypto-data-ingest` receiving pings from the GitHub runner; DOWN-on-silence email verified by the owner 2026-09-09. PRD-012 adds dedicated medium and fast tier checks; `HEALTHCHECK_URL_INGEST_FAST` must be distinct from `HEALTHCHECKS_PING_URL`, `HEALTHCHECK_URL_INGEST_MEDIUM`, and `HEALTHCHECK_URL_CONTRACT_CANARY` |
 | cron-job.org | independent 5-minute trigger for `.github/workflows/ingest-fast.yml` via `repository_dispatch` type `ingest-fast` | `GH_DISPATCH_PAT` (fine-grained, this repo, Actions: R/W) | yes | **PRD-012 provisioning required** — create one cron-job.org job firing every 5 minutes at GitHub's repository dispatch endpoint with `event_type: ingest-fast`; the fast tier intentionally has no GitHub Actions `schedule:` trigger |
@@ -25,8 +25,8 @@ Sourced from `research/R0`–`R8`, plus the US-011 reachability measurement. **v
 > `SUPABASE_SERVICE_ROLE_KEY` bypasses RLS. It must never reach the client bundle or any
 > `VITE_`-prefixed variable. Any story touching it is blast-radius and needs gate G4.
 
-No domain registrar row: `*.pages.dev` is sufficient for a single-user private dashboard.
-Add one later if wanted — it is not a v1 dependency.
+No domain registrar row: the `*.workers.dev` subdomain is sufficient for a public, single-
+operator read-only dashboard. Add a custom domain later if wanted — it is not a v1 dependency.
 
 ---
 
@@ -70,15 +70,15 @@ multi-user — per the G1 out-of-scope list.
 
 | | Local | Preview | Production |
 |---|---|---|---|
-| Secrets | `.env.local` (gitignored) | Pages env vars | Pages env vars + GH Actions secrets |
+| Secrets | `.env.local` (gitignored) | — (no preview deploys) | GH Actions secrets, injected into the `wrangler deploy` build |
 | Database | shared Supabase project | same | same |
-| Domain | `localhost:5173` | `*.pages.dev` | `*.pages.dev` behind Cloudflare Access |
+| Domain | `localhost:5173` | — | `*.workers.dev`, public (no Access) |
 
 ## Before the first PRD runs
 
 - [ ] `.env.example` lists every variable above with **no real values**
 - [ ] `.env.local` gitignored and filled
-- [ ] Cloudflare account + Access policy restricted to `zayourhassan.1@gmail.com`
+- [ ] Cloudflare account created, API token + account ID added as GitHub secrets
 - [ ] Supabase project created; anon key and service-role key noted separately
 - [ ] Healthchecks.io check created; ping URL saved
 - [ ] Healthchecks.io fast-tier check created; `HEALTHCHECK_URL_INGEST_FAST` saved as a GitHub Actions secret and confirmed distinct from every other check URL
@@ -92,7 +92,7 @@ multi-user — per the G1 out-of-scope list.
 
 | Service | Plan | Monthly |
 |---|---|---|
-| GitHub, Cloudflare Pages + Access, Supabase, Healthchecks.io, cron-job.org | Free | **$0** |
+| GitHub, Cloudflare Workers, Supabase, Healthchecks.io, cron-job.org | Free | **$0** |
 | All v1 data sources | Free | **$0** |
 | **v1 total** | | **$0** |
 | *Deferred:* CryptoQuant / Glassnode — buys SOL on-chain only | — | *~$29–109, revisit at G2* |

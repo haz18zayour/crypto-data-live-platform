@@ -10,7 +10,7 @@ An empty section is better than an invented one.
 -->
 
 **Stack:** Python 3.12 (`uv`, httpx, pydantic, TA-Lib) ingestion · Supabase Postgres ·
-Vite + React + TypeScript + Tailwind on Cloudflare Pages, behind Cloudflare Access ·
+Vite + React + TypeScript + Tailwind on Cloudflare Workers (static assets), public ·
 GitHub Actions `schedule:` + cron-job.org `repository_dispatch` triggers ·
 Healthchecks.io dead-man's-switch.
 See `project-documents/10_Technical_Architecture.md`.

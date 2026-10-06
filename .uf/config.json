@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "product": "crypto-data-live-platform",
-  "stack": "Python 3.12 (uv, httpx, pydantic, TA-Lib) ingestion + Supabase Postgres + Vite/React/TS/Tailwind on Cloudflare Pages behind Cloudflare Access; GitHub Actions + cron-job.org triggers; Healthchecks.io dead-mans-switch",
+  "stack": "Python 3.12 (uv, httpx, pydantic, TA-Lib) ingestion + Supabase Postgres + Vite/React/TS/Tailwind on Cloudflare Workers (static assets), public; GitHub Actions + cron-job.org triggers; Healthchecks.io dead-mans-switch",
   "frameworkVersion": "0.1.0",
   "budget": {
     "dailyUsd": 40,

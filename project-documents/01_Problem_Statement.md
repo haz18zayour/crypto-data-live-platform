@@ -66,7 +66,12 @@ Confirmed at gate G1 by the owner on 2026-09-07.
 - **No backtesting or calibration engine.**
 - **No trade execution, and no exchange keys with trading permissions — ever.**
 - **No alerts, email, Telegram or push** in v1. The page is pulled, not pushed.
-- **No multi-user support, no billing, no public access.** Single operator.
+- **No multi-user support, no billing, no accounts or login.** Single operator. **Amended
+  2026-10-06:** the deployed page itself is reachable publicly, by the owner's explicit choice
+  (Cloudflare Access was dropped from PRD-011's scope) — it displays the same read-only market
+  data regardless of who loads it, so public reachability carries no data-exposure risk beyond
+  what the product already shows. This is a change to *who can open the URL*, not to the
+  single-operator, no-accounts nature of the product itself.
 - **No LLM-generated narrative or commentary** over the data.
 - **No mobile-native app.** Responsive web only.
 - **More than four coins.** BTC, ETH, SOL fixed; BNB pinned in config, changeable in one line.

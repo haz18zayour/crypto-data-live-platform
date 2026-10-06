@@ -14,8 +14,8 @@ Derived from `research/R0`–`R7`. Where this document conflicts with a single r
 | Database | **Supabase Postgres** (direct :5432, not the :6543 pooler) | Row count over 3 years is low single-digit millions — a non-event for Postgres (R6 §3). Free tier's 7-day pause is dodged by daily ingest writes | TimescaleDB / ClickHouse / DuckDB+Parquet — all unwarranted at this volume; each adds an operational surface for zero benefit |
 | Frontend | **Vite + React + TypeScript + Tailwind** | Owner's existing stack; the discriminated-union render pattern (R5 §2.1) needs a real type system to enforce exhaustiveness at compile time | — |
 | Charts | **Lightweight Charts** (Apache-2.0, attribution logo required) primary; **uPlot** for dense sparkline panels | Purpose-built for financial series; uPlot handles the many-small-panels case at lower bundle cost (R6 §4) | Recharts/visx — fine for dashboards, weak on candlesticks and dense series |
-| Hosting (frontend) | **Cloudflare Pages** | Free tier generous; owner already deploys here | — |
-| Auth | **Cloudflare Access (Zero Trust)** free tier | Single user. Auth stays entirely at the edge; no service-role key can reach the browser because the browser never holds one; no email infrastructure (R6 §5) | Supabase magic link — what the prior system used; more moving parts and an email dependency for one user |
+| Hosting (frontend) | **Cloudflare Workers** (static assets, `wrangler.jsonc`) | Free tier generous. Pages was considered and rejected: its "Enable access policy" toggle only ever protects the `*.pages.dev` preview subdomain, never the production URL, which made it unsuitable once Access was in scope — and Workers remained the simpler choice once Access was later dropped | Cloudflare Pages — rejected for the reason above |
+| Auth | **None. Amended 2026-10-06:** Cloudflare Access was dropped from scope by owner decision — the deployed page is public. It is read-only market data with no account/login system and no service-role key ever reaching the browser, so public reachability carries no data-exposure risk | Cloudflare Access (Zero Trust) — the original plan, superseded; Supabase magic link — what the prior system used, never adopted here |
 | Scheduling / compute | **DECIDED 2026-09-08 by measurement: GitHub Actions `schedule:` on GitHub-hosted runners**, plus cron-job.org `repository_dispatch` as an independent second trigger | The spike proved OKX, Coinbase, Kraken and Coin Metrics all return `200` from a GitHub-hosted US runner. No self-hosted runner is needed, so the component that caused the prior 24h outage never exists | A stateless Fly.io `fra` machine — kept as the fallback shape if a required venue is ever geo-blocked; a **resident** self-hosted runner is rejected permanently |
 | Dead-man's-switch | **Healthchecks.io** free tier (20 checks) | ~30 min of work; the single highest value-per-effort defence available (R5 §1). Directly addresses the 24h silent outage | Relying on the job to report its own failure — which is precisely what failed |
 
@@ -196,8 +196,8 @@ not marked stale merely because the page was opened in the afternoon.
                                    ▼
                       ┌──────────────────────────┐
                       │  DASHBOARD (Vite/React)  │
-                      │  Cloudflare Pages        │
-                      │  behind Cloudflare Access│
+                      │  Cloudflare Workers      │
+                      │  public (no Access)      │
                       │                          │
                       │  exhaustive switch on    │
                       │  status — UNAVAILABLE    │
@@ -248,9 +248,9 @@ whether a gap is permanent, purchasable, or broken.
 
 | | Local | Preview | Production |
 |---|---|---|---|
-| URL | `localhost:5173` | `*.pages.dev` (per-branch) | Cloudflare Pages, behind Access |
+| URL | `localhost:5173` | — (no preview deploys) | `*.workers.dev`, public |
 | Database | Supabase project (same, read-only from app) | same | same |
-| Secrets | `.env.local`, gitignored | Pages env vars | Pages env vars + GitHub Actions secrets |
+| Secrets | `.env.local`, gitignored | — | GitHub Actions secrets, injected into the `wrangler deploy` build |
 | Ingestion | manual invoke | never scheduled | scheduled |
 
 Single Supabase project. A second is not justified for one user, and divergence between two
@@ -279,7 +279,8 @@ Paths needing human review before merge (mirrored into `.uf/config.json`). Note 
 - **GitHub Actions free minutes: 2,000/mo** (repo is private — verified). At ~3 min/run this
   allows ~22 runs/day. A 15-minute cadence would exceed it; cadence is a cost decision.
 - **No secret may reach the browser.** The dashboard reads through the anon key against
-  read-only views, or through Access-gated static JSON. No service-role key client-side, ever.
+  read-only views. No service-role key client-side, ever — the page being public (Access
+  dropped, 2026-10-06) makes this the only line of defense, not a backup to Access.
 - **Determinism is a hard requirement**, not a nicety: indicator computation is a pure
   function of (bars, window), golden-file pinned. The prior system's values depended on
   process uptime (R0/F5).

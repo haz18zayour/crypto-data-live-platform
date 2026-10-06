@@ -18,7 +18,7 @@ breadth is added. Every later PRD adds one panel to a page that already works.
 | PRD-008 | Macro and flows panel | FRED series with **release lag surfaced on the face of each value**; stablecoin supply (DefiLlama); ETF net flows (SoSoValue, T+1); Fear & Greed labelled as a composite. `DTWEXBGS` labelled as a broad-dollar index, not "DXY" | 002 | planned |
 | PRD-009 | History and charts | Backfill; per-indicator sparklines and distribution context (so a value can be read against its own history rather than an arbitrary band) | 005 | planned |
 | PRD-010 | Integrity dashboard | Frozen-value detection, per-source freshness SLA rollup, coverage generated from the registry so an uncovered indicator is a build error. The self-audit that actually audits | 005 | planned |
-| PRD-011 | Deploy behind Cloudflare Access | Moved out of PRD-001. The data path is already in production via GitHub Actions; the page is a single-user read-only viewer that localhost exercises identically. Deploy when it is worth opening daily. The service-role bundle scan did NOT move with it — it runs locally in PRD-001 | 005 | planned |
+| PRD-011 | Deploy to Cloudflare Workers | Moved out of PRD-001. The data path is already in production via GitHub Actions; the page is a single-user read-only viewer that localhost exercises identically. **Amended 2026-10-06:** Cloudflare Access was dropped from scope by owner decision — the deployed page is public, since it is read-only market data with nothing to protect. The service-role bundle scan did NOT move with it — it runs locally in PRD-001 | 005 | shipped |
 | PRD-012 | Split cadence: daily collect + 6h canary | Owner decision 2026-09-09. Almost every source publishes once a day or slower, so 6-hourly collection refetches identical values; but daily-only collection hides a failure for 24h+grace — the prior system's exact blind spot. Splits into a daily `collect` job and a 20-second `canary` every 6h that pings sources and the heartbeat and writes no datapoints. Failure visible in ~6–8h, data honest at daily, owner contacted only on breakage. Small; fold into PRD-002 if convenient | 001 | planned |
 
 Status: `planned` → `researching` → `specced` → `running` → `shipped`
@@ -31,8 +31,9 @@ Status: `planned` → `researching` → `specced` → `running` → `shipped`
    location is genuinely undecided (R7 §C1) and every subsequent PRD assumes an answer.
 2. **Data model early** — the `datapoints` schema and `asset_match` CHECK constraint are the
    least reversible things in the project.
-3. **Auth before anything behind auth** — Cloudflare Access is configured in PRD-001, before
-   a dashboard exists to expose.
+3. ~~Auth before anything behind auth~~ — **superseded 2026-10-06:** PRD-011 dropped Cloudflare
+   Access from scope entirely; the deployed page is public by owner decision (see the
+   out-of-scope amendment above). No auth layer exists or is planned.
 4. **The test harness precedes breadth.** PRD-002 before 003–006 so twenty indicators inherit
    determinism and contract tests instead of retrofitting them onto twenty call sites.
 5. **Corroboration precedes breadth.** PRD-003 comes before the panels because it is the
@@ -56,7 +57,10 @@ because this list is the cheapest thing to write and the most expensive to skip.
 - **No alerts, email, Telegram or push.** The page is pulled, not pushed. *(The one exception
   is the Healthchecks.io dead-man's-switch, which alerts on pipeline silence — infrastructure
   liveness, not market content.)*
-- **No multi-user, billing, or public access.**
+- **No multi-user, billing, accounts or login.** **Amended 2026-10-06:** the deployed page
+  itself is reachable publicly by the owner's explicit choice (PRD-011 dropped Cloudflare
+  Access from scope) — it is still single-operator, read-only, and shows the same honest data
+  to anyone who loads it.
 - **No LLM-generated narrative** over the data.
 - **No mobile-native app.** Responsive web only.
 - **No fifth coin.** BTC, ETH, SOL fixed; **BNB** pinned in config (one line to change).
