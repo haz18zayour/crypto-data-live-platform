@@ -15,14 +15,18 @@ assumptions:
 
 # Deploy behind Cloudflare Access
 
+> **Amended 2026-10-06** (see `20-decisions.yaml`'s `amendments:` entry): the owner explicitly
+> decided the deployed page may be public. Cloudflare Access is dropped from this PRD's scope
+> entirely — no Access policy, no drift canary, no login verification. The research and
+> rationale below predate that decision and are kept for the record (they explain why Workers
+> was chosen over Pages regardless, and what "public" already meant for the data even before
+> this amendment), but no remaining acceptance criterion may require Access.
+
 ## What this delivers
 
-The existing web app, reachable at a real URL, open to the owner and closed to everyone else.
-Cloudflare Access gates every hostname (production and previews) behind a one-time-PIN login
-to the owner's own email, with a one-week session. A scheduled, unauthenticated probe of the
-real production hostname is the durable proof this stays true over time — the one control in
-this project that lives in a dashboard instead of the repo, watched the same way every other
-silent-failure class in this project is watched.
+The existing web app, reachable at a real, public URL. No login. The data path was already
+public-readable before this amendment (the anon key ships in the bundle; see finding 2 below),
+so a public page does not newly expose anything decision 1 at G1 had not already accepted.
 
 ## Why (from research and this gate's own findings)
 
@@ -61,20 +65,11 @@ build-image documentation disagrees with its own known-issues page about the def
 vs 22.16.0), and this project's Vite 7 / TypeScript 5.9 toolchain will not build on the older
 image.
 
-**Cloudflare Access configuration itself is dashboard/account-level work the owner performs
-directly** (team domain, one-time-PIN identity provider, the Worker's Access policy at scope
-"all traffic", 1-week session) — this project has no credentials to automate that account setup,
-and the owner has confirmed they will handle it. The code-side stories (Worker config, CI
-workflow, local build verification) do not block on this; the live-verification stories do.
-
-**A scheduled, unauthenticated production-hostname probe is the durable safety net.** Access
-configuration is the one control in this project that lives entirely in a dashboard, is not
-diffable, and is documented by Cloudflare itself as something people get wrong. A canary
-(extending the existing `canary.yml` pattern or a new small workflow) makes a real HTTP request
-to the real deployed hostname on a schedule and asserts it is redirected toward Cloudflare
-Access's login rather than returning the real page — the only thing that can catch dashboard
-drift, per this project's own established lesson that a criterion which only exists as a
-deselected integration test never actually runs.
+**Cloudflare Access is out of scope (2026-10-06 amendment).** The owner's own account/API-token
+setup (Cloudflare account, `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`) was still required
+and completed — that part of the original plan stands, since it is how the deploy workflow
+authenticates to Cloudflare regardless of whether Access is ever applied. No Access policy is
+configured on top of it.
 
 ## Data model changes
 
@@ -83,23 +78,20 @@ not touch `datapoints`, any view, RPC, or migration.
 
 ## Out of scope
 
-Restated from `00-brief.md` and confirmed at G1: no change to how the browser reads Supabase
-data (anon key stays client-side; a Worker-proxied read path is a real, separate future PRD);
-no Supabase legacy-anon-key migration (tracked as an assumption with a hard external deadline);
-no custom domain (`*.workers.dev` accepted for a single-user tool); no change to the existing
-ingestion pipeline or its own Healthchecks dead-man's-switch; no WebSocket/push functionality.
+Restated from `00-brief.md` and confirmed at G1, plus the 2026-10-06 amendment: **Cloudflare
+Access in full** (no policy, no login, no drift canary — owner decision, page is public by
+choice); no change to how the browser reads Supabase data (anon key stays client-side; a
+Worker-proxied read path is a real, separate future PRD); no Supabase legacy-anon-key migration
+(tracked as an assumption with a hard external deadline); no custom domain (`*.workers.dev`
+accepted); no change to the existing ingestion pipeline or its own Healthchecks dead-man's-switch;
+no WebSocket/push functionality.
 
 ## The adversarial case
 
-**An unauthenticated request to the real production hostname must never return the real page.**
-Proven against the actual deployed hostname, not a preview URL or a mocked response — this is
-exactly the class of failure ("looks protected, isn't") research found built into the obvious
-Cloudflare path. **A broken build must never reach production**: a deliberately failing
-typecheck or test run in the deploy workflow must be shown to block the `wrangler deploy` step,
-not merely assumed from the workflow's own ordering. **The canary must be the thing that would
-actually catch a real regression**, not a one-shot check run once and forgotten — proven by
-confirming it runs on a real schedule and by demonstrating what it reports when pointed at an
-intentionally-unprotected URL versus the real, protected one.
+**A broken build must never reach production.** A deliberately failing typecheck or test run in
+the deploy workflow must be shown to block the `wrangler deploy` step, not merely assumed from
+the workflow's own ordering — this is the one protection from the original plan that has nothing
+to do with Access and remains fully in scope.
 
 ## Stories
 
@@ -107,6 +99,5 @@ intentionally-unprotected URL versus the real, protected one.
 |---|---|---|
 | US-1106 | Worker scaffold — wrangler.jsonc serving web/dist as an SPA, .node-version pinned, local build verified | — |
 | US-1107 | Deploy workflow — deploy-web.yml gated on typecheck+test, triggers on push to main, builds with the real VITE_* secrets | US-1106 |
-| US-1103 | First live deploy and Cloudflare Access configuration — owner completes account/dashboard setup, provides CI secrets, applies Access at scope "all traffic" | US-1107 |
-| US-1104 | The Access drift canary — a scheduled, unauthenticated probe of the real production hostname asserting a redirect to Access login | US-1103 |
-| US-1105 | The adversarial case — a broken build is proven blocked from deploy, the live hostname is proven to reject unauthenticated access, and the owner confirms they can actually open the real dashboard through Access | US-1107, US-1103, US-1104 |
+| US-1103 | First live deploy — owner completes Cloudflare account/dashboard setup, provides CI secrets; the app is live at a real, public URL | US-1107 |
+| US-1105 | The adversarial case — a broken build is proven blocked from deploy, and the owner confirms they can open the real public dashboard | US-1107, US-1103 |
