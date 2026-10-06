@@ -9,19 +9,15 @@ Do not hand-edit it — it is regenerated. The hand-written sections below it su
 
 ## ▶ Resume here
 
-**2 uncommitted file(s) — the runner will not start**
+**US-1108: The demonstration item the acceptance protocol calls for, not a machine check**
 
-A previous session edited source and did not commit. uf refuses to run on a dirty tree rather than auto-committing someone else's half-finished work.
+A gate is open. Nothing proceeds until you answer.
 
 Owner: **You.** This one cannot be delegated.
 
 ```
-review the diff, then: git add -A && git commit
+uf gate G6_HUMAN-a3f1c9e2 met|not-met
 ```
-
-**Left in flight by the previous session:**
-
-- 2 uncommitted file(s): prds/PRD-011-deploy/30-spec.md, prds/PRD-011-deploy/40-stories/US-1108-adversarial-case.md
 
 **Last handoff note:** **2026-09-15 — STOPPED HERE. PRD-007 is fully specced and compiled (8 stories, 62 criteria,
 
@@ -1035,6 +1031,8 @@ Spend to date: **$123.07** Claude · **314796k** Codex tokens.
 - 14:49  ⏸ **gate opened** — US-1105 has failed 3 times — is the story wrong?
 - 14:50  ▶ gate answered **rewrite-criteria** — All 3 attempts: 0 tokens/exitCode 1. Confirmed a real environment bug: codex's default model gpt-5.4 is unsupported on this account. Flagged to owner to fix config. Implementing directly. Re-identifying as US-1108.
 - 14:50  **PRD-011-deploy** compiled — 4 stories
+- 15:00  US-1108 **awaiting your judgement** — 3/4 criteria, judged by human
+- 15:00  ⏸ **gate opened** — US-1108: The demonstration item the acceptance protocol calls for, not a machine check
 
 <!-- uf:generated:end -->
 
