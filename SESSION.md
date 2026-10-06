@@ -9,14 +9,14 @@ Do not hand-edit it — it is regenerated. The hand-written sections below it su
 
 ## ▶ Resume here
 
-**PRD-005-dashboard — GATE G1, scope lock**
+**US-1103 has failed 3 times — is the story wrong?**
 
-The research asked you questions and each carries the agent's own hypothesis. Anything you leave blank becomes an explicit assumption with a tripwire. The out-of-scope list is the one field with no default.
+A gate is open. Nothing proceeds until you answer.
 
 Owner: **You.** This one cannot be delegated.
 
 ```
-open prds/PRD-005-dashboard/20-decisions.yaml
+uf gate G5_THIRD_FAILURE-f75aa5e3 split|rewrite-criteria|skip|retry-anyway
 ```
 
 **Last handoff note:** **2026-09-15 — STOPPED HERE. PRD-007 is fully specced and compiled (8 stories, 62 criteria,
@@ -1008,6 +1008,10 @@ Spend to date: **$123.07** Claude · **314796k** Codex tokens.
 - 14:03  US-1103 started, attempt 2 (codex)
 - 14:03  US-1103 — codex finished `27611e61`
 - 14:05  US-1103 **rejected** — 0/4 criteria, judged by claude
+- 14:05  US-1103 started, attempt 3 (codex)
+- 14:05  US-1103 — codex finished `c6b0a4b6`
+- 14:07  US-1103 **rejected** — 0/4 criteria, judged by claude
+- 14:07  ⏸ **gate opened** — US-1103 has failed 3 times — is the story wrong?
 
 <!-- uf:generated:end -->
 
