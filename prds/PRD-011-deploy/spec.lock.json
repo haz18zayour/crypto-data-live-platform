@@ -4,8 +4,8 @@
   "title": "Deploy behind Cloudflare Access",
   "product": "crypto-data-live-platform",
   "branch": "feat/prd-011-deploy",
-  "inputDigest": "22d9b54607e2f361",
-  "compiledAt": "2026-10-06T14:41:25.007Z",
+  "inputDigest": "bf50abd09df37e67",
+  "compiledAt": "2026-10-06T14:50:40.408Z",
   "stories": [
     {
       "id": "US-1106",
@@ -228,13 +228,13 @@
       ]
     },
     {
-      "id": "US-1105",
+      "id": "US-1108",
       "title": "The adversarial case — a broken build is proven blocked from deploy, and the owner confirms they can open the real public dashboard",
-      "source": "prds/PRD-011-deploy/40-stories/US-1105-adversarial-case.md",
+      "source": "prds/PRD-011-deploy/40-stories/US-1108-adversarial-case.md",
       "description": "As the owner, I want this PRD's one remaining hard claim proven directly, not just asserted by\nthe individual stories' own narrower checks — the same adversarial discipline every prior PRD\nin this project has closed with.\n\n**Amended 2026-10-06:** Cloudflare Access is out of scope for this PRD (owner decision — the\npage is public by choice). The two Access-rejection criteria this story originally had are\ndropped; the build-gate proof is unaffected (it has nothing to do with Access) and remains in\nfull scope. The final `[human]` criterion is replaced with the public equivalent.",
       "criteria": [
         {
-          "id": "US-1105-C1",
+          "id": "US-1108-C1",
           "text": "The gate is real, proven by breaking it on purpose, not assumed from the workflow's own step ordering",
           "method": {
             "kind": "test",
@@ -242,7 +242,7 @@
           }
         },
         {
-          "id": "US-1105-C2",
+          "id": "US-1108-C2",
           "text": "The owner opens the real deployed public URL (`https://crypto-data-live-platform.zayourhassan-1.workers.dev`) directly, no login, and confirms the real live dashboard renders — the same board this project has been running locally, now reachable from anywhere",
           "method": {
             "kind": "human",
@@ -250,7 +250,7 @@
           }
         },
         {
-          "id": "US-1105-C3",
+          "id": "US-1108-C3",
           "text": "The full offline suite stays green",
           "method": {
             "kind": "cmd",
@@ -258,7 +258,7 @@
           }
         },
         {
-          "id": "US-1105-C4",
+          "id": "US-1108-C4",
           "text": "The full web suite and typecheck stay green",
           "method": {
             "kind": "cmd",

@@ -100,4 +100,4 @@ to do with Access and remains fully in scope.
 | US-1106 | Worker scaffold — wrangler.jsonc serving web/dist as an SPA, .node-version pinned, local build verified | — |
 | US-1107 | Deploy workflow — deploy-web.yml gated on typecheck+test, triggers on push to main, builds with the real VITE_* secrets | US-1106 |
 | US-1103 | First live deploy — owner completes Cloudflare account/dashboard setup, provides CI secrets; the app is live at a real, public URL | US-1107 |
-| US-1105 | The adversarial case — a broken build is proven blocked from deploy, and the owner confirms they can open the real public dashboard | US-1107, US-1103 |
+| US-1108 | The adversarial case — a broken build is proven blocked from deploy, and the owner confirms they can open the real public dashboard | US-1107, US-1103 |

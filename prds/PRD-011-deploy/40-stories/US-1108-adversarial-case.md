@@ -1,5 +1,5 @@
 ---
-id: US-1105
+id: US-1108
 title: The adversarial case — a broken build is proven blocked from deploy, and the owner confirms they can open the real public dashboard
 priority: 5
 touches:
