@@ -9,19 +9,15 @@ Do not hand-edit it — it is regenerated. The hand-written sections below it su
 
 ## ▶ Resume here
 
-**6 uncommitted file(s) — the runner will not start**
+**PRD-005-dashboard — GATE G1, scope lock**
 
-A previous session edited source and did not commit. uf refuses to run on a dirty tree rather than auto-committing someone else's half-finished work.
+The research asked you questions and each carries the agent's own hypothesis. Anything you leave blank becomes an explicit assumption with a tripwire. The out-of-scope list is the one field with no default.
 
 Owner: **You.** This one cannot be delegated.
 
 ```
-review the diff, then: git add -A && git commit
+open prds/PRD-005-dashboard/20-decisions.yaml
 ```
-
-**Left in flight by the previous session:**
-
-- 6 uncommitted file(s): prds/PRD-011-deploy/20-decisions.yaml, prds/PRD-011-deploy/30-spec.md, prds/PRD-011-deploy/40-stories/US-1103-first-deploy-and-access.md, prds/PRD-011-deploy/40-stories/US-1104-access-drift-canary.md…
 
 **Last handoff note:** **2026-09-15 — STOPPED HERE. PRD-007 is fully specced and compiled (8 stories, 62 criteria,
 
@@ -1025,6 +1021,10 @@ Spend to date: **$123.07** Claude · **314796k** Codex tokens.
 - 14:38  US-1105 **rejected** — 0/4 criteria, judged by claude
 - 15:00  US-1103 **PASSED** — 2/2 criteria, judged by human
 - 15:00  ▶ gate answered **rewrite-criteria** — Resolved by owner's real account setup + real deploy, then a scope amendment dropping Access entirely. See verdict.json and 20-decisions.yaml amendments.
+- 14:41  **PRD-011-deploy** compiled — 4 stories
+- 14:42  US-1105 started, attempt 2 (codex)
+- 14:42  US-1105 — codex finished `eb7c4baa`
+- 14:45  US-1105 **rejected** — 0/4 criteria, judged by claude
 
 <!-- uf:generated:end -->
 
