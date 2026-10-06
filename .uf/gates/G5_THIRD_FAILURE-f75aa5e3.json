@@ -1,0 +1,16 @@
+{
+  "gate": "G5_THIRD_FAILURE",
+  "question": "US-1103 has failed 3 times — is the story wrong?",
+  "feature": "PRD-011-deploy",
+  "story": "US-1103",
+  "options": [
+    "split",
+    "rewrite-criteria",
+    "skip",
+    "retry-anyway"
+  ],
+  "context": "Structural problems: the story changed no files at all\nCriteria judged not met:\n  - US-1103-C1: not judged — a cheaper layer already failed\n  - US-1103-C2: not judged — a cheaper layer already failed\n  - US-1103-C3: not judged — a cheaper layer already failed\n  - US-1103-C4: not judged — a cheaper layer already failed",
+  "defaultOnTimeout": "block",
+  "id": "G5_THIRD_FAILURE-f75aa5e3",
+  "openedAt": "2026-09-30T14:07:35.364Z"
+}

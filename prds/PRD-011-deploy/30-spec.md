@@ -105,8 +105,8 @@ intentionally-unprotected URL versus the real, protected one.
 
 | Story | Title | Depends on |
 |---|---|---|
-| US-1101 | Worker scaffold — wrangler.jsonc serving web/dist as an SPA, .node-version pinned, local build verified | — |
-| US-1102 | Deploy workflow — deploy-web.yml gated on typecheck+test, triggers on push to main, builds with the real VITE_* secrets | US-1101 |
-| US-1103 | First live deploy and Cloudflare Access configuration — owner completes account/dashboard setup, provides CI secrets, applies Access at scope "all traffic" | US-1102 |
+| US-1106 | Worker scaffold — wrangler.jsonc serving web/dist as an SPA, .node-version pinned, local build verified | — |
+| US-1107 | Deploy workflow — deploy-web.yml gated on typecheck+test, triggers on push to main, builds with the real VITE_* secrets | US-1106 |
+| US-1103 | First live deploy and Cloudflare Access configuration — owner completes account/dashboard setup, provides CI secrets, applies Access at scope "all traffic" | US-1107 |
 | US-1104 | The Access drift canary — a scheduled, unauthenticated probe of the real production hostname asserting a redirect to Access login | US-1103 |
-| US-1105 | The adversarial case — a broken build is proven blocked from deploy, the live hostname is proven to reject unauthenticated access, and the owner confirms they can actually open the real dashboard through Access | US-1102, US-1103, US-1104 |
+| US-1105 | The adversarial case — a broken build is proven blocked from deploy, the live hostname is proven to reject unauthenticated access, and the owner confirms they can actually open the real dashboard through Access | US-1107, US-1103, US-1104 |

@@ -1,5 +1,5 @@
 ---
-id: US-1102
+id: US-1107
 title: Deploy workflow — deploy-web.yml gated on typecheck+test, triggers on push to main, builds with the real VITE_* secrets
 priority: 2
 touches:

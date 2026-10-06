@@ -9,14 +9,14 @@ Do not hand-edit it — it is regenerated. The hand-written sections below it su
 
 ## ▶ Resume here
 
-**PRD-005-dashboard — GATE G1, scope lock**
+**US-1103 has failed 3 times — is the story wrong?**
 
-The research asked you questions and each carries the agent's own hypothesis. Anything you leave blank becomes an explicit assumption with a tripwire. The out-of-scope list is the one field with no default.
+A gate is open. Nothing proceeds until you answer.
 
 Owner: **You.** This one cannot be delegated.
 
 ```
-open prds/PRD-005-dashboard/20-decisions.yaml
+uf gate G5_THIRD_FAILURE-f75aa5e3 split|rewrite-criteria|skip|retry-anyway
 ```
 
 **Last handoff note:** **2026-09-15 — STOPPED HERE. PRD-007 is fully specced and compiled (8 stories, 62 criteria,
@@ -35,9 +35,10 @@ open prds/PRD-005-dashboard/20-decisions.yaml
 | PRD-008-macro-flows | 8 | 8 | **all green** |
 | PRD-009-history-charts | 9 | 9 | **all green** |
 | PRD-010-integrity-dashboard | 7 | 7 | **all green** |
+| PRD-011-deploy | 5 | 2 | 2/5 |
 | PRD-012-cadence-split | 6 | 6 | **all green** |
 
-Spend to date: **$121.42** Claude · **314796k** Codex tokens.
+Spend to date: **$123.07** Claude · **314796k** Codex tokens.
 
 ## What happened
 
@@ -973,6 +974,44 @@ Spend to date: **$121.42** Claude · **314796k** Codex tokens.
 - 00:05  ▶ gate answered **met** — Owner reviewed the live board at localhost:5173 - long-short ratio row shows 'unchanged since 29 Sep 2026' plain grey text under an unchanged OK status, and the Integrity panel's freshness rollup shows real per-vendor ages with DefiLlama and validators.app correctly unmeasurable, never green. Confirmed no judgement implied anywhere.
 - 00:05  👤 you judged US-1010 **met**
 - 00:05  US-1010 **PASSED** — 8/8 criteria, judged by human
+- 08:27  researched PRD-011-deploy — 16 sources · $1.65
+- 12:56  **PRD-011-deploy** compiled — 5 stories
+- 13:08  US-1101 started, attempt 1 (codex)
+- 13:08  US-1101 — codex finished `993c1fd1`
+- 13:11  US-1101 **rejected** — 0/5 criteria, judged by claude
+- 13:11  US-1101 started, attempt 2 (codex)
+- 13:11  US-1101 — codex finished `31d9766c`
+- 13:13  US-1101 **rejected** — 0/5 criteria, judged by claude
+- 13:13  US-1101 started, attempt 3 (codex)
+- 13:13  US-1101 — codex finished `ab6b83d6`
+- 13:15  US-1101 **rejected** — 0/5 criteria, judged by claude
+- 13:15  ⏸ **gate opened** — US-1101 has failed 3 times — is the story wrong?
+- 13:20  ▶ gate answered **rewrite-criteria** — All 3 attempts produced 0 tokens/exitCode 1 - confirmed codex quota exhaustion via direct probe, still blocked until Oct 4th. Owner chose direct implementation. Re-identifying as US-1106.
+- 13:36  **PRD-011-deploy** compiled — 5 stories
+- 16:44  US-1106 **PASSED** — 5/5 criteria, judged by human
+- 13:42  US-1102 started, attempt 1 (codex)
+- 13:42  US-1102 — codex finished `07bcdb24`
+- 13:46  US-1102 **rejected** — 0/6 criteria, judged by claude
+- 13:46  US-1102 started, attempt 2 (codex)
+- 13:46  US-1102 — codex finished `c259d09e`
+- 13:50  US-1102 **rejected** — 0/6 criteria, judged by claude
+- 13:50  US-1102 started, attempt 3 (codex)
+- 13:50  US-1102 — codex finished `51a7d403`
+- 13:54  US-1102 **rejected** — 0/6 criteria, judged by claude
+- 13:54  ⏸ **gate opened** — US-1102 has failed 3 times — is the story wrong?
+- 17:00  ▶ gate answered **rewrite-criteria** — All 3 attempts produced 0 tokens/exitCode 1 - confirmed codex quota exhaustion via direct probe, still blocked until Oct 4th. Owner has chosen direct implementation for this exact situation before today. Re-identifying as US-1107.
+- 13:56  **PRD-011-deploy** compiled — 5 stories
+- 17:05  US-1107 **PASSED** — 6/6 criteria, judged by human
+- 14:00  US-1103 started, attempt 1 (codex)
+- 14:00  US-1103 — codex finished `8c609f9c`
+- 14:03  US-1103 **rejected** — 0/4 criteria, judged by claude
+- 14:03  US-1103 started, attempt 2 (codex)
+- 14:03  US-1103 — codex finished `27611e61`
+- 14:05  US-1103 **rejected** — 0/4 criteria, judged by claude
+- 14:05  US-1103 started, attempt 3 (codex)
+- 14:05  US-1103 — codex finished `c6b0a4b6`
+- 14:07  US-1103 **rejected** — 0/4 criteria, judged by claude
+- 14:07  ⏸ **gate opened** — US-1103 has failed 3 times — is the story wrong?
 
 <!-- uf:generated:end -->
 
