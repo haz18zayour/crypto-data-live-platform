@@ -1,2 +1,14 @@
-.uf/events.ndjson | 2 ++
- 1 file changed, 2 insertions(+)
+.uf/events.ndjson                                  |  10 ++
+ .uf/gates/G5_THIRD_FAILURE-f75aa5e3.json           |   8 +-
+ SESSION.md                                         |  21 +++-
+ prds/PRD-011-deploy/20-decisions.yaml              |  29 +++++
+ prds/PRD-011-deploy/30-spec.md                     |  65 +++++------
+ .../40-stories/US-1103-first-deploy-and-access.md  |  36 +++---
+ .../40-stories/US-1104-access-drift-canary.md      |  38 ------
+ .../40-stories/US-1105-adversarial-case.md         |  20 ++--
+ .../50-evidence/US-1103/verdict.json               |  48 ++++----
+ .../50-evidence/US-1105/diffstat.txt               |   2 +
+ prds/PRD-011-deploy/50-evidence/US-1105/gates.json |  26 +++++
+ .../50-evidence/US-1105/verdict.json               |  36 ++++++
+ prds/PRD-011-deploy/spec.lock.json                 | 130 ++++-----------------
+ 13 files changed, 229 insertions(+), 240 deletions(-)
